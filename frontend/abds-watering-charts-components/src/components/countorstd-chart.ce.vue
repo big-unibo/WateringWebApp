@@ -33,10 +33,11 @@ async function mountChart() {
   if(chartDataResponse) {
     data = chartDataResponse
     showChart.value = data.length > 0
-    if (!showChart.value)
-      return
   }  else {
     showChart.value = false
+  }
+  loadingFlag.value = false
+  if(!showChart.value){
     return
   }
 
@@ -197,7 +198,6 @@ async function mountChart() {
       chartRef.value.replaceChildren(svg.node());
     }
   })
-  loadingFlag.value = false
 }
 
 </script>

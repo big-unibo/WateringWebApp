@@ -103,11 +103,8 @@ async function mountChart() {
   if(chartDataResponse) {
     data = chartDataResponse
     showChart.value = data.length > 0
-    if (!showChart.value)
-      return
   } else {
     showChart.value = false
-    return
   }
 
   const groupByData = groupByHumidityBin(data);
