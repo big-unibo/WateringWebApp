@@ -262,7 +262,7 @@ usersRouter.put('/createGrants', async (req, res) => {
 
         const requestDto = new UserGrantsDto(req.body.grants)
     
-        await userService.createUserGrants(user.role === 'admin' ? 'admin' : user.affiliation, requestDto)
+        await userService.createUserGrants(user.role, user.affiliation, requestDto)
 
         return res.status(200).json({message: `Grants created with success`})
     } catch (error) {

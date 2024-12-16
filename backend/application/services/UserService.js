@@ -38,15 +38,18 @@ class UserService {
         }
     }
 
-    async createUserGrants(affiliation, request) {
-        if(affiliation !=='admin'){
-            const affiliationFields = await this.userRepository.findFieldsByAffiliation(affiliation)
-
-            request.grants.map(grant => {
-                const key = `${grant.refStructureName} - ${grant.companyName} - ${grant.fieldName} - ${grant.sectorName} - ${grant.plantRow}`;
-                if (!affiliationFields.has(key))
-                    throw Error(`Affiliation ${affiliation} has no permission to create grants for field ${key}`)
-            })
+    async createUserGrants(role, affiliation, request) {
+        if(role !=='admin'){
+            if(role === 'partner'){
+                const affiliationFields = await this.userRepository.findFieldsByAffiliation(affiliation)
+                request.grants.map(grant => {
+                    const key = `${grant.refStructureName} - ${grant.companyName} - ${grant.fieldName} - ${grant.sectorName} - ${grant.plantRow}`;
+                    if (!affiliationFields.has(key))
+                        throw Error(`Affiliation ${affiliation} has no permission to create grants for field ${key}`)
+                })
+            } else {
+                throw Error("Error user is not authorized to grant users!!!")
+            }
         }
 
         for(const grant of request.grants) {
