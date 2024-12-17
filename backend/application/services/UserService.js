@@ -54,7 +54,7 @@ class UserService {
 
         for(const grant of request.grants) {
             const userToGrant = await this.findUserByEmail(grant.username)
-            if(userToGrant.affiliation !== affiliation && affiliation !=='admin')
+            if(userToGrant.affiliation !== affiliation && role !=='admin')
                 throw new Error(`Affiliation mismatch between user ${userToGrant.affiliation} and requestor ${affiliation}]`)
 
             for(const permit of grant.permits)
