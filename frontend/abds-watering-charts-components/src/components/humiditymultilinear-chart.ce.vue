@@ -108,7 +108,7 @@ async function mountChart() {
   }
 
   const groupByData = groupByHumidityBin(data);
-  emit('selectTimestamp',Math.max(...data.map(e=>e.timestamp)))
+  emit('selectTimestamp',Math.max(...data.map(e=>e.timestamp),0))
 
   chartData.value = {
     datasets: createDatasets(groupByData).map(bin => bin.getDataSet())

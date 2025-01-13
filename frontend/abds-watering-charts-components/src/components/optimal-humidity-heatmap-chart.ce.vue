@@ -340,7 +340,7 @@ async function mountChart() {
   const parsed = JSON.parse(props.config);
   const selectedTimestamp = props.selectedTimestamp
   const params = {...parsed.params}
-  params["timestamp"] = props.selectedTimestamp
+  params["timestamp"] = selectedTimestamp
   showChart.value = false
   loadingFlag.value = true
   const chartDataResponse = await communicationService.getChartData(parsed.environment, parsed.paths, params, endpoint, 'optimalState')

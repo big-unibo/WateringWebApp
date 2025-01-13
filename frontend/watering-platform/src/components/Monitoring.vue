@@ -233,7 +233,7 @@ function enableDetailedAggregate() {
   detailedWateringButton.value = showDetailedWatering.value ? "Mostra giornaliero" : "Mostra puntuale"
 }
 
-const selectedTimestamp = ref(null)
+const selectedTimestamp = ref(Math.floor(Date.now()/1000))
 function selectedTime(time){
   selectedTimestamp.value = time 
 }
