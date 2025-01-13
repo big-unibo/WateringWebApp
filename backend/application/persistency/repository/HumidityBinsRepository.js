@@ -14,6 +14,7 @@ class HumidityBinsRepository {
         const query = `
             WITH interval_table AS (SELECT unnest(array['6*(-30, 0]', '5*(-100, -30]', '4*(-200, -100]', '3*(-300, -200]', '2*(-1500, -300]', '1*(-∞, -1500]']) AS humidity_bin)
             SELECT di."timestamp",
+                   di."source",
                    di."refStructureName",
                    di."companyName",
                    di."fieldName",
@@ -23,7 +24,7 @@ class HumidityBinsRepository {
                    COALESCE(count(d."value"), 0) AS count
             FROM interval_table it
                 CROSS JOIN (
-                SELECT DISTINCT "timestamp", "refStructureName", "companyName", "fieldName", "sectorName", "plantRow"
+                SELECT DISTINCT "timestamp", "source", "refStructureName", "companyName", "fieldName", "sectorName", "plantRow"
                 FROM data_interpolated
                 WHERE "timestamp" >= '${timeFilterFrom}'
                 AND "timestamp" <= '${timeFilterTo}'
@@ -58,7 +59,7 @@ class HumidityBinsRepository {
             AND di."fieldName" = '${fieldName}'
             AND di."sectorName" = '${sectorName}'
             AND di."plantRow" = '${plantRow}'
-            GROUP BY di."timestamp", di."refStructureName", di."companyName", di."fieldName", di."sectorName", di."plantRow", it.humidity_bin
+            GROUP BY di."timestamp", di."source", di."refStructureName", di."companyName", di."fieldName", di."sectorName", di."plantRow", it.humidity_bin
             ORDER BY di."timestamp", di."fieldName", it.humidity_bin
         `;
 
@@ -89,7 +90,8 @@ class HumidityBinsRepository {
 
     async findHumidityBinEvents(detectedValueTypeId, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow) {
 
-        const query = `SELECT DISTINCT "refStructureName",
+        const query = `SELECT DISTINCT "source",
+                                       "refStructureName",
                                        "companyName",
                                        "fieldName",
                                        "detectedValueTypeDescription",
@@ -106,7 +108,7 @@ class HumidityBinsRepository {
                          AND "fieldName" = '${fieldName}'
                          AND "sectorName" = '${sectorName}'
                          AND "plantRow" = '${plantRow}'
-                       GROUP BY "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", "timestamp"
+                       GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", "timestamp"
                        ORDER BY "timestamp" ASC`;
 
         const results = await this.sequelize.query(query, {

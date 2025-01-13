@@ -5,7 +5,8 @@ import { QueryTypes } from 'sequelize';
 const getResults = async (calculationType, detectedValueTypeDescription, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow, aggregationPeriod, sequelize) => {
 
     const query = `
-            SELECT DISTINCT "refStructureName",
+            SELECT DISTINCT "source",
+                            "refStructureName",
                             "companyName",
                             "fieldName",
                             "detectedValueTypeDescription",
@@ -24,7 +25,7 @@ const getResults = async (calculationType, detectedValueTypeDescription, timeFil
               AND "fieldName" = '${fieldName}'
               AND "sectorName" = '${sectorName}'
               AND "plantRow" = '${plantRow}'
-            GROUP BY "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", "colture", "coltureType", round("timestamp"::numeric/${aggregationPeriod})*${aggregationPeriod}
+            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", "colture", "coltureType", round("timestamp"::numeric/${aggregationPeriod})*${aggregationPeriod}
             ORDER BY timestamp ASC`;
 
     const results = await sequelize.query(query,

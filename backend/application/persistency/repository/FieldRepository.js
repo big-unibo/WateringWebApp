@@ -81,6 +81,7 @@ class FieldRepository {
             "matrix_profile"."zz", 
             "matrix_profile"."optValue", 
             "matrix_profile"."weight", 
+            "field_matrix"."source",
             "field_matrix"."refStructureName", 
             "field_matrix"."companyName", 
             "field_matrix"."fieldName", 
@@ -144,6 +145,7 @@ class FieldRepository {
             watering_advice t1
         INNER JOIN (
             SELECT
+                "source",
                 "refStructureName",
                 "companyName",
                 "fieldName",
@@ -159,6 +161,7 @@ class FieldRepository {
                 sectorName = '${sectorName}' AND
                 plantRow = '${plantRow}'
             GROUP BY
+                "source",
                 "refStructureName",
                 "companyName",
                 "fieldName",

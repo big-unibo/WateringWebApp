@@ -8,7 +8,8 @@ import { QueryTypes } from 'sequelize';
 const getResults = async (refStructureName, companyName, fieldName, sectorName, plantRow, timestampFrom, timestampTo, sequelize) => {
 
     const query = `
-        SELECT DISTINCT "refStructureName",
+        SELECT DISTINCT "source",
+                        "refStructureName",
                         "companyName",
                         "fieldName",
                         "sectorName",
@@ -27,7 +28,7 @@ const getResults = async (refStructureName, companyName, fieldName, sectorName, 
           AND "timestamp" >= '${timestampFrom}'
           AND "timestamp" <= '${timestampTo}'
           AND ("zz" = 0 OR "zz" IS NULL)
-        ORDER BY "refStructureName", "companyName", "fieldName", "sectorName", "plantRow", "timestamp", "zz", "yy", "xx"`;
+        ORDER BY "source", "refStructureName", "companyName", "fieldName", "sectorName", "plantRow", "timestamp", "zz", "yy", "xx"`;
 
     const results = await sequelize.query(query,
         {

@@ -10,7 +10,8 @@ class WateringAdviceRepository {
     async findWaterAdvice(timefilterFrom, timefilterTo, refStructureName, companyName, fieldName, sectorName, plantRow) {
 
         const queryString = `
-            SELECT DISTINCT "refStructureName",
+            SELECT DISTINCT "source",
+                            "refStructureName",
                             "companyName",
                             "fieldName",
                             "detectedValueTypeDescription",
@@ -19,7 +20,7 @@ class WateringAdviceRepository {
                             MAX("value") as value, rounded_timestamp
             FROM (
                 (
-                SELECT DISTINCT "refStructureName", "companyName", "fieldName", 'Pluv Curr (mm)' "detectedValueTypeDescription", "sectorName", "plantRow", SUM ("value") as value, ((3600*24) * (timestamp / (3600*24)):: INT) as rounded_timestamp
+                SELECT DISTINCT "source", "refStructureName", "companyName", "fieldName", 'Pluv Curr (mm)' "detectedValueTypeDescription", "sectorName", "plantRow", SUM ("value") as value, ((3600*24) * (timestamp / (3600*24)):: INT) as rounded_timestamp
                 FROM view_data_original
                 WHERE "detectedValueTypeId" IN ('PLUV_CURR')
                 AND "timestamp" >= '${timefilterFrom}'
@@ -29,11 +30,12 @@ class WateringAdviceRepository {
                 AND "fieldName" = '${fieldName}'
                 AND "sectorName" = '${sectorName}'
                 AND "plantRow" = '${plantRow}'
-                GROUP BY "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", rounded_timestamp
+                GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", rounded_timestamp
                 ORDER BY rounded_timestamp ASC
                 )
             UNION
-            (SELECT DISTINCT "refStructureName",
+            (SELECT DISTINCT "source", 
+                            "refStructureName",
                             "companyName",
                             "fieldName",
                             'Dripper (L)' as "detectedValueTypeDescription",
@@ -49,10 +51,11 @@ class WateringAdviceRepository {
               AND "fieldName" = '${fieldName}'
               AND "sectorName" = '${sectorName}'
               AND "plantRow" = '${plantRow}'
-            GROUP BY "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", rounded_timestamp
+            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", rounded_timestamp
             ORDER BY rounded_timestamp ASC)
             UNION            
-            (SELECT DISTINCT "refStructureName",
+            (SELECT DISTINCT "source", 
+                            "refStructureName",
                             "companyName",
                             "fieldName",
                             'Sprinkler (L)' as "detectedValueTypeDescription",
@@ -68,10 +71,11 @@ class WateringAdviceRepository {
               AND "fieldName" = '${fieldName}'
               AND "sectorName" = '${sectorName}'
               AND "plantRow" = '${plantRow}'
-            GROUP BY "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", rounded_timestamp
+            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", rounded_timestamp
             ORDER BY rounded_timestamp ASC)
             UNION
-            (SELECT DISTINCT "refStructureName",
+            (SELECT DISTINCT "source", 
+                            "refStructureName",
                             "companyName",
                             "fieldName",
                             'Pot Evap (mm)' AS "detectedValueTypeDescription",
@@ -88,10 +92,11 @@ class WateringAdviceRepository {
               AND "fieldName" = '${fieldName}'
               AND "sectorName" = '${sectorName}'
               AND "plantRow" = '${plantRow}'
-            GROUP BY "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", rounded_timestamp
+            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", rounded_timestamp
             ORDER BY rounded_timestamp ASC)
             UNION
-            (SELECT DISTINCT "refStructureName",
+            (SELECT DISTINCT "source", 
+                            "refStructureName",
                             "companyName",
                             "fieldName",
                             'Advice (L)' as "detectedValueTypeDescription",
@@ -108,10 +113,11 @@ class WateringAdviceRepository {
               AND "sectorName" = '${sectorName}'
               AND "plantRow" = '${plantRow}'
               AND "latest" = true
-            GROUP BY "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", rounded_timestamp
+            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", rounded_timestamp
             ORDER BY rounded_timestamp ASC)
             UNION
-            (SELECT DISTINCT "refStructureName",
+            (SELECT DISTINCT "source",
+                            "refStructureName",
                             "companyName",
                             "fieldName",
                             'Expected Water (L)' as "detectedValueTypeDescription",
@@ -128,10 +134,10 @@ class WateringAdviceRepository {
               AND "fieldName" = '${fieldName}'
               AND "sectorName" = '${sectorName}'
               AND "plantRow" = '${plantRow}'
-            GROUP BY "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "expected_water", "sectorName", "plantRow", rounded_timestamp
+            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "expected_water", "sectorName", "plantRow", rounded_timestamp
             ORDER BY rounded_timestamp ASC)
                 ) A
-            GROUP BY "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", rounded_timestamp
+            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", rounded_timestamp
             ORDER BY rounded_timestamp ASC, "detectedValueTypeDescription" ASC
         `;
 
