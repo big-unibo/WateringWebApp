@@ -100,6 +100,7 @@ class FieldRepository {
                 MAX("timestamp") as max_timestamp
             FROM data_interpolated
             WHERE "timestamp" < ${timestamp}
+              AND "source" = 'iFarming'
               AND "refStructureName" = '${refStructureName}'
               AND "companyName" = '${companyName}'
               AND "fieldName" = '${fieldName}'

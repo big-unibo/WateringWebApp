@@ -20,7 +20,8 @@ const getResults = async (refStructureName, companyName, fieldName, sectorName, 
                         "timestamp",
                         "value"
         FROM data_interpolated
-        WHERE "refStructureName" = '${refStructureName}'
+        WHERE "source" = 'iFarming'
+          AND "refStructureName" = '${refStructureName}'
           AND "companyName" = '${companyName}'
           AND "fieldName" = '${fieldName}'
           AND "sectorName" = '${sectorName}'
@@ -79,7 +80,8 @@ class DataInterpolatedRepository {
         const query = `
             SELECT "zz", "yy", "xx", AVG(value * -1)::numeric AS mean, STDDEV(value) ::numeric AS std
             FROM data_interpolated
-            WHERE "refStructureName" = '${refStructureName}'
+            WHERE "source" = 'iFarming'
+              AND "refStructureName" = '${refStructureName}'
               AND "companyName" = '${companyName}'
               AND "fieldName" = '${fieldName}'
               AND "sectorName" = '${sectorName}'
@@ -119,7 +121,8 @@ class DataInterpolatedRepository {
         const query = `
             SELECT "xx", "yy", "zz" 
             FROM data_interpolated
-            WHERE "refStructureName" = '${refStructureName}'
+            WHERE "source" = 'iFarming'
+                AND "refStructureName" = '${refStructureName}'
                 AND "companyName" = '${companyName}'
                 AND "fieldName" = '${fieldName}'
                 AND "sectorName" = '${sectorName}'
@@ -127,7 +130,8 @@ class DataInterpolatedRepository {
                 AND  "timestamp" = (
                     SELECT MAX(timestamp) 
                     FROM data_interpolated 
-                    WHERE "refStructureName" = '${refStructureName}'
+                    WHERE "source" = 'iFarming'
+                        AND "refStructureName" = '${refStructureName}'
                         AND "companyName" = '${companyName}'
                         AND "fieldName" = '${fieldName}'
                         AND "sectorName" = '${sectorName}'
