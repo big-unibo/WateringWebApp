@@ -20,6 +20,7 @@ const getResults = async (calculationType, detectedValueTypeDescription, timeFil
             WHERE "detectedValueTypeId" = ANY ('{ ${detectedValueTypeDescription.map(value => `${value}`).join(', ')} }')
               AND "timestamp" >= '${timeFilterFrom}'
               AND "timestamp" <= '${timeFilterTo}'
+              AND "source" = 'iFarming'
               AND "refStructureName" = '${refStructureName}'
               AND "companyName" = '${companyName}'
               AND "fieldName" = '${fieldName}'

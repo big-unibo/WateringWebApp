@@ -28,6 +28,7 @@ class DeltaRepository {
                 FROM watering_schedule
                 WHERE latest = true
                 AND "watering_start" BETWEEN '${timestampFrom}' AND '${timestampTo}'
+                AND "source" = 'iFarming'
                 AND "refStructureName" = '${refStructureName}'
                 AND "companyName" = '${companyName}'
                 AND "fieldName" = '${fieldName}'
@@ -67,7 +68,8 @@ class DeltaRepository {
                 JOIN watering_data AS wd ON wd."timestamp" > fd."timestamp_from" AND (wd."timestamp" < fd."timestamp_to" OR fd."timestamp_to" IS NULL)
                 WHERE (fd.xx, fd.yy) IN (
                     SELECT DISTINCT xx, yy FROM data_interpolated 
-                    WHERE "refStructureName" = '${refStructureName}'
+                    WHERE "source" = 'iFarming' 
+                    AND "refStructureName" = '${refStructureName}'
                     AND "companyName" = '${companyName}'
                     AND "fieldName" = '${fieldName}'
                     AND "sectorName" = '${sectorName}'

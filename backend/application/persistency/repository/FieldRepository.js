@@ -156,6 +156,7 @@ class FieldRepository {
             FROM
                 watering_advice
             WHERE
+                "source" = 'iFarming'
                 "refStructureName" = '${refStructureName}' AND
                 "companyName" = '${companyName}' AND
                 "fieldName" = '${fieldName}' AND

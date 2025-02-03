@@ -101,6 +101,7 @@ class HumidityBinsRepository {
                        WHERE "detectedValueTypeId" = ANY '${detectedValueTypeId}'
                          AND "timestamp" >= '${timeFilterFrom}'
                          AND "timestamp" <= '${timeFilterTo}'
+                         AND "source" = 'iFarming'
                          AND "refStructureName" = '${refStructureName}'
                          AND "companyName" = '${companyName}'
                          AND "fieldName" = '${fieldName}'
