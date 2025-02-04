@@ -41,20 +41,25 @@ class DeltaRepository {
                 EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(iq."timestamp")))::INT AS "timestamp",
                 'Media Pot. Idr. Giornaliera' AS "detectedValueTypeDescription"
             FROM (
-                SELECT di."source", di."refStructureName", di."companyName", di."fieldName", di."sectorName", di."plantRow", wd."watering_start" AS "timestamp", di."value", fd."weight"
-                FROM data_interpolated AS di
+                SELECT di."source", di."refStructureName", di."companyName", di."fieldName", di."sectorName", di."plantRow", 
+                    di."timestamp", di."value", fd."weight" 
+                FROM (
+                    SELECT di."source", di."refStructureName", di."companyName", di."fieldName", di."sectorName", di."plantRow", 
+                    wd."watering_start" AS "timestamp", di."value", di."xx", di."yy"
+                    FROM data_interpolated AS di
+                        JOIN watering_data AS wd ON wd."timestamp" = di."timestamp"
+                ) as di
                 JOIN field_data AS fd
-                ON fd."source" = di."source"
-                AND fd."refStructureName" = di."refStructureName"
-                AND fd."companyName" = di."companyName"
-                AND fd."fieldName" = di."fieldName"
-                AND fd."sectorName" = di."sectorName"
-                AND fd."plantRow" = di."plantRow"
-                AND fd."xx" = di."xx"
-                AND fd."yy" = di."yy"
-                AND di."timestamp" > fd."timestamp_from"
-                AND (di."timestamp" < fd."timestamp_to" OR fd."timestamp_to" IS NULL)
-                JOIN watering_data AS wd ON wd."timestamp" = di."timestamp"
+                    ON fd."source" = di."source"
+                        AND fd."refStructureName" = di."refStructureName"
+                        AND fd."companyName" = di."companyName"
+                        AND fd."fieldName" = di."fieldName"
+                        AND fd."sectorName" = di."sectorName"
+                        AND fd."plantRow" = di."plantRow"
+                        AND fd."xx" = di."xx"
+                        AND fd."yy" = di."yy"
+                        AND di."timestamp" > fd."timestamp_from"
+                        AND (di."timestamp" < fd."timestamp_to" OR fd."timestamp_to" IS NULL)
             ) AS iq
             GROUP BY iq."source", iq."refStructureName", iq."companyName", iq."fieldName", iq."sectorName", iq."plantRow", iq."timestamp"
             
