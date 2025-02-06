@@ -131,7 +131,8 @@ class DeltaRepository {
                     SELECT "source", "refStructureName", "companyName", "fieldName", "sectorName", "plantRow", "xx", "yy", "weight"
                     FROM field_matrix as fi
                     JOIN matrix_profile as mp ON fi."matrixId" = mp."matrixId"
-                    WHERE "refStructureName" = '${refStructureName}'
+                    WHERE "source" = 'iFarming' 
+                    AND "refStructureName" = '${refStructureName}'
                     AND "companyName" = '${companyName}'
                     AND "fieldName" = '${fieldName}'
                     AND "sectorName" = '${sectorName}'
@@ -148,11 +149,6 @@ class DeltaRepository {
                         AND weighted."xx" = di."xx"
                         AND weighted."yy" = di."yy"
                 WHERE di."timestamp" = ${timestamp}/3600::INT*3600
-                    AND di."refStructureName" = '${refStructureName}'
-                    AND di."companyName" = '${companyName}'
-                    AND di."fieldName" = '${fieldName}'
-                    AND di."sectorName" = '${sectorName}'
-                    AND di."plantRow" = '${plantRow}'
                 ) as q1
             JOIN (
                 SELECT "source", "refStructureName", "companyName", "fieldName", "sectorName", "plantRow", "xx", "yy", (CASE WHEN "optValue" > -300 THEN LN(ABS("optValue")) * "weight"
@@ -187,7 +183,6 @@ class DeltaRepository {
                plantRow
            }
         });
-
         return results
     }
 
