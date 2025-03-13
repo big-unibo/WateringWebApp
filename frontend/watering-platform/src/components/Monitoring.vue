@@ -11,7 +11,7 @@ import CountorMeanChart from "../../../abds-watering-charts-components/src/compo
 import CountorStdChart from "../../../abds-watering-charts-components/src/components/countorstd-chart.ce.vue"
 import GroundWaterPotentialChart from "../../../abds-watering-charts-components/src/components/groundwaterpot-chart.ce.vue"
 import HumidityHeatmap from "../../../abds-watering-charts-components/src/components/humidityheatmap-chart.ce.vue"
-import HumidityMultiLineChart from "../../../abds-watering-charts-components/src/components/humiditymultilinear-chart_export_svg.ce.vue"
+import HumidityMultiLineChart from "../../../abds-watering-charts-components/src/components/humiditymultilinear-chart.ce.vue"
 import HumidityDynamicHeatmap from "../../../abds-watering-charts-components/src/components/dynamic-heatmap-animator.ce.vue"
 import Calendar from "../../../abds-watering-charts-components/src/components/calendar.vue"
 import OptimalHumidityHeatmap from "../../../abds-watering-charts-components/src/components/optimal-humidity-heatmap-chart.ce.vue"
