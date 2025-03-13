@@ -1,7 +1,7 @@
-import { WateringAdviceWrapper as WaterAggregateWrapper } from '../querywrappers/WaterAggregateWrapper.js';
+import { WateringAggregateWrapper } from '../querywrappers/WateringAggregateWrapper.js';
 import { QueryTypes } from "sequelize";
 
-class WaterAggregateRepository {
+class WateringAggregateRepository {
 
     constructor(sequelize) {
         this.sequelize = sequelize;
@@ -160,7 +160,7 @@ class WaterAggregateRepository {
             }
         });
 
-        return results.map(result => new WaterAggregateWrapper(
+        return results.map(result => new WateringAggregateWrapper(
             result.refStructureName,
             result.companyName,
             result.fieldName,
@@ -174,4 +174,4 @@ class WaterAggregateRepository {
 
 }
 
-export default WaterAggregateRepository;
+export default WateringAggregateRepository;

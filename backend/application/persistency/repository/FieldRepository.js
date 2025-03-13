@@ -138,58 +138,42 @@ class FieldRepository {
     }
   }
 
-  async getCurrentWaterAdvice(refStructureName, companyName, fieldName, sectorName, plantRow) {
+  async getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp) {
 
     const query = `
-            SELECT t1.advice, timestamp, "wateringHour"
-        FROM 
-            watering_advice t1
-        INNER JOIN (
-            SELECT
-                "source",
-                "refStructureName",
-                "companyName",
-                "fieldName",
-                sectorName,
-                plantRow,
-                MAX(timestamp) as max_timestamp
-            FROM
-                watering_advice
-            WHERE
-                "source" = 'iFarming'
+        SELECT "source", "refStructureName", "companyName", "fieldName", "sectorName", "plantRow", "advice", "advice_timestamp" as "profile_timestamp", "watering_start", "watering_end"
+        FROM
+            watering_schedule 
+		WHERE 	"source" = 'iFarming' AND
                 "refStructureName" = '${refStructureName}' AND
                 "companyName" = '${companyName}' AND
                 "fieldName" = '${fieldName}' AND
-                sectorName = '${sectorName}' AND
-                plantRow = '${plantRow}'
-            GROUP BY
-                "source",
-                "refStructureName",
-                "companyName",
-                "fieldName",
-                sectorName, 
-                plantRow
-        ) t2 ON t1."refStructureName" = t2."refStructureName"
-            AND t1."companyName" = t2."companyName"
-            AND t1."fieldName" = t2."fieldName"
-            AND t1.sectorName = t2.sectorName
-            AND t1.plantRow = t2.plantRow
-            AND t1.timestamp = t2.max_timestamp`
+                "sectorName" = '${sectorName}' AND
+                "plantRow" = '${plantRow}' AND
+				"advice_timestamp" = (
+					SELECT MAX(advice_timestamp) FROM watering_schedule
+					WHERE "latest" = true AND 
+                        "deleted" = false AND 
+                        "source" = 'iFarming' AND
+                        "refStructureName" = '${refStructureName}' AND
+                        "companyName" = '${companyName}' AND
+                        "fieldName" = '${fieldName}' AND
+                        "sectorName" = '${sectorName}' AND
+                        "plantRow" = '${plantRow}' AND
+				        "advice_timestamp" < ${timestamp}
+				)`
 
-    const result = await this.sequelize.query(query, {
+    return await this.sequelize.query(query, {
       type: QueryTypes.SELECT,
       bind: {
         refStructureName,
         companyName,
         fieldName,
         sectorName,
-        plantRow
+        plantRow,
+        timestamp
       }
     });
-
-    if(result && result.length === 1) {
-      return new WateringAdviceDto(result[0].advice, new Date(result[0].timestamp * 1000).toISOString(), new Date(result[0].wateringHour * 1000).toISOString())
-    } else return new WateringAdviceDto(-1, -1, -1)
   }
 
   async createTranscodingField(source, refStructureName, companyName, fieldName, coltureType, sectorName, wateringcapacity, initialwatering, maximumwatering, advicetime, wateringtype, adviceweight, plantRowname, sensorNumber, sensorid, sensorname, sensortype, x, y, z) {

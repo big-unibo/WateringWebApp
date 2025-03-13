@@ -1,22 +1,15 @@
 
 export class WateringAdviceDto {
 
-  constructor(wateringAdvice, computedAt, startWatering) {
-    this.wateringAdvice = wateringAdvice
-    this.computedAt = computedAt
-    this.startWatering = startWatering
+  constructor(refStructureName, companyName, fieldName, sectorName, plantRow, advice, computedOn, wateringStart, wateringEnd) {
+    this.refStructureName = refStructureName;
+    this.companyName = companyName;
+    this.fieldName = fieldName;
+    this.sectorName = sectorName;
+    this.plantRow = plantRow;
+    this.advice = advice;
+    this.computedOn = computedOn;
+    this.wateringStart = wateringStart;
+    this.wateringEnd = wateringEnd;
   }
-
-}
-
-export class WateringAdviceDtoRequest {
-
-  constructor(refStructureName, companyName, fieldName, sectorName, plantRow) {
-    this.refStructureName = refStructureName
-    this.companyName = companyName
-    this.fieldName = fieldName
-    this.sectorName = sectorName
-    this.plantRow = plantRow
-  }
-
 }

@@ -96,6 +96,36 @@ fieldsRouter.put('/setOptState', async (req, res) => {
  *     description: Set optimal state for all field of the sector as the interpolation at given timestamp in the indicated thesis
  *     tags: [Field Operations]
  *     parameters:
+ *      - in: path
+ *        name: refStructureName
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The reference structure name
+ *      - in: path
+ *        name: companyName
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The company name
+ *      - in: path
+ *        name: fieldName
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The field name
+ *      - in: path
+ *        name: sectorName
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The sector name
+ *      - in: path
+ *        name: plantRow
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The plantRow
  *      - in: query
  *        name: timestamp
  *        required: true
@@ -153,19 +183,47 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
 
 /**
  * @swagger
- * /fields/wateringAdvice:
- *   post:
+ * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/wateringAdvice:
+ *   get:
  *     security:
  *       - bearerAuth: []
  *     summary: Get watering advice for a field
  *     description: Get watering advice for a field
+  *     parameters:
+ *      - in: path
+ *        name: refStructureName
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The reference structure name
+ *      - in: path
+ *        name: companyName
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The company name
+ *      - in: path
+ *        name: fieldName
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The field name
+ *      - in: path
+ *        name: sectorName
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The sector name
+ *      - in: path
+ *        name: plantRow
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The plantRow
+ *      - in: query
+ *        name: timestamp
+ *        type: number
  *     tags: [Field Operations]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/WateringAdviceDtoRequest'
  *     responses:
  *       '200':
  *         description: Matrix opt state created successfully.
@@ -178,23 +236,26 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
  *       '500':
  *         description: Error on creating field opt matrix.
  */
-fieldsRouter.post('/wateringAdvice', async (req, res) => {
-  let requestUserData = {userId: -1, partner: ''}
+fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/wateringAdvice', async (req, res) => {
+  let requestUserData
   try {
     requestUserData = await authenticationService.validateJwt(req.headers.authorization);
   } catch (error) {
     return res.status(403).json({message: 'Authentication failed'});
   }
 
+  const refStructureName = req.params.refStructureName;
+  const companyName = req.params.companyName;
+  const fieldName = req.params.fieldName;
+  const sectorName = req.params.sectorName;
+  const plantRow = req.params.plantRow;
+  const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
+
   try {
     if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, 'WA')))
       return res.status(401).json({message: 'Unauthorized request'});
 
-
-    if (!req.body || !req.body.refStructureName || !req.body.companyName || !req.body.fieldName || !req.body.sectorName || !req.body.plantRow)
-      throw new Error('Body is not correct');
-
-    const result = await fieldService.getCurrentWateringAdvice(req.body.refStructureName, req.body.companyName, req.body.fieldName, req.body.sectorName, req.body.plantRow)
+    const result = await fieldService.getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp)
 
     return res.status(200).json(result)
   } catch (error) {

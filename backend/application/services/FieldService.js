@@ -2,7 +2,7 @@ import DataInterpolatedRepository from '../persistency/repository/DataInterpolat
 import DeltaRepository from '../persistency/repository/DeltaRepository.js';
 import HumidityBinsRepository from '../persistency/repository/HumidityBinsRepository.js';
 import ViewDataOriginalRepository from '../persistency/repository/ViewDataOriginalRepository.js';
-import WaterAggregateRepository from '../persistency/repository/WateringAdviceRepository.js';
+import WateringAggregateRepository from '../persistency/repository/WateringAggregateRepository.js';
 import DtoConverter from './DtoConverter.js';
 import FieldRepository from '../persistency/repository/FieldRepository.js';
 import { OptStateDto } from "../dtos/optStateDto.js";
@@ -12,6 +12,7 @@ import initMatrixField from '../persistency/model/MatrixField.js';
 import initTranscodingField from '../persistency/model/TranscodingField.js';
 import initWateringField from '../persistency/model/WateringField.js';
 import initWateringBaseline from '../persistency/model/WateringBaseline.js';
+import { WateringAdviceDto } from '../dtos/wateringAdviceDto.js';
 
 const dtoConverter = new DtoConverter();
 
@@ -25,7 +26,7 @@ class FieldService {
         this.deltaRepository = new DeltaRepository(sequelize);
         this.humidityBinsRepository = new HumidityBinsRepository(sequelize);
         this.viewDataOriginalRepository = new ViewDataOriginalRepository(sequelize);
-        this.wateringAdviceRepository = new WaterAggregateRepository(sequelize);
+        this.wateringAdviceRepository = new WateringAggregateRepository(sequelize);
         this.fieldRepository = new FieldRepository(initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), initWateringField(sequelize), initWateringBaseline(sequelize), sequelize);
     }
 
@@ -100,7 +101,7 @@ class FieldService {
         if (result.length > 0){
             return dtoConverter.convertOptimalStateWrapper(result)
         }
-        return new OptStateDto(refStructureName, companyName, fieldName, sectorName, plantRow, null, null, null)
+        return new OptStateDto(refStructureName, companyName, fieldName, sectorName, plantRow)
     }
 
     async createMatrixOptState(optStateDto) {
@@ -113,8 +114,12 @@ class FieldService {
         }
     }
 
-    async getCurrentWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow) {
-        return this.fieldRepository.getCurrentWaterAdvice(refStructureName, companyName, fieldName, sectorName, plantRow)
+    async getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp) {
+        const result = await this.fieldRepository.getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp)
+        if (result.length > 0){
+            return dtoConverter.convertWateringAdviceWrapper(result)
+        }
+        return new WateringAdviceDto(refStructureName, companyName, fieldName, sectorName, plantRow)
     }
 
     async getDripperInfo(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp) {

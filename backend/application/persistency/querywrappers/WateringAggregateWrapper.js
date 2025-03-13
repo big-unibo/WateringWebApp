@@ -1,4 +1,4 @@
-export class WateringAdviceWrapper {
+export class WateringAggregateWrapper {
 
     constructor(refStructureName, companyName, fieldName, detectedValueTypeDescription, sectorName, plantRow, value, timestamp) {
         this.refStructureName = refStructureName;

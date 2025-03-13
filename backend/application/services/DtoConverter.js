@@ -4,6 +4,7 @@ import { ColtureDto } from "../dtos/coltureDto.js";
 import { DataResponse, DataValue, MeasureData, HumidityBinMeasureData } from '../dtos/dataDto.js';
 import { WateringScheduleResponse, WateringEventDto } from "../dtos/wateringScheduleDto.js";
 import { MatrixData, OptStateDto } from "../dtos/optStateDto.js";
+import { WateringAdviceDto } from "../dtos/wateringAdviceDto.js";
 
 class DtoConverter {
 
@@ -130,6 +131,12 @@ class DtoConverter {
 
         return new OptStateDto(key.refStructureName, key.companyName, key.fieldName, key.sectorName, key.plantRow, 
             exampleData.validFrom, exampleData.validTo, optimalState)
+    }
+
+    convertWateringAdviceWrapper(wrappers){
+        const res = wrappers[0]
+        return new WateringAdviceDto(res.refStructureName, res.companyName, res.fieldName, res.sectorName, res.plantRow,
+            res.advice, res.profile_timestamp, res.watering_start, res.watering_end)
     }
 
     convertPunctualDistanceWrapper(wrappers){
