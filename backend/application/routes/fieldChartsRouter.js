@@ -58,11 +58,13 @@ const fieldService = new FieldService(sequelize);
  *         schema:
  *           type: string
  *         description: Time filter from
+ *         required: true
  *       - in: query
  *         name: timeFilterTo
  *         schema:
  *           type: string
  *         description: Time filter to
+ *         required: true
  *     responses:
  *       200:
  *         description: Success
@@ -151,10 +153,12 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         name: timeFilterFrom
  *         schema:
  *           type: string
+ *         required: true
  *       - in: query
  *         name: timeFilterTo
  *         schema:
  *           type: string
+ *         required: true
  *     responses:
  *       200:
  *         description: Success
@@ -243,10 +247,12 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         name: timeFilterFrom
  *         schema:
  *           type: string
+ *         required: true 
  *       - in: query
  *         name: timeFilterTo
  *         schema:
  *           type: string
+ *         required: true
  *     responses:
  *       200:
  *         description: Success
@@ -336,10 +342,12 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         name: timeFilterFrom
  *         schema:
  *           type: string
+ *         required: true
  *       - in: query
  *         name: timeFilterTo
  *         schema:
  *           type: string
+ *         required: true
  *     responses:
  *       200:
  *         description: Success
@@ -428,10 +436,12 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         name: timeFilterFrom
  *         schema:
  *           type: string
+ *         required: true
  *       - in: query
  *         name: timeFilterTo
  *         schema:
  *           type: string
+ *         required: true
  *     responses:
  *       200:
  *         description: Success
@@ -517,10 +527,12 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         name: timeFilterFrom
  *         schema:
  *           type: string
+ *         required: true
  *       - in: query
  *         name: timeFilterTo
  *         schema:
  *           type: string
+ *         required: true
  *     responses:
  *       200:
  *         description: Success
@@ -608,10 +620,12 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         name: timeFilterFrom
  *         schema:
  *           type: string
+ *         required: true
  *       - in: query
  *         name: timeFilterTo
  *         schema:
  *           type: string
+ *         required: true
  *     responses:
  *       200:
  *         description: Success
@@ -699,10 +713,12 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         name: timeFilterFrom
  *         schema:
  *           type: string
+ *         required: true
  *       - in: query
  *         name: timeFilterTo
  *         schema:
  *           type: string
+ *         required: true
  *     responses:
  *       200:
  *         description: Success
@@ -790,10 +806,12 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         name: timeFilterFrom
  *         schema:
  *           type: string
+ *         required: true
  *       - in: query
  *         name: timeFilterTo
  *         schema:
  *           type: string
+ *         required: true
  *     responses:
  *       200:
  *         description: Success
@@ -879,10 +897,12 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         name: timeFilterFrom
  *         schema:
  *           type: string
+ *         required: true
  *       - in: query
  *         name: timeFilterTo
  *         schema:
  *           type: string
+ *         required: true
  *     responses:
  *       200:
  *         description: Success
@@ -969,10 +989,12 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         name: timeFilterFrom
  *         schema:
  *           type: string
+ *         required: true
  *       - in: query
  *         name: timeFilterTo
  *         schema:
  *           type: string
+ *         required: true
  *     responses:
  *       200:
  *         description: Success
@@ -1061,10 +1083,12 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         name: timeFilterFrom
  *         schema:
  *           type: string
+ *         required: true
  *       - in: query
  *         name: timeFilterTo
  *         schema:
  *           type: string
+ *         required: true
  *     responses:
  *       200:
  *         description: Success
@@ -1117,7 +1141,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *   get:
  *     security:
  *       - bearerAuth: []
- *     summary: Retrieves statistics data
+ *     summary: Retrieves statistics data of profile, specifically the mean and std for each cell
  *     tags: [Field Chart Data]
  *     parameters:
  *       - in: path
@@ -1149,10 +1173,12 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         name: timeFilterFrom
  *         schema:
  *           type: string
+ *         required: true
  *       - in: query
  *         name: timeFilterTo
  *         schema:
  *           type: string
+ *         required: true
  *     responses:
  *       200:
  *         description: Success
@@ -1239,10 +1265,12 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         name: timeFilterFrom
  *         schema:
  *           type: string
+ *         required: true
  *       - in: query
  *         name: timeFilterTo
  *         schema:
  *           type: string
+ *         required: true
  *     responses:
  *       200:
  *         description: Success
