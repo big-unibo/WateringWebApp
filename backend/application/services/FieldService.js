@@ -2,7 +2,7 @@ import DataInterpolatedRepository from '../persistency/repository/DataInterpolat
 import DeltaRepository from '../persistency/repository/DeltaRepository.js';
 import HumidityBinsRepository from '../persistency/repository/HumidityBinsRepository.js';
 import ViewDataOriginalRepository from '../persistency/repository/ViewDataOriginalRepository.js';
-import WateringAdviceRepository from '../persistency/repository/WateringAdviceRepository.js';
+import WaterAggregateRepository from '../persistency/repository/WateringAdviceRepository.js';
 import DtoConverter from './DtoConverter.js';
 import FieldRepository from '../persistency/repository/FieldRepository.js';
 import { OptStateDto } from "../dtos/optStateDto.js";
@@ -25,7 +25,7 @@ class FieldService {
         this.deltaRepository = new DeltaRepository(sequelize);
         this.humidityBinsRepository = new HumidityBinsRepository(sequelize);
         this.viewDataOriginalRepository = new ViewDataOriginalRepository(sequelize);
-        this.wateringAdviceRepository = new WateringAdviceRepository(sequelize);
+        this.wateringAdviceRepository = new WaterAggregateRepository(sequelize);
         this.fieldRepository = new FieldRepository(initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), initWateringField(sequelize), initWateringBaseline(sequelize), sequelize);
     }
 
@@ -90,9 +90,9 @@ class FieldService {
         return dtoConverter.convertViewDataOriginalWrapper(result);
     }
 
-    async getWaterAdvice(timefilterFrom, timefilterTo, refStructureName, companyName, fieldName, sectorName, plantRow) {
-        const result = await this.wateringAdviceRepository.findWaterAdvice(timefilterFrom, timefilterTo, refStructureName, companyName, fieldName, sectorName, plantRow);
-        return dtoConverter.convertWateringAdviceWrapper(result);
+    async getWaterAggregate(timefilterFrom, timefilterTo, refStructureName, companyName, fieldName, sectorName, plantRow) {
+        const result = await this.wateringAdviceRepository.findWaterAggregate(timefilterFrom, timefilterTo, refStructureName, companyName, fieldName, sectorName, plantRow);
+        return dtoConverter.convertWaterAggregateWrapper(result);
     }
 
     async getOptimalState(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp){

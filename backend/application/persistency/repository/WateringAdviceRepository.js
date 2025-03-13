@@ -1,13 +1,13 @@
-import { WateringAdviceWrapper } from '../querywrappers/WateringAdviceWrapper.js';
+import { WateringAdviceWrapper as WaterAggregateWrapper } from '../querywrappers/WaterAggregateWrapper.js';
 import { QueryTypes } from "sequelize";
 
-class WateringAdviceRepository {
+class WaterAggregateRepository {
 
     constructor(sequelize) {
         this.sequelize = sequelize;
     }
 
-    async findWaterAdvice(timefilterFrom, timefilterTo, refStructureName, companyName, fieldName, sectorName, plantRow) {
+    async findWaterAggregate(timefilterFrom, timefilterTo, refStructureName, companyName, fieldName, sectorName, plantRow) {
 
         const queryString = `
             SELECT DISTINCT "source",
@@ -160,7 +160,7 @@ class WateringAdviceRepository {
             }
         });
 
-        return results.map(result => new WateringAdviceWrapper(
+        return results.map(result => new WaterAggregateWrapper(
             result.refStructureName,
             result.companyName,
             result.fieldName,
@@ -174,4 +174,4 @@ class WateringAdviceRepository {
 
 }
 
-export default WateringAdviceRepository;
+export default WaterAggregateRepository;

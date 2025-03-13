@@ -392,11 +392,11 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
 
 /**
  * @swagger
- * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/wateringAdvice:
+ * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/waterAggregate:
  *   get:
  *     security:
  *       - bearerAuth: []
- *     summary: Retrieves watering advice data
+ *     summary: Retrieves watering data for the field aggregated daily, including for example dripper, pluv and sprinkler
  *     tags: [Field Chart Data]
  *     parameters:
  *       - in: path
@@ -451,7 +451,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *       500:
  *         description: Internal server error
  */
-fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/wateringAdvice', async (req, res) => {
+fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/waterAggregate', async (req, res) => {
 
     const refStructureName = req.params.refStructureName;
     const companyName = req.params.companyName;
@@ -470,7 +470,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
     }
 
     try {
-        const result = await fieldService.getWaterAdvice(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow);
+        const result = await fieldService.getWaterAggregate(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow);
 
         res.status(200).json(result);
     } catch (error) {

@@ -28,7 +28,7 @@ const loadingFlag = ref(false)
 
 const props = defineProps(['config'])
 
-const endpoint = 'wateringAdvice'
+const endpoint = 'waterAggregate'
 
 const totalGroups = ref(null)
 

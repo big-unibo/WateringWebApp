@@ -7,7 +7,7 @@ import GroundWaterPotentialChart from "./components/groundwaterpot-chart.ce.vue"
 import HumidityHeatmap from "./components/humidityheatmap-chart.ce.vue"
 import HumidityMultiLineChart from "./components/humiditymultilinear-chart.ce.vue"
 import HumidityDynamicHeatmap from './components/dynamic-heatmap-animator.ce.vue'
-import WaterAdviceChart from './components/wateringadv-chart.ce.vue';
+import WaterAggregateChart from './components/water-aggregate-chart.ce.vue';
 
 import {defineCustomElement} from "vue";
 
@@ -33,7 +33,7 @@ customElements.define("heatmap-animation", dynamicHeatmapAnimation);
 
 export { AirTemperatureChart };
 export { DripperAndPluvChart };
-export { WaterAdviceChart };
+export { WaterAggregateChart };
 export { DeltaChart };
 export { CountorMeanChart };
 export { CountorStdChart };

@@ -48,7 +48,7 @@ class DtoConverter {
         return new DataResponse(dataValues);
     }
 
-    convertWateringAdviceWrapper(wrappers){
+    convertWaterAggregateWrapper(wrappers){
         return this.#convertGenericReferenceData(wrappers);
     }
 

@@ -5,13 +5,13 @@ import '../assets/basebase.css'
 import {computed, onMounted, reactive, ref, watchEffect} from "vue";
 import AirTemperatureChart from "../../../abds-watering-charts-components/src/components/airtemperature-chart.ce.vue"
 import DripperAndPluvChart from "../../../abds-watering-charts-components/src/components/dripperandpluv-chart.ce.vue"
-import WaterAdviceChart from "../../../abds-watering-charts-components/src/components/wateringadv-chart.ce.vue"
+import WaterAggregateChart from "../../../abds-watering-charts-components/src/components/water-aggregate-chart.ce.vue"
 import DeltaChart from "../../../abds-watering-charts-components/src/components/delta-chart.ce.vue"
 import CountorMeanChart from "../../../abds-watering-charts-components/src/components/countormean-chart.ce.vue"
 import CountorStdChart from "../../../abds-watering-charts-components/src/components/countorstd-chart.ce.vue"
 import GroundWaterPotentialChart from "../../../abds-watering-charts-components/src/components/groundwaterpot-chart.ce.vue"
 import HumidityHeatmap from "../../../abds-watering-charts-components/src/components/humidityheatmap-chart.ce.vue"
-import HumidityMultiLineChart from "../../../abds-watering-charts-components/src/components/humiditymultilinear-chart.ce.vue"
+import HumidityMultiLineChart from "../../../abds-watering-charts-components/src/components/humiditymultilinear-chart_export_svg.ce.vue"
 import HumidityDynamicHeatmap from "../../../abds-watering-charts-components/src/components/dynamic-heatmap-animator.ce.vue"
 import Calendar from "../../../abds-watering-charts-components/src/components/calendar.vue"
 import OptimalHumidityHeatmap from "../../../abds-watering-charts-components/src/components/optimal-humidity-heatmap-chart.ce.vue"
@@ -376,10 +376,10 @@ function selectedTime(time){
           <button class="btn btn-sm btn-secondary" type="button" @click="enableDetailedAggregate" id="dynamic-heatmap-button">{{ detailedWateringButton }}</button>
         </div>
         <div v-if="!showDetailedWatering">
-            <WaterAdviceChart :config="JSON.stringify(connectionParams)"></WaterAdviceChart>
+            <WaterAggregateChart :config="JSON.stringify(connectionParams)"></WaterAggregateChart>
         </div>
         <div v-else>
-            <DripperAndPluvChart :config="JSON.stringify(connectionParams)"></DripperAndPluvChart>
+            <DripperAndPluvChart :config="JSON.stringify(connectionParams)"></DripperAndPluvChart> 
         </div>
       </div>
     </div>
