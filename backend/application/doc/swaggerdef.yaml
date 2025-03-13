@@ -17,6 +17,8 @@ components:
     DataValue:
       type: object
       properties:
+        source:
+          type: string
         refStructureName:
           type: string
         companyName:
@@ -156,6 +158,8 @@ components:
     UserGrantDto:
       type: object
       properties:
+        source:
+          type: string
         refStructureName:
           type: string
         companyName:
@@ -176,6 +180,8 @@ components:
     OptStateDto:
       type: object
       properties:
+        source:
+          type: string
         refStructureName:
           type: string
         companyName:
@@ -208,100 +214,6 @@ components:
           type: number
         weight:
           type: number
-
-    WateringAdviceDtoRequest:
-      type: object
-      properties:
-        refStructureName:
-          type: string
-        companyName:
-          type: string
-        fieldName:
-          type: string
-        sectorName:
-          type: string
-        plantRow:
-          type: string
-
-    CreateFieldDto:
-      type: object
-      properties:
-        structures:
-          $ref: '#/components/schemas/StructureDto'
-
-    StructureDto:
-      type: object
-      properties:
-        companies:
-          type: array
-          items:
-            $ref: '#/components/schemas/CompaniesDto'
-
-    CompaniesDto:
-      type: object
-      properties:
-        structureName:
-          type: string
-        companies:
-          type: array
-          items:
-            $ref: '#/components/schemas/CompanyDto'
-
-    CompanyDto:
-      type: object
-      properties:
-        companyName:
-          type: string
-        fields:
-          type: array
-          items:
-            $ref: '#/components/schemas/FieldDto'
-
-    FieldDto:
-      type: object
-      properties:
-        fieldName:
-          type: string
-        coltureType:
-          type: string
-        sectors:
-          type: array
-          items:
-            $ref: '#/components/schemas/SectorDto'
-
-    SectorDto:
-      type: object
-      properties:
-        sectorName:
-          type: string
-        wateringCapacity:
-          type: number
-        initialWatering:
-          type: number
-        maximumWatering:
-          type: number
-        adviceTime:
-          type: string
-        wateringType:
-          type: string
-        theses:
-          type: array
-          items:
-            $ref: '#/components/schemas/ThesisDto'
-
-    ThesisDto:
-      type: object
-      properties:
-        adviceWeight:
-          type: number
-        thesisName:
-          type: string
-        sensorNumber:
-          type: number
-        sensors:
-          type: array
-          items:
-            $ref: '#/components/schemas/SensorDto'
 
     SensorDto:
       type: object
@@ -346,6 +258,8 @@ components:
     ThesisIdentifier:
       type: object
       properties:
+        source:
+          type: string
         refStructureName:
           type: string
         companyName:
@@ -419,3 +333,26 @@ components:
           format: time
         sprinkler_capacity:
           type: number
+    
+    LogDto:
+      type: object
+      properties:
+        source:
+          type: string
+        refStructureName:
+          type: string
+        companyName:
+          type: string
+        fieldName:
+          type: string
+        sectorName:
+          type: string
+        plantRow:
+          type: string
+        timestamp:
+          type: number
+        type:
+          type: string
+        description:
+          type: string
+    

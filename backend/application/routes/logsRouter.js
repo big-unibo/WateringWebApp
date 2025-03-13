@@ -58,7 +58,7 @@ const logService = new LogService(sequelize)
  *           type: string
  *         description: The timestamp in which find the information
  *       - in: query
- *         name: timestampFilterTo
+ *         name: timeFilterTo
  *         schema:
  *           type: string
  *         description: The timestamp in which find the information
@@ -73,7 +73,7 @@ const logService = new LogService(sequelize)
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/SensorDto'
+ *                     $ref: '#/components/schemas/LogDto'
  *       '400':
  *         description: Invalid request or thesis not found.
  *       '401':

@@ -176,33 +176,6 @@ class FieldRepository {
     });
   }
 
-  async createTranscodingField(source, refStructureName, companyName, fieldName, coltureType, sectorName, wateringcapacity, initialwatering, maximumwatering, advicetime, wateringtype, adviceweight, plantRowname, sensorNumber, sensorid, sensorname, sensortype, x, y, z) {
-    const model = this.TranscodingField.build({
-      source: source,
-      refStructureName: refStructureName,
-      companyName: companyName,
-      fieldName: fieldName,
-      coltureType: coltureType,
-      sectorName: sectorName,
-      wateringcapacity: wateringcapacity,
-      initialwatering: initialwatering,
-      maximumwatering: maximumwatering,
-      advicetime: advicetime,
-      wateringtype: wateringtype,
-      adviceweight: adviceweight,
-      plantRow: plantRowname,
-      sensorNumber: sensorNumber,
-      sensorid: sensorid,
-      sensorname: sensorname,
-      sensortype: sensortype,
-      x: x,
-      y: y,
-      z: z
-    });
-    this.TranscodingField.removeAttribute('id')
-    return model.save()
-  }
-
   async getFieldDetails(refStructureName, companyName, fieldName, sectorName, plantRow) {
     try {
       this.TranscodingField.removeAttribute('id')

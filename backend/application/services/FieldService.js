@@ -126,22 +126,6 @@ class FieldService {
         return this.fieldRepository.getDripperInfo(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp)
     }
 
-    async createTranscodingFields(affiliation, request) {
-        for(const structure of request.structures) {
-            for (const company of structure.companies) {
-                for (const field of company.fields) {
-                    for (const sector of field.sectors) {
-                        for (const plantRow of sector.theses) {
-                            for (const sensor of plantRow.sensors) {
-                                await this.fieldRepository.createTranscodingField(affiliation, structure.structureName, company.companyName, field.fieldName, field.coltureType, sector.sectorName, sector.wateringCapacity, sector.initialWatering, sector.maximumWatering, sector.adviceTime, sector.wateringType, plantRow.adviceWeight, plantRow.plantRowName, plantRow.sensorNumber, sensor.id, sensor.name, sensor.type, sensor.xx, sensor.yy, sensor.zz)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     async findThesisPoints(refStructureName, companyName, fieldName, sectorName, plantRow) {
         return this.dataInterpolatedRepository.findThesisPoints(refStructureName, companyName, fieldName, sectorName, plantRow)
     }

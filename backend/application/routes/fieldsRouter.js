@@ -14,7 +14,6 @@ const authenticationService = new AuthenticationService(userService);
 const authorizationService = new AuthorizationService(sequelize)
 const fieldService = new FieldService(sequelize)
 
-import { CreateFieldDto } from '../dtos/createFieldDto.js';
 import WateringBaseline from '../dtos/wateringBaselineDto.js';
 
 
@@ -263,62 +262,6 @@ fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
     return res.status(500).json({error: "Error get watering advice"})
   }
 });
-
-/**
- * @swagger
- * /fields/createFields:
- *     put:
- *       security:
- *       - bearerAuth: []
- *       summary: Create fields
- *       description: Create fields based on the provided data
- *       tags: [Field Operations]
- *       requestBody:
- *         required: true
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/CreateFieldDto'
- *       responses:
- *         '200':
- *           description: Fields created successfully
- *         '400':
- *           description: Invalid request body
- *         '401':
- *           description: Unauthorized request
- *         '403':
- *           description: Authentication failed
- *         '500':
- *           description: Error during fields creation
- */
-fieldsRouter.put('/createFields', async (req, res) => {
-  let requestUserData = { userid: -1, partner: '' }
-  try {
-    requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-  } catch (error) {
-    return res.status(403).json({message: 'Authentication failed'});
-  }
-
-  try {
-    if(!req.body && req.body === '')
-      throw new Error('Body is empty');
-
-    if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'partner')))
-      return res.status(401).json({message: 'Unauthorized request'});
-
-    const body = req.body
-
-    const requestDto = new CreateFieldDto(body.structures)
-
-    await fieldService.createTranscodingFields(requestUserData.affiliation, requestDto)
-
-    return res.status(200).json()
-  } catch (error) {
-    console.log(`Error during fields creation caused by: ${error.message}`)
-    return res.status(500).json({error: "Error during fields creation"})
-  }
-});
-
 
 /**
  * @swagger
