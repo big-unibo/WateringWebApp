@@ -39,7 +39,6 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 watchEffect(async () => {
   let value = props.config;
   if(value) {
-    const parsed = JSON.parse(props.config);
     await mountChart()
   }
 });

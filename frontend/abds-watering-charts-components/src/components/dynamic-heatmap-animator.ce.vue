@@ -15,20 +15,20 @@ const buttonTexts = {
 
 const props = defineProps(['config'])
 
-let animatorConfig = ref(null)
+const animatorConfig = ref(null)
 
 const communicationService = new CommunicationService();
 const endpoint = 'humidityBins'
 
-let data = ref([]);
-let timestamps = ref(new Set());
-let currentTimestamp = ref('');
-let currentIndex = ref(0);
-let interval = ref(null);
-let animationSpeed = ref(300);
-let isPlaying = ref(false);
-let buttonText = ref(buttonTexts.start);
-let currentDate = ref('');
+const data = ref([]);
+const timestamps = ref(new Set());
+const currentTimestamp = ref('');
+const currentIndex = ref(0);
+const interval = ref(null);
+const animationSpeed = ref(300);
+const isPlaying = ref(false);
+const buttonText = ref(buttonTexts.start);
+const currentDate = ref('');
 
 function updateConfig(currentTimestamp, lastTimestamp) {
   const parsedConfigProp = JSON.parse(props.config);
@@ -126,7 +126,7 @@ watchEffect(async () => {
 </script>
 
 <template>
-  <div class="card">
+  <div v-if="timestamps.size > 0" class="card">
     <div class="card-body">
       <div class="timeline-placeholder">
         <div class="timeline-wrapper">
@@ -166,6 +166,9 @@ watchEffect(async () => {
         </div>
       </div>
     </div>
+  </div>
+  <div v-else>
+    Nessun dato disponibile.
   </div>
 </template>
 
