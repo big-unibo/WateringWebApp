@@ -36,8 +36,8 @@ class DeltaRepository {
                 AND "plantRow" = '${plantRow}'
             )
             SELECT iq."source", iq."refStructureName", iq."companyName", iq."fieldName", iq."sectorName", iq."plantRow",
-                AVG(CASE WHEN iq."value" > -300 THEN LN(ABS(iq."value")) * iq."weight"
-                            ELSE LN(ABS(-300)) * iq."weight" END) AS "value",
+                ROUND(SUM(CASE WHEN iq."value" > -300 THEN LN(ABS(iq."value")) * iq."weight"
+                            ELSE LN(ABS(-300)) * iq."weight" END) / SUM(iq."weight"),6) AS "value",
                 EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(iq."timestamp")))::INT AS "timestamp",
                 'Media Pot. Idr. Giornaliera' AS "detectedValueTypeDescription"
             FROM (
@@ -65,8 +65,8 @@ class DeltaRepository {
             
             UNION
                 (SELECT fd."source", fd."refStructureName", fd."companyName", fd."fieldName", fd."sectorName", fd."plantRow",
-                ROUND(AVG(CASE WHEN fd."optValue" > -300 THEN LN(ABS(fd."optValue")) * fd."weight"
-                            ELSE LN(ABS(-300)) * fd."weight" END)::numeric, 6) AS "value",
+                ROUND(SUM(CASE WHEN fd."optValue" > -300 THEN LN(ABS(fd."optValue")) * fd."weight"
+                            ELSE LN(ABS(-300)) * fd."weight" END)/SUM(fd."weight"),6) AS "value",
                 EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd."watering_start")))::INT AS "timestamp",
                 'Media Pot. Idr. Ottimale' AS "detectedValueTypeDescription"       
                 FROM field_data AS fd
@@ -152,7 +152,7 @@ class DeltaRepository {
                 ) as q1
             JOIN (
                 SELECT "source", "refStructureName", "companyName", "fieldName", "sectorName", "plantRow", "xx", "yy", (CASE WHEN "optValue" > -300 THEN LN(ABS("optValue")) * "weight"
-                    ELSE LN(ABS(-300)) * "weight" END):: numeric as "value"
+                    ELSE LN(ABS(-300)) * "weight" END) as "value"
                 FROM field_matrix as fm
                 JOIN matrix_profile as mp ON fm."matrixId" = mp."matrixId"
                 WHERE "refStructureName" = '${refStructureName}'
