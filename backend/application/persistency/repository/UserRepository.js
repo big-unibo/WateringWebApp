@@ -1,4 +1,4 @@
-import { QueryTypes } from "sequelize";
+import { QueryTypes, Op } from "sequelize";
 
 class UserRepository {
 
@@ -33,12 +33,13 @@ class UserRepository {
 
     async findAdminPermissions() {
         try {
-            this.FieldsPermit.removeAttribute('id')
-            const res = (await this.FieldsPermit.findAll({
+            this.TranscodingField.removeAttribute('id')
+            const res = (await this.TranscodingField.findAll({
                 attributes: ['refStructureName', 'companyName', 'fieldName', 'sectorName', 'plantRow'],
                 group: ['refStructureName', 'companyName', 'fieldName', 'sectorName', 'plantRow']
             })).map(el => el.dataValues);
-            //console.error(res)
+
+
             return res
         } catch (error) {
             console.error('Error on find admin permissions:', error);
@@ -58,7 +59,7 @@ class UserRepository {
                             AND permit."plantRow" = transcoding."plantRow"
                     WHERE (permit.userid = '${userid}') 
                         AND transcoding.valid_from < '${timestamp_to}' 
-                        AND (transcoding.validto > '${timestamp_from}' OR transcoding.validto IS NULL)
+                        AND (transcoding.valid_to > '${timestamp_from}' OR transcoding.valid_to IS NULL)
                     ORDER BY permit."refStructureName", permit."companyName", permit."fieldName", permit."sectorName", permit."plantRow"`
 
             return await this.sequelize.query(query, {
@@ -76,28 +77,24 @@ class UserRepository {
 
     async findAdminPermissionsInPeriod(timestamp_from, timestamp_to) {
         try {
-            const query = `
-                SELECT DISTINCT permit."refStructureName", permit."companyName", permit."fieldName", permit."sectorName", permit."plantRow"
-                    FROM public.permit_fields AS permit
-                    JOIN public.transcoding_field AS transcoding
-                        ON permit."refStructureName" = transcoding."refStructureName"
-                            AND permit."companyName" = transcoding."companyName"
-                            AND permit."fieldName" = transcoding."fieldName"
-                            AND permit."sectorName" = transcoding."sectorName"
-                            AND permit."plantRow" = transcoding."plantRow"
-                    WHERE transcoding.valid_from < '${timestamp_to}' 
-                        AND (transcoding.validto > '${timestamp_from}' OR transcoding.validto IS NULL)
-                    ORDER BY permit."refStructureName", permit."companyName", permit."fieldName", permit."sectorName", permit."plantRow"
-                    `
-
-
-            return await this.sequelize.query(query, {
-                type: QueryTypes.SELECT,
-                bind: {
-                    timestamp_from,
-                    timestamp_to
-                }
-            });
+            this.TranscodingField.removeAttribute('id')
+            const res = (await this.TranscodingField.findAll({
+                attributes: ['refStructureName', 'companyName', 'fieldName', 'sectorName', 'plantRow'],
+                group: ['refStructureName', 'companyName', 'fieldName', 'sectorName', 'plantRow'],
+                where: {
+                    valid_from: {
+                        [Op.lt]: Number(timestamp_to)
+                    },
+                    valid_to: {
+                        [Op.or]:{
+                            [Op.gt]: Number(timestamp_from),
+                            [Op.is]: null
+                        }
+                    }
+                },
+                order: ['refStructureName', 'companyName', 'fieldName', 'sectorName', 'plantRow']
+            })).map(el => el.dataValues);
+            return res
         } catch (error) {
             console.error('Error on find user permissions:', error);
         }
