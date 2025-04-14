@@ -374,6 +374,31 @@ function checkOptState(thesisPoints, newOptimalPoints) {
  *     summary: Set information about baseline irrigation for sector
  *     description: Set information about baseline irrigation for sector
  *     tags: [Field Operations]
+ *     parameters:
+ *       - in: path
+ *         name: refStructureName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The reference structure name
+ *       - in: path
+ *         name: companyName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The company name
+ *       - in: path
+ *         name: fieldName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The field name
+ *       - in: path
+ *         name: sectorName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The sector name
  *     requestBody:
  *       required: true
  *       content:
@@ -412,13 +437,10 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/setBase
     console.log(req.body)
 
     const {
-        maxIrrigation,
-        irrigationBaseline,
-        wateringCapacity,
-        valveId,
+        maxIrrigation: maxIrrigation,
+        irrigationBaseline: irrigationBaseline,
         irrigation_master_thesis: irrigationMasterThesis,
-        watering_hour: wateringHour,
-        sprinkler_capacity: sprinklerCapacity
+        watering_hour: wateringHour
     } = req.body;
 
     const baselineData = {
@@ -428,11 +450,8 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/setBase
         sectorName,
         maxIrrigation,
         irrigationBaseline,
-        wateringCapacity,
-        valveId,
         irrigationMasterThesis,
-        wateringHour,
-        sprinklerCapacity
+        wateringHour
     };
 
     const baseline = new WateringBaseline(baselineData);

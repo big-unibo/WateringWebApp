@@ -1,29 +1,28 @@
 import { Model, DataTypes } from 'sequelize';
 
-class WateringBaseline extends Model { }
+class WateringAlgorithmParams extends Model { }
 
-function initWateringBaseline(sequelize) {
-    WateringBaseline.init({
+function initWateringAlgorithmParams(sequelize) {
+    WateringAlgorithmParams.init({
+        source: DataTypes.TEXT,
         refStructureName: DataTypes.TEXT,
         companyName: DataTypes.TEXT,
         fieldName: DataTypes.TEXT,
         sectorName: DataTypes.TEXT,
-        irrigation_master_thesis: DataTypes.TEXT,
         timestamp_from: DataTypes.DOUBLE,
         timestamp_to: DataTypes.DOUBLE,
         max_irrigation: DataTypes.DOUBLE,
-        watering_capacity: DataTypes.DOUBLE,
         irrigation_baseline: DataTypes.DOUBLE,
         watering_hour: DataTypes.TIME,
-        valve_id: DataTypes.TEXT,
-        sprinkler_capacity: DataTypes.DOUBLE
+        ki: DataTypes.DOUBLE,
+        kp: DataTypes.DOUBLE
     }, {
-        modelName: 'watering_baseline',
+        modelName: 'watering_algorithm_params',
         timestamps: false,
         sequelize
     });
 
-    return WateringBaseline;
+    return WateringAlgorithmParams;
 }
 
-export default initWateringBaseline;
+export default initWateringAlgorithmParams;

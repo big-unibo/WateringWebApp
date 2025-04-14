@@ -10,8 +10,8 @@ import { OptStateDto } from "../dtos/optStateDto.js";
 import initMatrixProfile from '../persistency/model/MatrixProfile.js';
 import initMatrixField from '../persistency/model/MatrixField.js';
 import initTranscodingField from '../persistency/model/TranscodingField.js';
-import initWateringField from '../persistency/model/WateringField.js';
-import initWateringBaseline from '../persistency/model/WateringBaseline.js';
+import initWateringThesis from '../persistency/model/WateringThesis.js';
+import initWateringAlgorithmParams from '../persistency/model/WateringAlgorithmParams.js';
 import { WateringAdviceDto } from '../dtos/wateringAdviceDto.js';
 
 const dtoConverter = new DtoConverter();
@@ -27,7 +27,7 @@ class FieldService {
         this.humidityBinsRepository = new HumidityBinsRepository(sequelize);
         this.viewDataOriginalRepository = new ViewDataOriginalRepository(sequelize);
         this.wateringAdviceRepository = new WateringAggregateRepository(sequelize);
-        this.fieldRepository = new FieldRepository(initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), initWateringField(sequelize), initWateringBaseline(sequelize), sequelize);
+        this.fieldRepository = new FieldRepository(initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), initWateringThesis(sequelize), initWateringAlgorithmParams(sequelize), sequelize);
     }
 
     async getInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, plantRow, timestampFrom, timestampTo) {

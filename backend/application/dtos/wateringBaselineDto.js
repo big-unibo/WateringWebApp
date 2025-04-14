@@ -7,11 +7,8 @@ class WateringBaseline {
      * @param {string} sectorName - Sector name
      * @param {number} maxIrrigation - Maximum irrigation amount
      * @param {number} irrigationBaseline - Baseline irrigation amount
-     * @param {number} wateringCapacity - Watering capacity
-     * @param {string} valveId - Identifier for the valve
      * @param {string} irrigationMasterThesis - Thesis related to irrigation
      * @param {string} wateringHour - Time for watering
-     * @param {number} sprinklerCapacity - Capacity of the sprinkler
      */
     constructor({
         refStructureName,
@@ -20,11 +17,8 @@ class WateringBaseline {
         sectorName,
         maxIrrigation,
         irrigationBaseline,
-        wateringCapacity,
-        valveId,
         irrigationMasterThesis,
-        wateringHour,
-        sprinklerCapacity
+        wateringHour
     }) {
         this.refStructureName = refStructureName;
         this.companyName = companyName;
@@ -32,11 +26,8 @@ class WateringBaseline {
         this.sectorName = sectorName;
         this.maxIrrigation = maxIrrigation;
         this.irrigationBaseline = irrigationBaseline;
-        this.wateringCapacity = wateringCapacity;
-        this.valveId = valveId;
         this.irrigationMasterThesis = irrigationMasterThesis;
         this.wateringHour = wateringHour;
-        this.sprinklerCapacity = sprinklerCapacity;
     }
 
 }

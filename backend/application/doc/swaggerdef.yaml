@@ -322,17 +322,11 @@ components:
           type: number
         irrigationBaseline:
           type: number
-        wateringCapacity:
-          type: number
-        valveId:
-          type: string
         irrigation_master_thesis:
           type: string
         watering_hour:
           type: string
           format: time
-        sprinkler_capacity:
-          type: number
     
     LogDto:
       type: object

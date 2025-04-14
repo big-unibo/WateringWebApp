@@ -1,14 +1,13 @@
 import { QueryTypes, Op } from 'sequelize'
-import { WateringAdviceDto } from '../../dtos/wateringAdviceDto.js'
 
 class FieldRepository {
 
-  constructor(MatrixProfile, MatrixField, TranscodingField, WateringFields, WateringBaseline, sequelize) {
+  constructor(MatrixProfile, MatrixField, TranscodingField, WateringThesis, WateringAlgorithmParams, sequelize) {
     this.MatrixProfile = MatrixProfile
     this.MatrixField = MatrixField
     this.TranscodingField = TranscodingField
-    this.WateringFields = WateringFields
-    this.WateringBaseline = WateringBaseline
+    this.WateringThesis = WateringThesis
+    this.WateringAlgorithmParams = WateringAlgorithmParams
     this.sequelize = sequelize
 
     MatrixField.hasMany(MatrixProfile, { foreignKey: 'matrixId' });
@@ -39,8 +38,8 @@ class FieldRepository {
         }
       )
 
-      this.WateringFields.removeAttribute('id')
-      const sectorFields = await this.WateringFields.findAll({
+      this.WateringThesis.removeAttribute('id')
+      const sectorThesis = await this.WateringThesis.findAll({
         where: {
           refStructureName: refStructureName,
           companyName: companyName,
@@ -49,16 +48,16 @@ class FieldRepository {
         }
       })
 
-      if( sectorFields.length > 0){
+      if( sectorThesis.length > 0){
         const newMatrixId = !matrixId ? await this.MatrixProfile.max('matrixId') + 1 : matrixId
     
-        for( const field of sectorFields){
+        for( const thesis of sectorThesis){
           const model = this.MatrixField.build({
-            refStructureName: field.refStructureName,
-            companyName: field.companyName,
-            fieldName: field.fieldName,
-            sectorName: field.sectorName,
-            plantRow: field.plantRow,
+            refStructureName: thesis.refStructureName,
+            companyName: thesis.companyName,
+            fieldName: thesis.fieldName,
+            sectorName: thesis.sectorName,
+            plantRow: thesis.plantRow,
             timestamp_from: Math.floor(validFrom),
             timestamp_to: validTo ? Math.floor(validTo) : null,
             current: true,
@@ -195,8 +194,8 @@ class FieldRepository {
 
   async getDripperInfo(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp) {
     try {
-      this.WateringFields.removeAttribute('id')
-      const result = await this.WateringFields.findOne({
+      this.WateringThesis.removeAttribute('id')
+      const result = await this.WateringThesis.findOne({
         where: {
           refStructureName: refStructureName,
           companyName: companyName,
@@ -223,9 +222,26 @@ class FieldRepository {
   }
 
   async setWateringBaseline(baseline){
-    this.WateringBaseline.removeAttribute('id')
+    this.WateringAlgorithmParams.removeAttribute('id')
     const currentTimestamp = Math.floor(Date.now()/1000)
-    this.WateringBaseline.update(
+
+    const oldParams = await this.WateringAlgorithmParams.findOne({
+      where: {
+        refStructureName: baseline.refStructureName,
+        companyName: baseline.companyName,
+        fieldName: baseline.fieldName,
+        sectorName: baseline.sectorName,
+        timestamp_from: { [Op.lt]: currentTimestamp },
+        timestamp_to: {
+          [Op.or]: {
+            [Op.is]: null,
+            [Op.gt]: currentTimestamp
+          },
+        }
+      }
+    })
+
+    this.WateringAlgorithmParams.update(
       { 
         timestamp_to: currentTimestamp,
       },
@@ -245,25 +261,60 @@ class FieldRepository {
         }
       }
     )
-    const model = this.WateringBaseline.build({
+
+    const model = this.WateringAlgorithmParams.build({
       refStructureName: baseline.refStructureName,
       companyName: baseline.companyName,
       fieldName: baseline.fieldName,
       sectorName: baseline.sectorName,
-      irrigation_master_thesis: baseline.irrigationMasterThesis,
       timestamp_from: currentTimestamp,
-      max_irrigation: baseline.maxIrrigation,
-      watering_capacity: baseline.wateringCapacity,
-      irrigation_baseline: baseline.irrigationBaseline,
-      watering_hour: baseline.wateringHour,
-      valve_id: baseline.valveId,
-      sprinkler_capacity: baseline.sprinklerCapacity
+      max_irrigation: baseline.maxIrrigation ? baseline.maxIrrigation : oldParams.dataValues.max_irrigation,
+      irrigation_baseline: baseline.irrigationBaseline ? baseline.irrigationBaseline : oldParams.dataValues.irrigation_baseline,
+      watering_hour: baseline.wateringHour ? baseline.wateringHour : oldParams.dataValues.watering_hour,
+      ki: oldParams ? oldParams.dataValues.ki : null,
+      kp: oldParams ? oldParams.dataValues.kp : null,
+      source: 'iFarming'
     });
-    return model.save()
+    model.save()
+
+    this.WateringThesis.removeAttribute('id')
+    const theses = await this.WateringThesis.findAll({
+      where: {
+        refStructureName: baseline.refStructureName,
+        companyName: baseline.companyName,
+        fieldName: baseline.fieldName,
+        sectorName: baseline.sectorName,
+        timestamp_from: { [Op.lt]: currentTimestamp },
+        timestamp_to: {
+          [Op.or]: {
+            [Op.is]: null,
+            [Op.gt]: currentTimestamp
+          },
+        }
+      }
+    })
+
+    if(theses.filter(thesis => thesis.plantRow == baseline.irrigationMasterThesis && thesis.weight == 1).length == 0){
+      for( const thesis of theses){
+        const model = this.WateringThesis.build({
+          source: 'iFarming',
+          refStructureName: thesis.refStructureName,
+          companyName: thesis.companyName,
+          fieldName: thesis.fieldName,
+          sectorName: thesis.sectorName,
+          plantRow: thesis.plantRow,
+          timestamp_from: currentTimestamp,
+          timestamp_to: null,
+          dripper_pos: thesis.dripper_pos,
+          weight: thesis.plantRow == baseline.irrigationMasterThesis ? 1 : 0
+        })
+        await model.save()
+      }
+    }
   }
 
   async disableWateringBaseline(refStructureName, companyName, fieldName, sectorName, timestamp){
-    await this.WateringBaseline.update(
+    await this.WateringAlgorithmParams.update(
       {
         timestamp_to: timestamp
       },
@@ -284,9 +335,9 @@ class FieldRepository {
     )
   }
 
-  async disablePrescriptiveField(refStructureName, companyName, fieldName, sectorName, timestamp){
+  async disableWateringSectorThesis(refStructureName, companyName, fieldName, sectorName, timestamp){
     // Disable all thesis of a sector
-    await this.WateringFields.update(
+    await this.WateringThesis.update(
       {
         timestamp_to: timestamp
       },

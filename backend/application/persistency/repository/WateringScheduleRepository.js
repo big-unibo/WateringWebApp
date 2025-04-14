@@ -4,9 +4,9 @@ import { Op, where } from "sequelize";
 
 class WateringScheduleRepository {
 
-    constructor(WateringSchedule, WateringBaseline, Users, sequelize) {
+    constructor(WateringSchedule, WateringThesis, Users, sequelize) {
         this.WateringSchedule = WateringSchedule
-        this.WateringBaseline = WateringBaseline
+        this.WateringThesis = WateringThesis
         this.Users = Users
         this.sequelize = sequelize
 
@@ -16,14 +16,15 @@ class WateringScheduleRepository {
 
     async getSchedule(refStructureName, companyName, fieldName, sectorName, plantRow, timestampFrom, timestampTo) {
         try {
-            this.WateringBaseline.removeAttribute('id')
-            const masterThesis = await this.WateringBaseline.findAll({
-                attributes: ['timestamp_from', 'timestamp_to', ['irrigation_master_thesis', 'plantRow']],
+            this.WateringThesis.removeAttribute('id')
+            const masterThesis = await this.WateringThesis.findAll({
+                attributes: ['timestamp_from', 'timestamp_to', 'plantRow'],
                 where: {
                     refStructureName: refStructureName,
                     companyName: companyName,
                     fieldName: fieldName,
                     sectorName: sectorName,
+                    weight: 1,
                     timestamp_from: { [Op.lt]: timestampTo },
                     timestamp_to: {
                         [Op.or]: {

@@ -4,13 +4,13 @@ import DtoConverter from './DtoConverter.js';
 import initUser from '../persistency/model/User.js';
 import initWateringSchedule from '../persistency/model/WateringSchedule.js';
 import { WateringScheduleResponse } from '../dtos/wateringScheduleDto.js';
-import initWateringBaseline from '../persistency/model/WateringBaseline.js';
+import initWateringThesis from '../persistency/model/WateringThesis.js';
 const dtoConverter = new DtoConverter();
 
 class WateringScheduleService {
 
     constructor(sequelize) {
-        this.wateringScheduleRepository = new WateringScheduleRepository(initWateringSchedule(sequelize), initWateringBaseline(sequelize), initUser(sequelize), sequelize);
+        this.wateringScheduleRepository = new WateringScheduleRepository(initWateringSchedule(sequelize), initWateringThesis(sequelize), initUser(sequelize), sequelize);
     }
 
     async getSchedule(refStructureName, companyName, fieldName, sectorName, plantRow, timestampFrom, timestampTo) {

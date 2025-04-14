@@ -1,12 +1,13 @@
 import { Model, DataTypes } from 'sequelize';
 
-class WateringField extends Model {
+class WateringThesis extends Model {
 
 }
 
-function initWateringField(sequelize) {
+function initWateringThesis(sequelize) {
 
-    WateringField.init({
+    WateringThesis.init({
+        source: DataTypes.TEXT,
         refStructureName: DataTypes.TEXT,
         companyName: DataTypes.TEXT,
         fieldName: DataTypes.TEXT,
@@ -14,15 +15,15 @@ function initWateringField(sequelize) {
         plantRow: DataTypes.TEXT,
         timestamp_from: DataTypes.DOUBLE,
         timestamp_to: DataTypes.DOUBLE,
-        prescriptive: DataTypes.BOOLEAN,
-        dripper_pos: DataTypes.INTEGER
+        dripper_pos: DataTypes.INTEGER,
+        weight: DataTypes.DOUBLE
     }, {
-        modelName: 'watering_fields',
+        modelName: 'watering_thesis',
         timestamps: false,
         sequelize
     });
 
-    return WateringField;
+    return WateringThesis;
 }
 
-export default initWateringField;
+export default initWateringThesis;
