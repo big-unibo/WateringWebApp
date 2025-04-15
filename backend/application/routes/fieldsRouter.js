@@ -439,8 +439,9 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/setBase
     const {
         maxIrrigation: maxIrrigation,
         irrigationBaseline: irrigationBaseline,
-        irrigation_master_thesis: irrigationMasterThesis,
-        watering_hour: wateringHour
+        watering_hour: wateringHour,
+        ki: ki,
+        kp: kp
     } = req.body;
 
     const baselineData = {
@@ -450,8 +451,9 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/setBase
         sectorName,
         maxIrrigation,
         irrigationBaseline,
-        irrigationMasterThesis,
-        wateringHour
+        wateringHour,
+        ki,
+        kp
     };
 
     const baseline = new WateringBaseline(baselineData);

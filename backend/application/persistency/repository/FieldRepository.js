@@ -271,46 +271,11 @@ class FieldRepository {
       max_irrigation: baseline.maxIrrigation ? baseline.maxIrrigation : oldParams.dataValues.max_irrigation,
       irrigation_baseline: baseline.irrigationBaseline ? baseline.irrigationBaseline : oldParams.dataValues.irrigation_baseline,
       watering_hour: baseline.wateringHour ? baseline.wateringHour : oldParams.dataValues.watering_hour,
-      ki: oldParams ? oldParams.dataValues.ki : null,
-      kp: oldParams ? oldParams.dataValues.kp : null,
+      ki: baseline.ki ? baseline.ki : oldParams.dataValues.ki,
+      kp: baseline.kp ? baseline.kp : oldParams.dataValues.kp,
       source: 'iFarming'
     });
-    model.save()
-
-    this.WateringThesis.removeAttribute('id')
-    const theses = await this.WateringThesis.findAll({
-      where: {
-        refStructureName: baseline.refStructureName,
-        companyName: baseline.companyName,
-        fieldName: baseline.fieldName,
-        sectorName: baseline.sectorName,
-        timestamp_from: { [Op.lt]: currentTimestamp },
-        timestamp_to: {
-          [Op.or]: {
-            [Op.is]: null,
-            [Op.gt]: currentTimestamp
-          },
-        }
-      }
-    })
-
-    if(theses.filter(thesis => thesis.plantRow == baseline.irrigationMasterThesis && thesis.weight == 1).length == 0){
-      for( const thesis of theses){
-        const model = this.WateringThesis.build({
-          source: 'iFarming',
-          refStructureName: thesis.refStructureName,
-          companyName: thesis.companyName,
-          fieldName: thesis.fieldName,
-          sectorName: thesis.sectorName,
-          plantRow: thesis.plantRow,
-          timestamp_from: currentTimestamp,
-          timestamp_to: null,
-          dripper_pos: thesis.dripper_pos,
-          weight: thesis.plantRow == baseline.irrigationMasterThesis ? 1 : 0
-        })
-        await model.save()
-      }
-    }
+    return model.save()
   }
 
   async disableWateringBaseline(refStructureName, companyName, fieldName, sectorName, timestamp){
