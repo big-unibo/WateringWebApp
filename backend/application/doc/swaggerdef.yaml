@@ -85,6 +85,33 @@ components:
         colture:
           type: string
 
+    ThesisDto:
+      allOf:
+        - $ref: '#/components/schemas/ThesisIdentifier'
+        - properties:
+            dripperPosition:
+                type: number
+            timestampFrom:
+                type: number
+    
+    WateringSectorDetails:
+      type: object
+      properties:
+        advice:
+          type: boolean
+        prescriptive:
+          type: boolean
+        dripperCapacity:
+          type: number
+        sprinklerCapacity:
+          type: number
+        valveId:
+          type: string
+        prescriptiveThesis:
+          type: string
+        timestampFrom:
+          type: number
+
     WateringAdviceDto:
       type: object
       properties:
@@ -322,13 +349,19 @@ components:
           type: number
         irrigationBaseline:
           type: number
-        watering_hour:
+        wateringHour:
           type: string
           format: time
         ki:
           type: number
         kp:
           type: number
+    
+    SetPrescriptiveThesisRequest:
+      type: object
+      properties:
+        prescriptiveThesis:
+          type: string
     
     LogDto:
       type: object

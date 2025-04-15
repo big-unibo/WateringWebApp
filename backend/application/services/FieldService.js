@@ -13,6 +13,7 @@ import initTranscodingField from '../persistency/model/TranscodingField.js';
 import initWateringThesis from '../persistency/model/WateringThesis.js';
 import initWateringAlgorithmParams from '../persistency/model/WateringAlgorithmParams.js';
 import { WateringAdviceDto } from '../dtos/wateringAdviceDto.js';
+import initWateringSector from '../persistency/model/WateringSector.js';
 
 const dtoConverter = new DtoConverter();
 
@@ -27,7 +28,7 @@ class FieldService {
         this.humidityBinsRepository = new HumidityBinsRepository(sequelize);
         this.viewDataOriginalRepository = new ViewDataOriginalRepository(sequelize);
         this.wateringAdviceRepository = new WateringAggregateRepository(sequelize);
-        this.fieldRepository = new FieldRepository(initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), initWateringThesis(sequelize), initWateringAlgorithmParams(sequelize), sequelize);
+        this.fieldRepository = new FieldRepository(initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), initWateringThesis(sequelize), initWateringSector(sequelize), initWateringAlgorithmParams(sequelize), sequelize);
     }
 
     async getInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, plantRow, timestampFrom, timestampTo) {
@@ -68,13 +69,13 @@ class FieldService {
     async getAverageByFieldReference(detectedValueTypeDescription, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow) {
         const requestPeriod = timeFilterTo - timeFilterFrom
         let aggregationPeriod = MINUTE_TO_SECONDS //one minute minimum aggregation
-        if(requestPeriod > 2 * MONTH_TO_SECONDS){
+        if(requestPeriod > 3 * MONTH_TO_SECONDS){
+            aggregationPeriod = 24 * 60 * MINUTE_TO_SECONDS
+        } else if(requestPeriod > 1.5 * MONTH_TO_SECONDS){
             aggregationPeriod = 12 * 60 * MINUTE_TO_SECONDS
-        } else if(requestPeriod > MONTH_TO_SECONDS){
-            aggregationPeriod = 6 * 60 * MINUTE_TO_SECONDS
-        } else if(requestPeriod > MINUTE_TO_SECONDS*60*24*14){//two weeks
-            aggregationPeriod = 2 * 60 * MINUTE_TO_SECONDS
-        } else if(requestPeriod > MINUTE_TO_SECONDS*60*24){ //one day
+        } else if(requestPeriod > 14 * 24 * 60 * MINUTE_TO_SECONDS){//two weeks
+            aggregationPeriod = 3 * 60 * MINUTE_TO_SECONDS
+        } else if(requestPeriod > 3 * 24 * 60 * MINUTE_TO_SECONDS){ // 3 days
             aggregationPeriod = 60 * MINUTE_TO_SECONDS
         }
         const result = await this.viewDataOriginalRepository.findAverageByFieldReference(detectedValueTypeDescription, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow, aggregationPeriod);
@@ -102,6 +103,14 @@ class FieldService {
             return dtoConverter.convertOptimalStateWrapper(result)
         }
         return new OptStateDto(refStructureName, companyName, fieldName, sectorName, plantRow)
+    }
+
+    async createMonitoringThesis(thesis, timestampFrom) {
+        await this.fieldRepository.createThesis(thesis, timestampFrom || Math.floor(Date.now()/1000))
+    }
+
+    async updateWateringSectorDetails(sectorDetails, timestampFrom) {
+        await this.fieldRepository.updateWateringSectorDetails(sectorDetails, timestampFrom || Math.floor(Date.now()/1000))
     }
 
     async createMatrixOptState(optStateDto) {
@@ -132,6 +141,10 @@ class FieldService {
 
     async setWateringBaseline(baseline) {
         await this.fieldRepository.setWateringBaseline(baseline)
+    }
+
+    async setPrescriptiveThesis(refStructureName, companyName, fieldName, sectorName, prescriptiveThesis, timestampFrom) {
+        await this.fieldRepository.setPrescriptiveThesis(refStructureName, companyName, fieldName, sectorName, prescriptiveThesis, timestampFrom || Math.floor(Date.now()/1000))
     }
 
     async disableWateringBaseline(refStructureName, companyName, fieldName, sectorName, timestamp) {

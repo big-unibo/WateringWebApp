@@ -15,7 +15,164 @@ const authorizationService = new AuthorizationService(sequelize)
 const fieldService = new FieldService(sequelize)
 
 import WateringBaseline from '../dtos/wateringBaselineDto.js';
+import { Thesis } from '../dtos/thesisDto.js';
+import { WateringSectorDto } from '../dtos/wateringSectorDto.js';
 
+
+/**
+ * @swagger
+ * /fields/createMonitoringThesis:
+ *   post:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Create a new monitoring thesis
+ *     description: Create a new monitoring thesis
+ *     tags: [Field Operations]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ThesisDto'
+ *     responses:
+ *       '200':
+ *         description: Monitoring thesis created successfully.
+ *       '400':
+ *         description: Invalid request.
+ *       '401':
+ *         description: Unauthorized request.
+ *       '403':
+ *         description: Authentication failed.
+ *       '500':
+ *         description: Error on creating monitoring thesis.
+ */
+fieldsRouter.post('/createMonitoringThesis', async (req, res) => {
+    let requestUserData
+    try {
+      requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+    } catch (error) {
+      return res.status(403).json({message: 'Authentication failed'});
+    }
+  
+    if(!req.body && req.body === '')
+        return res.status(400).json({message: 'Invalid request'});
+
+    const source = req.body.source;
+    const refStructureName = req.body.refStructureName;
+    const companyName = req.body.companyName;
+    const fieldName = req.body.fieldName;
+    const sectorName = req.body.sectorName;
+    const plantRow = req.body.plantRow;
+    const dripperPosition = req.body.dripperPosition;
+
+    const thesis = new Thesis(source, refStructureName, companyName, fieldName, sectorName, plantRow, dripperPosition) 
+    
+    try {
+        if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, plantRow, '*')))
+            return res.status(401).json({message: 'Unauthorized request'});
+
+        await fieldService.createMonitoringThesis(thesis, req.body.timestampFrom)
+    
+        return res.status(200).json({message: 'Monitoring thesis created with success'})
+    } catch (error) {
+      console.log(`Fail creating monitoring thesis caused by: ${error.message}`)
+      return res.status(500).json({error: "Error on creating monitoring thesis"})
+    }
+  
+  });
+
+  /**
+ * @swagger
+ * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/setWateringDetails:
+ *   put:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Define watering sector details
+ *     description: Define watering sector details
+ *     tags: [Field Operations]
+ *     parameters:
+ *      - in: path
+ *        name: refStructureName
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The reference structure name
+ *      - in: path
+ *        name: companyName
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The company name
+ *      - in: path
+ *        name: fieldName
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The field name
+ *      - in: path
+ *        name: sectorName
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The sector name
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/WateringSectorDetails'
+ *     responses:
+ *       '200':
+ *         description: Watering sector details updated successfully.
+ *       '400':
+ *         description: Invalid request.
+ *       '401':
+ *         description: Unauthorized request.
+ *       '403':
+ *         description: Authentication failed.
+ *       '500':
+ *         description: Error updating watering sector details.
+ */
+fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/setWateringDetails', async (req, res) => {
+    let requestUserData
+    try {
+      requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+    } catch (error) {
+      return res.status(403).json({message: 'Authentication failed'});
+    }
+ 
+    const refStructureName = req.params.refStructureName;
+    const companyName = req.params.companyName;
+    const fieldName = req.params.fieldName;
+    const sectorName = req.params.sectorName;
+    
+    try {
+        if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, null, '*')))
+            return res.status(401).json({message: 'Unauthorized request'});
+
+        if(!req.body && req.body === '')
+            return res.status(400).json({message: 'Invalid request'});
+
+        const {
+            advice: advice,
+            prescriptive: prescriptive,
+            dripperCapacity: dripperCapacity,
+            sprinklerCapacity: sprinklerCapacity,
+            valveId: valveId,
+            prescriptiveThesis: prescriptiveThesis,
+            timestampFrom: timestampFrom
+        } = req.body;
+        const sectorDetails = new WateringSectorDto('iFarming', refStructureName, companyName, fieldName, sectorName, advice, prescriptive, valveId, dripperCapacity, sprinklerCapacity)
+        await fieldService.updateWateringSectorDetails(sectorDetails, timestampFrom)
+        await fieldService.setPrescriptiveThesis(refStructureName, companyName, fieldName, sectorName, prescriptiveThesis, timestampFrom)
+    
+        return res.status(200).json({message: 'Sector watering details created with success'})
+    } catch (error) {
+      console.log(`Fail creating monitoring thesis caused by: ${error.message}`)
+      return res.status(500).json({error: "Error on creating monitoring thesis"})
+    }
+  
+  });
 
 /**
  * @swagger
@@ -55,11 +212,11 @@ fieldsRouter.put('/setOptState', async (req, res) => {
   if(!req.body && req.body === '')
     throw new Error('Body is empty');
 
-  const refStructureName = req.params.refStructureName;
-  const companyName = req.params.companyName;
-  const fieldName = req.params.fieldName;
-  const sectorName = req.params.sectorName;
-  const plantRow = req.params.plantRow;
+  const refStructureName = req.body.refStructureName;
+  const companyName = req.body.companyName;
+  const fieldName = req.body.fieldName;
+  const sectorName = req.body.sectorName;
+  const plantRow = req.body.plantRow;
   
   try {
     if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'WA')))
@@ -434,12 +591,10 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/setBase
     if(!req.body && req.body === '')
       return res.status(400).json({message: 'Invalid request'});
 
-    console.log(req.body)
-
     const {
         maxIrrigation: maxIrrigation,
         irrigationBaseline: irrigationBaseline,
-        watering_hour: wateringHour,
+        wateringHour: wateringHour,
         ki: ki,
         kp: kp
     } = req.body;
@@ -463,6 +618,85 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/setBase
     return res.status(200).json({message: `Watering Baseline update with success`})
   } catch (error) {
     console.log(`Fail update watering baseline caused by: ${error.message}`)
+    return res.status(500).json({error: "Error on update watering baseline"})
+  }
+
+});
+
+/**
+ * @swagger
+ * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/setPrescriptiveThesis:
+ *   put:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Set the thesis to use for prescriptive irrigation in a sector
+ *     description: Set the thesis to use for prescriptive irrigation in a sector
+ *     tags: [Field Operations]
+ *     parameters:
+ *       - in: path
+ *         name: refStructureName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The reference structure name
+ *       - in: path
+ *         name: companyName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The company name
+ *       - in: path
+ *         name: fieldName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The field name
+ *       - in: path
+ *         name: sectorName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The sector name
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/SetPrescriptiveThesisRequest'
+ *     responses:
+ *       '200':
+ *         description: Prescriptive thesis updated successfully.
+ *       '400':
+ *         description: Invalid request.
+ *       '401':
+ *         description: Unauthorized request.
+ *       '403':
+ *         description: Authentication failed.
+ *       '500':
+ *         description: Error on update prescriptive thesis.
+ */
+fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/setPrescriptiveThesis', async (req, res) => {
+  let requestUserData
+  try {
+    requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+  } catch (error) {
+    return res.status(403).json({message: 'Authentication failed'});
+  }
+
+  const { refStructureName, companyName, fieldName, sectorName } = req.params;
+
+  try {
+    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, null, 'WA')))
+      return res.status(401).json({message: 'Unauthorized request'});
+
+    if(!req.body && req.body === '')
+      return res.status(400).json({message: 'Invalid request'});
+
+    await fieldService.setPrescriptiveThesis(refStructureName, companyName, fieldName, sectorName, req.body.prescriptiveThesis)
+
+    return res.status(200).json({message: `Prescriptive thesis update with success`})
+  } catch (error) {
+    console.log(`Fail update prescriptive thesis caused by: ${error.message}`)
     return res.status(500).json({error: "Error on update watering baseline"})
   }
 
