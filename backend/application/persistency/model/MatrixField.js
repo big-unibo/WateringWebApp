@@ -12,6 +12,10 @@ function initMatrixField(sequelize) {
         primaryKey: true,
         autoIncrement: true
       },
+      source: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
       refStructureName: {
         type: DataTypes.STRING,
         allowNull: false

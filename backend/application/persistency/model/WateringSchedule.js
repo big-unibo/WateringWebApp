@@ -4,6 +4,7 @@ class WateringSchedule extends Model { }
 
 function initWateringSchedule(sequelize) {
     WateringSchedule.init({
+        source: DataTypes.TEXT,
         refStructureName: DataTypes.TEXT,
         companyName: DataTypes.TEXT,
         fieldName: DataTypes.TEXT,

@@ -100,7 +100,14 @@ class FieldRepository {
                     refStructureName: refStructureName,
                     companyName: companyName,
                     fieldName: fieldName,
-                    sectorName: sectorName
+                    sectorName: sectorName,
+                    timestamp_from: { [Op.lt]: validTo || validFrom },
+                    timestamp_to: {
+                        [Op.or]: {
+                        [Op.is]: null,
+                        [Op.gt]: validFrom
+                        },
+                    }
                 }
             })
 
@@ -109,6 +116,7 @@ class FieldRepository {
             
                 for( const thesis of sectorThesis){
                     const model = this.MatrixField.build({
+                        source: thesis.source,
                         refStructureName: thesis.refStructureName,
                         companyName: thesis.companyName,
                         fieldName: thesis.fieldName,
@@ -319,6 +327,7 @@ class FieldRepository {
         )
 
         const model = this.WateringAlgorithmParams.build({
+            source: oldParams ? oldParams.dataValues.source :'iFarming',
             refStructureName: baseline.refStructureName,
             companyName: baseline.companyName,
             fieldName: baseline.fieldName,
@@ -328,8 +337,7 @@ class FieldRepository {
             irrigation_baseline: baseline.irrigationBaseline ? baseline.irrigationBaseline : oldParams.dataValues.irrigation_baseline,
             watering_hour: baseline.wateringHour ? baseline.wateringHour : oldParams.dataValues.watering_hour,
             ki: baseline.ki ? baseline.ki : oldParams.dataValues.ki,
-            kp: baseline.kp ? baseline.kp : oldParams.dataValues.kp,
-            source: 'iFarming'
+            kp: baseline.kp ? baseline.kp : oldParams.dataValues.kp
         });
         return model.save()
     }

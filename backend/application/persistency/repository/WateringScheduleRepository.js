@@ -80,7 +80,7 @@ class WateringScheduleRepository {
         try {
             this.WateringSchedule.removeAttribute('id')
             this.WateringSchedule.removeAttribute('userid')
-            const activeThesisEvents = await this.WateringSchedule.findAll({
+            const activeThesisEvents = (await this.WateringSchedule.findAll({
                 where: {
                     refStructureName: refStructureName,
                     companyName: companyName,
@@ -90,7 +90,7 @@ class WateringScheduleRepository {
                     deleted: false,
                     date: date
                 }
-            })
+            })).map(el => el.dataValues)
             if (wateringStart - Math.min(...activeThesisEvents.map(e => e.wateringStart)) < SCHEDULE_SAFE_INTERVAL && new Date(date) !== new Date(wateringStart)) {
                 throw Error("Invalid watering start timestamp")
             }
@@ -99,23 +99,26 @@ class WateringScheduleRepository {
                 await this.WateringSchedule.update(
                     {
                         latest: false
-                    }, {
-                    where: {
-                        refStructureName: refStructureName,
-                        companyName: companyName,
-                        fieldName: fieldName,
-                        sectorName: sectorName,
-                        plantRow: activeEvent.plantRow,
-                        latest: true,
-                        deleted: false,
-                        date: date,
-                        update_timestamp: {
-                            [Op.gte]: Math.floor(activeEvent.update_timestamp),
-                            [Op.lt]: Math.ceil(activeEvent.update_timestamp)
+                    }, 
+                    {
+                        where: {
+                            source: activeEvent.source,
+                            refStructureName: activeEvent.refStructureName,
+                            companyName: activeEvent.companyName,
+                            fieldName: activeEvent.fieldName,
+                            sectorName: activeEvent.sectorName,
+                            plantRow: activeEvent.plantRow,
+                            latest: true,
+                            deleted: false,
+                            date: date,
+                            update_timestamp: {
+                                [Op.gte]: Math.floor(activeEvent.update_timestamp),
+                                [Op.lte]: Math.ceil(activeEvent.update_timestamp)
+                            }
                         }
-                    }
                 })
                 const newEventModel = this.WateringSchedule.build({
+                    source: activeEvent.source,
                     refStructureName: refStructureName,
                     companyName: companyName,
                     fieldName: fieldName,
