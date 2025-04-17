@@ -10,7 +10,7 @@ function initFieldsPermit(sequelize) {
       type: DataTypes.STRING,
       allowNull: false
     },
-    affiliation: {
+    source: {
       type: DataTypes.STRING,
       allowNull: false
     },

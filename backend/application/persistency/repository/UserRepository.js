@@ -49,7 +49,7 @@ class UserRepository {
     async findUserPermissionsInPeriod(userid, timestamp_from, timestamp_to) {
         try {
             const query = `
-                SELECT DISTINCT permit.userid, permit.affiliation, permit."refStructureName", permit."companyName", permit."fieldName", permit."sectorName", permit."plantRow", permit.permit
+                SELECT DISTINCT permit.userid, permit."source", permit."refStructureName", permit."companyName", permit."fieldName", permit."sectorName", permit."plantRow", permit.permit
                     FROM public.permit_fields AS permit
                     JOIN public.transcoding_field AS transcoding
                         ON permit."refStructureName" = transcoding."refStructureName"
@@ -118,10 +118,10 @@ class UserRepository {
         }
     }
 
-    async createFieldPermit(userId, affiliation, refStructureName, companyName, fieldName, sectorName, plantRow, permit) {
+    async createFieldPermit(userId, source, refStructureName, companyName, fieldName, sectorName, plantRow, permit) {
         let model = this.FieldsPermit.build({
             userid: userId,
-            affiliation: affiliation,
+            source: source,
             refStructureName: refStructureName,
             companyName: companyName,
             fieldName: fieldName,

@@ -44,7 +44,7 @@ class UserService {
                 const affiliationFields = await this.userRepository.findFieldsByAffiliation(affiliation)
                 request.grants.map(grant => {
                     const key = `${grant.refStructureName} - ${grant.companyName} - ${grant.fieldName} - ${grant.sectorName} - ${grant.plantRow}`;
-                    if (!affiliationFields.has(key))
+                    if (affiliation !== grant.source || !affiliationFields.has(key))
                         throw Error(`Affiliation ${affiliation} has no permission to create grants for field ${key}`)
                 })
             } else {
@@ -54,11 +54,15 @@ class UserService {
 
         for(const grant of request.grants) {
             const userToGrant = await this.findUserByEmail(grant.username)
-            if(userToGrant.affiliation !== affiliation && role !=='admin')
-                throw new Error(`Affiliation mismatch between user ${userToGrant.affiliation} and requestor ${affiliation}]`)
-
+            if(userToGrant.affiliation !== affiliation){
+                if (role !== 'admin'){
+                    throw new Error(`Affiliation mismatch between user ${userToGrant.affiliation} and requestor ${affiliation}`)
+                } else if (userToGrant.affiliation !== grant.source) {
+                    throw new Error(`Affiliation mismatch between user ${userToGrant.affiliation} and field source ${grant.source}`)
+                }
+            }
             for(const permit of grant.permits)
-                await this.userRepository.createFieldPermit(userToGrant.userid, userToGrant.affiliation, grant.refStructureName, grant.companyName, grant.fieldName, grant.sectorName, grant.plantRow, permit)
+                await this.userRepository.createFieldPermit(userToGrant.userid, grant.source, grant.refStructureName, grant.companyName, grant.fieldName, grant.sectorName, grant.plantRow, permit)
         }
     }
 

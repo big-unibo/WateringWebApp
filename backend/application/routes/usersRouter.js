@@ -164,7 +164,7 @@ usersRouter.get('/userFields', async (req, res) => {
 /**
  * @swagger
  * /registerUsers:
- *   put:
+ *   post:
  *     security:
  *       - bearerAuth: []
  *     summary: Register users
@@ -186,7 +186,7 @@ usersRouter.get('/userFields', async (req, res) => {
  *       '500':
  *         description: Error on creating user.
  */
-usersRouter.put('/registerUsers', async (req, res) => {
+usersRouter.post('/registerUsers', async (req, res) => {
     let requestUserData
     try {
         requestUserData = await authenticationService.validateJwt(req.headers.authorization);
