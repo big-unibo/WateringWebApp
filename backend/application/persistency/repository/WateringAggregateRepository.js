@@ -35,25 +35,33 @@ class WateringAggregateRepository {
                 ORDER BY rounded_timestamp ASC
                 )
             UNION
-            (SELECT DISTINCT "source", 
-                            "refStructureName",
-                            "companyName",
-                            "fieldName",
+            (SELECT DISTINCT vdo."source", 
+                            vdo."refStructureName",
+                            vdo."companyName",
+                            vdo."fieldName",
                             'Dripper (L)' as "detectedValueTypeDescription",
-                            "sectorName",
-                            "plantRow",
-                            SUM("value") as value, ((3600*24) * (timestamp / (3600*24))::INT) as rounded_timestamp
-            FROM view_data_original
-            WHERE "detectedValueTypeId" IN ('DRIPPER')
-              AND "timestamp" >= '${timefilterFrom}'
-              AND "timestamp" <= '${timefilterTo}'
-              AND "source" = 'iFarming'
-              AND "refStructureName" = '${refStructureName}'
-              AND "companyName" = '${companyName}'
-              AND "fieldName" = '${fieldName}'
-              AND "sectorName" = '${sectorName}'
-              AND "plantRow" = '${plantRow}'
-            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", rounded_timestamp
+                            vdo."sectorName",
+                            vdo."plantRow",
+                            SUM(vdo."value" * COALESCE(ws."dripper_scaling_factor",1)) as value, ((3600*24) * (vdo.timestamp / (3600*24))::INT) as rounded_timestamp
+            FROM view_data_original AS vdo
+            LEFT JOIN watering_sector AS ws 
+              ON vdo."source" = ws."source"
+              AND vdo."refStructureName" = ws."refStructureName"
+              AND vdo."companyName" = ws."companyName"
+              AND vdo."fieldName" = ws."fieldName"
+              AND vdo."sectorName" = ws."sectorName"
+              AND vdo."timestamp" >= ws."timestamp_from"
+              AND (ws."timestamp_to" IS NULL OR vdo."timestamp" <= ws."timestamp_to")
+            WHERE vdo."detectedValueTypeId" IN ('DRIPPER')
+              AND vdo."timestamp" >= '${timefilterFrom}'
+              AND vdo."timestamp" <= '${timefilterTo}'
+              AND vdo."source" = 'iFarming'
+              AND vdo."refStructureName" = '${refStructureName}'
+              AND vdo."companyName" = '${companyName}'
+              AND vdo."fieldName" = '${fieldName}'
+              AND vdo."sectorName" = '${sectorName}'
+              AND vdo."plantRow" = '${plantRow}'
+            GROUP BY vdo."source", vdo."refStructureName", vdo."companyName", vdo."fieldName", "detectedValueTypeDescription", vdo."sectorName", vdo."plantRow", rounded_timestamp
             ORDER BY rounded_timestamp ASC)
             UNION            
             (SELECT DISTINCT "source", 

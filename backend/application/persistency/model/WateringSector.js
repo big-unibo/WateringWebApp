@@ -15,6 +15,7 @@ function initWateringSector(sequelize) {
         prescriptive: DataTypes.BOOLEAN,
         advice: DataTypes.BOOLEAN,
         dripper_capacity: DataTypes.DOUBLE,
+        dripper_scaling_factor: DataTypes.DOUBLE,
         sprinkler_capacity: DataTypes.DOUBLE,
         valve_id: DataTypes.TEXT,
         timestamp_from: DataTypes.DOUBLE,

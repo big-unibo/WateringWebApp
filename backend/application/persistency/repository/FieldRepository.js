@@ -63,6 +63,7 @@ class FieldRepository {
             advice: sectorDetails.advice,
             prescriptive: sectorDetails.prescriptive,
             dripper_capacity: sectorDetails.dripperCapacity,
+            dripper_scaling_factor: sectorDetails.dripperScalingFactor,
             sprinkler_capacity: sectorDetails.sprinklerCapacity,
             valve_id: sectorDetails.valveId,
             timestamp_from: timestampFrom,

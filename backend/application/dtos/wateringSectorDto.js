@@ -9,6 +9,7 @@ export class WateringSectorDto {
      * @param {boolean} prescriptive - Flag that indicates if operate on valves
      * @param {string} valveId - Valve identifier
      * @param {number} dripperCapacity - Dripper capacity
+     * @param {number} dripperScalingFactor - Dripper scaling factor
      * @param {number} sprinklerCapacity - Sprinkler capacity
      */
     constructor(
@@ -21,6 +22,7 @@ export class WateringSectorDto {
         prescriptive,
         valveId,
         dripperCapacity,
+        dripperScalingFactor,
         sprinklerCapacity
     ) {
         this.source = source
@@ -32,6 +34,7 @@ export class WateringSectorDto {
         this.prescriptive = prescriptive
         this.valveId = valveId
         this.dripperCapacity = dripperCapacity
+        this.dripperScalingFactor = dripperScalingFactor
         this.sprinklerCapacity = sprinklerCapacity
     }
 }

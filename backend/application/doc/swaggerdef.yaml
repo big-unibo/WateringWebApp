@@ -103,6 +103,8 @@ components:
           type: boolean
         dripperCapacity:
           type: number
+        dripperScalingFactor:
+          type: number
         sprinklerCapacity:
           type: number
         valveId:
