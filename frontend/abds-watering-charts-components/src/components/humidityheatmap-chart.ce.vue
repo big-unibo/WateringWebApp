@@ -39,7 +39,7 @@ async function drawImage(timestamp){
   }
  
   const parsed = JSON.parse(props.config);
-  const dripperPos = await communicationService.getFieldInfo(parsed.environment, parsed.paths, parsed.params, "dripperInfo")
+  const dripperPos = await communicationService.getFieldInfo(parsed.environment, parsed.paths, {timestamp: timestamp}, "dripperInfo")
   if(JSON.stringify(parsed) !== props.config){
       return
   }
