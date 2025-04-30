@@ -93,10 +93,10 @@ class WateringAggregateRepository {
                             "sectorName",
                             "plantRow",
                             AVG(-"value") as value,
-                  ((3600*24) * (timestamp / (3600*24))::INT + (3600*24)) as rounded_timestamp
+                  ((3600*24) * (timestamp / (3600*24))::INT) as rounded_timestamp
             FROM view_data_original
             WHERE "detectedValueTypeId" IN ('ET0')
-              AND "timestamp" >= '${timefilterFrom}' - (3600*24)
+              AND "timestamp" >= '${timefilterFrom}'
               AND "timestamp" <= '${timefilterTo}'
               AND "source" = 'iFarming'
               AND "refStructureName" = '${refStructureName}'
