@@ -165,7 +165,7 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/setWate
         } = req.body;
         const sectorDetails = new WateringSectorDto('iFarming', refStructureName, companyName, fieldName, sectorName, advice, prescriptive, valveId, dripperCapacity, dripperScalingFactor, sprinklerCapacity)
         await fieldService.updateWateringSectorDetails(sectorDetails, timestampFrom)
-        if(prescriptiveThesis || prescriptiveThesis !== ''){
+        if(prescriptiveThesis && prescriptiveThesis !== ''){
           await fieldService.setPrescriptiveThesis(refStructureName, companyName, fieldName, sectorName, prescriptiveThesis, timestampFrom)
         }
         return res.status(200).json({message: 'Sector watering details created with success'})
