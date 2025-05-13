@@ -286,9 +286,8 @@ class FieldRepository {
         }
     }
 
-    async setWateringBaseline(baseline){
+    async setWateringBaseline(baseline, timestampFrom){
         this.WateringAlgorithmParams.removeAttribute('id')
-        const currentTimestamp = Math.floor(Date.now()/1000)
 
         const oldParams = await this.WateringAlgorithmParams.findOne({
             where: {
@@ -296,11 +295,11 @@ class FieldRepository {
                 companyName: baseline.companyName,
                 fieldName: baseline.fieldName,
                 sectorName: baseline.sectorName,
-                timestamp_from: { [Op.lt]: currentTimestamp },
+                timestamp_from: { [Op.lt]: timestampFrom },
                 timestamp_to: {
                     [Op.or]: {
                         [Op.is]: null,
-                        [Op.gt]: currentTimestamp
+                        [Op.gt]: timestampFrom
                     },
                 }
             }
@@ -308,7 +307,7 @@ class FieldRepository {
 
         this.WateringAlgorithmParams.update(
             { 
-                timestamp_to: currentTimestamp,
+                timestamp_to: timestampFrom,
             },
             {
                 where: {
@@ -316,11 +315,11 @@ class FieldRepository {
                     companyName: baseline.companyName,
                     fieldName: baseline.fieldName,
                     sectorName: baseline.sectorName,
-                    timestamp_from: { [Op.lt]: currentTimestamp },
+                    timestamp_from: { [Op.lt]: timestampFrom },
                     timestamp_to: {
                         [Op.or]: {
                             [Op.is]: null,
-                            [Op.gt]: currentTimestamp
+                            [Op.gt]: timestampFrom
                         },
                     }
                 }
@@ -333,7 +332,7 @@ class FieldRepository {
             companyName: baseline.companyName,
             fieldName: baseline.fieldName,
             sectorName: baseline.sectorName,
-            timestamp_from: currentTimestamp,
+            timestamp_from: timestampFrom,
             max_irrigation: baseline.maxIrrigation ? baseline.maxIrrigation : oldParams.dataValues.max_irrigation,
             irrigation_baseline: baseline.irrigationBaseline ? baseline.irrigationBaseline : oldParams.dataValues.irrigation_baseline,
             watering_hour: baseline.wateringHour ? baseline.wateringHour : oldParams.dataValues.watering_hour,

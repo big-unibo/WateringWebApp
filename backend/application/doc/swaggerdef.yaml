@@ -118,9 +118,9 @@ components:
       type: object
       properties:
         timestampFrom:
-          type: string
+          type: number
         timestampTo:
-          type: string
+          type: number
         profiles:
           type: array
           items:
@@ -357,6 +357,8 @@ components:
         ki:
           type: number
         kp:
+          type: number
+        timestampFrom:
           type: number
     
     SetPrescriptiveThesisRequest:

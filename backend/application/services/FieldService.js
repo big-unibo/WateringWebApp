@@ -139,8 +139,8 @@ class FieldService {
         return this.dataInterpolatedRepository.findThesisPoints(refStructureName, companyName, fieldName, sectorName, plantRow)
     }
 
-    async setWateringBaseline(baseline) {
-        await this.fieldRepository.setWateringBaseline(baseline)
+    async setWateringBaseline(baseline, timestampFrom) {
+        await this.fieldRepository.setWateringBaseline(baseline, timestampFrom || Math.floor(Date.now()/1000))
     }
 
     async setPrescriptiveThesis(refStructureName, companyName, fieldName, sectorName, prescriptiveThesis, timestampFrom) {

@@ -597,7 +597,8 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/setBase
         irrigationBaseline: irrigationBaseline,
         wateringHour: wateringHour,
         ki: ki,
-        kp: kp
+        kp: kp,
+        timestampFrom: timestampFrom
     } = req.body;
 
     const baselineData = {
@@ -614,7 +615,7 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/setBase
 
     const baseline = new WateringBaseline(baselineData);
 
-    await fieldService.setWateringBaseline(baseline)
+    await fieldService.setWateringBaseline(baseline, timestampFrom)
 
     return res.status(200).json({message: `Watering Baseline update with success`})
   } catch (error) {
