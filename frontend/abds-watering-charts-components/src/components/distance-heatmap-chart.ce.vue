@@ -8,6 +8,7 @@ const heatmapSeries = ref([]);
 const chartOptions = ref({emitsOptions: false})
 const image = ref(null)
 const container = ref(null)
+const rDistance = ref(null)
 
 const props = defineProps(['config', 'selectedTimestamp'])
 const showChart = ref(false)
@@ -202,6 +203,7 @@ async function mountChart() {
     showChart.value = chartDataResponse.length > 0
     if(showChart.value){
         image.value = chartDataResponse
+        rDistance.value = (chartDataResponse.map(item => item.value).reduce((a,b) => a + b, 0)/chartDataResponse.length).toFixed(2)
         await drawImage()
     }
   } else {
@@ -216,6 +218,9 @@ watch( () => props.selectedTimestamp, async () => {
 </script>
 
 <template>
+  <div class="text-center px-2 p-1 m-1 mx-auto">
+    <div>Distanza dall'ottimo (r): {{ rDistance }}</div>
+  </div> 
   <div v-if="showChart" ref="container">
     <VueApexCharts type="heatmap" :options="chartOptions" :series="heatmapSeries"></VueApexCharts>
   </div>
