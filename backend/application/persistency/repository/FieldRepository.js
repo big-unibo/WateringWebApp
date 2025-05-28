@@ -33,27 +33,28 @@ class FieldRepository {
     }
 
     async updateWateringSectorDetails(sectorDetails, timestampFrom){
-        this.WateringThesis.removeAttribute('id')
-        const thesis = await this.WateringThesis.findAll({
-            where: {
-                refStructureName: sectorDetails.refStructureName,
-                companyName: sectorDetails.companyName,
-                fieldName: sectorDetails.fieldName,
-                sectorName: sectorDetails.sectorName,
-                timestamp_from: { [Op.lt]: timestampFrom },
-                timestamp_to: {
-                    [Op.or]: {
-                        [Op.is]: null,
-                        [Op.gt]: timestampFrom
-                    },
+        this.WateringSector.removeAttribute('id')
+        this.WateringSector.update(
+            { 
+                timestamp_to: timestampFrom,
+            },
+            {
+                where: {
+                    refStructureName: sectorDetails.refStructureName,
+                    companyName: sectorDetails.companyName,
+                    fieldName: sectorDetails.fieldName,
+                    sectorName: sectorDetails.sectorName,
+                    timestamp_from: { [Op.lt]: timestampFrom },
+                    timestamp_to: {
+                        [Op.or]: {
+                            [Op.is]: null,
+                            [Op.gt]: timestampFrom
+                        },
+                    }
                 }
             }
-        })
-        console.log(thesis)
-        if( thesis.length == 0){
-            throw new Error(`No thesis found for ${sectorDetails.refStructureName} - ${sectorDetails.companyName} - ${sectorDetails.fieldName} - ${sectorDetails.sectorName} valid at ${timestampFrom}`)
-        }
-        this.WateringSector.removeAttribute('id')
+        )
+
         this.WateringSector.build({
             source: sectorDetails.source,
             refStructureName: sectorDetails.refStructureName,
