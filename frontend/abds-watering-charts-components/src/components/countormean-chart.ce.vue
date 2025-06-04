@@ -1,7 +1,7 @@
 <script setup>
 import * as d3 from "d3";
 import {ref, watchEffect, nextTick} from "vue";
-import {average, groupBy} from "../common/appUtils.js";
+import {average, groupBy} from "../common/utils.js";
 import {CommunicationService} from "../services/CommunicationService.js";
 
 const communicationService = new CommunicationService();
