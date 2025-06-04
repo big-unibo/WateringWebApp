@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getNestedProperty } from "../utils/utils";
+import { getNestedProperty } from "../common/utils";
 
 export class CommunicationService {
 

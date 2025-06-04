@@ -62,7 +62,6 @@ class DeltaRepository {
                         AND (di."timestamp" < fd."timestamp_to" OR fd."timestamp_to" IS NULL)
             ) AS iq
             GROUP BY iq."source", iq."refStructureName", iq."companyName", iq."fieldName", iq."sectorName", iq."plantRow", iq."timestamp"
-            
             UNION
                 (SELECT fd."source", fd."refStructureName", fd."companyName", fd."fieldName", fd."sectorName", fd."plantRow",
                 ROUND((SUM(CASE WHEN fd."optValue" > -300 THEN LN(ABS(fd."optValue")) * fd."weight"
@@ -82,6 +81,18 @@ class DeltaRepository {
                     AND timestamp BETWEEN '${timestampFrom}' AND '${timestampTo}'
                 )
                 GROUP BY fd."source", fd."refStructureName", fd."companyName", fd."fieldName", fd."sectorName", fd."plantRow", wd."watering_start")
+            UNION
+                (SELECT 'iFarming', '${refStructureName}', '${companyName}', '${fieldName}', '${sectorName}', '${plantRow}',
+                ROUND(LN(ABS(-300))::numeric,6) AS "value",
+                EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd."watering_start")))::INT AS "timestamp",
+                'Pot. Idr. Asciutto (-300 cbar)' AS "detectedValueTypeDescription"       
+                FROM watering_data AS wd)
+            UNION
+                (SELECT 'iFarming', '${refStructureName}', '${companyName}', '${fieldName}', '${sectorName}', '${plantRow}',
+                ROUND(LN(ABS(-20))::numeric,6) AS "value",
+                EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd."watering_start")))::INT AS "timestamp",
+                'Pot. Idr. Capacità di campo (-20 cbar)' AS "detectedValueTypeDescription"       
+                FROM watering_data AS wd)
             ORDER BY "timestamp" DESC;
         `
 

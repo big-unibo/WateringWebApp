@@ -274,7 +274,7 @@ async function drawWeightsImage(){
         radius: 0,
       },
     },
-    colors: ['#06bd4f'],
+    colors: ['#7f7f7f'],
     dataLabels: {
       formatter: function(value, { seriesIndex, dataPointIndex, w }) { 
         if (value == 0){

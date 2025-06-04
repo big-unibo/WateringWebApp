@@ -54,6 +54,10 @@ const colorFunction = (str) => {
     return '#6064C8'
   if(str === 'Media Pot. Idr. Giornaliera')
     return '#339CFF'
+  if(str === 'Pot. Idr. Asciutto (-300 cbar)')
+    return '#fa5f43'
+  if(str === 'Pot. Idr. Capacità di campo (-20 cbar)')
+    return '#2cb8b8'
 }
 
 watchEffect(async () => {
@@ -115,7 +119,7 @@ async function mountChart() {
         position: 'left',
         title: {
           display: true,
-          text: 'cbar'
+          text: 'log(|cbar|)'
         },
       }
     }
