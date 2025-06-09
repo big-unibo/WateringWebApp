@@ -31,7 +31,7 @@ class WateringAggregateRepository {
                 AND "fieldName" = '${fieldName}'
                 AND "sectorName" = '${sectorName}'
                 AND "plantRow" = '${plantRow}'
-                GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", timestamp
+                GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", EXTRACT(EPOCH FROM date_trunc('day', to_timestamp(vdo.timestamp)))
                 ORDER BY timestamp ASC
                 )
             UNION
@@ -62,7 +62,7 @@ class WateringAggregateRepository {
               AND vdo."fieldName" = '${fieldName}'
               AND vdo."sectorName" = '${sectorName}'
               AND vdo."plantRow" = '${plantRow}'
-            GROUP BY vdo."source", vdo."refStructureName", vdo."companyName", vdo."fieldName", "detectedValueTypeDescription", vdo."sectorName", vdo."plantRow", timestamp
+            GROUP BY vdo."source", vdo."refStructureName", vdo."companyName", vdo."fieldName", "detectedValueTypeDescription", vdo."sectorName", vdo."plantRow", EXTRACT(EPOCH FROM date_trunc('day', to_timestamp(vdo.timestamp)))
             ORDER BY timestamp ASC)
             UNION            
             (SELECT DISTINCT "source", 
