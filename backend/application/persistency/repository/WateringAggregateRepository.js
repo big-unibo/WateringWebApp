@@ -17,10 +17,10 @@ class WateringAggregateRepository {
                             "detectedValueTypeDescription",
                             "sectorName",
                             "plantRow",
-                            MAX("value") as value, rounded_timestamp
+                            MAX("value") as value, timestamp
             FROM (
                 (
-                SELECT DISTINCT "source", "refStructureName", "companyName", "fieldName", 'Pluv Curr (mm)' "detectedValueTypeDescription", "sectorName", "plantRow", SUM ("value") as value, ((3600*24) * (timestamp / (3600*24)):: INT) as rounded_timestamp
+                SELECT DISTINCT "source", "refStructureName", "companyName", "fieldName", 'Pluv Curr (mm)' "detectedValueTypeDescription", "sectorName", "plantRow", SUM ("value") as value, EXTRACT(EPOCH FROM date_trunc('day', to_timestamp(timestamp))) as timestamp
                 FROM view_data_original
                 WHERE "detectedValueTypeId" IN ('PLUV_CURR')
                 AND "timestamp" >= '${timefilterFrom}'
@@ -31,8 +31,8 @@ class WateringAggregateRepository {
                 AND "fieldName" = '${fieldName}'
                 AND "sectorName" = '${sectorName}'
                 AND "plantRow" = '${plantRow}'
-                GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", rounded_timestamp
-                ORDER BY rounded_timestamp ASC
+                GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", timestamp
+                ORDER BY timestamp ASC
                 )
             UNION
             (SELECT DISTINCT vdo."source", 
@@ -42,7 +42,8 @@ class WateringAggregateRepository {
                             'Dripper (L)' as "detectedValueTypeDescription",
                             vdo."sectorName",
                             vdo."plantRow",
-                            SUM(vdo."value" * COALESCE(ws."dripper_scaling_factor",1)) as value, ((3600*24) * (vdo.timestamp / (3600*24))::INT) as rounded_timestamp
+                            SUM(vdo."value" * COALESCE(ws."dripper_scaling_factor",1)) as value, 
+                            EXTRACT(EPOCH FROM date_trunc('day', to_timestamp(vdo.timestamp))) as timestamp
             FROM view_data_original AS vdo
             LEFT JOIN watering_sector AS ws 
               ON vdo."source" = ws."source"
@@ -61,8 +62,8 @@ class WateringAggregateRepository {
               AND vdo."fieldName" = '${fieldName}'
               AND vdo."sectorName" = '${sectorName}'
               AND vdo."plantRow" = '${plantRow}'
-            GROUP BY vdo."source", vdo."refStructureName", vdo."companyName", vdo."fieldName", "detectedValueTypeDescription", vdo."sectorName", vdo."plantRow", rounded_timestamp
-            ORDER BY rounded_timestamp ASC)
+            GROUP BY vdo."source", vdo."refStructureName", vdo."companyName", vdo."fieldName", "detectedValueTypeDescription", vdo."sectorName", vdo."plantRow", timestamp
+            ORDER BY timestamp ASC)
             UNION            
             (SELECT DISTINCT "source", 
                             "refStructureName",
@@ -71,7 +72,8 @@ class WateringAggregateRepository {
                             'Sprinkler (L)' as "detectedValueTypeDescription",
                             "sectorName",
                             "plantRow",
-                            SUM("value") as value, ((3600*24) * (timestamp / (3600*24))::INT) as rounded_timestamp
+                            SUM("value") as value, 
+                            EXTRACT(EPOCH FROM date_trunc('day', to_timestamp(timestamp))) as timestamp
             FROM view_data_original
             WHERE "detectedValueTypeId" IN ('SPRINKLER')
               AND "timestamp" >= '${timefilterFrom}'
@@ -82,8 +84,8 @@ class WateringAggregateRepository {
               AND "fieldName" = '${fieldName}'
               AND "sectorName" = '${sectorName}'
               AND "plantRow" = '${plantRow}'
-            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", rounded_timestamp
-            ORDER BY rounded_timestamp ASC)
+            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", timestamp
+            ORDER BY timestamp ASC)
             UNION
             (SELECT DISTINCT "source", 
                             "refStructureName",
@@ -93,7 +95,7 @@ class WateringAggregateRepository {
                             "sectorName",
                             "plantRow",
                             AVG(-"value") as value,
-                  ((3600*24) * (timestamp / (3600*24))::INT) as rounded_timestamp
+                            EXTRACT(EPOCH FROM date_trunc('day', to_timestamp(timestamp))) as timestamp
             FROM view_data_original
             WHERE "detectedValueTypeId" IN ('ET0')
               AND "timestamp" >= '${timefilterFrom}'
@@ -104,8 +106,8 @@ class WateringAggregateRepository {
               AND "fieldName" = '${fieldName}'
               AND "sectorName" = '${sectorName}'
               AND "plantRow" = '${plantRow}'
-            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", rounded_timestamp
-            ORDER BY rounded_timestamp ASC)
+            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", timestamp
+            ORDER BY timestamp ASC)
             UNION
             (SELECT DISTINCT "source", 
                             "refStructureName",
@@ -115,7 +117,7 @@ class WateringAggregateRepository {
                             "sectorName",
                             "plantRow",
                             AVG("advice") as value,
-                            ((3600*24) * (watering_start / (3600*24))::INT) as rounded_timestamp
+                            EXTRACT(EPOCH FROM date_trunc('day', to_timestamp(watering_start))) as timestamp
             FROM watering_schedule
             WHERE "watering_start" >= '${timefilterFrom}'
               AND "watering_start" < '${timefilterTo}'
@@ -126,8 +128,8 @@ class WateringAggregateRepository {
               AND "sectorName" = '${sectorName}'
               AND "plantRow" = '${plantRow}'
               AND "latest" = true
-            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", rounded_timestamp
-            ORDER BY rounded_timestamp ASC)
+            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", timestamp
+            ORDER BY timestamp ASC)
             UNION
             (SELECT DISTINCT "source",
                             "refStructureName",
@@ -137,7 +139,7 @@ class WateringAggregateRepository {
                             "sectorName",
                             "plantRow",
                             "expected_water" as value,
-                            ((3600*24) * (watering_start / (3600*24))::INT) as rounded_timestamp
+                            EXTRACT(EPOCH FROM date_trunc('day', to_timestamp(watering_start))) as timestamp
             FROM watering_schedule
             WHERE "watering_start" >= '${timefilterFrom}'
               AND "watering_start" < '${timefilterTo}'
@@ -148,11 +150,11 @@ class WateringAggregateRepository {
               AND "fieldName" = '${fieldName}'
               AND "sectorName" = '${sectorName}'
               AND "plantRow" = '${plantRow}'
-            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "expected_water", "sectorName", "plantRow", rounded_timestamp
-            ORDER BY rounded_timestamp ASC)
+            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "expected_water", "sectorName", "plantRow", timestamp
+            ORDER BY timestamp ASC)
                 ) A
-            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", rounded_timestamp
-            ORDER BY rounded_timestamp ASC, "detectedValueTypeDescription" ASC
+            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", timestamp
+            ORDER BY timestamp ASC, "detectedValueTypeDescription" ASC
         `;
 
         const results = await this.sequelize.query(queryString, {
@@ -176,7 +178,7 @@ class WateringAggregateRepository {
             result.sectorName,
             result.plantRow,
             result.value,
-            result.rounded_timestamp
+            result.timestamp
         ));
     }
 
