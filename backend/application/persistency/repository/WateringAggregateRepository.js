@@ -31,7 +31,7 @@ class WateringAggregateRepository {
                 AND "fieldName" = '${fieldName}'
                 AND "sectorName" = '${sectorName}'
                 AND "plantRow" = '${plantRow}'
-                GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", EXTRACT(EPOCH FROM date_trunc('day', to_timestamp(vdo.timestamp)))
+                GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", EXTRACT(EPOCH FROM date_trunc('day', to_timestamp(timestamp)))
                 ORDER BY timestamp ASC
                 )
             UNION
