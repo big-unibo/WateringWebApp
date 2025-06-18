@@ -91,8 +91,8 @@ async function drawImage(timestamp){
 
   const verticalOffset = 60
   const horizontalOffset = 10
-  const chartHeight = (cellSize * heatmapSeries.value.length + verticalOffset) 
-  const chartWidth = (cellSize * heatmapSeries.value[0].data.length + horizontalOffset)
+  const chartHeight = (cellSize * Math.max(heatmapSeries.value.length,7) + verticalOffset) 
+  const chartWidth = (cellSize * Math.max(heatmapSeries.value[0].data.length,7) + horizontalOffset)
 
   chartOptions.value = {
     chart: {
