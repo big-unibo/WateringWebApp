@@ -133,10 +133,11 @@ class DeltaRepository {
                    q1.xx,
                    q1.yy,
                    q1."value" - q2."value" as distance,
+                   q1."weight",
                    q1."timestamp"
             FROM (
                 SELECT di."source", di."refStructureName", di."companyName", di."fieldName", di."sectorName", di."plantRow", di."timestamp", (CASE WHEN di."value" > -300 THEN LN(ABS(di."value")) * weighted."weight"
-                ELSE LN(ABS(-300)) * weighted."weight" END) as "value", di."xx", di."yy"
+                ELSE LN(ABS(-300)) * weighted."weight" END) as "value", weighted."weight", di."xx", di."yy"
                 FROM data_interpolated as di
                 JOIN (
                     SELECT "source", "refStructureName", "companyName", "fieldName", "sectorName", "plantRow", "xx", "yy", "weight"

@@ -203,7 +203,7 @@ async function mountChart() {
     showChart.value = chartDataResponse.length > 0
     if(showChart.value){
         image.value = chartDataResponse
-        rDistance.value = (chartDataResponse.map(item => item.value).reduce((a,b) => a + b, 0)/chartDataResponse.length).toFixed(2)
+        rDistance.value = (chartDataResponse.map(item => item.value).reduce((a,b) => a + b, 0)/chartDataResponse.map(item => item.weight).reduce((a,b) => a + b, 0)).toFixed(2)
         await drawImage()
     }
   } else {

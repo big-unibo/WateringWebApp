@@ -22,5 +22,16 @@ export class MatrixData {
     this.optValue = value
     this.weight = weight
   }
+}
+
+export class MatrixDistanceData {
+
+  constructor(xx, yy, zz, value, weight) {
+    this.xx = xx
+    this.yy = yy
+    this.zz = zz
+    this.value = value
+    this.weight = weight
+  }
 
 }

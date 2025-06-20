@@ -3,7 +3,7 @@ import { PlantDto } from "../dtos/plantDto.js";
 import { ColtureDto } from "../dtos/coltureDto.js";
 import { DataResponse, DataValue, MeasureData, HumidityBinMeasureData } from '../dtos/dataDto.js';
 import { WateringScheduleResponse, WateringEventDto } from "../dtos/wateringScheduleDto.js";
-import { MatrixData, OptStateDto } from "../dtos/optStateDto.js";
+import { MatrixData, MatrixDistanceData, OptStateDto } from "../dtos/optStateDto.js";
 import { WateringAdviceDto } from "../dtos/wateringAdviceDto.js";
 
 class DtoConverter {
@@ -142,7 +142,7 @@ class DtoConverter {
     convertPunctualDistanceWrapper(wrappers){
         const [[jsonKey, values]] = this.#buildGenericReferenceMap(wrappers).entries();
         const key = JSON.parse(jsonKey)
-        const distances = values.map(v => new InterpolatedMeasureData(0, v.yy, v.xx, v.distance))
+        const distances = values.map(v => new MatrixDistanceData(v.xx, v.yy, 0, v.distance, v.weight))
         return new InterpolatedDataValue(key.refStructureName, key.companyName, key.fieldName, new PlantDto(key.sectorName, key.plantRow), distances)
     }
 
