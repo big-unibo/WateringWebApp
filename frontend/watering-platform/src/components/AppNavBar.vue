@@ -23,10 +23,6 @@
     <div class="container-fluid">
       <a class="navbar-brand flex-fill" href="#"> Monitoraggio idrico </a>
       <a class="navbar-brand" href="https://big.csr.unibo.it"> <img src="../assets/images/10simple.png" height="40" alt=""> </a>
-      <div class="navbar-user" v-if="user && user.value">
-        <span class="navbar-text" style="margin-right: 20px;">{{user.value.user}}</span>
-        <button class="btn btn-outline-info" @click="handleLogout" role="button">Logout</button>
-      </div>
     </div>
   </nav>
 </template>

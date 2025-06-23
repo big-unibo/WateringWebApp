@@ -1,8 +1,11 @@
 <script setup>
-import AppNavBar from "./components/AppNavBar.vue"
 import authService from "@/services/auth.service.js"
 import { useRouter } from 'vue-router';
 const router = useRouter()
+const authUser = import.meta.env.VITE_DEMO_USER
+const authPass = import.meta.env.VITE_DEMO_PASSWORD
+
+authService.login({authUser, authPass})
 const token = authService.authHeader()
 
 if(token)

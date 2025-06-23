@@ -24,13 +24,13 @@ const router = useRouter()
 
 const props = defineProps(['token', 'user'])
 
-let showCustomizeInput = ref(false)
+let showCustomizeInput = ref(true)
 
-let selectedTimestampFrom = ref(getCurrentTimestampMinusDays(7))
-let selectedTimestampTo = ref(getCurrentTimestampMinusDays(0))
+let selectedTimestampFrom = ref(1719792000)// Example timestamp for 2024-07-01 02:00:00
+let selectedTimestampTo = ref(1722463140)// Example timestamp for 2024-07-31 23:59:00
 
-let customSelectedTimestampTo = ref(getCurrentTimestampMinusDays(0))
-let customSelectedTimestampFrom = ref(getCurrentTimestampMinusDays(2))
+let customSelectedTimestampTo = selectedTimestampTo
+let customSelectedTimestampFrom = selectedTimestampFrom
 
 
 let selectedFieldName = ref("Seleziona un campo")
@@ -243,25 +243,6 @@ function selectedTime(time){
 <template>
 
   <div class="container align-top mt-5 pt-5 pt-sm-3">
-    <div class="row m-2">
-      <div class="col d-flex justify-content-center">
-        <div class="btn-group-toggle text-center" data-toggle="buttons">
-          <span class="m-2">Filtro:</span>
-          <label :class="{ active: isLabelSelected('customize_day') }" class="btn btn-sm btn-secondary timefilter m-1">
-            <input type="radio" name="timefilter-radio" value="customize_day" autocomplete="off" @click="selectTimePeriod('customize_day')">Altro periodo
-          </label>
-          <label class="btn btn-sm btn-secondary timefilter m-1" :class="{active: isLabelSelected('30_day')}">
-            <input type="radio" name="timefilter-radio" value="30_day" autocomplete="off" @click="selectTimePeriod('30_day')">Ultimo mese
-          </label>
-          <label class="btn btn-sm btn-secondary timefilter m-1" :class="{active: isLabelSelected('7_day')}">
-            <input type="radio" id="one_week_filter" name="timefilter-radio" value="7_day" autocomplete="off" @click="selectTimePeriod('7_day')" checked>Ultima settimana
-          </label>
-          <label class="btn btn-sm btn-secondary timefilter m-1" :class="{active: isLabelSelected('24_hours')}">
-            <input type="radio" name="timefilter-radio" value="24_hour" @click="selectTimePeriod('24_hours')" autocomplete="off">Ultime 24h
-          </label>
-        </div>
-      </div>
-    </div>
     <div v-if="showCustomizeInput" class="row m-2" id="timeperiod" >
       <div class="col d-flex justify-content-center">
         <span class="m-1">Periodo da:</span>
@@ -317,7 +298,6 @@ function selectedTime(time){
         <div class="card-header d-flex justify-content-between align-items-center">
           <span>Matrice dell'umidità</span>
           <div>
-            <UpdateOptimalStateComponent v-if="hasUserPermission('WA')" :config="JSON.stringify(connectionParams)" :selectedTimestamp="selectedTimestamp"/>
             <button class="btn btn-sm btn-secondary m-1" type="button" @click="enableOptimalMatrix" id="optimal-heatmap-button">Mostra ottimo</button>
             <button class="btn btn-sm btn-secondary m-1" type="button" @click="enableDynamicHeatmap" id="dynamic-heatmap-button">Mostra evoluzione</button>
           </div>  
@@ -417,16 +397,6 @@ function selectedTime(time){
         </div>
       </div>
     </div>
-
-    <div v-if="hasUserPermission('MO')" class="my-3 container col-md-12">
-      <div class="card">
-        <div class="card-header">Anomalie riscontrate</div>
-        <div class="card-body">
-          <LogComponent :config="JSON.stringify(connectionParams)"></LogComponent>
-        </div>
-      </div> 
-    </div>
-
     <div style="visibility: hidden">
       {{selectedTimestampTo}} - {{customSelectedTimestampTo}}
       {{customSelectedTimestampFrom}} - {{selectedTimestampFrom}}

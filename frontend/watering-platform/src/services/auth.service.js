@@ -12,19 +12,20 @@ class AuthService {
         return !!token;
     }
 
-    login(user) {
-        return axiosInstance.post('/login', {
-            username: user.authUser,
-            password: hashPassword(user.authPass),
-            auth_type: 'pwd'
-        }).then(response => {
-            if(response.data.token) {
-                localStorage.setItem('appToken', JSON.stringify(response.data.token))
+    async login(user) {
+        try {
+            const response = await axiosInstance.post('/login', {
+                username: user.authUser,
+                password: hashPassword(user.authPass),
+                auth_type: 'pwd'
+            });
+            if (response.data.token) {
+                localStorage.setItem('appToken', JSON.stringify(response.data.token));
             }
-        }).catch(error => {
-            console.log(error)
+        } catch (error) {
+            console.log(error);
             throw Error(`Authentication failed: ${error.message}`);
-        });
+        }
     }
 
     logout(){
