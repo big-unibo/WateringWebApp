@@ -1,0 +1,30 @@
+version: '3.9'
+services:
+  watering-web-frontend:
+    image: 127.0.0.0:5000/watering-web-frontend:v0.0.1
+    ports:
+      - "43080:80"
+    deploy:
+      placement:
+        constraints:
+            - node.role == worker
+            - node.hostname != CB-Mass-Node1
+    networks:
+      - BIG-dataplatform-network
+  
+  watering-web-backend:
+    image: 127.0.0.0:5000/watering-web-backend:v0.0.1
+    ports:
+      - "8081:8081"
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+          - node.hostname != CB-Mass-Node1
+    networks:
+      - BIG-dataplatform-network
+
+networks:
+  BIG-dataplatform-network:
+    external: true
+    name: BIG-dataplatform-network
