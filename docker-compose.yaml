@@ -1,6 +1,6 @@
 version: '3.9'
 services:
-  watering-web-frontend:
+  watering-web-frontend-demo:
     image: 127.0.0.0:5000/watering-web-frontend-demo:v0.0.1
     ports:
       - "45080:80"
@@ -12,7 +12,7 @@ services:
     networks:
       - BIG-dataplatform-network
   
-  watering-web-backend:
+  watering-web-backend-demo:
     image: 127.0.0.0:5000/watering-web-backend-demo:v0.0.1
     ports:
       - "8083:8083"
