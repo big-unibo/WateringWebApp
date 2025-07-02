@@ -18,7 +18,7 @@ class HumidityBinsRepository {
                 FROM data_interpolated
                 WHERE "timestamp" >= '${timeFilterFrom}'
                     AND "timestamp" <= '${timeFilterTo}'
-                    AND "source" = 'iFarming'
+                    AND "source" = 'source 1'
                     AND "refStructureName" = '${refStructureName}'
                     AND "companyName" = '${companyName}'
                     AND "fieldName" = '${fieldName}'
@@ -101,7 +101,7 @@ class HumidityBinsRepository {
                        WHERE "detectedValueTypeId" = ANY '${detectedValueTypeId}'
                          AND "timestamp" >= '${timeFilterFrom}'
                          AND "timestamp" <= '${timeFilterTo}'
-                         AND "source" = 'iFarming'
+                         AND "source" = 'source 1'
                          AND "refStructureName" = '${refStructureName}'
                          AND "companyName" = '${companyName}'
                          AND "fieldName" = '${fieldName}'

@@ -25,7 +25,7 @@ class WateringAggregateRepository {
                 WHERE "detectedValueTypeId" IN ('PLUV_CURR')
                 AND "timestamp" >= '${timefilterFrom}'
                 AND "timestamp" <= '${timefilterTo}'
-                AND "source" = 'iFarming'
+                AND "source" = 'source 1'
                 AND "refStructureName" = '${refStructureName}'
                 AND "companyName" = '${companyName}'
                 AND "fieldName" = '${fieldName}'
@@ -56,7 +56,7 @@ class WateringAggregateRepository {
             WHERE vdo."detectedValueTypeId" IN ('DRIPPER')
               AND vdo."timestamp" >= '${timefilterFrom}'
               AND vdo."timestamp" <= '${timefilterTo}'
-              AND vdo."source" = 'iFarming'
+              AND vdo."source" = 'source 1'
               AND vdo."refStructureName" = '${refStructureName}'
               AND vdo."companyName" = '${companyName}'
               AND vdo."fieldName" = '${fieldName}'
@@ -78,7 +78,7 @@ class WateringAggregateRepository {
             WHERE "detectedValueTypeId" IN ('SPRINKLER')
               AND "timestamp" >= '${timefilterFrom}'
               AND "timestamp" <= '${timefilterTo}'
-              AND "source" = 'iFarming'
+              AND "source" = 'source 1'
               AND "refStructureName" = '${refStructureName}'
               AND "companyName" = '${companyName}'
               AND "fieldName" = '${fieldName}'
@@ -100,7 +100,7 @@ class WateringAggregateRepository {
             WHERE "detectedValueTypeId" IN ('ET0')
               AND "timestamp" >= '${timefilterFrom}'
               AND "timestamp" <= '${timefilterTo}'
-              AND "source" = 'iFarming'
+              AND "source" = 'source 1'
               AND "refStructureName" = '${refStructureName}'
               AND "companyName" = '${companyName}'
               AND "fieldName" = '${fieldName}'
@@ -121,7 +121,7 @@ class WateringAggregateRepository {
             FROM watering_schedule
             WHERE "watering_start" >= '${timefilterFrom}'
               AND "watering_start" < '${timefilterTo}'
-              AND "source" = 'iFarming'
+              AND "source" = 'source 1'
               AND "refStructureName" = '${refStructureName}'
               AND "companyName" = '${companyName}'
               AND "fieldName" = '${fieldName}'
@@ -144,7 +144,7 @@ class WateringAggregateRepository {
             WHERE "watering_start" >= '${timefilterFrom}'
               AND "watering_start" < '${timefilterTo}'
               AND "latest" = true
-              AND "source" = 'iFarming'
+              AND "source" = 'source 1'
               AND "refStructureName" = '${refStructureName}'
               AND "companyName" = '${companyName}'
               AND "fieldName" = '${fieldName}'

@@ -20,7 +20,7 @@ const getResults = async (refStructureName, companyName, fieldName, sectorName, 
                         "timestamp",
                         "value"
         FROM data_interpolated
-        WHERE "source" = 'iFarming'
+        WHERE "source" = 'source 1'
           AND "refStructureName" = '${refStructureName}'
           AND "companyName" = '${companyName}'
           AND "fieldName" = '${fieldName}'
@@ -80,7 +80,7 @@ class DataInterpolatedRepository {
         const query = `
             SELECT "zz", "yy", "xx", AVG(value * -1)::numeric AS mean, STDDEV(value) ::numeric AS std
             FROM data_interpolated
-            WHERE "source" = 'iFarming'
+            WHERE "source" = 'source 1'
               AND "refStructureName" = '${refStructureName}'
               AND "companyName" = '${companyName}'
               AND "fieldName" = '${fieldName}'
@@ -121,7 +121,7 @@ class DataInterpolatedRepository {
         const query = `
             SELECT "xx", "yy", "zz" 
             FROM data_interpolated
-            WHERE "source" = 'iFarming'
+            WHERE "source" = 'source 1'
                 AND "refStructureName" = '${refStructureName}'
                 AND "companyName" = '${companyName}'
                 AND "fieldName" = '${fieldName}'
@@ -130,7 +130,7 @@ class DataInterpolatedRepository {
                 AND  "timestamp" = (
                     SELECT MAX(timestamp) 
                     FROM data_interpolated 
-                    WHERE "source" = 'iFarming'
+                    WHERE "source" = 'source 1'
                         AND "refStructureName" = '${refStructureName}'
                         AND "companyName" = '${companyName}'
                         AND "fieldName" = '${fieldName}'

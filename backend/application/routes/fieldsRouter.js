@@ -163,7 +163,7 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/setWate
             prescriptiveThesis: prescriptiveThesis,
             timestampFrom: timestampFrom
         } = req.body;
-        const sectorDetails = new WateringSectorDto('iFarming', refStructureName, companyName, fieldName, sectorName, advice, prescriptive, valveId, dripperCapacity, dripperScalingFactor, sprinklerCapacity)
+        const sectorDetails = new WateringSectorDto('source 1', refStructureName, companyName, fieldName, sectorName, advice, prescriptive, valveId, dripperCapacity, dripperScalingFactor, sprinklerCapacity)
         await fieldService.updateWateringSectorDetails(sectorDetails, timestampFrom)
         if(prescriptiveThesis && prescriptiveThesis !== ''){
           await fieldService.setPrescriptiveThesis(refStructureName, companyName, fieldName, sectorName, prescriptiveThesis, timestampFrom)

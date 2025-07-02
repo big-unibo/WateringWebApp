@@ -28,7 +28,7 @@ class DeltaRepository {
                 FROM watering_schedule
                 WHERE latest = true
                 AND "watering_start" BETWEEN '${timestampFrom}' AND '${timestampTo}'
-                AND "source" = 'iFarming'
+                AND "source" = 'source 1'
                 AND "refStructureName" = '${refStructureName}'
                 AND "companyName" = '${companyName}'
                 AND "fieldName" = '${fieldName}'
@@ -72,7 +72,7 @@ class DeltaRepository {
                 JOIN watering_data AS wd ON wd."timestamp" > fd."timestamp_from" AND (wd."timestamp" < fd."timestamp_to" OR fd."timestamp_to" IS NULL)
                 WHERE (fd.xx, fd.yy) IN (
                     SELECT DISTINCT xx, yy FROM data_interpolated 
-                    WHERE "source" = 'iFarming' 
+                    WHERE "source" = 'source 1' 
                     AND "refStructureName" = '${refStructureName}'
                     AND "companyName" = '${companyName}'
                     AND "fieldName" = '${fieldName}'
@@ -82,13 +82,13 @@ class DeltaRepository {
                 )
                 GROUP BY fd."source", fd."refStructureName", fd."companyName", fd."fieldName", fd."sectorName", fd."plantRow", wd."watering_start")
             UNION
-                (SELECT 'iFarming', '${refStructureName}', '${companyName}', '${fieldName}', '${sectorName}', '${plantRow}',
+                (SELECT 'source 1', '${refStructureName}', '${companyName}', '${fieldName}', '${sectorName}', '${plantRow}',
                 ROUND(LN(ABS(-300))::numeric,6) AS "value",
                 EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd."watering_start")))::INT AS "timestamp",
                 'Pot. Idr. Asciutto (-300 cbar)' AS "detectedValueTypeDescription"       
                 FROM watering_data AS wd)
             UNION
-                (SELECT 'iFarming', '${refStructureName}', '${companyName}', '${fieldName}', '${sectorName}', '${plantRow}',
+                (SELECT 'source 1', '${refStructureName}', '${companyName}', '${fieldName}', '${sectorName}', '${plantRow}',
                 ROUND(LN(ABS(-20))::numeric,6) AS "value",
                 EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd."watering_start")))::INT AS "timestamp",
                 'Pot. Idr. Capacità di campo (-20 cbar)' AS "detectedValueTypeDescription"       
@@ -143,7 +143,7 @@ class DeltaRepository {
                     SELECT "source", "refStructureName", "companyName", "fieldName", "sectorName", "plantRow", "xx", "yy", "weight"
                     FROM field_matrix as fi
                     JOIN matrix_profile as mp ON fi."matrixId" = mp."matrixId"
-                    WHERE "source" = 'iFarming' 
+                    WHERE "source" = 'source 1' 
                     AND "refStructureName" = '${refStructureName}'
                     AND "companyName" = '${companyName}'
                     AND "fieldName" = '${fieldName}'

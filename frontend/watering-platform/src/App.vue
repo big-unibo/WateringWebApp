@@ -8,9 +8,7 @@ const authPass = import.meta.env.VITE_DEMO_PASSWORD
 authService.login({authUser, authPass})
 const token = authService.authHeader()
 
-if(token)
-  router.push("/")
-else router.push("/login")
+router.push("/")
 
 </script>
 

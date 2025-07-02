@@ -29,8 +29,8 @@ let showCustomizeInput = ref(true)
 let selectedTimestampFrom = ref(1719792000)// Example timestamp for 2024-07-01 02:00:00
 let selectedTimestampTo = ref(1722463140)// Example timestamp for 2024-07-31 23:59:00
 
-let customSelectedTimestampTo = selectedTimestampTo
-let customSelectedTimestampFrom = selectedTimestampFrom
+let customSelectedTimestampTo = ref(selectedTimestampTo.value)
+let customSelectedTimestampFrom = ref(selectedTimestampFrom.value)
 
 
 let selectedFieldName = ref("Seleziona un campo")

@@ -165,7 +165,7 @@ class FieldRepository {
                         MAX("timestamp") as max_timestamp
                     FROM data_interpolated
                     WHERE "timestamp" < ${timestamp}
-                    AND "source" = 'iFarming'
+                    AND "source" = 'source 1'
                     AND "refStructureName" = '${refStructureName}'
                     AND "companyName" = '${companyName}'
                     AND "fieldName" = '${fieldName}'
@@ -209,7 +209,7 @@ class FieldRepository {
             SELECT "source", "refStructureName", "companyName", "fieldName", "sectorName", "plantRow", "advice", "advice_timestamp" as "profile_timestamp", "watering_start", "watering_end"
             FROM
                 watering_schedule 
-            WHERE 	"source" = 'iFarming' AND
+            WHERE 	"source" = 'source 1' AND
                     "refStructureName" = '${refStructureName}' AND
                     "companyName" = '${companyName}' AND
                     "fieldName" = '${fieldName}' AND
@@ -219,7 +219,7 @@ class FieldRepository {
                         SELECT MAX(advice_timestamp) FROM watering_schedule
                         WHERE "latest" = true AND 
                             "deleted" = false AND 
-                            "source" = 'iFarming' AND
+                            "source" = 'source 1' AND
                             "refStructureName" = '${refStructureName}' AND
                             "companyName" = '${companyName}' AND
                             "fieldName" = '${fieldName}' AND
@@ -328,7 +328,7 @@ class FieldRepository {
         )
 
         const model = this.WateringAlgorithmParams.build({
-            source: oldParams ? oldParams.dataValues.source :'iFarming',
+            source: oldParams ? oldParams.dataValues.source :'source 1',
             refStructureName: baseline.refStructureName,
             companyName: baseline.companyName,
             fieldName: baseline.fieldName,

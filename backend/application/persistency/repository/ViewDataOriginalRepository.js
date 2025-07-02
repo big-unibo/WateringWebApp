@@ -20,7 +20,7 @@ const getResults = async (calculationType, detectedValueTypeDescription, timeFil
             WHERE "detectedValueTypeId" = ANY ('{ ${detectedValueTypeDescription.map(value => `${value}`).join(', ')} }')
               AND "timestamp" >= '${timeFilterFrom}'
               AND "timestamp" <= '${timeFilterTo}'
-              AND "source" = 'iFarming'
+              AND "source" = 'source 1'
               AND "refStructureName" = '${refStructureName}'
               AND "companyName" = '${companyName}'
               AND "fieldName" = '${fieldName}'
@@ -85,7 +85,7 @@ const getDripperAdjustedData = async (timeFilterFrom, timeFilterTo, refStructure
         WHERE vdo."detectedValueTypeId" = 'DRIPPER'
         AND vdo."timestamp" >= '${timeFilterFrom}'
         AND vdo."timestamp" <= '${timeFilterTo}'
-        AND vdo."source" = 'iFarming'
+        AND vdo."source" = 'source 1'
         AND vdo."refStructureName" = '${refStructureName}'
         AND vdo."companyName" = '${companyName}'
         AND vdo."fieldName" = '${fieldName}'
