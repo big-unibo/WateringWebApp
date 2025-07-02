@@ -3,7 +3,7 @@ services:
   watering-web-frontend:
     image: 127.0.0.0:5000/watering-web-frontend-demo:v0.0.1
     ports:
-      - "44080:80"
+      - "45080:80"
     deploy:
       placement:
         constraints:
