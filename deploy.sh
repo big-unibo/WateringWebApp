@@ -5,4 +5,4 @@ cd backend
 cd ../frontend
 ./build_image.sh watering-web-frontend
 cd ..
-docker stack deploy -c ./docker-compose.yaml watering-website
+docker stack deploy -c ./docker-compose.yaml smarter-demo-website
