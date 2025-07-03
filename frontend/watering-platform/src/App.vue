@@ -1,16 +1,17 @@
 <script setup>
 import authService from "@/services/auth.service.js"
+import { onMounted } from "vue";
 import { useRouter } from 'vue-router';
 const router = useRouter()
 const authUser = import.meta.env.VITE_DEMO_USER
 const authPass = import.meta.env.VITE_DEMO_PASSWORD
 
-authService.login({authUser, authPass})
-const token = authService.authHeader()
+onMounted(async () => {
+  console.log("Mounting App...")
+  await authService.login({authUser, authPass})
 
-if(token)
-  router.push("/")
-else router.push("/login")
+  await router.push("/")
+})
 
 </script>
 
