@@ -13,8 +13,7 @@ let user = reactive({});
 const checkInterval = 36000000;
 
 onMounted(async () => {
-  token.value = await authService.authHeader();
-
+  token.value = authService.authHeader();
   if (token.value) {
     const result = await authService.retrieveUserFieldPermissions(token.value);
     if(!result) await router.push('/logout')

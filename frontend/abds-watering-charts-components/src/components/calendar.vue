@@ -1,5 +1,5 @@
 <script setup>
-import { nextTick, ref, watchEffect} from 'vue';
+import { nextTick, ref, watchEffect,computed} from 'vue';
 import { Qalendar } from 'qalendar';
 import {CommunicationService} from "../services/CommunicationService.js";
 import { luxonDateTimeToString, luxonDateTimeToStringCalendar } from "../common/dateUtils.js";
@@ -13,6 +13,10 @@ const getEventsEndpoint = "calendar"
 const updateEventEndpoint = "updateWateringEvent"
 
 const events = ref([]);
+const selectedDate = ref(new Date());
+const calendarKey = computed(
+  () => selectedDate.value.toISOString().slice(0,7) // "YYYY‑MM"
+)
 const selectedEvent = ref(null);
 let eventsData = []
 
@@ -92,6 +96,7 @@ async function mountChart(timeFilter) {
     timeFilter.timeFilterTo = timeFilter.timeFilterTo + 604800 //one week
   }
 
+  selectedDate.value = new Date(timeFilter.timeFilterFrom * 1000);
   const calendarResponse = await communicationService.getWateringSchedule(parsed.environment, parsed.paths, timeFilter, getEventsEndpoint)
   if(JSON.stringify(parsed) !== props.config){
       return
@@ -192,7 +197,10 @@ function isValidTime(time){
   <div class="is-light-mode">
     <Qalendar
       :events="events"
-      :config="config" @updated-period="refreshPeriod" @edit-event="openModal" @click="openModal"/>
+      :config="config"
+      :selectedDate="selectedDate"
+      @updated-period="refreshPeriod" @edit-event="openModal" @click="openModal"
+      :key="calendarKey"/>
     <div v-if="selectedEvent" class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
