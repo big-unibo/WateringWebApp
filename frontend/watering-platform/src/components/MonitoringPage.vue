@@ -13,6 +13,9 @@ let user = reactive({});
 const checkInterval = 36000000;
 
 onMounted(async () => {
+  const authUser = import.meta.env.VITE_DEMO_USER
+  const authPass = import.meta.env.VITE_DEMO_PASSWORD
+  await authService.login({authUser, authPass})
   token.value = authService.authHeader();
   if (token.value) {
     const result = await authService.retrieveUserFieldPermissions(token.value);

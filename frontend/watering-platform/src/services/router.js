@@ -9,16 +9,6 @@ const routes = [
         name: "Watering",
         component: MonitoringPage,
         props: true
-    },
-    {
-        path: "/login",
-        name: "Login",
-        component: LoginPage,
-    },
-    {
-        path: "/logout",
-        name: "Logout",
-        component: LoginPage,
     }
 ];
 
