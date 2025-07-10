@@ -2,7 +2,10 @@
 import { onMounted, ref } from 'vue';
 import HumidityHeatmap from '../../../abds-watering-charts-components/src/components/humidityheatmap-chart.ce.vue';
 import { CommunicationService } from '../../../abds-watering-charts-components/src/services/CommunicationService';
-//import { Modal, Collapse } from 'bootstrap'
+import { Modal, Collapse } from 'bootstrap';
+
+const updateStateModal = ref(null)
+const successMessage = ref(null)
 
 const props = defineProps(['config', 'selectedTimestamp'])
 const isModalShown = ref(false)
@@ -12,7 +15,11 @@ let modal
 let successAlert
 
 onMounted(()=>{
-  //modal = new Modal('#updateStateModal')
+  if (updateStateModal.value) {
+    modal = new Modal(updateStateModal.value)
+  } else {
+    console.warn('Modal element not found')
+  }
 })
 
 function showModal(){
@@ -31,7 +38,7 @@ function hideModal() {
 async function setOptimal(){
     const parsed = JSON.parse(props.config);
     await communicationService.setOptimalStateByTimestamp(parsed.environment, endpoint, parsed.paths, props.selectedTimestamp)
-    successAlert = new Collapse('#successMessage')
+    successAlert = new Collapse(successMessage.value)
 }
 
 </script>
@@ -40,7 +47,7 @@ async function setOptimal(){
     <button type="button" class="btn btn-sm btn-secondary m-1" data-bs-toggle="modal" data-bs-target="#updateStateModal" @click="showModal">
         Imposta come matrice ottima
     </button>
-    <div class="modal fade" id="updateStateModal" tabindex="-1" data-bs-backdrop="static" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal fade" ref="updateStateModal" tabindex="-1" data-bs-backdrop="static" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
@@ -49,7 +56,7 @@ async function setOptimal(){
           </div>
             <form @submit.prevent="setOptimal">
             <div class="modal-body">
-               <div class="collapse" id="successMessage">
+               <div class="collapse" ref="successMessage">
                 <div class="alert alert-success" role="alert" >
                   <svg class="bi me-1" width="24" height="24" role="img" aria-label="Success:"><use xlink:href="#check-circle-fill"/></svg>
                   Matrice ottima impostata correttamente
