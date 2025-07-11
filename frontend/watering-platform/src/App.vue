@@ -1,7 +1,7 @@
 <script setup>
 import authService from "@/services/auth.service.js"
 import { useRouter } from 'vue-router';
-import {registerChartComponents} from 'abds-watering-chart-components'
+import {registerChartComponents} from 'smarter-charts'
 
 const router = useRouter()
 
