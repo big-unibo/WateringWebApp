@@ -231,6 +231,6 @@ watch( () => props.selectedTimestamp, async () => {
   </div>
 </template>
 
-<style scoped>
-
+<style>
+@import '../assets/main.css';
 </style>

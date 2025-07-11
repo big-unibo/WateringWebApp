@@ -1,24 +1,13 @@
 <script setup>
-
 import '../assets/basebase.css'
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 import {computed, onMounted, reactive, ref, watchEffect} from "vue";
-import AirTemperatureChart from "../../../abds-watering-charts-components/src/components/airtemperature-chart.ce.vue"
-import DripperAndPluvChart from "../../../abds-watering-charts-components/src/components/dripperandpluv-chart.ce.vue"
-import WaterAggregateChart from "../../../abds-watering-charts-components/src/components/water-aggregate-chart.ce.vue"
-import DeltaChart from "../../../abds-watering-charts-components/src/components/delta-chart.ce.vue"
-import CountorMeanChart from "../../../abds-watering-charts-components/src/components/countormean-chart.ce.vue"
-import CountorStdChart from "../../../abds-watering-charts-components/src/components/countorstd-chart.ce.vue"
-import GroundWaterPotentialChart from "../../../abds-watering-charts-components/src/components/groundwaterpot-chart.ce.vue"
-import HumidityHeatmap from "../../../abds-watering-charts-components/src/components/humidityheatmap-chart.ce.vue"
-import HumidityMultiLineChart from "../../../abds-watering-charts-components/src/components/humiditymultilinear-chart.ce.vue"
-import HumidityDynamicHeatmap from "../../../abds-watering-charts-components/src/components/dynamic-heatmap-animator.ce.vue"
-import Calendar from "../../../abds-watering-charts-components/src/components/calendar.vue"
-import OptimalHumidityHeatmap from "../../../abds-watering-charts-components/src/components/optimal-humidity-heatmap-chart.ce.vue"
 import LogComponent from './LogComponent.vue';
 import UpdateOptimalStateComponent from './UpdateOptimalStateComponent.vue';
 import {useRouter} from "vue-router";
 import authService from '@/services/auth.service';
+
 
 const router = useRouter()
 
@@ -235,7 +224,7 @@ function enableDetailedAggregate() {
 
 const selectedTimestamp = ref(Math.floor(Date.now()/1000))
 function selectedTime(time){
-  selectedTimestamp.value = time 
+  selectedTimestamp.value = time.detail
 }
 
 </script>
@@ -327,13 +316,13 @@ function selectedTime(time){
             <span>Seleziona un istante temporale nel grafico di sinistra per mostrare la relativa matrice di umidità (Con "<strong>G</strong>" 
               si denota la posizione del gocciolatore):</span>
             <div class="col-lg-6 align-content-center">
-              <HumidityMultiLineChart :config="JSON.stringify(connectionParams)" @selectTimestamp="selectedTime"></HumidityMultiLineChart>
+              <humiditymultiline-chart-smarter :config="JSON.stringify(connectionParams)" @selectTimestamp="selectedTime"></humiditymultiline-chart-smarter>
             </div>
             <div class="col-lg-6">
-              <HumidityHeatmap :config="JSON.stringify(connectionParams)" :selectedTimestamp="selectedTimestamp"></HumidityHeatmap>
+              <humiditymap-smarter :config="JSON.stringify(connectionParams)" :selectedTimestamp="selectedTimestamp"></humiditymap-smarter>
             </div>
           </div>
-          <OptimalHumidityHeatmap v-if="showOptimalMatrix" :config="JSON.stringify(connectionParams)" :selectedTimestamp="selectedTimestamp" :showDistance="hasUserPermission('*')"></OptimalHumidityHeatmap>
+          <optimal-humidity-heatmap-smarter v-if="showOptimalMatrix" :config="JSON.stringify(connectionParams)" :selectedTimestamp="selectedTimestamp" :showDistance="hasUserPermission('*')"></optimal-humidity-heatmap-smarter>
         </div>
       </div>
     </div>
@@ -344,7 +333,7 @@ function selectedTime(time){
           <span>Evoluzione matrice dell'umidità</span>
         </div>
         <div class="card-body">
-          <HumidityDynamicHeatmap v-if="hasUserPermission('MO')" :config="JSON.stringify(connectionParams)"></HumidityDynamicHeatmap>
+          <heatmap-animation-smarter v-if="hasUserPermission('MO')" :config="JSON.stringify(connectionParams)"></heatmap-animation-smarter>
         </div>
       </div>
     </div>
@@ -353,7 +342,7 @@ function selectedTime(time){
       <div class="groundwaterpot-card card">
         <div class="card-header">Potenziale idrico</div>
         <div class="card-body">
-          <GroundWaterPotentialChart style="height: 320px" :config="JSON.stringify(connectionParams)"></GroundWaterPotentialChart>
+          <groundwaterpot-chart-smarter style="height: 320px" :config="JSON.stringify(connectionParams)"></groundwaterpot-chart-smarter>
         </div>
       </div>
     </div>
@@ -364,7 +353,7 @@ function selectedTime(time){
           <span>Calendario Irrigazione</span>
         </div>
           <div class="card-body p-1">
-            <Calendar :config="JSON.stringify(connectionParams)"></Calendar>
+            <calendar-smarter :config="JSON.stringify(connectionParams)"></calendar-smarter>
           </div>
       </div>
     </div>
@@ -376,10 +365,10 @@ function selectedTime(time){
           <button class="btn btn-sm btn-secondary" type="button" @click="enableDetailedAggregate" id="dynamic-heatmap-button">{{ detailedWateringButton }}</button>
         </div>
         <div v-if="!showDetailedWatering">
-            <WaterAggregateChart :config="JSON.stringify(connectionParams)"></WaterAggregateChart>
+            <water-aggregate-chart-smarter :config="JSON.stringify(connectionParams)"></water-aggregate-chart-smarter>
         </div>
         <div v-else>
-            <DripperAndPluvChart :config="JSON.stringify(connectionParams)"></DripperAndPluvChart> 
+            <dripperandpluv-chart-smarter :config="JSON.stringify(connectionParams)"></dripperandpluv-chart-smarter> 
         </div>
       </div>
     </div>
@@ -388,7 +377,7 @@ function selectedTime(time){
       <div class=" card">
         <div class="card-header">Potenziale Idrico Ottimale e Potenziale Idrico Medio Giornaliero</div>
         <div class="card-body">
-          <DeltaChart style="height: 300px" :config="JSON.stringify(connectionParams)"></DeltaChart>
+          <delta-chart-smarter style="height: 300px" :config="JSON.stringify(connectionParams)"></delta-chart-smarter>
         </div>
       </div>
     </div>
@@ -399,11 +388,11 @@ function selectedTime(time){
         <div class="card-body row">
           <div class="col-lg-6">
             <p>Matrice dell'umidità <strong>media</strong> lungo il periodo:</p>
-            <CountorMeanChart :config="JSON.stringify(connectionParams)"></CountorMeanChart>
+            <meancountor-chart-smarter :config="JSON.stringify(connectionParams)"></meancountor-chart-smarter>
           </div>
           <div class="col-lg-6">
             <p>Matrice di <strong>varianza</strong> dell'umidità lungo il periodo:</p>
-            <CountorStdChart :config="JSON.stringify(connectionParams)"></CountorStdChart>
+            <stdcountor-chart-smarter :config="JSON.stringify(connectionParams)"></stdcountor-chart-smarter>
           </div>  
         </div>
       </div>
@@ -413,7 +402,7 @@ function selectedTime(time){
       <div class="card">
         <div class="card-header">Temperatura dell'aria</div>
         <div class="card-body">
-          <AirTemperatureChart style="height: 300px" :config="JSON.stringify(connectionParams)"></AirTemperatureChart>
+          <airtemperature-chart-smarter style="height: 300px" :config="JSON.stringify(connectionParams)"></airtemperature-chart-smarter>
         </div>
       </div>
     </div>

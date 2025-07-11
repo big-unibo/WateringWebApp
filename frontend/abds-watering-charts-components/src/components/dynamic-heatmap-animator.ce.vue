@@ -173,4 +173,6 @@ watchEffect(async () => {
 </template>
 
 <style>
+@import '../assets/main.css';
+@import '../assets/animator.css';
 </style>

@@ -1,7 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue';
-import HumidityHeatmap from '../../../abds-watering-charts-components/src/components/humidityheatmap-chart.ce.vue';
-import { CommunicationService } from '../../../abds-watering-charts-components/src/services/CommunicationService';
+import { CommunicationService } from 'abds-watering-chart-components';
 import { Modal, Collapse } from 'bootstrap';
 
 const updateStateModal = ref(null)
@@ -63,7 +62,7 @@ async function setOptimal(){
                 </div>
                </div>
                 <div v-if="isModalShown">
-                  <HumidityHeatmap :config="props.config" :selectedTimestamp="props.selectedTimestamp"></HumidityHeatmap>
+                  <humiditymap-smarter :config="props.config" :selectedTimestamp="props.selectedTimestamp"></humiditymap-smarter>
                 </div>
                 <div class="alert alert-warning d-flex justify-content-start align-items-center m-0" role="alert">
                   <svg class="bi m-2" width="24" height="24" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg>

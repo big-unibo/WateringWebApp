@@ -1,9 +1,13 @@
 <script setup>
-import { nextTick, ref, watchEffect,computed} from 'vue';
-import { Qalendar } from 'qalendar';
+import { nextTick, ref, watchEffect, computed} from 'vue';
+import {Qalendar} from 'qalendar';
+
 import {CommunicationService} from "../services/CommunicationService.js";
 import { luxonDateTimeToString, luxonDateTimeToStringCalendar } from "../common/dateUtils.js";
 import { Modal } from 'bootstrap'
+
+
+const updateModal = ref(null)
 
 const SCHEDULE_SAFE_PERIOD = 3600000
 
@@ -93,10 +97,11 @@ async function mountChart(timeFilter) {
 
   if(!timeFilter){
     timeFilter = {...parsed.params}
+    selectedDate.value = new Date(timeFilter.timeFilterTo * 1000);
     timeFilter.timeFilterTo = timeFilter.timeFilterTo + 604800 //one week
   }
 
-  selectedDate.value = new Date(timeFilter.timeFilterFrom * 1000);
+
   const calendarResponse = await communicationService.getWateringSchedule(parsed.environment, parsed.paths, timeFilter, getEventsEndpoint)
   if(JSON.stringify(parsed) !== props.config){
       return
@@ -113,7 +118,7 @@ async function mountChart(timeFilter) {
         endDate = startDate
       }
 
-      const eventDescription = `<p><strong>Stato:</strong> ${e.enabled ? "Abilitata" : "Disabilitata"}</span></p>
+      const eventDescription = `<div><p><strong>Stato:</strong> ${e.enabled ? "Abilitata" : "Disabilitata"}</span></p>
       <p><strong>Tesi Considerata:</strong> ${e.plantRow}</span></p>
       <p class="mb-0"><strong>Acqua extra sistema:</strong> ${e.expectedWater ? e.expectedWater : 0} L</p>
       <p class="form-text">Es.(fertirrigazione, pioggia prevista)</p>
@@ -121,7 +126,7 @@ async function mountChart(timeFilter) {
       <p><strong>Durata:</strong> ${e.duration !== null ? e.duration + " minuti" : "Non calcolata"}</p>
       ${ e.adviceTimestamp ? "<p><strong>Profilo di suolo considerato:</strong> " + luxonDateTimeToString(e.adviceTimestamp) + "</p>": ""}
       ${e.note ? ("<p><strong>Note:</strong> " + e.note + "</p>") : ""}
-      ${ e.wateringStart * 1000 > Date.now() + SCHEDULE_SAFE_PERIOD ? "<button type=\"button\" class=\"btn btn-primary update-event\" id=" + e.date + ">Modifica</button>":""}`
+      ${ e.wateringStart * 1000 > Date.now() + SCHEDULE_SAFE_PERIOD ? "<button type=\"button\" class=\"btn btn-primary update-event\" id=" + e.date + ">Modifica</button>":""}</div>`
 
       const event = { 
         title: titleFunction(e),
@@ -156,8 +161,13 @@ async function openModal(eventDate) {
       note: selectedEvent.value.note
     }
     await nextTick()
-    activeModal = new Modal('#updateModal')
-    activeModal.show()
+    console.log(updateModal.value)
+    if (updateModal.value) {
+      activeModal = new Modal(updateModal.value)
+      activeModal.show()
+    } else {
+      console.warn('Modal element not found')
+    }
   }
 }
 
@@ -199,7 +209,7 @@ function isValidTime(time){
       :selectedDate="selectedDate"
       @updated-period="refreshPeriod" @edit-event="openModal" @click="openModal"
       :key="calendarKey"/>
-    <div v-if="selectedEvent" class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div v-if="selectedEvent" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" ref="updateModal">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
@@ -243,14 +253,20 @@ function isValidTime(time){
       </div>  
     </div>
   </div>
-
 </template>
 
 <style>
-@import "qalendar/dist/style.css";
+  @import "@fortawesome/fontawesome-svg-core/styles.css";
+  @import '../assets/main.css';
+  @import 'qalendar/dist/style.css';
 
-.calendar-month__event .calendar-month__event-color{
-  height: 20px !important;
-  width: 20px !important;
-}
+  .calendar-month__event .calendar-month__event-color{
+    height: 20px !important;
+    width: 20px !important;
+  }
+
+  .event-flyout {
+    top: 40% !important;
+  }
+
 </style>

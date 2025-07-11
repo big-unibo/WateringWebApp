@@ -96,12 +96,11 @@ async function drawImage(timestamp){
 
   chartOptions.value = {
     chart: {
-      offsetX: (containerWidth - chartWidth)/2,
       type: 'heatmap',
       height: (chartHeight + "px"),
       width: (chartWidth + "px"),
       toolbar: {
-        offsetX: chartWidth < containerWidth * 0.75 ? containerWidth * 0.33 : 0,
+        offsetX: chartWidth < containerWidth * 0.75 ? containerWidth * 0.1 : 0,
         show: true
       },
       zoom: {
@@ -266,6 +265,18 @@ async function mountChart() {
   </div>
 </template>
 
-<style scoped>
+<style>
+@import '../assets/main.css';
+
+.vue-apexcharts {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.apexcharts-legend-marker {
+  width: 5px !important;
+  height: 16px !important;
+}
 
 </style>

@@ -110,15 +110,19 @@ async function mountChart() {
 </script>
 
 <template>
-  <Line v-if="showChart" :data="chartData" :options="options" />
+  <div v-if="showChart">
+    <Line  :data="chartData" :options="options" />
+  </div>
   <div v-else-if="loadingFlag" class="d-flex justify-content-center align-items-center">
     <div class="spinner-border" role="status">
       <span class="sr-only">Caricamento...</span>
     </div>
   </div>
   <div v-else>Nessun dato disponibile.</div>
+
 </template>
 
-<style scoped>
+<style>
+@import '../assets/main.css'
 
 </style>

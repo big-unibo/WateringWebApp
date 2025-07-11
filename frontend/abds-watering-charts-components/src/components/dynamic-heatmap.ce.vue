@@ -206,6 +206,6 @@ async function mountChart() {
   </div>
 </template>
 
-<style scoped>
-
+<style>
+@import '../assets/main.css';
 </style>

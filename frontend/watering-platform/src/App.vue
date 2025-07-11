@@ -1,8 +1,11 @@
 <script setup>
-import AppNavBar from "./components/AppNavBar.vue"
 import authService from "@/services/auth.service.js"
 import { useRouter } from 'vue-router';
+import {registerChartComponents} from 'abds-watering-chart-components'
+
 const router = useRouter()
+
+registerChartComponents()
 const token = authService.authHeader()
 
 if(token)

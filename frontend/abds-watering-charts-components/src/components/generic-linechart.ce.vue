@@ -104,7 +104,8 @@ async function mountChart() {
   </div>
 </template>
 
-<style scoped>
+<style>
+@import '../assets/main.css';
 .generic-line-chart{
   height: 200px;
 }

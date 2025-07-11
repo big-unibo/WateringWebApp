@@ -220,6 +220,6 @@ async function mountChart() {
   <div v-else>Nessun dato disponibile.</div>
 </template>
 
-<style scoped>
-
+<style>
+@import '../assets/main.css';
 </style>

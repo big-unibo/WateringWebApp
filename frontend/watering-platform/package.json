@@ -14,9 +14,9 @@
     "chart.js": "^4.4.1",
     "crypto-js": "^4.2.0",
     "vue": "^3.4.15",
-    "vue-chartjs": "^5.2.0",
+    "vue-chartjs": "^5.3.0",
     "vue-router": "^4.2.5",
-    "vue3-apexcharts": "^1.5.3"
+    "abds-watering-chart-components": "file:abds-watering-chart-components-1.0.0.tgz"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.4",

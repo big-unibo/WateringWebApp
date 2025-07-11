@@ -206,14 +206,14 @@ async function mountChart() {
   <div ref="container">
     <svg v-if="showChart" :style="imageStyle" ref="chartRef"></svg>
     <div v-else-if="loadingFlag" class="d-flex justify-content-center align-items-center">
-    <div class="spinner-border" role="status">
-        <span class="sr-only">Caricamento...</span>
+      <div class="spinner-border" role="status">
+          <span class="sr-only">Caricamento...</span>
+        </div>
       </div>
-    </div>
     <div v-else>Nessun dato disponibile.</div>
   </div>
 </template>
 
-<style scoped>
-
+<style>
+@import '../assets/main.css';
 </style>
