@@ -8,11 +8,6 @@ WORKDIR /app
 # Copia tutto il codice sorgente dell'app
 COPY . .
 
-WORKDIR /app/abds-watering-charts-components/
-
-# Installa le dipendenze
-RUN npm install
-
 WORKDIR /app/watering-platform
 
 RUN npm install
