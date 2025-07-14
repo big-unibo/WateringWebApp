@@ -132,10 +132,10 @@ export class WateringAdviceService {
                         sectorName, 
                         plantRow, 
                         advice, 
-                        lastImageTimestamp, 
+                        Number(lastImageTimestamp), 
                         duration, 
-                        timestamp, 
-                        timestamp + duration * 60, 
+                        Number(timestamp), 
+                        Number(timestamp) + duration * 60, 
                         r, 
                         algorithmParams.ki, 
                         algorithmParams.kp, 
@@ -154,10 +154,10 @@ export class WateringAdviceService {
                 sectorName,
                 plantRow,
                 advice,
-                lastImageTimestamp,
+                Number(lastImageTimestamp),
                 duration,
-                timestamp,
-                timestamp + duration * 60,
+                Number(timestamp),
+                Number(timestamp) + duration * 60,
                 r)
 
         }
