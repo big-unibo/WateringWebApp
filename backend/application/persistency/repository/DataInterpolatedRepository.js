@@ -67,6 +67,34 @@ class DataInterpolatedRepository {
         this.sequelize = sequelize;
     }
 
+    async findLastInterpolationTimestamp(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp)
+    {
+        const query = `
+            SELECT MAX("timestamp") AS "lastTimestamp"
+            FROM data_interpolated
+            WHERE "source" = 'iFarming'
+              AND "refStructureName" = '${refStructureName}'
+              AND "companyName" = '${companyName}'
+              AND "fieldName" = '${fieldName}'
+              AND "sectorName" = '${sectorName}'
+              AND "plantRow" = '${plantRow}'
+              AND "timestamp" < '${timestamp}'`;
+
+        const result = await this.sequelize.query(query, {
+            type: QueryTypes.SELECT,
+            bind: {
+                refStructureName,
+                companyName,
+                fieldName,
+                sectorName,
+                plantRow,
+                timestamp
+            }
+        });
+
+        return result.length > 0 ? result[0].lastTimestamp : null;
+    }
+
     async findDataInterpolated(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp) {
         return getResults(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp, timestamp, this.sequelize);
     }

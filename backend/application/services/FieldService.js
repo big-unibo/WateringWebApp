@@ -12,7 +12,6 @@ import initMatrixField from '../persistency/model/MatrixField.js';
 import initTranscodingField from '../persistency/model/TranscodingField.js';
 import initWateringThesis from '../persistency/model/WateringThesis.js';
 import initWateringAlgorithmParams from '../persistency/model/WateringAlgorithmParams.js';
-import { WateringAdviceDto } from '../dtos/wateringAdviceDto.js';
 import initWateringSector from '../persistency/model/WateringSector.js';
 
 const dtoConverter = new DtoConverter();
@@ -27,7 +26,8 @@ class FieldService {
         this.deltaRepository = new DeltaRepository(sequelize);
         this.humidityBinsRepository = new HumidityBinsRepository(sequelize);
         this.viewDataOriginalRepository = new ViewDataOriginalRepository(sequelize);
-        this.wateringAdviceRepository = new WateringAggregateRepository(sequelize);
+        this.wateringAggregateRepository = new WateringAggregateRepository(sequelize);
+        this.humidityBinsRepository = new HumidityBinsRepository(sequelize);
         this.fieldRepository = new FieldRepository(initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), initWateringThesis(sequelize), initWateringSector(sequelize), initWateringAlgorithmParams(sequelize), sequelize);
     }
 
@@ -93,7 +93,7 @@ class FieldService {
     }
 
     async getWaterAggregate(timefilterFrom, timefilterTo, refStructureName, companyName, fieldName, sectorName, plantRow) {
-        const result = await this.wateringAdviceRepository.findWaterAggregate(timefilterFrom, timefilterTo, refStructureName, companyName, fieldName, sectorName, plantRow);
+        const result = await this.wateringAggregateRepository.findWaterAggregate(timefilterFrom, timefilterTo, refStructureName, companyName, fieldName, sectorName, plantRow);
         return dtoConverter.convertWaterAggregateWrapper(result);
     }
 
@@ -121,14 +121,6 @@ class FieldService {
         for (const matrixData of optStateDto.optimalState) {
             await this.fieldRepository.createMatrixProfile(matrixId, matrixData.xx, matrixData.yy, matrixData.zz, matrixData.value)
         }
-    }
-
-    async getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp) {
-        const result = await this.fieldRepository.getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp)
-        if (result.length > 0){
-            return dtoConverter.convertWateringAdviceWrapper(result)
-        }
-        return new WateringAdviceDto(refStructureName, companyName, fieldName, sectorName, plantRow)
     }
 
     async getDripperInfo(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp) {

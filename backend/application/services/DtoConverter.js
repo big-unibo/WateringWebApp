@@ -136,7 +136,7 @@ class DtoConverter {
     convertWateringAdviceWrapper(wrappers){
         const res = wrappers[0]
         return new WateringAdviceDto(res.refStructureName, res.companyName, res.fieldName, res.sectorName, res.plantRow,
-            res.advice, res.profile_timestamp, res.watering_start, res.watering_end)
+            res.advice, res.profile_timestamp, res.duration, res.watering_start, res.watering_end, res.r, res.ki, res.kp, res.lastIrrigation);
     }
 
     convertPunctualDistanceWrapper(wrappers){

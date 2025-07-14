@@ -72,6 +72,25 @@ class FieldRepository {
         }).save()      
     }
 
+    async getWateringSectorDetails(refStructureName, companyName, fieldName, sectorName, timestamp) {
+        this.WateringSector.removeAttribute('id')
+        return await this.WateringSector.findOne({
+            where: {
+                refStructureName: refStructureName,
+                companyName: companyName,
+                fieldName: fieldName,
+                sectorName: sectorName,
+                timestamp_from: { [Op.lt]: timestamp },
+                timestamp_to: {
+                    [Op.or]: {
+                        [Op.is]: null,
+                        [Op.gt]: timestamp
+                    },
+                }
+            }
+        })
+    }
+
     async createMatrixProfile(matrixId, x, y, z, value) {
         const model = this.MatrixProfile.build({matrixId: matrixId, xx: x, yy: y, zz: z, optValue: value, weight: 1})
         this.MatrixProfile.removeAttribute('id')
@@ -203,44 +222,6 @@ class FieldRepository {
         }
     }
 
-    async getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp) {
-
-        const query = `
-            SELECT "source", "refStructureName", "companyName", "fieldName", "sectorName", "plantRow", "advice", "advice_timestamp" as "profile_timestamp", "watering_start", "watering_end"
-            FROM
-                watering_schedule 
-            WHERE 	"source" = 'iFarming' AND
-                    "refStructureName" = '${refStructureName}' AND
-                    "companyName" = '${companyName}' AND
-                    "fieldName" = '${fieldName}' AND
-                    "sectorName" = '${sectorName}' AND
-                    "plantRow" = '${plantRow}' AND
-                    "advice_timestamp" = (
-                        SELECT MAX(advice_timestamp) FROM watering_schedule
-                        WHERE "latest" = true AND 
-                            "deleted" = false AND 
-                            "source" = 'iFarming' AND
-                            "refStructureName" = '${refStructureName}' AND
-                            "companyName" = '${companyName}' AND
-                            "fieldName" = '${fieldName}' AND
-                            "sectorName" = '${sectorName}' AND
-                            "plantRow" = '${plantRow}' AND
-                            "advice_timestamp" < ${timestamp}
-                    )`
-
-        return await this.sequelize.query(query, {
-            type: QueryTypes.SELECT,
-            bind: {
-                refStructureName,
-                companyName,
-                fieldName,
-                sectorName,
-                plantRow,
-                timestamp
-            }
-        });
-    }
-
     async getFieldDetails(refStructureName, companyName, fieldName, sectorName, plantRow) {
         try {
             this.TranscodingField.removeAttribute('id')
@@ -290,21 +271,7 @@ class FieldRepository {
     async setWateringBaseline(baseline, timestampFrom){
         this.WateringAlgorithmParams.removeAttribute('id')
 
-        const oldParams = await this.WateringAlgorithmParams.findOne({
-            where: {
-                refStructureName: baseline.refStructureName,
-                companyName: baseline.companyName,
-                fieldName: baseline.fieldName,
-                sectorName: baseline.sectorName,
-                timestamp_from: { [Op.lt]: timestampFrom },
-                timestamp_to: {
-                    [Op.or]: {
-                        [Op.is]: null,
-                        [Op.gt]: timestampFrom
-                    },
-                }
-            }
-        })
+        const oldParams = await this.getWateringAlgorithmParams(baseline.refStructureName, baseline.companyName, baseline.fieldName, baseline.sectorName, timestampFrom)
 
         this.WateringAlgorithmParams.update(
             { 
@@ -341,6 +308,25 @@ class FieldRepository {
             kp: baseline.kp ? baseline.kp : oldParams.dataValues.kp
         });
         return model.save()
+    }
+
+    async getWateringAlgorithmParams(refStructureName, companyName, fieldName, sectorName, timestamp) {
+        this.WateringAlgorithmParams.removeAttribute('id')
+        return await this.WateringAlgorithmParams.findOne({
+            where: {
+                refStructureName: refStructureName,
+                companyName: companyName,
+                fieldName: fieldName,
+                sectorName: sectorName,
+                timestamp_from: { [Op.lt]: timestamp },
+                timestamp_to: {
+                    [Op.or]: {
+                        [Op.is]: null,
+                        [Op.gt]: timestamp
+                    },
+                }
+            }
+        })
     }
 
     async setPrescriptiveThesis(refStructureName, companyName, fieldName, sectorName, prescriptiveThesis, timestampFrom){

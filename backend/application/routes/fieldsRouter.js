@@ -7,12 +7,14 @@ import UserService from '../services/UserService.js';
 import AuthenticationService from '../services/AuthenticationService.js';
 import AuthorizationService from '../services/AuthorizationService.js';
 import FieldService from '../services/FieldService.js';
+import WateringAdviceService from '../services/WateringAdviceService.js';
 
 const fieldsRouter = Router();
 const userService = new UserService(sequelize);
 const authenticationService = new AuthenticationService(userService);
 const authorizationService = new AuthorizationService(sequelize)
 const fieldService = new FieldService(sequelize)
+const wateringAdviceService = new WateringAdviceService(sequelize);
 
 import WateringBaseline from '../dtos/wateringBaselineDto.js';
 import { Thesis } from '../dtos/thesisDto.js';
@@ -341,12 +343,12 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
 
 /**
  * @swagger
- * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/wateringAdvice:
+ * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/lastWateringAdvice:
  *   get:
  *     security:
  *       - bearerAuth: []
- *     summary: Get watering advice for a field
- *     description: Get watering advice for a field
+ *     summary: Get last watering advice for a field
+ *     description: Get last watering advice for a field
   *     parameters:
  *      - in: path
  *        name: refStructureName
@@ -384,17 +386,21 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
  *     tags: [Field Operations]
  *     responses:
  *       '200':
- *         description: Matrix opt state created successfully.
+ *         description: Last advice returned successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *                $ref: '#/components/schemas/WateringAdviceDto'
  *       '400':
- *         description: Invalid request or opt state matrix does not match.
+ *         description: Invalid request.
  *       '401':
  *         description: Unauthorized request.
  *       '403':
  *         description: Authentication failed.
  *       '500':
- *         description: Error on creating field opt matrix.
+ *         description: Error on retrieving advice.
  */
-fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/wateringAdvice', async (req, res) => {
+fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/lastWateringAdvice', async (req, res) => {
   let requestUserData
   try {
     requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -413,12 +419,103 @@ fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
     if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, 'WA')))
       return res.status(401).json({message: 'Unauthorized request'});
 
-    const result = await fieldService.getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp)
+    const result = await wateringAdviceService.getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp)
 
     return res.status(200).json(result)
   } catch (error) {
     console.log(`Fail get watering advice caused by: ${error.message}`)
     return res.status(500).json({error: "Error get watering advice"})
+  }
+});
+
+/**
+ * @swagger
+ * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/wateringAdvice:
+ *   get:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Get watering advice for a field
+ *     description: Get watering advice for a field
+ *     parameters:
+ *      - in: path
+ *        name: refStructureName
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The reference structure name
+ *      - in: path
+ *        name: companyName
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The company name
+ *      - in: path
+ *        name: fieldName
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The field name
+ *      - in: path
+ *        name: sectorName
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The sector name
+ *      - in: path
+ *        name: plantRow
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The plantRow
+ *      - in: query
+ *        name: expectedWater
+ *        type: number
+ *      - in: query
+ *        name: timestamp
+ *        type: number
+ *     tags: [Field Operations]
+ *     responses:
+ *       '200':
+ *         description: Advice returned successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *                $ref: '#/components/schemas/WateringAdviceDto'
+ *       '400':
+ *         description: Invalid request.
+ *       '401':
+ *         description: Unauthorized request.
+ *       '403':
+ *         description: Authentication failed.
+ *       '500':
+ *         description: Error on computing advice.
+ */
+fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/wateringAdvice', async (req, res) => {
+  let requestUserData
+  try {
+    requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+  } catch (error) {
+    return res.status(403).json({message: 'Authentication failed'});
+  }
+
+  const refStructureName = req.params.refStructureName;
+  const companyName = req.params.companyName;
+  const fieldName = req.params.fieldName;
+  const sectorName = req.params.sectorName;
+  const plantRow = req.params.plantRow;
+  const expectedWater = req.query.expectedWater ? req.query.expectedWater : 0;
+  const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
+
+  try {
+    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, 'WA')))
+      return res.status(401).json({message: 'Unauthorized request'});
+
+    const result = await wateringAdviceService.getWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, expectedWater, timestamp)
+
+    return res.status(200).json(result)
+  } catch (error) {
+    console.log(`Fail compute watering advice caused by: ${error.message}`)
+    return res.status(500).json({error: "Error computing watering advice"})
   }
 });
 
