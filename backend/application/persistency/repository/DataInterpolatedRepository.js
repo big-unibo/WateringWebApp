@@ -78,7 +78,7 @@ class DataInterpolatedRepository {
               AND "fieldName" = '${fieldName}'
               AND "sectorName" = '${sectorName}'
               AND "plantRow" = '${plantRow}'
-              AND "timestamp" < '${timestamp}'`;
+              AND "timestamp" < '${Math.ceil(timestamp)}'`;
 
         const result = await this.sequelize.query(query, {
             type: QueryTypes.SELECT,

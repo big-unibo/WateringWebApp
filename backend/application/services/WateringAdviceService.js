@@ -31,17 +31,19 @@ const applyWateringRules = (advice, humidityBin, maxIrrigation) => {
         advice = maxIrrigation;
     }
 
-    //RULE 3: Do not water if nCells (-100, 0] > 70 % or (-30, 0] > 50 %
-    const nCells = humidityBin.reduce((acc, curr) => acc + Number(curr.count), 0);
-    const blueCells = humidityBin.filter(bin => bin.humidity_bin.split('*')[1] === '(-30, 0]').reduce((acc, curr) => acc + Number(curr.count), 0);
-    const cyanCells = humidityBin.filter(bin => bin.humidity_bin.split('*')[1] === '(-100, -30]').reduce((acc, curr) => acc + Number(curr.count), 0);
+    if(humidityBin){
+        //RULE 3: Do not water if nCells (-100, 0] > 70 % or (-30, 0] > 50 %
+        const nCells = humidityBin.reduce((acc, curr) => acc + Number(curr.count), 0);
+        const blueCells = humidityBin.filter(bin => bin.humidity_bin.split('*')[1] === '(-30, 0]').reduce((acc, curr) => acc + Number(curr.count), 0);
+        const cyanCells = humidityBin.filter(bin => bin.humidity_bin.split('*')[1] === '(-100, -30]').reduce((acc, curr) => acc + Number(curr.count), 0);
 
-    console.log("Cells (-100, 0] (%): ", ((blueCells + cyanCells)/nCells) * 100);
-    console.log("% Cells (-30, 0] (%): ", blueCells/nCells * 100);
+        console.log("Cells (-100, 0] (%): ", ((blueCells + cyanCells)/nCells) * 100);
+        console.log("% Cells (-30, 0] (%): ", blueCells/nCells * 100);
 
-    if(blueCells/nCells > 0.5 || (cyanCells+blueCells)/nCells > 0.7) {
-        console.log("Safety measure: the field is too wet, not watering!")
-        advice = 0;
+        if(blueCells/nCells > 0.5 || (cyanCells+blueCells)/nCells > 0.7) {
+            console.log("Safety measure: the field is too wet, not watering!")
+            advice = 0;
+        }
     }
 
     return advice;
@@ -93,7 +95,7 @@ export class WateringAdviceService {
     async getWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, expectedWater, timestamp) {
         try{
 
-            let r
+            let r, humidityBins
 
             const sectorDetails = await this.fieldRepository.getWateringSectorDetails(refStructureName, companyName, fieldName, sectorName, timestamp)
             const algorithmParams = await this.fieldRepository.getWateringAlgorithmParams(refStructureName, companyName, fieldName, sectorName, timestamp)
@@ -101,7 +103,7 @@ export class WateringAdviceService {
             const lastImageTimestamp = await this.dataInterpolatedRepository.findLastInterpolationTimestamp(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp);
 
             if (lastImageTimestamp) {
-                const humidityBins = await this.humidityBinsRepository.findHumidityBins(lastImageTimestamp, lastImageTimestamp, refStructureName, companyName, fieldName, sectorName, plantRow)
+                humidityBins = await this.humidityBinsRepository.findHumidityBins(lastImageTimestamp, lastImageTimestamp, refStructureName, companyName, fieldName, sectorName, plantRow)
 
                 const differences = await this.deltaRepository.findPunctualDelta(refStructureName, companyName, fieldName, sectorName, plantRow, lastImageTimestamp)
                 r = differences.reduce((acc, curr) => acc + curr.distance, 0) / differences.reduce((acc, curr) => acc + curr.weight, 0)
@@ -109,7 +111,7 @@ export class WateringAdviceService {
                 const oldParams = await this.getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, Math.min(timestamp - LAST_ADVICE_MIN_DISTANCE, lastImageTimestamp));
 
                 console.log("Last advice params:", oldParams);
-                if (oldParams) {
+                if (oldParams.advice != null && oldParams.r != null && oldParams.computedOn != null) {
                     let advicePID = oldParams.advice + algorithmParams.kp * (r - oldParams.r) + algorithmParams.ki * r
 
                     const {advice, duration} = computeIrrigation(advicePID, sectorDetails, algorithmParams.max_irrigation, humidityBins, expectedWater)
