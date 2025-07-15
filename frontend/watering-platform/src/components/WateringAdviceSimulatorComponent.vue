@@ -1,9 +1,7 @@
 <script setup>
-import { onMounted, ref} from 'vue';
+import { ref} from 'vue';
 import { CommunicationService } from 'smarter-charts';
-import { Modal } from 'bootstrap';
 
-const updateStateModal = ref(null)
 const advice = ref(null)
 const expectedWater = ref(0)
 const adviceError = ref(false)
@@ -11,20 +9,10 @@ const props = defineProps(['config', 'selectedTimestamp'])
 const isModalShown = ref(false)
 const communicationService = new CommunicationService();
 const endpoint = "wateringAdvice"
-let modal
-
-onMounted(()=>{
-  if (updateStateModal.value) {
-    modal = new Modal(updateStateModal.value)
-  } else {
-    console.warn('Modal element not found')
-  }
-})
 
 function showModal(){
   isModalShown.value = true;
   simulateAdvice()
-  modal.show()
 }
 
 function hideModal() {
@@ -32,7 +20,6 @@ function hideModal() {
     expectedWater.value = 0;
     adviceError.value = false;
     isModalShown.value = false;
-    modal.hide()
 }
 
 async function simulateAdvice(){
@@ -54,10 +41,10 @@ async function simulateAdvice(){
 </script>
 
 <template>
-    <button type="button" class="btn btn-sm btn-secondary m-1" data-bs-toggle="modal" data-bs-target="#simulateAdvice" @click="showModal">
+    <button type="button" class="btn btn-sm btn-secondary m-1" data-bs-toggle="modal" data-bs-target="#simulateAdviceModal" @click="showModal">
         Simula consiglio irriguo
     </button>
-    <div class="modal fade" ref="simulateAdvice" id="simulateAdvice" tabindex="-1" data-bs-backdrop="static" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal fade" id="simulateAdviceModal" tabindex="-1" data-bs-backdrop="static" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">

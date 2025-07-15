@@ -17,7 +17,7 @@ import DtoConverter from './DtoConverter.js';
 
 const dtoConverter = new DtoConverter();
 
-const LAST_ADVICE_MIN_DISTANCE = 6 * 3600 // 6 hours in seconds 
+const LAST_ADVICE_MIN_DISTANCE = 12 * 3600 // 12 hours in seconds 
 const MIN_WATERING_DURATION = 20 // 20 minutes
 
 const applyWateringRules = (advice, humidityBin, maxIrrigation) => {
