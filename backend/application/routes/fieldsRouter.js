@@ -416,8 +416,8 @@ fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
   const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
 
   try {
-    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, 'WA')))
-      return res.status(401).json({message: 'Unauthorized request'});
+      if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'WA', timestamp, timestamp)))
+        return res.status(401).json({message: 'Unauthorized request'});
 
     const result = await wateringAdviceService.getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp)
 
@@ -507,7 +507,7 @@ fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
   const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
 
   try {
-    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, 'WA')))
+    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'WA', timestamp, timestamp)))
       return res.status(401).json({message: 'Unauthorized request'});
 
     const result = await wateringAdviceService.getWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, expectedWater, timestamp)
