@@ -7,6 +7,7 @@ import LogComponent from './LogComponent.vue';
 import UpdateOptimalStateComponent from './UpdateOptimalStateComponent.vue';
 import {useRouter} from "vue-router";
 import authService from '@/services/auth.service';
+import WateringAdviceSimulatorComponent from './WateringAdviceSimulatorComponent.vue';
 
 
 const router = useRouter()
@@ -306,6 +307,7 @@ function selectedTime(time){
         <div class="card-header d-flex justify-content-between align-items-center">
           <span>Matrice dell'umidità</span>
           <div>
+            <WateringAdviceSimulatorComponent v-if="hasUserPermission('WA')" :config="JSON.stringify(connectionParams)" :selectedTimestamp="selectedTimestamp"/>
             <UpdateOptimalStateComponent v-if="hasUserPermission('WA')" :config="JSON.stringify(connectionParams)" :selectedTimestamp="selectedTimestamp"/>
             <button class="btn btn-sm btn-secondary m-1" type="button" @click="enableOptimalMatrix" id="optimal-heatmap-button">Mostra ottimo</button>
             <button class="btn btn-sm btn-secondary m-1" type="button" @click="enableDynamicHeatmap" id="dynamic-heatmap-button">Mostra evoluzione</button>
