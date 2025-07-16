@@ -99,6 +99,10 @@ export class WateringAdviceService {
 
             const sectorDetails = await this.fieldRepository.getWateringSectorDetails(refStructureName, companyName, fieldName, sectorName, timestamp)
             const algorithmParams = await this.fieldRepository.getWateringAlgorithmParams(refStructureName, companyName, fieldName, sectorName, timestamp)
+            if (!sectorDetails || !algorithmParams) {
+                console.warn("Sector details or algorithm params not found, returning empty advice");
+                throw new Error("Sector details or algorithm params not found");
+            }
 
             const lastImageTimestamp = await this.dataInterpolatedRepository.findLastInterpolationTimestamp(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp);
 
