@@ -16,7 +16,7 @@
     "vue": "^3.4.15",
     "vue-chartjs": "^5.3.0",
     "vue-router": "^4.2.5",
-    "smarter-charts": "^1.0.3"
+    "smarter-charts": "^1.0.4"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.4",
