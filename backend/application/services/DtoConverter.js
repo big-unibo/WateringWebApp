@@ -91,6 +91,7 @@ class DtoConverter {
     convertWateringScheduleWrapper(wrappers) {
         const schedules = wrappers.reduce((accumulator, currentValue) => {
             const key = {
+                source: currentValue.source,
                 refStructureName: currentValue.refStructureName,
                 companyName: currentValue.companyName,
                 fieldName: currentValue.fieldName,
@@ -104,7 +105,7 @@ class DtoConverter {
 
         if (schedules.size > 0) {
             const [key, events] = schedules.entries().next().value
-            const { refStructureName, companyName, fieldName, sectorName } = JSON.parse(key);
+            const { source, refStructureName, companyName, fieldName, sectorName } = JSON.parse(key);
             const eventsRes = events.map(event => new WateringEventDto(
                 event.plantRow,
                 event.date,
@@ -119,7 +120,7 @@ class DtoConverter {
                 event.updateTimestamp,
                 event.note
             ));
-            return new WateringScheduleResponse(refStructureName, companyName, fieldName, sectorName, eventsRes)
+            return new WateringScheduleResponse(source, refStructureName, companyName, fieldName, sectorName, eventsRes)
         }
     }
 
@@ -149,6 +150,7 @@ class DtoConverter {
     #buildGenericReferenceMap(wrappers) {
         return wrappers.reduce((accumulator, currentValue) => {
             const key = {
+                source: currentValue.source,
                 refStructureName: currentValue.refStructureName,
                 companyName: currentValue.companyName,
                 fieldName: currentValue.fieldName,

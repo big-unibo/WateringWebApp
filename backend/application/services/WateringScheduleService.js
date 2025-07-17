@@ -16,14 +16,18 @@ class WateringScheduleService {
     async getSchedule(refStructureName, companyName, fieldName, sectorName, plantRow, timestampFrom, timestampTo) {
         const results = await this.wateringScheduleRepository.getSchedule(refStructureName, companyName, fieldName, sectorName, plantRow, timestampFrom, timestampTo)
         if (results.length == 0) {
-            return new WateringScheduleResponse(refStructureName, companyName, fieldName, sectorName, [])
+            return new WateringScheduleResponse('iFarming', refStructureName, companyName, fieldName, sectorName, [])
         }
         return dtoConverter.convertWateringScheduleWrapper(results)
     }
 
     async updateWateringEvent(event, userId) {
-        await this.wateringScheduleRepository.updateWateringEvent(event.refStructureName, event.companyName, event.fieldName, event.sectorName, event.plantRow, event.date,
-            event.wateringStart, event.wateringEnd, event.duration, event.enabled, event.expectedWater, event.advice, event.adviceTimestamp, userId, event.note)
+        await this.wateringScheduleRepository.updateWateringEvent(event, userId)
+        return
+    }
+
+    async createWateringEvent(event, userId) {
+        await this.wateringScheduleRepository.createWateringEvent(event, userId)
         return
     }
 

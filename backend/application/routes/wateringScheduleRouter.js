@@ -122,7 +122,7 @@ wateringScheduleRouter.get("/:refStructureName/:companyName/:fieldName/:sectorNa
  *               $ref: '#/components/schemas/WateringEventUpdateRequest'
  *     responses:
  *       '200':
- *         description: Field updated successfully
+ *         description: Watering event updated successfully
  *       '400':
  *         description: Invalid request.
  *       '401':
@@ -150,6 +150,56 @@ wateringScheduleRouter.put("/updateWateringEvent", async (req, res) => {
     try {
         const result = await wateringScheduleService.updateWateringEvent(req.body, user.userid)
         res.status(200).json(result);
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+})
+
+/**
+ * @swagger
+ * /wateringSchedule/createWateringEvent:
+ *   post:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Create a watering event
+ *     description:  Create a watering event with information given in body
+ *     tags: [Watering Schedule Operation]
+ *     requestBody:
+ *         required: true
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/WateringEventUpdateRequest'
+ *     responses:
+ *       '200':
+ *         description: Watering event created successfully
+ *       '400':
+ *         description: Invalid request.
+ *       '401':
+ *         description: Unauthorized request.
+ *       '403':
+ *         description: Authentication failed.
+ *       '500':
+ *         description: Error on event creation.
+ */
+wateringScheduleRouter.post("/createWateringEvent", async (req, res) => {
+    let user
+    try {
+        user = await authenticationService.validateJwt(req.headers.authorization);
+    } catch (error) {
+        console.log(error)
+        return res.status(403).json({ message: 'Authentication failed' });
+    }
+
+    if (!req.body && req.body === '')
+        return res.status(400).json({ message: 'Invalid request' })
+
+    if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, req.body.refStructureName, req.body.companyName, req.body.fieldName, req.body.sectorName, req.body.plantRow, 'WA')))
+        return res.status(401).json({ message: 'Unauthorized request' });
+
+    try {
+        const result = await wateringScheduleService.createWateringEvent(req.body, user.userid)
+        res.status(200).json({ message: 'Watering event created with success' });
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }

@@ -126,10 +126,11 @@ class UserService {
             const userFieldsPermissions = Array.from(fields, ([keyString, permissions]) => {
                 const key = JSON.parse(keyString);
                 return new UserFieldPermission(
-                  key.refStructureName,
-                  key.companyName,
-                  key.fieldName,
-                  key.sectorName,
+                    key.source,
+                    key.refStructureName,
+                    key.companyName,
+                    key.fieldName,
+                    key.sectorName,
                     key.plantRow,
                     key.colture,
                     key.coltureType,

@@ -1,6 +1,7 @@
 export class UserField {
 
-    constructor(refStructureName, companyName, fields) {
+    constructor(source, refStructureName, companyName, fields) {
+        this.source = source;
         this.refStructureName=refStructureName;
         this.companyName=companyName;
         this.fields=fields;
