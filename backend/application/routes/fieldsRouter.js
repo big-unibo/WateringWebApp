@@ -255,6 +255,12 @@ fieldsRouter.put('/setOptState', async (req, res) => {
  *     summary: Set optimal state for all field of the sector as the interpolation at given timestamp in the indicated thesis
  *     description: Set optimal state for all field of the sector as the interpolation at given timestamp in the indicated thesis
  *     tags: [Field Operations]
+ *     requestBody:
+ *       description: If specified, the optimal state will be set as the interpolation at given timestamp in the indicated thesis
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ThesisIdentifier'
  *     parameters:
  *      - in: path
  *        name: refStructureName
@@ -287,8 +293,12 @@ fieldsRouter.put('/setOptState', async (req, res) => {
  *          type: string
  *        description: The plantRow
  *      - in: query
- *        name: timestamp
+ *        name: imageTimestamp
  *        required: true
+ *        type: number
+ *      - in: query
+ *        name: timestampFrom
+ *        description: The timestamp from which the optimal state is valid
  *        type: number
  *     responses:
  *       '200':
@@ -310,26 +320,35 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
     return res.status(403).json({message: 'Authentication failed'});
   }
 
-  const refStructureName = req.params.refStructureName;
-  const companyName = req.params.companyName;
-  const fieldName = req.params.fieldName;
-  const sectorName = req.params.sectorName;
-  const plantRow = req.params.plantRow;
+  const src_refStructureName = req.body.refStructureName || req.params.refStructureName;
+  const src_companyName = req.body.companyName || req.params.companyName;
+  const src_fieldName = req.body.fieldName || req.params.fieldName;
+  const src_sectorName = req.body.sectorName || req.params.sectorName;
+  const src_plantRow = req.body.plantRow || req.params.plantRow;
+
+  const dst_refStructureName = req.params.refStructureName;
+  const dst_companyName = req.params.companyName;
+  const dst_fieldName = req.params.fieldName;
+  const dst_sectorName = req.params.sectorName;
+  const dst_plantRow = req.params.plantRow;
 
   try {
-    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'WA')))
+    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, dst_refStructureName, dst_companyName, dst_fieldName, dst_sectorName, dst_plantRow, 'WA')))
       return res.status(401).json({message: 'Unauthorized request'});
 
-    if(!req.query.timestamp)
+	if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, src_refStructureName, src_companyName, src_fieldName, src_sectorName, src_plantRow, 'MO')))
+      return res.status(401).json({message: 'Unauthorized request'});
+
+    if(!req.query.imageTimestamp)
       return res.status(400).json({message: 'Invalid request'});
 
-    const interpolatedMatrix = await fieldService.getDataInterpolated(refStructureName, companyName, fieldName, sectorName, plantRow, req.query.timestamp)
+    const interpolatedMatrix = await fieldService.getDataInterpolated(src_refStructureName, src_companyName, src_fieldName, src_sectorName, src_plantRow, req.query.imageTimestamp)
 
     if(!interpolatedMatrix || !(interpolatedMatrix.values.length > 0)){
       return res.status(400).json({message: 'Invalid request, given timestamp not found'});
     }
 
-    const selectedOptimal = new OptStateDto(refStructureName, companyName, fieldName, sectorName, plantRow, Date.now()/1000, null, interpolatedMatrix.values[0].measures[0].image)
+    const selectedOptimal = new OptStateDto(dst_refStructureName, dst_companyName, dst_fieldName, dst_sectorName, dst_plantRow, req.query.timestampFrom || Date.now()/1000, null, interpolatedMatrix.values[0].measures[0].image)
 
     await fieldService.createMatrixOptState(selectedOptimal)
 
