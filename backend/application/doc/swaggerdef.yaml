@@ -354,6 +354,8 @@ components:
         wateringHour:
           type: string
           format: time
+        irrigationFrequency:
+          type: number
         ki:
           type: number
         kp:

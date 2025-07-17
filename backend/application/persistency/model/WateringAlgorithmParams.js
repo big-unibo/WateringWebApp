@@ -14,6 +14,7 @@ function initWateringAlgorithmParams(sequelize) {
         max_irrigation: DataTypes.DOUBLE,
         irrigation_baseline: DataTypes.DOUBLE,
         watering_hour: DataTypes.TIME,
+        irrigation_frequency: DataTypes.DOUBLE,
         ki: DataTypes.DOUBLE,
         kp: DataTypes.DOUBLE
     }, {

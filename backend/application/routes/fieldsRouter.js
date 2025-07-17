@@ -694,6 +694,7 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/setBase
         maxIrrigation: maxIrrigation,
         irrigationBaseline: irrigationBaseline,
         wateringHour: wateringHour,
+		irrigationFrequency: irrigationFrequency,
         ki: ki,
         kp: kp,
         timestampFrom: timestampFrom
@@ -707,6 +708,7 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/setBase
         maxIrrigation,
         irrigationBaseline,
         wateringHour,
+		irrigationFrequency,
         ki,
         kp
     };

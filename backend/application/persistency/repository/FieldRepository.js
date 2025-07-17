@@ -304,6 +304,7 @@ class FieldRepository {
             max_irrigation: baseline.maxIrrigation ? baseline.maxIrrigation : oldParams.dataValues.max_irrigation,
             irrigation_baseline: baseline.irrigationBaseline ? baseline.irrigationBaseline : oldParams.dataValues.irrigation_baseline,
             watering_hour: baseline.wateringHour ? baseline.wateringHour : oldParams.dataValues.watering_hour,
+            irrigation_frequency: baseline.irrigationFrequency ? baseline.irrigationFrequency : oldParams.dataValues.irrigation_frequency,
             ki: baseline.ki ? baseline.ki : oldParams.dataValues.ki,
             kp: baseline.kp ? baseline.kp : oldParams.dataValues.kp
         });

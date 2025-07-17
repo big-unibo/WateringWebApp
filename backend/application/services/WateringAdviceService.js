@@ -17,7 +17,6 @@ import DtoConverter from './DtoConverter.js';
 
 const dtoConverter = new DtoConverter();
 
-const LAST_ADVICE_MIN_DISTANCE = 12 * 3600 // 12 hours in seconds 
 const MIN_WATERING_DURATION = 20 // 20 minutes
 
 const applyWateringRules = (advice, humidityBin, maxIrrigation) => {
@@ -112,7 +111,7 @@ export class WateringAdviceService {
                 const differences = await this.deltaRepository.findPunctualDelta(refStructureName, companyName, fieldName, sectorName, plantRow, lastImageTimestamp)
                 r = differences.reduce((acc, curr) => acc + curr.distance, 0) / differences.reduce((acc, curr) => acc + curr.weight, 0)
 
-                const oldParams = await this.getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, Math.min(timestamp - LAST_ADVICE_MIN_DISTANCE, lastImageTimestamp));
+                const oldParams = await this.getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, Math.min(timestamp - (algorithmParams.irrigation_frequency/2 * 3600), lastImageTimestamp));
 
                 console.log("Last advice params:", oldParams);
                 if (oldParams.advice != null && oldParams.r != null && oldParams.computedOn != null) {
