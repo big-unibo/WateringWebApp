@@ -229,7 +229,7 @@ fieldsRouter.put('/setOptState', async (req, res) => {
     if(!req.body.validFrom || !req.body.optimalState)
       return res.status(400).json({message: 'Invalid request'});
 
-    const bodyRequest = new OptStateDto(refStructureName, companyName, fieldName, sectorName, plantRow, req.body.validFrom, req.body.validTo, req.body.optimalState)
+    const bodyRequest = new OptStateDto(refStructureName, companyName, fieldName, sectorName, plantRow, req.body.validFrom, req.body.validTo, undefined, req.body.optimalState)
 
     const thesisPoints = await fieldService.findThesisPoints(refStructureName, companyName, fieldName, sectorName, plantRow)
 
@@ -347,7 +347,7 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
 		if(!interpolatedMatrix || !(interpolatedMatrix.values.length > 0)){
 			return res.status(400).json({message: 'Invalid request, given timestamp not found'});
 		}
-		const selectedOptimal = new OptStateDto(dst_refStructureName, dst_companyName, dst_fieldName, dst_sectorName, dst_plantRow, req.query.timestampFrom || Date.now()/1000, null, interpolatedMatrix.values[0].measures[0].image)
+		const selectedOptimal = new OptStateDto(dst_refStructureName, dst_companyName, dst_fieldName, dst_sectorName, dst_plantRow, req.query.timestampFrom || Date.now()/1000, undefined, undefined, interpolatedMatrix.values[0].measures[0].image)
 		await fieldService.createMatrixOptState(selectedOptimal)
 	} else if(req.query.matrixId){
 		await fieldService.setOptimalState(dst_refStructureName, dst_companyName, dst_fieldName, dst_sectorName, dst_plantRow, req.query.matrixId, req.query.timestampFrom || Date.now()/1000)

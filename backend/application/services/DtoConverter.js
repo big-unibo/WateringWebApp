@@ -131,7 +131,7 @@ class DtoConverter {
         const optimalState = values.map(v => new MatrixData(v.xx, v.yy, v.zz, v.optValue, v.weight))
 
         return new OptStateDto(key.refStructureName, key.companyName, key.fieldName, key.sectorName, key.plantRow, 
-            exampleData.validFrom, exampleData.validTo, optimalState)
+            exampleData.validFrom, exampleData.validTo, exampleData.matrixId, optimalState)
     }
 
     convertWateringAdviceWrapper(wrappers){

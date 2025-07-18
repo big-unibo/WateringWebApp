@@ -201,6 +201,8 @@ components:
           type: string
         validTo:
           type: string
+        matrixId:
+          type: string
         optimalState:
           type: array
           items:
