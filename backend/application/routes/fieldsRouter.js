@@ -252,8 +252,8 @@ fieldsRouter.put('/setOptState', async (req, res) => {
  *   put:
  *     security:
  *       - bearerAuth: []
- *     summary: Set optimal state for all field of the sector as the interpolation at given timestamp in the indicated thesis
- *     description: Set optimal state for all field of the sector as the interpolation at given timestamp in the indicated thesis
+ *     summary: Set optimal state for thesis as the interpolation at given timestamp of specified thesis
+ *     description: Set optimal state for thesis as the interpolation at given timestamp of thesis specified in body or for the same defined in path
  *     tags: [Field Operations]
  *     requestBody:
  *       description: If specified, the optimal state will be set as the interpolation at given timestamp in the indicated thesis
@@ -294,8 +294,11 @@ fieldsRouter.put('/setOptState', async (req, res) => {
  *        description: The plantRow
  *      - in: query
  *        name: imageTimestamp
- *        required: true
  *        type: number
+ *      - in: query
+ *        name: matrixId
+ *        description: The id of already existing matrix to use as optimal state
+ *        type: string
  *      - in: query
  *        name: timestampFrom
  *        description: The timestamp from which the optimal state is valid
@@ -319,13 +322,7 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
   } catch (error) {
     return res.status(403).json({message: 'Authentication failed'});
   }
-
-  const src_refStructureName = req.body.refStructureName || req.params.refStructureName;
-  const src_companyName = req.body.companyName || req.params.companyName;
-  const src_fieldName = req.body.fieldName || req.params.fieldName;
-  const src_sectorName = req.body.sectorName || req.params.sectorName;
-  const src_plantRow = req.body.plantRow || req.params.plantRow;
-
+  
   const dst_refStructureName = req.params.refStructureName;
   const dst_companyName = req.params.companyName;
   const dst_fieldName = req.params.fieldName;
@@ -336,21 +333,28 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
     if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, dst_refStructureName, dst_companyName, dst_fieldName, dst_sectorName, dst_plantRow, 'WA')))
       return res.status(401).json({message: 'Unauthorized request'});
 
-	if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, src_refStructureName, src_companyName, src_fieldName, src_sectorName, src_plantRow, 'MO')))
-      return res.status(401).json({message: 'Unauthorized request'});
+	if(req.query.imageTimestamp){
+		const src_refStructureName = req.body.refStructureName || req.params.refStructureName;
+		const src_companyName = req.body.companyName || req.params.companyName;
+		const src_fieldName = req.body.fieldName || req.params.fieldName;
+		const src_sectorName = req.body.sectorName || req.params.sectorName;
+		const src_plantRow = req.body.plantRow || req.params.plantRow;
+		if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, src_refStructureName, src_companyName, src_fieldName, src_sectorName, src_plantRow, 'MO'))){
+      		return res.status(401).json({message: 'Unauthorized request'});
+		}
+		const interpolatedMatrix = await fieldService.getDataInterpolated(src_refStructureName, src_companyName, src_fieldName, src_sectorName, src_plantRow, req.query.imageTimestamp)
 
-    if(!req.query.imageTimestamp)
-      return res.status(400).json({message: 'Invalid request'});
+		if(!interpolatedMatrix || !(interpolatedMatrix.values.length > 0)){
+			return res.status(400).json({message: 'Invalid request, given timestamp not found'});
+		}
+		const selectedOptimal = new OptStateDto(dst_refStructureName, dst_companyName, dst_fieldName, dst_sectorName, dst_plantRow, req.query.timestampFrom || Date.now()/1000, null, interpolatedMatrix.values[0].measures[0].image)
+		await fieldService.createMatrixOptState(selectedOptimal)
+	} else if(req.query.matrixId){
+		await fieldService.setOptimalState(dst_refStructureName, dst_companyName, dst_fieldName, dst_sectorName, dst_plantRow, req.query.matrixId, req.query.timestampFrom || Date.now()/1000)
 
-    const interpolatedMatrix = await fieldService.getDataInterpolated(src_refStructureName, src_companyName, src_fieldName, src_sectorName, src_plantRow, req.query.imageTimestamp)
-
-    if(!interpolatedMatrix || !(interpolatedMatrix.values.length > 0)){
-      return res.status(400).json({message: 'Invalid request, given timestamp not found'});
-    }
-
-    const selectedOptimal = new OptStateDto(dst_refStructureName, dst_companyName, dst_fieldName, dst_sectorName, dst_plantRow, req.query.timestampFrom || Date.now()/1000, null, interpolatedMatrix.values[0].measures[0].image)
-
-    await fieldService.createMatrixOptState(selectedOptimal)
+	} else {
+		return res.status(400).json({message: 'Invalid request, specify either imageTimestamp or matrixId'});
+	}
 
     return res.status(200).json({message: `Matrix opt state created with success`})
   } catch (error) {

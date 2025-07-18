@@ -114,13 +114,17 @@ class FieldService {
     }
 
     async createMatrixOptState(optStateDto) {
-        const matrixId = await this.fieldRepository.createMatrixField(optStateDto.refStructureName, optStateDto.companyName, optStateDto.fieldName, optStateDto.sectorName, optStateDto.validFrom, optStateDto.validTo)
+        const matrixId = await this.fieldRepository.createMatrixField('iFarming', optStateDto.refStructureName, optStateDto.companyName, optStateDto.fieldName, optStateDto.sectorName, optStateDto.plantRow, optStateDto.validFrom, optStateDto.validTo)
         if(!matrixId){
             throw Error("Impossible to create optimal matrix for this field")
         }
         for (const matrixData of optStateDto.optimalState) {
             await this.fieldRepository.createMatrixProfile(matrixId, matrixData.xx, matrixData.yy, matrixData.zz, matrixData.value)
         }
+    }
+
+    async setOptimalState(refStructureName, companyName, fieldName, sectorName, plantRow, matrixId, timestampFrom) {
+        return this.fieldRepository.createMatrixField('iFarming', refStructureName, companyName, fieldName, sectorName, plantRow, timestampFrom, null, matrixId)
     }
 
     async getDripperInfo(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp) {

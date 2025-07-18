@@ -97,7 +97,7 @@ class FieldRepository {
         return await model.save()
     }
 
-    async createMatrixField(refStructureName, companyName, fieldName, sectorName, validFrom, validTo, matrixId) {
+    async createMatrixField(source, refStructureName, companyName, fieldName, sectorName, plantRow, validFrom, validTo, matrixId) {
         try {
             this.MatrixField.update(
                 { 
@@ -106,6 +106,7 @@ class FieldRepository {
                 },
                 {
                     where: {
+                        source: source,
                         refStructureName: refStructureName,
                         companyName: companyName,
                         fieldName: fieldName,
@@ -115,43 +116,39 @@ class FieldRepository {
                 }
             )
 
-            this.WateringThesis.removeAttribute('id')
-            const sectorThesis = await this.WateringThesis.findAll({
-                where: {
+            let newMatrixId
+            if(matrixId){
+                this.MatrixProfile.removeAttribute('id')
+                const result = await this.MatrixProfile.findAll({
+                    where: {
+                        matrixId: matrixId
+                    }
+                })
+                if(result.length > 0){
+                    newMatrixId = matrixId    
+                } else {
+                    throw Error("Matrix profile not found")
+                }
+            } else {
+                newMatrixId = await this.MatrixProfile.max('matrixId') + 1
+            }
+            
+            const model = this.MatrixField.build({
+                    source: source,
                     refStructureName: refStructureName,
                     companyName: companyName,
                     fieldName: fieldName,
                     sectorName: sectorName,
-                    timestamp_from: { [Op.lt]: validTo || validFrom },
-                    timestamp_to: {
-                        [Op.or]: {
-                        [Op.is]: null,
-                        [Op.gt]: validFrom
-                        },
-                    }
-                }
-            })
+                    plantRow: plantRow,
+                    timestamp_from: Math.floor(validFrom),
+                    timestamp_to: validTo ? Math.floor(validTo) : null,
+                    current: true,
+                    matrixId: newMatrixId
+                })
+            console.log(validFrom)
+            await model.save()
+            return newMatrixId
 
-            if( sectorThesis.length > 0){
-                const newMatrixId = !matrixId ? await this.MatrixProfile.max('matrixId') + 1 : matrixId
-            
-                for( const thesis of sectorThesis){
-                    const model = this.MatrixField.build({
-                        source: thesis.source,
-                        refStructureName: thesis.refStructureName,
-                        companyName: thesis.companyName,
-                        fieldName: thesis.fieldName,
-                        sectorName: thesis.sectorName,
-                        plantRow: thesis.plantRow,
-                        timestamp_from: Math.floor(validFrom),
-                        timestamp_to: validTo ? Math.floor(validTo) : null,
-                        current: true,
-                        matrixId: newMatrixId
-                    })
-                    await model.save()
-                }
-                return newMatrixId
-            } 
         } catch (error) {
             throw Error(error.message)
         }
