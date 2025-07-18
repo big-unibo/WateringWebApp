@@ -67,7 +67,7 @@ class DataInterpolatedRepository {
         this.sequelize = sequelize;
     }
 
-    async findLastInterpolationTimestamp(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp)
+    async findLastInterpolationTimestamp(refStructureName, companyName, fieldName, sectorName, plantRow, timestampFrom, timestampTo)
     {
         const query = `
             SELECT MAX("timestamp") AS "lastTimestamp"
@@ -78,7 +78,7 @@ class DataInterpolatedRepository {
               AND "fieldName" = '${fieldName}'
               AND "sectorName" = '${sectorName}'
               AND "plantRow" = '${plantRow}'
-              AND "timestamp" < '${Math.ceil(timestamp)}'`;
+              AND "timestamp" BETWEEN '${Math.floor(timestampFrom)}' AND '${Math.ceil(timestampTo)}'`;
 
         const result = await this.sequelize.query(query, {
             type: QueryTypes.SELECT,
@@ -88,7 +88,8 @@ class DataInterpolatedRepository {
                 fieldName,
                 sectorName,
                 plantRow,
-                timestamp
+                timestampFrom,
+                timestampTo
             }
         });
 

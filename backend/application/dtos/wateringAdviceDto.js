@@ -1,7 +1,7 @@
 
 export class WateringAdviceDto {
 
-  constructor(refStructureName, companyName, fieldName, sectorName, plantRow, advice, computedOn, duration, wateringStart, wateringEnd, r, ki, kp, lastIrrigation) {
+  constructor(refStructureName, companyName, fieldName, sectorName, plantRow, advice, computedOn, duration, wateringStart, wateringEnd, r, ki, kp, lastIrrigation, baselineFlag) {
     this.refStructureName = refStructureName;
     this.companyName = companyName;
     this.fieldName = fieldName;
@@ -15,6 +15,7 @@ export class WateringAdviceDto {
     this.r = r;
     this.ki = ki;
     this.kp = kp;
-    this.lastIrrigation = lastIrrigation;  
+    this.lastIrrigation = lastIrrigation;
+    this.baselineFlag = baselineFlag;
   }
 }

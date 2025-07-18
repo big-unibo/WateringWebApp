@@ -103,7 +103,7 @@ export class WateringAdviceService {
                 throw new Error("Sector details or algorithm params not found");
             }
 
-            const lastImageTimestamp = await this.dataInterpolatedRepository.findLastInterpolationTimestamp(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp);
+            const lastImageTimestamp = await this.dataInterpolatedRepository.findLastInterpolationTimestamp(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp - algorithmParams.irrigation_frequency * 3600, timestamp);
 
             if (lastImageTimestamp) {
                 humidityBins = await this.humidityBinsRepository.findHumidityBins(lastImageTimestamp, lastImageTimestamp, refStructureName, companyName, fieldName, sectorName, plantRow)
@@ -144,11 +144,14 @@ export class WateringAdviceService {
                         r, 
                         algorithmParams.ki, 
                         algorithmParams.kp, 
-                        lastIrrigation)
+                        lastIrrigation, 
+                        false)
 
                 } else {
                     console.warn("No old params found, using baseline");
                 }            
+            } else {
+                console.warn("No observed profile found during last irrigation period, using baseline")
             }
 
             const {advice, duration} = computeIrrigation(algorithmParams.irrigation_baseline, sectorDetails, algorithmParams.max_irrigation, humidityBins, expectedWater)
@@ -163,8 +166,7 @@ export class WateringAdviceService {
                 duration,
                 Number(timestamp),
                 Number(timestamp) + duration * 60,
-                r)
-
+                r, undefined, undefined, undefined, true)
         }
         catch (error) {
             console.error("Error in getWateringAdvice:", error);
