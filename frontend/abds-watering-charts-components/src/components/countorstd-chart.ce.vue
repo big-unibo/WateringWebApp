@@ -182,7 +182,7 @@ async function mountChart() {
       .attr("transform", "translate(" + (width / 2) + " ," + (height + margin.bottom) + ")")
       .style("text-anchor", "middle")
       .attr("font-size", 14)
-      .text("Distanza dalla fila");
+      .text("Distance from row");
 
   svg.append("text")
       .attr("transform", "rotate(-90)")
@@ -191,7 +191,7 @@ async function mountChart() {
       .attr("dy", "1em")
       .style("text-anchor", "middle")
       .attr("font-size", 14)
-      .text("Profondità");
+      .text("Depth");
 
   nextTick(() => {
     if(chartRef.value) {
@@ -207,10 +207,10 @@ async function mountChart() {
     <svg v-if="showChart" :style="imageStyle" ref="chartRef"></svg>
     <div v-else-if="loadingFlag" class="d-flex justify-content-center align-items-center">
     <div class="spinner-border" role="status">
-        <span class="sr-only">Caricamento...</span>
+        <span class="sr-only"></span>
       </div>
     </div>
-    <div v-else>Nessun dato disponibile.</div>
+    <div v-else>No data available.</div>
   </div>
 </template>
 

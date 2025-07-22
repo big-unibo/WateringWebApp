@@ -24,7 +24,7 @@ const config = ref({
   month: {
     showTrailingAndLeadingDates: true,
   },
-  locale: 'it-IT',
+  locale: 'en-US',
   defaultMode: 'month',
   isSilent: true,
   disableModes: ['week','day'],
@@ -73,18 +73,18 @@ function colorFunction(event) {
 
 function titleFunction(event) {
   if(!event.enabled){
-    return "Irrigazione disabilitata"
+    return "Irrigation disabled"
   }
   if (event.advice === 0){
-    return "Irrigazione disabilitata (Consiglio di non irrigare)"
+    return "Irrigation disabled (Advice: no water needed)"
   }
   if(event.updatedBy !== null){
-    return "Irrigazione modificata"
+    return "Irrigation updated"
   }
   if( event.wateringStart < Date.now()/1000 && event.advice > 0) {
-      return "Irrigazione inviata"
+      return "Irrigation sent"
   }
-  return "Irrigazione programmata"
+  return "Irrigation planned"
 }
 
 async function mountChart(timeFilter) {
@@ -113,19 +113,19 @@ async function mountChart(timeFilter) {
         endDate = startDate
       }
 
-      const eventDescription = `<p><strong>Stato:</strong> ${e.enabled ? "Abilitata" : "Disabilitata"}</span></p>
-      <p><strong>Tesi Considerata:</strong> ${e.plantRow}</span></p>
-      <p class="mb-0"><strong>Acqua extra sistema:</strong> ${e.expectedWater ? e.expectedWater : 0} L</p>
-      <p class="form-text">Es.(fertirrigazione, pioggia prevista)</p>
-      <p><strong>Consiglio irriguo:</strong> ${e.advice !== null ? e.advice + " L" : "Non calcolato"} </p>
-      <p><strong>Durata:</strong> ${e.duration !== null ? e.duration + " minuti" : "Non calcolata"}</p>
-      ${ e.adviceTimestamp ? "<p><strong>Profilo di suolo considerato:</strong> " + luxonDateTimeToString(e.adviceTimestamp) + "</p>": ""}
+      const eventDescription = `<p><strong>State:</strong> ${e.enabled ? "Enabled" : "Disabled"}</span></p>
+      <p><strong>Considered thesis:</strong> ${e.plantRow}</span></p>
+      <p class="mb-0"><strong>Extra water:</strong> ${e.expectedWater ? e.expectedWater : 0} L</p>
+      <p class="form-text">E.g.(fertigation, rain forecast)</p>
+      <p><strong>Watering advice:</strong> ${e.advice !== null ? e.advice + " L" : "Not computed"} </p>
+      <p><strong>Duration:</strong> ${e.duration !== null ? e.duration + " minutes" : "Not computed"}</p>
+      ${ e.adviceTimestamp ? "<p><strong>Considered soil profile:</strong> " + luxonDateTimeToString(e.adviceTimestamp) + "</p>": ""}
       ${e.note ? ("<p><strong>Note:</strong> " + e.note + "</p>") : ""}
-      ${ e.wateringStart * 1000 > Date.now() + SCHEDULE_SAFE_PERIOD ? "<button type=\"button\" class=\"btn btn-primary update-event\" id=" + e.date + ">Modifica</button>":""}`
+      ${ e.wateringStart * 1000 > Date.now() + SCHEDULE_SAFE_PERIOD ? "<button type=\"button\" class=\"btn btn-primary update-event\" id=" + e.date + ">Update</button>":""}`
 
       const event = { 
         title: titleFunction(e),
-        with: e.updatedBy !== null ? "Modificato da: " + e.updatedBy : null,
+        with: e.updatedBy !== null ? "Updated by: " + e.updatedBy : null,
         time: { start: startDate, end: endDate},
         colorScheme: colorFunction(e),
         isEditable: false,
@@ -205,7 +205,7 @@ function isValidTime(time){
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h1 class="modal-title fs-3"> Modifica Evento</h1>
+            <h1 class="modal-title fs-3"> Update event</h1>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
             <form @submit.prevent="submitForm">
@@ -217,18 +217,18 @@ function isValidTime(time){
                 <div class="col-auto form-check form-switch">
                   <input type="checkbox" role="switch" class="form-check-input" id="enableEvent" name="enableEvent" v-model="updateForm.enabled">
                 </div>
-                <div class="col-auto"><label class="form-check-label" for="enableEvent">Abilita evento</label></div>
+                <div class="col-auto"><label class="form-check-label" for="enableEvent">Enable event</label></div>
               </div>
               <div class="form-group row align-items-center p-2">
-                <div class="col-auto"><label for="startTime">Ora di Inizio:</label></div>
+                <div class="col-auto"><label for="startTime">Start hour:</label></div>
                 <div class="col-auto">
                   <input type="time" class="form-control" id="startTime" name="startTime" v-model="updateForm.wateringStartTime" :class="{ 'is-invalid': !isValidTime(updateForm.wateringStartTime) }" required>
-                  <span v-if="!isValidTime(updateForm.wateringStartTime)" class="text-danger">Ora di inizio non valida</span>
+                  <span v-if="!isValidTime(updateForm.wateringStartTime)" class="text-danger">Invalid start hour</span>
                 </div>
                 
               </div>
               <div class="form-group row align-items-center p-2">
-                <div class="col-auto"><label for="waterAmount">Acqua extra sistema (L):</label></div>
+                <div class="col-auto"><label for="waterAmount">Extra water(L):</label></div>
                 <div class="col-auto"><input type="number" class="form-control" id="waterAmount" name="waterAmount" min="0" step="0.01" v-model="updateForm.expectedWater"></div>
               </div>
               <div class="form-group row align-items-center p-2">
@@ -237,8 +237,8 @@ function isValidTime(time){
               </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
-                <button type="submit" class="btn btn-primary" :disabled="!isValidTime(updateForm.wateringStartTime)">Salva</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary" :disabled="!isValidTime(updateForm.wateringStartTime)">Save</button>
             </div>
           </form>
         </div>

@@ -127,7 +127,7 @@ async function mountChart() {
         },
         title: {
           display: true,
-          text: 'Tempo'
+          text: 'Time'
         }
       },
       y: {
@@ -154,17 +154,17 @@ async function mountChart() {
 </script>
 
 <template>
-  <pre style="padding-left: 20px; padding-top: 10px;"><b>Pluv Curr</b> espresso in <b>mm</b><br><b>Dripper</b>, <b>Sprinkler</b> espresso in <b>L</b></pre>
+  <pre style="padding-left: 20px; padding-top: 10px;"><b>Pluv Curr</b> expressed in <b>mm</b><br><b>Dripper</b>, <b>Sprinkler</b> expressed in <b>L</b></pre>
   <div class="card-body">
     <div v-if="showChart">
       <Line style="height: 320px;" :data="chartData" :options="options"/>
     </div>
     <div v-else-if="loadingFlag" class="d-flex justify-content-center align-items-center">
       <div class="spinner-border" role="status">
-        <span class="sr-only">Caricamento...</span>
+        <span class="sr-only"></span>
       </div>
     </div>
-    <div v-else>Nessun dato disponibile.</div>
+    <div v-else>No data available.</div>
   </div>
 </template>
 

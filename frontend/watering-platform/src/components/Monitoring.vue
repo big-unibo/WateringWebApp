@@ -33,14 +33,14 @@ let customSelectedTimestampTo = ref(selectedTimestampTo.value)
 let customSelectedTimestampFrom = ref(selectedTimestampFrom.value)
 
 
-let selectedFieldName = ref("Seleziona un campo")
-let selectedThesisName = ref("Seleziona una tesi")
+let selectedFieldName = ref("Select a field")
+let selectedThesisName = ref("Select a thesis")
 let selectedThesis = ref(null)
 let selectedTimeLabel = ref("")
 let showDynamicHeatmap = ref(false)
 let showOptimalMatrix = ref(false)
 let showDetailedWatering = ref(false)
-let detailedWateringButton = ref("Mostra puntuale")
+let detailedWateringButton = ref("Show puntual")
 
 const token = reactive(props.token)
 const user = reactive(props.user)
@@ -178,7 +178,7 @@ function createFieldName(item) {
 
 function createThesisName(item){
   if(!item) return ''
-  return `Settore ${item.sectorName}; Tesi ${item.plantRow}; ${item.colture}; ${item.coltureType}`
+  return `Sector ${item.sectorName}; Thesis ${item.plantRow}; ${item.colture}; ${item.coltureType}`
 }
 
 function isLabelSelected(value) {
@@ -230,7 +230,7 @@ function enableOptimalMatrix() {
 
 function enableDetailedAggregate() {
   showDetailedWatering.value = !showDetailedWatering.value
-  detailedWateringButton.value = showDetailedWatering.value ? "Mostra giornaliero" : "Mostra puntuale"
+  detailedWateringButton.value = showDetailedWatering.value ? "Show daily" : "Show punctual"
 }
 
 const selectedTimestamp = ref(Math.floor(Date.now()/1000))
@@ -245,13 +245,13 @@ function selectedTime(time){
   <div class="container align-top mt-5 pt-5 pt-sm-3">
     <div v-if="showCustomizeInput" class="row m-2" id="timeperiod" >
       <div class="col d-flex justify-content-center">
-        <span class="m-1">Periodo da:</span>
+        <span class="m-1">Period from:</span>
         <input type="date" name="timeperiod_from" v-model="selectedDateFrom">
-        <span class="m-1"> a:</span>
+        <span class="m-1"> to:</span>
         <input type="date" name="timeperiod_to" v-model="selectedDateTo">
         <div class="btn-group-toggle" data-toggle="buttons">
           <label class="btn btn-sm btn-secondary" style="margin-left:10px;">
-            <input type="radio" name="timefilter" value="timefilter_customizesearch_day" @click="updateCustomTimestamps" autocomplete="off"> Cerca
+            <input type="radio" name="timefilter" value="timefilter_customizesearch_day" @click="updateCustomTimestamps" autocomplete="off"> Refresh
           </label>
         </div>
       </div>
@@ -259,7 +259,7 @@ function selectedTime(time){
 
     <div class="m-2 col-md-12 d-flex flex-row justify-content-center flex-wrap">
       <div v-if="fields.value" class="d-flex align-items-center flex-wrap">
-        <p class="px-2 m-0">Campo:</p>
+        <p class="px-2 m-0">Field:</p>
         <button class="btn btn-secondary dropdown-toggle my-1 px-2" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
           {{ selectedFieldName }}
         </button>
@@ -275,7 +275,7 @@ function selectedTime(time){
         </ul>
       </div>
       <div v-if="thesis.value" class="d-flex align-items-center flex-wrap">
-        <p class="px-2 mb-0">Tesi: </p>
+        <p class="px-2 mb-0">Thesis: </p>
         <button class="btn btn-secondary dropdown-toggle my-1 px-2" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
           {{ selectedThesisName }}
         </button>
@@ -296,16 +296,16 @@ function selectedTime(time){
     <div v-if="hasUserPermission('MO')" class="my-3 container col-md-12">
       <div class="humidity-card card">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <span>Matrice dell'umidità</span>
+          <span>Soil moisture profile</span>
           <div>
-            <button class="btn btn-sm btn-secondary m-1" type="button" @click="enableOptimalMatrix" id="optimal-heatmap-button">Mostra ottimo</button>
-            <button class="btn btn-sm btn-secondary m-1" type="button" @click="enableDynamicHeatmap" id="dynamic-heatmap-button">Mostra evoluzione</button>
+            <button class="btn btn-sm btn-secondary m-1" type="button" @click="enableOptimalMatrix" id="optimal-heatmap-button">Show optimal profile</button>
+            <button class="btn btn-sm btn-secondary m-1" type="button" @click="enableDynamicHeatmap" id="dynamic-heatmap-button">Show evolution</button>
           </div>  
         </div>
         <div class="card-body">
           <div class="row">
-            <span>Seleziona un istante temporale nel grafico di sinistra per mostrare la relativa matrice di umidità (Con "<strong>G</strong>" 
-              si denota la posizione del gocciolatore):</span>
+            <span>Select a time point in the left graph to display its relative soil moisture profile ("<strong>D</strong>" 
+              denotes dripper position):</span>
             <div class="col-lg-6 align-content-center">
               <HumidityMultiLineChart :config="JSON.stringify(connectionParams)" @selectTimestamp="selectedTime"></HumidityMultiLineChart>
             </div>
@@ -321,7 +321,7 @@ function selectedTime(time){
     <div v-if="showDynamicHeatmap" class="my-3 container col-md-12">
       <div class="dynamicheatmap-card card">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <span>Evoluzione matrice dell'umidità</span>
+          <span>Soil profile evolution</span>
         </div>
         <div class="card-body">
           <HumidityDynamicHeatmap v-if="hasUserPermission('MO')" :config="JSON.stringify(connectionParams)"></HumidityDynamicHeatmap>
@@ -331,7 +331,7 @@ function selectedTime(time){
 
     <div v-if="hasUserPermission('MO')" class="my-3 container col-md-12">
       <div class="groundwaterpot-card card">
-        <div class="card-header">Potenziale idrico</div>
+        <div class="card-header">Water potential</div>
         <div class="card-body">
           <GroundWaterPotentialChart style="height: 320px" :config="JSON.stringify(connectionParams)"></GroundWaterPotentialChart>
         </div>
@@ -341,7 +341,7 @@ function selectedTime(time){
     <div v-if="hasUserPermission('WA')" class="my-3 container col-md-12">
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <span>Calendario Irrigazione</span>
+          <span>Irrigation calendar</span>
         </div>
           <div class="card-body p-1">
             <Calendar :config="JSON.stringify(connectionParams)"></Calendar>
@@ -352,7 +352,7 @@ function selectedTime(time){
     <div v-if="hasUserPermission('MO')" class="my-3 container col-md-12">
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <span>Consiglio Irriguo, Irrigazione e Precipitazioni</span> 
+          <span>Watering Advice, Irrigation, Precipiation</span> 
           <button class="btn btn-sm btn-secondary" type="button" @click="enableDetailedAggregate" id="dynamic-heatmap-button">{{ detailedWateringButton }}</button>
         </div>
         <div v-if="!showDetailedWatering">
@@ -366,7 +366,7 @@ function selectedTime(time){
 
     <div v-if="hasUserPermission('WA')" class="my-3 container col-md-12">
       <div class=" card">
-        <div class="card-header">Potenziale Idrico Ottimale e Potenziale Idrico Medio Giornaliero</div>
+        <div class="card-header">Optimal Water Potential and Daily Avarage Water Potential</div>
         <div class="card-body">
           <DeltaChart style="height: 300px" :config="JSON.stringify(connectionParams)"></DeltaChart>
         </div>
@@ -375,14 +375,14 @@ function selectedTime(time){
 
     <div v-if="hasUserPermission('MO')" class="my-3 container">
       <div class="countors-card card">
-        <div class="card-header">Matrici di media e varianza</div>
+        <div class="card-header">Mean and variance matrix</div>
         <div class="card-body row">
           <div class="col-lg-6">
-            <p>Matrice dell'umidità <strong>media</strong> lungo il periodo:</p>
+            <p><strong>Avarage</strong> moisture profile over period:</p>
             <CountorMeanChart :config="JSON.stringify(connectionParams)"></CountorMeanChart>
           </div>
           <div class="col-lg-6">
-            <p>Matrice di <strong>varianza</strong> dell'umidità lungo il periodo:</p>
+            <p>Moisture <strong>variance</strong> profile over period:</p>
             <CountorStdChart :config="JSON.stringify(connectionParams)"></CountorStdChart>
           </div>  
         </div>
@@ -391,7 +391,7 @@ function selectedTime(time){
 
     <div v-if="hasUserPermission('MO')" class="my-3 container col-md-12">
       <div class="card">
-        <div class="card-header">Temperatura dell'aria</div>
+        <div class="card-header">Air Temperature</div>
         <div class="card-body">
           <AirTemperatureChart style="height: 300px" :config="JSON.stringify(connectionParams)"></AirTemperatureChart>
         </div>

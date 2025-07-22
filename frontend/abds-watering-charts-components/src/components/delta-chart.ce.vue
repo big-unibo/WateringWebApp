@@ -50,13 +50,13 @@ const createDatasets = (groupedMeasures) => {
 };
 
 const colorFunction = (str) => {
-  if(str === 'Media Pot. Idr. Ottimale')
+  if(str === 'Optimal Avg. Water Pot.')
     return '#6064C8'
-  if(str === 'Media Pot. Idr. Giornaliera')
+  if(str === 'Daily Avg. Water Pot.')
     return '#339CFF'
-  if(str === 'Pot. Idr. Asciutto (-300 cbar)')
+  if(str === 'Dry Irr. Pot. (-300 cbar)')
     return '#fa5f43'
-  if(str === 'Pot. Idr. Capacità di campo (-20 cbar)')
+  if(str === 'Field Capacity Irr. Pot. (-20 cbar)')
     return '#2cb8b8'
 }
 
@@ -112,7 +112,7 @@ async function mountChart() {
         },
         title: {
           display: true,
-          text: 'Tempo'
+          text: 'Time'
         }
       },
       y: {
@@ -135,10 +135,10 @@ async function mountChart() {
   </div>
   <div v-else-if="loadingFlag" class="d-flex justify-content-center align-items-center">
     <div class="spinner-border" role="status">
-      <span class="sr-only">Caricamento...</span>
+      <span class="sr-only"></span>
     </div>
   </div>
-  <div v-else>Nessun dato disponibile.</div>
+  <div v-else>No data available.</div>
 </template>
 
 <style scoped>

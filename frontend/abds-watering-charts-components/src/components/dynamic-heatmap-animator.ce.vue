@@ -156,19 +156,19 @@ watchEffect(async () => {
 
       <div class="row animator-controllers justify-content-end">
         <div class="col-auto">
-          <button type="button" class="btn btn-secondary" @click="changeAnimationSpeed(500)">Bassa</button>
+          <button type="button" class="btn btn-secondary" @click="changeAnimationSpeed(500)">Slow</button>
         </div>
         <div class="col-auto">
-          <button type="button" class="btn btn-secondary" @click="changeAnimationSpeed(300)">Media</button>
+          <button type="button" class="btn btn-secondary" @click="changeAnimationSpeed(300)">Normal</button>
         </div>
         <div class="col-auto">
-          <button type="button" class="btn btn-secondary" @click="changeAnimationSpeed(100)">Veloce</button>
+          <button type="button" class="btn btn-secondary" @click="changeAnimationSpeed(100)">Fast</button>
         </div>
       </div>
     </div>
   </div>
   <div v-else>
-    Nessun dato disponibile.
+    No data available.
   </div>
 </template>
 

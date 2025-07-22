@@ -176,7 +176,7 @@ async function mountChart() {
         },
         title: {
           display: true,
-          text: 'Tempo'
+          text: 'Time'
         }
       },
       y: {
@@ -190,7 +190,7 @@ async function mountChart() {
         stacked: true,
         title: {
           display: true,
-          text: '% Celle'
+          text: 'Cells %'
         },
         min: 0,
         max: 100
@@ -214,10 +214,10 @@ async function mountChart() {
   </div>
   <div v-else-if="loadingFlag" class="d-flex justify-content-center align-items-center">
     <div class="spinner-border" role="status">
-      <span class="sr-only">Caricamento...</span>
+      <span class="sr-only"></span>
     </div>
   </div>
-  <div v-else>Nessun dato disponibile.</div>
+  <div v-else>No data available.</div>
 </template>
 
 <style scoped>

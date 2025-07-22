@@ -100,7 +100,7 @@ async function mountChart() {
 <template>
   <div class="generic-line-chart">
     <Line v-if="chartData" :data="chartData" :options="options" />
-    <div v-else>Nessun dato disponibile.</div>
+    <div v-else>No data available.</div>
   </div>
 </template>
 

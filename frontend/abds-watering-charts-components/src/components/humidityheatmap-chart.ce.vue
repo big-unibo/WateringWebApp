@@ -162,7 +162,7 @@ async function drawImage(timestamp){
     dataLabels: {
       formatter: function(value, { seriesIndex, dataPointIndex, w }) {
         if (value == 0){
-          return "G"
+          return "D"
         } else {
           return value.toFixed(0)
         }
@@ -184,7 +184,7 @@ async function drawImage(timestamp){
       width: 0
     },
     title: {
-      text: 'Interpolazione bilineare ' + luxonDateTimeToString(timestamp),
+      text: 'Bilinear interpolation at ' + luxonDateTimeToString(timestamp),
       align: 'center',
       offsetY: 10,
     },
@@ -214,7 +214,7 @@ async function drawImage(timestamp){
         let value = series[seriesIndex][dataPointIndex]
         if (value <= 0) {
           if (value == 0) {
-            value = "G"
+            value = "D"
           }
           return ('<div class="arrow_box m-1">' +
             '<div> <strong>val</strong>: ' + value + '</div>' +
@@ -261,7 +261,7 @@ async function mountChart() {
   </div>
   <div v-else-if="loadingFlag" class="d-flex justify-content-center align-items-center">
     <div class="spinner-border" role="status">
-      <span class="sr-only">Caricamento...</span>
+      <span class="sr-only"></span>
     </div>
   </div>
 </template>

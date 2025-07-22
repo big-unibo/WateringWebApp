@@ -21,7 +21,7 @@
 <template>
   <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark d-flex justify-content-between">
     <div class="container-fluid">
-      <a class="navbar-brand flex-fill" href="#"> Monitoraggio idrico </a>
+      <a class="navbar-brand flex-fill" href="#"> SMARTER </a>
       <a class="navbar-brand" href="https://big.csr.unibo.it"> <img src="../assets/images/10simple.png" height="40" alt=""> </a>
     </div>
   </nav>

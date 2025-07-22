@@ -174,7 +174,7 @@ async function drawValuesImage(){
       width: 0
     },
     title: {
-      text: 'Matrice ottima',
+      text: 'Optimal profile',
       align: 'center',
       offsetY: 10,
     },
@@ -294,7 +294,7 @@ async function drawWeightsImage(){
       width: 0
     },
     title: {
-      text: 'Maschera dei pesi',
+      text: 'Weight mask',
       align: 'center',
       offsetY: 10,
     },
@@ -383,11 +383,11 @@ watch( () => props.selectedTimestamp, async () => {
   </div>
   <div v-else-if="loadingFlag" class="d-flex justify-content-center align-items-center">
     <div class="spinner-border" role="status">
-      <span class="sr-only">Caricamento...</span>
+      <span class="sr-only"></span>
     </div>
   </div>
   <div class="text-center p-3" v-else>
-    Nessun ottimo disponibile.
+    No data available.
   </div>
 </template>
 

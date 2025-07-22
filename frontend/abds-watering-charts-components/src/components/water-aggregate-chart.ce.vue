@@ -123,7 +123,7 @@ async function mountChart() {
         },
         title: {
           display: true,
-          text: 'Tempo'
+          text: 'Time'
         }
       },
       y: {
@@ -153,7 +153,7 @@ async function mountChart() {
 </script>
 
 <template>
-  <pre class="p-2"><b>Advice</b>, <b>Pluv Curr</b>, <b>Pot Evap</b> espressi in <b>mm</b><br><b>Dripper</b>, <b>Sprinkler</b> espresso in <b>L</b></pre>
+  <pre class="p-2"><b>Advice</b>, <b>Pluv Curr</b>, <b>Pot Evap</b> expressed in <b>mm</b><br><b>Dripper</b>, <b>Sprinkler</b> expressed in <b>L</b></pre>
   <div class="d-flex flex-wrap justify-content-end">
     <div v-for="([group, total]) in totalGroups" :key="group" class="px-2 p-1 m-1 mx-auto" :style="{backgroundColor: colorFunction(group) , borderColor: colorFunction(group), borderRadius: '8px', borderWidth: '1px', borderStyle: 'solid' }">
         <div>Totale {{ group }}: {{ total.toFixed(2) }}</div>
@@ -165,10 +165,10 @@ async function mountChart() {
     </div>
     <div v-else-if="loadingFlag" class="d-flex justify-content-center align-items-center">
       <div class="spinner-border" role="status">
-        <span class="sr-only">Caricamento...</span>
+        <span class="sr-only"></span>
       </div>
     </div>
-    <div v-else>Nessun dato disponibile.</div>
+    <div v-else>No data available.</div>
   </div>  
 </template>
 
