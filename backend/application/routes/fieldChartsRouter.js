@@ -1463,12 +1463,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/OptStateDto'
+ *                     $ref: '#/components/schemas/DataValue'
  *       '400':
  *         description: Invalid request or thesis not found.
  *       '401':
