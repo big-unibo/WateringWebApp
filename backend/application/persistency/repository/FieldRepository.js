@@ -99,23 +99,6 @@ class FieldRepository {
 
     async createMatrixField(source, refStructureName, companyName, fieldName, sectorName, plantRow, validFrom, validTo, matrixId) {
         try {
-            this.MatrixField.update(
-                { 
-                    timestamp_to: Math.floor(validFrom),
-                    current: false 
-                },
-                {
-                    where: {
-                        source: source,
-                        refStructureName: refStructureName,
-                        companyName: companyName,
-                        fieldName: fieldName,
-                        sectorName: sectorName,
-                        current: true
-                    }
-                }
-            )
-
             let newMatrixId
             if(matrixId){
                 this.MatrixProfile.removeAttribute('id')
@@ -132,6 +115,23 @@ class FieldRepository {
             } else {
                 newMatrixId = await this.MatrixProfile.max('matrixId') + 1
             }
+            this.MatrixField.update(
+                { 
+                    timestamp_to: Math.floor(validFrom),
+                    current: false 
+                },
+                {
+                    where: {
+                        source: source,
+                        refStructureName: refStructureName,
+                        companyName: companyName,
+                        fieldName: fieldName,
+                        sectorName: sectorName,
+                        plantRow: plantRow,
+                        current: true
+                    }
+                }
+            )
             
             const model = this.MatrixField.build({
                     source: source,
@@ -145,10 +145,9 @@ class FieldRepository {
                     current: true,
                     matrixId: newMatrixId
                 })
-            console.log(validFrom)
+
             await model.save()
             return newMatrixId
-
         } catch (error) {
             throw Error(error.message)
         }
