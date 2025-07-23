@@ -5,13 +5,18 @@ import { Modal, Collapse } from 'bootstrap';
 
 const updateStateModal = ref(null)
 const successMessage = ref(null)
+const errorMessage = ref(null)
+const matrixId = ref(null)
 
 const props = defineProps(['config', 'selectedTimestamp'])
 const isModalShown = ref(false)
+const updateWithMatrixId = ref(false)
+const selectOptimalButtonText = ref("Imposta ottimo con matrice memorizzata")
 const communicationService = new CommunicationService();
 const endpoint = "setOptState"
 let modal
 let successAlert
+let errorAlert
 
 onMounted(()=>{
   if (updateStateModal.value) {
@@ -36,8 +41,30 @@ function hideModal() {
 
 async function setOptimal(){
     const parsed = JSON.parse(props.config);
-    await communicationService.setOptimalStateByTimestamp(parsed.environment, endpoint, parsed.paths, props.selectedTimestamp)
-    successAlert = new Collapse(successMessage.value)
+    try{
+      if(updateWithMatrixId.value){
+        console.log(matrixId.value)
+        await communicationService.setOptimalStateByMatrixId(parsed.environment, endpoint, parsed.paths, matrixId.value)
+      } else {
+        await communicationService.setOptimalStateByTimestamp(parsed.environment, endpoint, parsed.paths, props.selectedTimestamp)
+      }
+      successAlert = new Collapse(successMessage.value)
+      setTimeout(()=>{
+        successAlert.hide()
+      }, 5000)
+    } catch (e) {
+      console.error(e)
+      errorAlert = new Collapse(errorMessage.value)
+      setTimeout(()=>{
+        errorAlert.hide()
+      }, 5000)
+    }
+
+}
+
+function switchOptimal(){
+  updateWithMatrixId.value = !updateWithMatrixId.value
+  selectOptimalButtonText.value = updateWithMatrixId.value ? "Imposta ottimo con matrice attuale" : "Imposta ottimo con matrice memorizzata"
 }
 
 </script>
@@ -54,15 +81,30 @@ async function setOptimal(){
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="hideModal" ></button>
           </div>
             <form @submit.prevent="setOptimal">
-            <div class="modal-body">
-               <div class="collapse" ref="successMessage">
+            <div class="modal-body text-center">
+              <div class="collapse" ref="successMessage">
                 <div class="alert alert-success" role="alert" >
                   <svg class="bi me-1" width="24" height="24" role="img" aria-label="Success:"><use xlink:href="#check-circle-fill"/></svg>
                   Matrice ottima impostata correttamente
                 </div>
+              </div>
+              <div class="collapse" ref="errorMessage">
+                <div class="alert alert-danger" role="alert" >
+                  <svg class="bi me-1" width="24" height="24" role="img" aria-label="Error:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+                  Impossibile aggiornare la matrice ottima
+                </div>
                </div>
                 <div v-if="isModalShown">
-                  <humiditymap-smarter :config="props.config" :selectedTimestamp="props.selectedTimestamp"></humiditymap-smarter>
+                  <div class="m-2">
+                    <button type="button" class="btn btn-secondary" @click="switchOptimal">{{ selectOptimalButtonText }}</button>
+                  </div>
+                  <div>
+                    <humiditymap-smarter v-if="!updateWithMatrixId" :config="props.config" :selectedTimestamp="props.selectedTimestamp"></humiditymap-smarter>
+                    <div v-else class="form-group row align-items-center justify-content-center p-2">
+                      <div class="col-auto"><label for="optMatrixId">Id matrice ottima esistete:</label></div>
+                      <div class="col-auto"><input type="number" class="form-control" id="optMatrixId" name="optMatrixId" min="0" step="1" v-model="matrixId" required></div>
+                    </div>
+                  </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -77,6 +119,9 @@ async function setOptimal(){
     <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
       <symbol id="check-circle-fill" viewBox="0 0 16 16">
         <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+      </symbol>
+      <symbol id="exclamation-triangle-fill" viewBox="0 0 16 16">
+        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
       </symbol>
     </svg>
 </template>
