@@ -54,9 +54,9 @@ const colorFunction = (str) => {
     return '#6064C8'
   if(str === 'Daily Avg. Water Pot.')
     return '#339CFF'
-  if(str === 'Dry Irr. Pot. (-300 cbar)')
+  if(str === 'Dry Water Pot. (-300 cbar)')
     return '#fa5f43'
-  if(str === 'Field Capacity Irr. Pot. (-20 cbar)')
+  if(str === 'Field Capacity Water Pot. (-20 cbar)')
     return '#2cb8b8'
 }
 

@@ -85,13 +85,13 @@ class DeltaRepository {
                 (SELECT 'source 1', '${refStructureName}', '${companyName}', '${fieldName}', '${sectorName}', '${plantRow}',
                 ROUND(LN(ABS(-300))::numeric,6) AS "value",
                 EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd."watering_start")))::INT AS "timestamp",
-                'Dry Irr. Pot. (-300 cbar)' AS "detectedValueTypeDescription"       
+                'Dry Water Pot. (-300 cbar)' AS "detectedValueTypeDescription"       
                 FROM watering_data AS wd)
             UNION
                 (SELECT 'source 1', '${refStructureName}', '${companyName}', '${fieldName}', '${sectorName}', '${plantRow}',
                 ROUND(LN(ABS(-20))::numeric,6) AS "value",
                 EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd."watering_start")))::INT AS "timestamp",
-                'Field Capacity Irr. Pot. (-20 cbar)' AS "detectedValueTypeDescription"       
+                'Field Capacity Water Pot. (-20 cbar)' AS "detectedValueTypeDescription"       
                 FROM watering_data AS wd)
             ORDER BY "timestamp" DESC;
         `
