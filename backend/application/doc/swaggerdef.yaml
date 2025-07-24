@@ -114,30 +114,6 @@ components:
         timestampFrom:
           type: number
 
-    WateringAdviceDto:
-      type: object
-      properties:
-        timestampFrom:
-          type: number
-        timestampTo:
-          type: number
-        profiles:
-          type: array
-          items:
-            $ref: '#/components/schemas/WateringAdviceProfileData'
-
-    WateringAdviceProfileData:
-      type: object
-      properties:
-        xx:
-          type: string
-        yy:
-          type: string
-        zz:
-          type: string
-        optValue:
-          type: string
-
     UserTokenRequest:
       type: object
       properties:
@@ -224,6 +200,8 @@ components:
         validFrom:
           type: string
         validTo:
+          type: string
+        matrixId:
           type: string
         optimalState:
           type: array
@@ -328,6 +306,30 @@ components:
           type: string
         note:
           type: string
+
+    WateringAdviceDto:
+      allOf:
+        - $ref: '#/components/schemas/ThesisIdentifier'
+        - type: object
+          properties:
+            advice:
+              type: number
+            computedOn:
+              type: number
+            duration:
+              type: number
+            wateringStart:
+              type: number
+            wateringEnd:
+              type: number
+            r: 
+              type: number
+            ki:
+              type: number
+            kp:
+              type: number
+            lastIrrigation:
+              type: number
     
     WateringScheduleResponse:
       allOf:
@@ -354,6 +356,8 @@ components:
         wateringHour:
           type: string
           format: time
+        irrigationFrequency:
+          type: number
         ki:
           type: number
         kp:

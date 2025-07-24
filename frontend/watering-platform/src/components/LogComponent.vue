@@ -1,7 +1,7 @@
 <script setup>
 import {watchEffect, ref} from "vue";
-import {CommunicationService} from "../../../abds-watering-charts-components/src/services/CommunicationService.js";
-import { luxonDateTimeToString } from "../../../abds-watering-charts-components/src/common/dateUtils.js";
+import {CommunicationService} from "smarter-charts";
+import { luxonDateTimeToString } from "smarter-charts";
 
 const props = defineProps(['config'])
 

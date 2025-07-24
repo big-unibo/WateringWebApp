@@ -11,7 +11,8 @@ export class UserFieldPermissions {
 
 export class UserFieldPermission {
 
-  constructor(refStructureName, companyName, fieldName, sectorName, plantRow, colture, coltureType, permissions) {
+  constructor(source, refStructureName, companyName, fieldName, sectorName, plantRow, colture, coltureType, permissions) {
+    this.source = source
     this.refStructureName = refStructureName
     this.companyName = companyName
     this.fieldName = fieldName

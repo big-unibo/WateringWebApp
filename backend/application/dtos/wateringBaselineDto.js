@@ -19,6 +19,7 @@ class WateringBaseline {
         maxIrrigation,
         irrigationBaseline,
         wateringHour,
+        irrigationFrequency,
         ki,
         kp
     }) {
@@ -29,6 +30,7 @@ class WateringBaseline {
         this.maxIrrigation = maxIrrigation;
         this.irrigationBaseline = irrigationBaseline;
         this.wateringHour = wateringHour;
+        this.irrigationFrequency = irrigationFrequency;
         this.ki = ki;
         this.kp = kp;
     }

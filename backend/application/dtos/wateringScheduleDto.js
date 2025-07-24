@@ -1,6 +1,7 @@
 export class WateringScheduleResponse {
 
-    constructor(refStructureName, companyName, fieldName, sectorName, events) {
+    constructor(source, refStructureName, companyName, fieldName, sectorName, events) {
+        this.source = source
         this.refStructureName = refStructureName
         this.companyName = companyName
         this.fieldName = fieldName

@@ -7,12 +7,14 @@ import UserService from '../services/UserService.js';
 import AuthenticationService from '../services/AuthenticationService.js';
 import AuthorizationService from '../services/AuthorizationService.js';
 import FieldService from '../services/FieldService.js';
+import WateringAdviceService from '../services/WateringAdviceService.js';
 
 const fieldsRouter = Router();
 const userService = new UserService(sequelize);
 const authenticationService = new AuthenticationService(userService);
 const authorizationService = new AuthorizationService(sequelize)
 const fieldService = new FieldService(sequelize)
+const wateringAdviceService = new WateringAdviceService(sequelize);
 
 import WateringBaseline from '../dtos/wateringBaselineDto.js';
 import { Thesis } from '../dtos/thesisDto.js';
@@ -227,7 +229,7 @@ fieldsRouter.put('/setOptState', async (req, res) => {
     if(!req.body.validFrom || !req.body.optimalState)
       return res.status(400).json({message: 'Invalid request'});
 
-    const bodyRequest = new OptStateDto(refStructureName, companyName, fieldName, sectorName, plantRow, req.body.validFrom, req.body.validTo, req.body.optimalState)
+    const bodyRequest = new OptStateDto(refStructureName, companyName, fieldName, sectorName, plantRow, req.body.validFrom, req.body.validTo, undefined, req.body.optimalState)
 
     const thesisPoints = await fieldService.findThesisPoints(refStructureName, companyName, fieldName, sectorName, plantRow)
 
@@ -250,9 +252,15 @@ fieldsRouter.put('/setOptState', async (req, res) => {
  *   put:
  *     security:
  *       - bearerAuth: []
- *     summary: Set optimal state for all field of the sector as the interpolation at given timestamp in the indicated thesis
- *     description: Set optimal state for all field of the sector as the interpolation at given timestamp in the indicated thesis
+ *     summary: Set optimal state for thesis as the interpolation at given timestamp of specified thesis
+ *     description: Set optimal state for thesis as the interpolation at given timestamp of thesis specified in body or for the same defined in path
  *     tags: [Field Operations]
+ *     requestBody:
+ *       description: If specified, the optimal state will be set as the interpolation at given timestamp in the indicated thesis
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ThesisIdentifier'
  *     parameters:
  *      - in: path
  *        name: refStructureName
@@ -285,8 +293,15 @@ fieldsRouter.put('/setOptState', async (req, res) => {
  *          type: string
  *        description: The plantRow
  *      - in: query
- *        name: timestamp
- *        required: true
+ *        name: imageTimestamp
+ *        type: number
+ *      - in: query
+ *        name: matrixId
+ *        description: The id of already existing matrix to use as optimal state
+ *        type: string
+ *      - in: query
+ *        name: timestampFrom
+ *        description: The timestamp from which the optimal state is valid
  *        type: number
  *     responses:
  *       '200':
@@ -307,29 +322,39 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
   } catch (error) {
     return res.status(403).json({message: 'Authentication failed'});
   }
-
-  const refStructureName = req.params.refStructureName;
-  const companyName = req.params.companyName;
-  const fieldName = req.params.fieldName;
-  const sectorName = req.params.sectorName;
-  const plantRow = req.params.plantRow;
+  
+  const dst_refStructureName = req.params.refStructureName;
+  const dst_companyName = req.params.companyName;
+  const dst_fieldName = req.params.fieldName;
+  const dst_sectorName = req.params.sectorName;
+  const dst_plantRow = req.params.plantRow;
 
   try {
-    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'WA')))
+    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, dst_refStructureName, dst_companyName, dst_fieldName, dst_sectorName, dst_plantRow, 'WA')))
       return res.status(401).json({message: 'Unauthorized request'});
 
-    if(!req.query.timestamp)
-      return res.status(400).json({message: 'Invalid request'});
+	if(req.query.imageTimestamp){
+		const src_refStructureName = req.body.refStructureName || req.params.refStructureName;
+		const src_companyName = req.body.companyName || req.params.companyName;
+		const src_fieldName = req.body.fieldName || req.params.fieldName;
+		const src_sectorName = req.body.sectorName || req.params.sectorName;
+		const src_plantRow = req.body.plantRow || req.params.plantRow;
+		if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, src_refStructureName, src_companyName, src_fieldName, src_sectorName, src_plantRow, 'MO'))){
+      		return res.status(401).json({message: 'Unauthorized request'});
+		}
+		const interpolatedMatrix = await fieldService.getDataInterpolated(src_refStructureName, src_companyName, src_fieldName, src_sectorName, src_plantRow, req.query.imageTimestamp)
 
-    const interpolatedMatrix = await fieldService.getDataInterpolated(refStructureName, companyName, fieldName, sectorName, plantRow, req.query.timestamp)
+		if(!interpolatedMatrix || !(interpolatedMatrix.values.length > 0)){
+			return res.status(400).json({message: 'Invalid request, given timestamp not found'});
+		}
+		const selectedOptimal = new OptStateDto(dst_refStructureName, dst_companyName, dst_fieldName, dst_sectorName, dst_plantRow, req.query.timestampFrom || Date.now()/1000, undefined, undefined, interpolatedMatrix.values[0].measures[0].image)
+		await fieldService.createMatrixOptState(selectedOptimal)
+	} else if(req.query.matrixId){
+		await fieldService.setOptimalState(dst_refStructureName, dst_companyName, dst_fieldName, dst_sectorName, dst_plantRow, req.query.matrixId, req.query.timestampFrom || Date.now()/1000)
 
-    if(!interpolatedMatrix || !(interpolatedMatrix.values.length > 0)){
-      return res.status(400).json({message: 'Invalid request, given timestamp not found'});
-    }
-
-    const selectedOptimal = new OptStateDto(refStructureName, companyName, fieldName, sectorName, plantRow, Date.now()/1000, null, interpolatedMatrix.values[0].measures[0].image)
-
-    await fieldService.createMatrixOptState(selectedOptimal)
+	} else {
+		return res.status(400).json({message: 'Invalid request, specify either imageTimestamp or matrixId'});
+	}
 
     return res.status(200).json({message: `Matrix opt state created with success`})
   } catch (error) {
@@ -341,12 +366,12 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
 
 /**
  * @swagger
- * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/wateringAdvice:
+ * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/lastWateringAdvice:
  *   get:
  *     security:
  *       - bearerAuth: []
- *     summary: Get watering advice for a field
- *     description: Get watering advice for a field
+ *     summary: Get last watering advice for a field
+ *     description: Get last watering advice for a field
   *     parameters:
  *      - in: path
  *        name: refStructureName
@@ -384,17 +409,21 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
  *     tags: [Field Operations]
  *     responses:
  *       '200':
- *         description: Matrix opt state created successfully.
+ *         description: Last advice returned successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *                $ref: '#/components/schemas/WateringAdviceDto'
  *       '400':
- *         description: Invalid request or opt state matrix does not match.
+ *         description: Invalid request.
  *       '401':
  *         description: Unauthorized request.
  *       '403':
  *         description: Authentication failed.
  *       '500':
- *         description: Error on creating field opt matrix.
+ *         description: Error on retrieving advice.
  */
-fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/wateringAdvice', async (req, res) => {
+fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/lastWateringAdvice', async (req, res) => {
   let requestUserData
   try {
     requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -410,15 +439,106 @@ fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
   const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
 
   try {
-    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, 'WA')))
-      return res.status(401).json({message: 'Unauthorized request'});
+      if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'WA', timestamp, timestamp)))
+        return res.status(401).json({message: 'Unauthorized request'});
 
-    const result = await fieldService.getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp)
+    const result = await wateringAdviceService.getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp)
 
     return res.status(200).json(result)
   } catch (error) {
     console.log(`Fail get watering advice caused by: ${error.message}`)
     return res.status(500).json({error: "Error get watering advice"})
+  }
+});
+
+/**
+ * @swagger
+ * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/wateringAdvice:
+ *   get:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Get watering advice for a field
+ *     description: Get watering advice for a field
+ *     parameters:
+ *      - in: path
+ *        name: refStructureName
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The reference structure name
+ *      - in: path
+ *        name: companyName
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The company name
+ *      - in: path
+ *        name: fieldName
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The field name
+ *      - in: path
+ *        name: sectorName
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The sector name
+ *      - in: path
+ *        name: plantRow
+ *        required: true
+ *        schema:
+ *          type: string
+ *        description: The plantRow
+ *      - in: query
+ *        name: expectedWater
+ *        type: number
+ *      - in: query
+ *        name: timestamp
+ *        type: number
+ *     tags: [Field Operations]
+ *     responses:
+ *       '200':
+ *         description: Advice returned successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *                $ref: '#/components/schemas/WateringAdviceDto'
+ *       '400':
+ *         description: Invalid request.
+ *       '401':
+ *         description: Unauthorized request.
+ *       '403':
+ *         description: Authentication failed.
+ *       '500':
+ *         description: Error on computing advice.
+ */
+fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/wateringAdvice', async (req, res) => {
+  let requestUserData
+  try {
+    requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+  } catch (error) {
+    return res.status(403).json({message: 'Authentication failed'});
+  }
+
+  const refStructureName = req.params.refStructureName;
+  const companyName = req.params.companyName;
+  const fieldName = req.params.fieldName;
+  const sectorName = req.params.sectorName;
+  const plantRow = req.params.plantRow;
+  const expectedWater = req.query.expectedWater ? req.query.expectedWater : 0;
+  const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
+
+  try {
+    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'WA', timestamp, timestamp)))
+      return res.status(401).json({message: 'Unauthorized request'});
+
+    const result = await wateringAdviceService.getWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, expectedWater, timestamp)
+
+    return res.status(200).json(result)
+  } catch (error) {
+    console.log(`Fail compute watering advice caused by: ${error.message}`)
+    return res.status(500).json({error: "Error computing watering advice"})
   }
 });
 
@@ -597,6 +717,7 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/setBase
         maxIrrigation: maxIrrigation,
         irrigationBaseline: irrigationBaseline,
         wateringHour: wateringHour,
+		irrigationFrequency: irrigationFrequency,
         ki: ki,
         kp: kp,
         timestampFrom: timestampFrom
@@ -610,6 +731,7 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/setBase
         maxIrrigation,
         irrigationBaseline,
         wateringHour,
+		irrigationFrequency,
         ki,
         kp
     };

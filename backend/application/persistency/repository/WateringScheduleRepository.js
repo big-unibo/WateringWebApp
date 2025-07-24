@@ -48,7 +48,7 @@ class WateringScheduleRepository {
             this.WateringSchedule.removeAttribute('id')
 
             return (await this.WateringSchedule.findAll({
-                attributes: ['refStructureName', 'companyName', 'fieldName', 'sectorName', 'plantRow', 'date',
+                attributes: ['source', 'refStructureName', 'companyName', 'fieldName', 'sectorName', 'plantRow', 'date',
                     ['watering_start', 'wateringStart'], ['watering_end', 'wateringEnd'], 'duration',
                     'enabled', ['expected_water', 'expectedWater'], 'advice', ['advice_timestamp', 'adviceTimestamp'],
                     ['update_timestamp', 'updateTimestamp'], 'note'],
@@ -75,79 +75,94 @@ class WateringScheduleRepository {
         }
     }
 
-    async updateWateringEvent(refStructureName, companyName, fieldName, sectorName, plantRow, date, wateringStart,
-        wateringEnd, duration, enabled, expectedWater, advice, adviceTimestamp, userId, note) {
+    async updateWateringEvent(event, userId) {
         try {
-            this.WateringSchedule.removeAttribute('id')
-            this.WateringSchedule.removeAttribute('userid')
-            const activeThesisEvents = (await this.WateringSchedule.findAll({
-                where: {
-                    refStructureName: refStructureName,
-                    companyName: companyName,
-                    fieldName: fieldName,
-                    sectorName: sectorName,
-                    latest: true,
-                    deleted: false,
-                    date: date
-                }
-            })).map(el => el.dataValues)
-            if (wateringStart - Math.min(...activeThesisEvents.map(e => e.wateringStart)) < SCHEDULE_SAFE_INTERVAL && new Date(date) !== new Date(wateringStart)) {
+            if ((Number(event.wateringStart) - (new Date().getTime()/1000)) < SCHEDULE_SAFE_INTERVAL || event.date !== new Date(Number(event.wateringStart)*1000).toISOString().slice(0,10)) {
                 throw Error("Invalid watering start timestamp")
             }
+            this.WateringSchedule.removeAttribute('id')
+            this.WateringSchedule.removeAttribute('userid')
 
-            for (const activeEvent of activeThesisEvents) {
-                await this.WateringSchedule.update(
-                    {
-                        latest: false
-                    }, 
-                    {
-                        where: {
-                            source: activeEvent.source,
-                            refStructureName: activeEvent.refStructureName,
-                            companyName: activeEvent.companyName,
-                            fieldName: activeEvent.fieldName,
-                            sectorName: activeEvent.sectorName,
-                            plantRow: activeEvent.plantRow,
-                            latest: true,
-                            deleted: false,
-                            date: date,
-                            update_timestamp: {
-                                [Op.gte]: Math.floor(activeEvent.update_timestamp),
-                                [Op.lte]: Math.ceil(activeEvent.update_timestamp)
-                            }
+            await this.WateringSchedule.update(
+                {
+                    latest: false
+                }, 
+                {
+                    where: {
+                        source: event.source,
+                        refStructureName: event.refStructureName,
+                        companyName: event.companyName,
+                        fieldName: event.fieldName,
+                        sectorName: event.sectorName,
+                        latest: true,
+                        deleted: false,
+                        date: event.date,
+                        update_timestamp: {
+                            [Op.gte]: Math.floor(event.updateTimestamp),
+                            [Op.lte]: Math.ceil(event.updateTimestamp)
                         }
+                    }
                 })
-                const newEventModel = this.WateringSchedule.build({
-                    source: activeEvent.source,
-                    refStructureName: refStructureName,
-                    companyName: companyName,
-                    fieldName: fieldName,
-                    sectorName: sectorName,
-                    plantRow: activeEvent.plantRow,
-                    date: date,
-                    watering_start: wateringStart,
-                    watering_end: wateringEnd,
-                    duration: duration,
-                    enabled: enabled,
-                    latest: true,
-                    expected_water: expectedWater,
-                    advice: advice,
-                    advice_timestamp: adviceTimestamp,
-                    userId: userId,
-                    update_timestamp: Date.now() / 1000,
-                    note: note,
-                    evapotrans: activeEvent.evapotrans,
-                    r: activeEvent.r,
-                    pluv: activeEvent.pluv,
-                    delta: activeEvent.delta,
-                    kp: activeEvent.kp,
-                    ki: activeEvent.ki
-                })
-                await newEventModel.save()
-            }
+            
+            await this.createWateringEvent(event, userId);
+
             return 
         } catch (error) {
             console.error('Error on update watering event:', error);
+            throw error;
+        }
+    }
+
+    async createWateringEvent(event, userId) {
+        try {
+            this.WateringSchedule.removeAttribute('id')
+            this.WateringSchedule.removeAttribute('userid')
+            this.WateringThesis.removeAttribute('id')
+
+            if ((Number(event.wateringStart) - (new Date().getTime()/1000)) < SCHEDULE_SAFE_INTERVAL || event.date !== new Date(Number(event.wateringStart)*1000).toISOString().slice(0,10)) {
+                throw Error("Invalid watering start timestamp")
+            }
+            
+            const activeThesis = (await this.WateringThesis.findAll({
+                where: {
+                    source: event.source,
+                    refStructureName: event.refStructureName,
+                    companyName: event.companyName,
+                    fieldName: event.fieldName,
+                    sectorName: event.sectorName,
+                    timestamp_from: { [Op.lt]: event.wateringStart },
+                    timestamp_to: {
+                        [Op.or]: {
+                            [Op.is]: null,
+                            [Op.gt]: event.wateringStart
+                        },
+                    }
+                }
+            })).map(el => el.dataValues)
+
+            for (const thesis of activeThesis) {
+                const newEventModel = this.WateringSchedule.build({
+                    source: event.source,
+                    refStructureName: event.refStructureName,
+                    companyName: event.companyName,
+                    fieldName: event.fieldName,
+                    sectorName: event.sectorName,
+                    plantRow: thesis.plantRow,
+                    date: event.date,
+                    watering_start: event.wateringStart,
+                    enabled: event.enabled,
+                    latest: true,
+                    expected_water: event.expectedWater,
+                    userId: userId,
+                    update_timestamp: Date.now() / 1000,
+                    note: event.note
+                })
+                await newEventModel.save()
+            }
+            return
+        } catch (error) {
+            console.error('Error on create watering event:', error);
+            throw error;
         }
     }
 

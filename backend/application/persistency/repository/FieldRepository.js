@@ -72,14 +72,49 @@ class FieldRepository {
         }).save()      
     }
 
+    async getWateringSectorDetails(refStructureName, companyName, fieldName, sectorName, timestamp) {
+        this.WateringSector.removeAttribute('id')
+        return await this.WateringSector.findOne({
+            where: {
+                refStructureName: refStructureName,
+                companyName: companyName,
+                fieldName: fieldName,
+                sectorName: sectorName,
+                timestamp_from: { [Op.lt]: timestamp },
+                timestamp_to: {
+                    [Op.or]: {
+                        [Op.is]: null,
+                        [Op.gt]: timestamp
+                    },
+                }
+            }
+        })
+    }
+
     async createMatrixProfile(matrixId, x, y, z, value) {
         const model = this.MatrixProfile.build({matrixId: matrixId, xx: x, yy: y, zz: z, optValue: value, weight: 1})
         this.MatrixProfile.removeAttribute('id')
         return await model.save()
     }
 
-    async createMatrixField(refStructureName, companyName, fieldName, sectorName, validFrom, validTo, matrixId) {
+    async createMatrixField(source, refStructureName, companyName, fieldName, sectorName, plantRow, validFrom, validTo, matrixId) {
         try {
+            let newMatrixId
+            if(matrixId){
+                this.MatrixProfile.removeAttribute('id')
+                const result = await this.MatrixProfile.findAll({
+                    where: {
+                        matrixId: matrixId
+                    }
+                })
+                if(result.length > 0){
+                    newMatrixId = matrixId    
+                } else {
+                    throw Error("Matrix profile not found")
+                }
+            } else {
+                newMatrixId = await this.MatrixProfile.max('matrixId') + 1
+            }
             this.MatrixField.update(
                 { 
                     timestamp_to: Math.floor(validFrom),
@@ -87,52 +122,32 @@ class FieldRepository {
                 },
                 {
                     where: {
+                        source: source,
                         refStructureName: refStructureName,
                         companyName: companyName,
                         fieldName: fieldName,
                         sectorName: sectorName,
+                        plantRow: plantRow,
                         current: true
                     }
                 }
             )
-
-            this.WateringThesis.removeAttribute('id')
-            const sectorThesis = await this.WateringThesis.findAll({
-                where: {
+            
+            const model = this.MatrixField.build({
+                    source: source,
                     refStructureName: refStructureName,
                     companyName: companyName,
                     fieldName: fieldName,
                     sectorName: sectorName,
-                    timestamp_from: { [Op.lt]: validTo || validFrom },
-                    timestamp_to: {
-                        [Op.or]: {
-                        [Op.is]: null,
-                        [Op.gt]: validFrom
-                        },
-                    }
-                }
-            })
+                    plantRow: plantRow,
+                    timestamp_from: Math.floor(validFrom),
+                    timestamp_to: validTo ? Math.floor(validTo) : null,
+                    current: true,
+                    matrixId: newMatrixId
+                })
 
-            if( sectorThesis.length > 0){
-                const newMatrixId = !matrixId ? await this.MatrixProfile.max('matrixId') + 1 : matrixId
-            
-                for( const thesis of sectorThesis){
-                    const model = this.MatrixField.build({
-                        source: thesis.source,
-                        refStructureName: thesis.refStructureName,
-                        companyName: thesis.companyName,
-                        fieldName: thesis.fieldName,
-                        sectorName: thesis.sectorName,
-                        plantRow: thesis.plantRow,
-                        timestamp_from: Math.floor(validFrom),
-                        timestamp_to: validTo ? Math.floor(validTo) : null,
-                        current: true,
-                        matrixId: newMatrixId
-                    })
-                    await model.save()
-                }
-                return newMatrixId
-            } 
+            await model.save()
+            return newMatrixId
         } catch (error) {
             throw Error(error.message)
         }
@@ -145,7 +160,8 @@ class FieldRepository {
                     "matrix_profile"."yy", 
                     "matrix_profile"."zz", 
                     "matrix_profile"."optValue", 
-                    "matrix_profile"."weight", 
+                    "matrix_profile"."weight",
+                    "matrix_profile"."matrixId", 
                     "field_matrix"."source",
                     "field_matrix"."refStructureName", 
                     "field_matrix"."companyName", 
@@ -203,44 +219,6 @@ class FieldRepository {
         }
     }
 
-    async getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp) {
-
-        const query = `
-            SELECT "source", "refStructureName", "companyName", "fieldName", "sectorName", "plantRow", "advice", "advice_timestamp" as "profile_timestamp", "watering_start", "watering_end"
-            FROM
-                watering_schedule 
-            WHERE 	"source" = 'iFarming' AND
-                    "refStructureName" = '${refStructureName}' AND
-                    "companyName" = '${companyName}' AND
-                    "fieldName" = '${fieldName}' AND
-                    "sectorName" = '${sectorName}' AND
-                    "plantRow" = '${plantRow}' AND
-                    "advice_timestamp" = (
-                        SELECT MAX(advice_timestamp) FROM watering_schedule
-                        WHERE "latest" = true AND 
-                            "deleted" = false AND 
-                            "source" = 'iFarming' AND
-                            "refStructureName" = '${refStructureName}' AND
-                            "companyName" = '${companyName}' AND
-                            "fieldName" = '${fieldName}' AND
-                            "sectorName" = '${sectorName}' AND
-                            "plantRow" = '${plantRow}' AND
-                            "advice_timestamp" < ${timestamp}
-                    )`
-
-        return await this.sequelize.query(query, {
-            type: QueryTypes.SELECT,
-            bind: {
-                refStructureName,
-                companyName,
-                fieldName,
-                sectorName,
-                plantRow,
-                timestamp
-            }
-        });
-    }
-
     async getFieldDetails(refStructureName, companyName, fieldName, sectorName, plantRow) {
         try {
             this.TranscodingField.removeAttribute('id')
@@ -290,21 +268,7 @@ class FieldRepository {
     async setWateringBaseline(baseline, timestampFrom){
         this.WateringAlgorithmParams.removeAttribute('id')
 
-        const oldParams = await this.WateringAlgorithmParams.findOne({
-            where: {
-                refStructureName: baseline.refStructureName,
-                companyName: baseline.companyName,
-                fieldName: baseline.fieldName,
-                sectorName: baseline.sectorName,
-                timestamp_from: { [Op.lt]: timestampFrom },
-                timestamp_to: {
-                    [Op.or]: {
-                        [Op.is]: null,
-                        [Op.gt]: timestampFrom
-                    },
-                }
-            }
-        })
+        const oldParams = await this.getWateringAlgorithmParams(baseline.refStructureName, baseline.companyName, baseline.fieldName, baseline.sectorName, timestampFrom)
 
         this.WateringAlgorithmParams.update(
             { 
@@ -337,10 +301,30 @@ class FieldRepository {
             max_irrigation: baseline.maxIrrigation ? baseline.maxIrrigation : oldParams.dataValues.max_irrigation,
             irrigation_baseline: baseline.irrigationBaseline ? baseline.irrigationBaseline : oldParams.dataValues.irrigation_baseline,
             watering_hour: baseline.wateringHour ? baseline.wateringHour : oldParams.dataValues.watering_hour,
+            irrigation_frequency: baseline.irrigationFrequency ? baseline.irrigationFrequency : oldParams.dataValues.irrigation_frequency,
             ki: baseline.ki ? baseline.ki : oldParams.dataValues.ki,
             kp: baseline.kp ? baseline.kp : oldParams.dataValues.kp
         });
         return model.save()
+    }
+
+    async getWateringAlgorithmParams(refStructureName, companyName, fieldName, sectorName, timestamp) {
+        this.WateringAlgorithmParams.removeAttribute('id')
+        return await this.WateringAlgorithmParams.findOne({
+            where: {
+                refStructureName: refStructureName,
+                companyName: companyName,
+                fieldName: fieldName,
+                sectorName: sectorName,
+                timestamp_from: { [Op.lt]: timestamp },
+                timestamp_to: {
+                    [Op.or]: {
+                        [Op.is]: null,
+                        [Op.gt]: timestamp
+                    },
+                }
+            }
+        })
     }
 
     async setPrescriptiveThesis(refStructureName, companyName, fieldName, sectorName, prescriptiveThesis, timestampFrom){

@@ -12,7 +12,6 @@ import initMatrixField from '../persistency/model/MatrixField.js';
 import initTranscodingField from '../persistency/model/TranscodingField.js';
 import initWateringThesis from '../persistency/model/WateringThesis.js';
 import initWateringAlgorithmParams from '../persistency/model/WateringAlgorithmParams.js';
-import { WateringAdviceDto } from '../dtos/wateringAdviceDto.js';
 import initWateringSector from '../persistency/model/WateringSector.js';
 
 const dtoConverter = new DtoConverter();
@@ -27,7 +26,8 @@ class FieldService {
         this.deltaRepository = new DeltaRepository(sequelize);
         this.humidityBinsRepository = new HumidityBinsRepository(sequelize);
         this.viewDataOriginalRepository = new ViewDataOriginalRepository(sequelize);
-        this.wateringAdviceRepository = new WateringAggregateRepository(sequelize);
+        this.wateringAggregateRepository = new WateringAggregateRepository(sequelize);
+        this.humidityBinsRepository = new HumidityBinsRepository(sequelize);
         this.fieldRepository = new FieldRepository(initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), initWateringThesis(sequelize), initWateringSector(sequelize), initWateringAlgorithmParams(sequelize), sequelize);
     }
 
@@ -93,7 +93,7 @@ class FieldService {
     }
 
     async getWaterAggregate(timefilterFrom, timefilterTo, refStructureName, companyName, fieldName, sectorName, plantRow) {
-        const result = await this.wateringAdviceRepository.findWaterAggregate(timefilterFrom, timefilterTo, refStructureName, companyName, fieldName, sectorName, plantRow);
+        const result = await this.wateringAggregateRepository.findWaterAggregate(timefilterFrom, timefilterTo, refStructureName, companyName, fieldName, sectorName, plantRow);
         return dtoConverter.convertWaterAggregateWrapper(result);
     }
 
@@ -114,7 +114,7 @@ class FieldService {
     }
 
     async createMatrixOptState(optStateDto) {
-        const matrixId = await this.fieldRepository.createMatrixField(optStateDto.refStructureName, optStateDto.companyName, optStateDto.fieldName, optStateDto.sectorName, optStateDto.validFrom, optStateDto.validTo)
+        const matrixId = await this.fieldRepository.createMatrixField('iFarming', optStateDto.refStructureName, optStateDto.companyName, optStateDto.fieldName, optStateDto.sectorName, optStateDto.plantRow, optStateDto.validFrom, optStateDto.validTo)
         if(!matrixId){
             throw Error("Impossible to create optimal matrix for this field")
         }
@@ -123,12 +123,8 @@ class FieldService {
         }
     }
 
-    async getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp) {
-        const result = await this.fieldRepository.getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp)
-        if (result.length > 0){
-            return dtoConverter.convertWateringAdviceWrapper(result)
-        }
-        return new WateringAdviceDto(refStructureName, companyName, fieldName, sectorName, plantRow)
+    async setOptimalState(refStructureName, companyName, fieldName, sectorName, plantRow, matrixId, timestampFrom) {
+        return this.fieldRepository.createMatrixField('iFarming', refStructureName, companyName, fieldName, sectorName, plantRow, timestampFrom, null, matrixId)
     }
 
     async getDripperInfo(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp) {

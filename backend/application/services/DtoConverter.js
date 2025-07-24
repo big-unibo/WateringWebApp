@@ -91,6 +91,7 @@ class DtoConverter {
     convertWateringScheduleWrapper(wrappers) {
         const schedules = wrappers.reduce((accumulator, currentValue) => {
             const key = {
+                source: currentValue.source,
                 refStructureName: currentValue.refStructureName,
                 companyName: currentValue.companyName,
                 fieldName: currentValue.fieldName,
@@ -104,7 +105,7 @@ class DtoConverter {
 
         if (schedules.size > 0) {
             const [key, events] = schedules.entries().next().value
-            const { refStructureName, companyName, fieldName, sectorName } = JSON.parse(key);
+            const { source, refStructureName, companyName, fieldName, sectorName } = JSON.parse(key);
             const eventsRes = events.map(event => new WateringEventDto(
                 event.plantRow,
                 event.date,
@@ -119,7 +120,7 @@ class DtoConverter {
                 event.updateTimestamp,
                 event.note
             ));
-            return new WateringScheduleResponse(refStructureName, companyName, fieldName, sectorName, eventsRes)
+            return new WateringScheduleResponse(source, refStructureName, companyName, fieldName, sectorName, eventsRes)
         }
     }
 
@@ -130,13 +131,13 @@ class DtoConverter {
         const optimalState = values.map(v => new MatrixData(v.xx, v.yy, v.zz, v.optValue, v.weight))
 
         return new OptStateDto(key.refStructureName, key.companyName, key.fieldName, key.sectorName, key.plantRow, 
-            exampleData.validFrom, exampleData.validTo, optimalState)
+            exampleData.validFrom, exampleData.validTo, exampleData.matrixId, optimalState)
     }
 
     convertWateringAdviceWrapper(wrappers){
         const res = wrappers[0]
         return new WateringAdviceDto(res.refStructureName, res.companyName, res.fieldName, res.sectorName, res.plantRow,
-            res.advice, res.profile_timestamp, res.watering_start, res.watering_end)
+            res.advice, res.profile_timestamp, res.duration, res.watering_start, res.watering_end, res.r, res.ki, res.kp, res.lastIrrigation);
     }
 
     convertPunctualDistanceWrapper(wrappers){
@@ -149,6 +150,7 @@ class DtoConverter {
     #buildGenericReferenceMap(wrappers) {
         return wrappers.reduce((accumulator, currentValue) => {
             const key = {
+                source: currentValue.source,
                 refStructureName: currentValue.refStructureName,
                 companyName: currentValue.companyName,
                 fieldName: currentValue.fieldName,

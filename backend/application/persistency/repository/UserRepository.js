@@ -35,8 +35,8 @@ class UserRepository {
         try {
             this.TranscodingField.removeAttribute('id')
             const res = (await this.TranscodingField.findAll({
-                attributes: ['refStructureName', 'companyName', 'fieldName', 'sectorName', 'plantRow'],
-                group: ['refStructureName', 'companyName', 'fieldName', 'sectorName', 'plantRow']
+                attributes: ['source', 'refStructureName', 'companyName', 'fieldName', 'sectorName', 'plantRow'],
+                group: ['source', 'refStructureName', 'companyName', 'fieldName', 'sectorName', 'plantRow']
             })).map(el => el.dataValues);
 
 
@@ -79,8 +79,8 @@ class UserRepository {
         try {
             this.TranscodingField.removeAttribute('id')
             const res = (await this.TranscodingField.findAll({
-                attributes: ['refStructureName', 'companyName', 'fieldName', 'sectorName', 'plantRow'],
-                group: ['refStructureName', 'companyName', 'fieldName', 'sectorName', 'plantRow'],
+                attributes: ['source', 'refStructureName', 'companyName', 'fieldName', 'sectorName', 'plantRow'],
+                group: ['source', 'refStructureName', 'companyName', 'fieldName', 'sectorName', 'plantRow'],
                 where: {
                     valid_from: {
                         [Op.lt]: Number(timestamp_to)
