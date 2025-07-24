@@ -102,7 +102,7 @@ class FieldService {
         if (result.length > 0){
             return dtoConverter.convertOptimalStateWrapper(result)
         }
-        return new OptStateDto(refStructureName, companyName, fieldName, sectorName, plantRow)
+        return new OptStateDto(refStructureName, companyName, fieldName, sectorName, plantRow, undefined, undefined, undefined, [])
     }
 
     async createMonitoringThesis(thesis, timestampFrom) {
