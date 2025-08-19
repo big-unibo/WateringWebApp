@@ -14,32 +14,28 @@ class AuthorizationService {
   }
 
   async isUserAuthorizedByFieldAndId(userid, refStructureName, companyName, fieldName, sectorName, plantRow, action, timestampFrom, timestampTo) {
-    const userPermissions = await this.userService.findUserPermissions(userid, timestampFrom, timestampTo)
-    if(userPermissions.role === 'admin') return true;
-    if(!userPermissions.permissions || userPermissions.permissions.length === 0) return false;
+    const userPermissions = await this.userService.findUserPermissions(userid, timestampFrom, timestampTo);
 
-    const requestedFieldKey = JSON.stringify({
-      refStructureName: refStructureName,
-      companyName: companyName,
-      fieldName: fieldName,
-      sectorName: sectorName,
-      plantRow: plantRow
-    });
+    if (userPermissions.role === "admin") return true;
+    if (!userPermissions.permissions || userPermissions.permissions.length === 0)
+      return false;
 
-    for(const field of userPermissions.permissions) {
-      const fieldKey = JSON.stringify({
-        refStructureName: field.refStructureName,
-        companyName: field.companyName,
-        fieldName: field.fieldName,
-        sectorName: field.sectorName,
-        plantRow: field.plantRow
-      });
+    for (const field of userPermissions.permissions) {
+      const match =
+        field.refStructureName === refStructureName &&
+        field.companyName === companyName &&
+        field.fieldName === fieldName &&
+        field.sectorName === sectorName &&
+        (
+          !plantRow || field.plantRow === plantRow
+        );
 
-      if(requestedFieldKey === fieldKey){
-        return field.permissions.includes(action)
+      if (match) {
+        return field.permissions.includes(action);
       }
     }
-    return false
+
+    return false;
   }
 
 }
