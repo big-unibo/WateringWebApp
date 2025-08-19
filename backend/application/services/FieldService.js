@@ -151,6 +151,14 @@ class FieldService {
         await this.fieldRepository.disableOptimalState(refStructureName, companyName, fieldName, sectorName, timestamp)
     }
 
+    async disableMonitoringThesis(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp) {
+        await this.fieldRepository.disableMonitoringThesis(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp)
+    }
+
+    async disableSector(refStructureName, companyName, fieldName, sectorName, timestamp) {
+        await this.fieldRepository.disableSector(refStructureName, companyName, fieldName, sectorName, timestamp)
+    }
+
 }
 
 export default FieldService;

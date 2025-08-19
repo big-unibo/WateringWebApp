@@ -396,8 +396,31 @@ class FieldRepository {
         )
     }
 
-    async disableWateringSectorThesis(refStructureName, companyName, fieldName, sectorName, timestamp){
-        // Disable all thesis of a sector
+    async disableMonitoringThesis(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp){
+        await this.WateringThesis.update(
+            {
+                timestamp_to: timestamp
+            },
+            {
+                where:{
+                    refStructureName: refStructureName,
+                    companyName: companyName,
+                    fieldName: fieldName,
+                    sectorName: sectorName,
+                    plantRow: plantRow,
+                    timestamp_from: {
+                        [Op.lt]: timestamp
+                    },
+                    timestamp_to: {
+                        [Op.is]: null
+                    },
+                }
+            }
+        )
+    }
+
+    async disableSector(refStructureName, companyName, fieldName, sectorName, timestamp){
+        // Disable all monitoring thesis of a sector
         await this.WateringThesis.update(
             {
                 timestamp_to: timestamp
@@ -417,11 +440,29 @@ class FieldRepository {
                 }
             }
         )
-
+        await this.WateringSector.update(
+            {
+                timestamp_to: timestamp
+            },
+            {
+                where:{
+                    refStructureName: refStructureName,
+                    companyName: companyName,
+                    fieldName: fieldName,
+                    sectorName: sectorName,
+                    timestamp_from: {
+                        [Op.lt]: timestamp
+                    },
+                    timestamp_to: {
+                        [Op.is]: null
+                    },
+                }
+            }
+        )
     }
 
     async disableOptimalState(refStructureName, companyName, fieldName, sectorName, timestamp){
-        // Disable all thesis of a sector
+        // Disable optimal for all thesis of a sector
         await this.MatrixField.update(
             {
                 timestamp_to: timestamp,

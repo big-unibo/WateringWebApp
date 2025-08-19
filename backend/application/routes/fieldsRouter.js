@@ -83,6 +83,87 @@ fieldsRouter.post('/createMonitoringThesis', async (req, res) => {
   
   });
 
+/**
+ * @swagger
+ * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/disableMonitoring:
+ *   post:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Set the end of validity for a monitoring thesis
+ *     description: Set the end of validity for a monitoring thesis
+ *     tags: [Field Operations]
+ *     parameters:
+ *       - in: path
+ *         name: refStructureName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The reference structure name
+ *       - in: path
+ *         name: companyName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The company name
+ *       - in: path
+ *         name: fieldName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The field name
+ *       - in: path
+ *         name: sectorName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The sector name
+ *       - in: path
+ *         name: plantRow
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The plantRow
+ *       - in: query
+ *         name: timestamp
+ *         schema:
+ *           type: number
+ *         description: The timestamp to set as the end of validity for the thesis
+ *     responses:
+ *       '200':
+ *         description: Monitoring thesis disabled successfully.
+ *       '401':
+ *         description: Unauthorized request.
+ *       '403':
+ *         description: Authentication failed.
+ *       '500':
+ *         description: Error on disabling monitoring thesis.
+ */
+fieldsRouter.post('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/disableMonitoring', async (req, res) => {
+  let requestUserData
+  try {
+    requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+  } catch (error) {
+    return res.status(403).json({message: 'Authentication failed'});
+  }
+
+  const { refStructureName, companyName, fieldName, sectorName, plantRow } = req.params;
+
+  try {
+    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, plantRow, '*')))
+      return res.status(401).json({message: 'Unauthorized request'});
+
+    const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
+
+    await fieldService.disableMonitoringThesis(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp)
+    //TODO disable all nodes related to this thesis
+
+    return res.status(200).json({message: `Monitoring thesis disabled successfully`})
+  } catch (error) {
+    console.log(`Fail disabling monitoring thesis caused by: ${error.message}`)
+    return res.status(500).json({error: "Error on disabling monitoring thesis"})
+  }
+});
+
   /**
  * @swagger
  * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/setWateringDetails:
@@ -177,6 +258,80 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/setWate
     }
   
   });
+
+/**
+ * @swagger
+ * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/expireSector:
+ *   post:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Set the end of validity for a watering sector and its thesis
+ *     description: Set the end of validity for a watering sector and its thesis
+ *     tags: [Field Operations]
+ *     parameters:
+ *       - in: path
+ *         name: refStructureName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The reference structure name
+ *       - in: path
+ *         name: companyName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The company name
+ *       - in: path
+ *         name: fieldName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The field name
+ *       - in: path
+ *         name: sectorName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The sector name
+ *       - in: query
+ *         name: timestamp
+ *         schema:
+ *           type: number
+ *         description: The timestamp to set as the end of validity for the sector
+ *     responses:
+ *       '200':
+ *         description: Monitoring sector disabled successfully.
+ *       '401':
+ *         description: Unauthorized request.
+ *       '403':
+ *         description: Authentication failed.
+ *       '500':
+ *         description: Error on disabling sector.
+ */
+fieldsRouter.post('/:refStructureName/:companyName/:fieldName/:sectorName/expireSector', async (req, res) => {
+  let requestUserData
+  try {
+    requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+  } catch (error) {
+    return res.status(403).json({message: 'Authentication failed'});
+  }
+
+  const { refStructureName, companyName, fieldName, sectorName } = req.params;
+
+  try {
+    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, null, '*')))
+      return res.status(401).json({message: 'Unauthorized request'});
+
+    const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
+
+    await fieldService.disableSector(refStructureName, companyName, fieldName, sectorName, timestamp)
+
+    return res.status(200).json({message: `Sector disabled successfully`})
+  } catch (error) {
+    console.log(`Fail disabling sector caused by: ${error.message}`)
+    return res.status(500).json({error: "Error on disabling sector"})
+  }
+});
 
 /**
  * @swagger
