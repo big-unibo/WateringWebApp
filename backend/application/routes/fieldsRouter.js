@@ -982,4 +982,90 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/setPres
 
 });
 
+/**
+ * @swagger
+ * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/{nodeId}/disable:
+ *   post:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Set the end of validity for a node of a thesis
+ *     description: Set the end of validity for a node of a thesis
+ *     tags: [Node Operations]
+ *     parameters:
+ *       - in: path
+ *         name: refStructureName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The reference structure name
+ *       - in: path
+ *         name: companyName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The company name
+ *       - in: path
+ *         name: fieldName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The field name
+ *       - in: path
+ *         name: sectorName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The sector name
+ *       - in: path
+ *         name: plantRow
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The plantRow
+ *       - in: path
+ *         name: nodeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The node id to disable
+ *       - in: query
+ *         name: timestamp
+ *         schema:
+ *           type: number
+ *         description: The timestamp to set as the end of validity for the node
+ *     responses:
+ *       '200':
+ *         description: Node disabled successfully.
+ *       '401':
+ *         description: Unauthorized request.
+ *       '403':
+ *         description: Authentication failed.
+ *       '500':
+ *         description: Error on disabling monitoring thesis.
+ */
+fieldsRouter.post('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/:nodeId/disable', async (req, res) => {
+  let requestUserData
+  try {
+    requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+  } catch (error) {
+    return res.status(403).json({message: 'Authentication failed'});
+  }
+
+  const { refStructureName, companyName, fieldName, sectorName, plantRow, nodeId } = req.params;
+
+  try {
+    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, plantRow, '*')))
+      return res.status(401).json({message: 'Unauthorized request'});
+
+    const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
+
+    await fieldService.disableNode(refStructureName, companyName, fieldName, sectorName, plantRow, nodeId, timestamp)
+
+    return res.status(200).json({message: `Node disabled successfully`})
+  } catch (error) {
+    console.log(`Fail disabling node caused by: ${error.message}`)
+    return res.status(500).json({error: "Error on disabling node"})
+  }
+});
+
 export default fieldsRouter;

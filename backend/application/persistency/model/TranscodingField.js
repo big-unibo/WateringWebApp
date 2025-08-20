@@ -14,7 +14,10 @@ function initTranscodingField(sequelize) {
         sectorName: DataTypes.TEXT,
         plantRow: DataTypes.TEXT,
         colture: DataTypes.TEXT,
-        coltureType: DataTypes.TEXT
+        coltureType: DataTypes.TEXT,
+        nodeId: DataTypes.TEXT,
+        valid_from: DataTypes.DOUBLE,
+        valid_to: DataTypes.DOUBLE
     }, {
         modelName: 'transcoding_field',
         timestamps: false,

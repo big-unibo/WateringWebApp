@@ -159,6 +159,10 @@ class FieldService {
         await this.fieldRepository.disableSector(refStructureName, companyName, fieldName, sectorName, timestamp)
     }
 
+    async disableNode(refStructureName, companyName, fieldName, sectorName, plantRow, nodeId, timestamp) {
+        await this.fieldRepository.disableNode(refStructureName, companyName, fieldName, sectorName, plantRow, nodeId, timestamp)
+    }
+
 }
 
 export default FieldService;

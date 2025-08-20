@@ -481,6 +481,29 @@ class FieldRepository {
 
     }
 
+    async disableNode(refStructureName, companyName, fieldName, sectorName, plantRow, nodeId, timestamp){
+        await this.TranscodingField.update(
+            {
+                valid_to: timestamp
+            },
+            {
+                where:{
+                    refStructureName: refStructureName,
+                    companyName: companyName,
+                    fieldName: fieldName,
+                    sectorName: sectorName,
+                    plantRow: plantRow,
+                    nodeId: nodeId,
+                    valid_from: {
+                        [Op.lt]: timestamp
+                    },
+                    valid_to: {
+                        [Op.is]: null
+                    },
+                }
+            }
+        )
+    }
 }
 
 export default FieldRepository
