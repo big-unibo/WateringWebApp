@@ -8,7 +8,7 @@ function initLog(sequelize) {
         companyName: DataTypes.TEXT,
         fieldName: DataTypes.TEXT,
         sectorName: DataTypes.TEXT,
-        plantRow: DataTypes.TEXT,
+        thesisName: DataTypes.TEXT,
         timestamp: DataTypes.DOUBLE,
         type: DataTypes.TEXT,
         description: DataTypes.TEXT

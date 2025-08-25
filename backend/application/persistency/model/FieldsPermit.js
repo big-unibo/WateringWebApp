@@ -30,7 +30,7 @@ function initFieldsPermit(sequelize) {
       type: DataTypes.STRING,
       allowNull: false
     },
-    plantRow: {
+    thesisName: {
       type: DataTypes.STRING,
       allowNull: false
     },

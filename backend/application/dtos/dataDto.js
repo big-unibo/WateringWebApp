@@ -8,12 +8,12 @@ export class DataResponse {
 
 export class DataValue {
 
-    constructor(refStructureName, companyName, fieldName, sectorName, plantRow, colture, measures) {
+    constructor(refStructureName, companyName, fieldName, sectorName, thesisName, colture, measures) {
         this.refStructureName = refStructureName;
         this.companyName = companyName;
         this.fieldName = fieldName;
         this.sectorName = sectorName;
-        this.plantRow = plantRow;
+        this.thesisName = thesisName;
         this.colture = colture;
         this.measures = measures;
     }

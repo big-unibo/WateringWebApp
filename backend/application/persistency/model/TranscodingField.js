@@ -12,7 +12,7 @@ function initTranscodingField(sequelize) {
         companyName: DataTypes.TEXT,
         fieldName: DataTypes.TEXT,
         sectorName: DataTypes.TEXT,
-        plantRow: DataTypes.TEXT,
+        thesisName: DataTypes.TEXT,
         colture: DataTypes.TEXT,
         coltureType: DataTypes.TEXT,
         nodeId: DataTypes.TEXT,

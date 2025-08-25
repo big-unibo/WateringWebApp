@@ -14,7 +14,7 @@ const logService = new LogService(sequelize)
 
 /**
  * @swagger
- * /logs/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}:
+ * /logs/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -47,11 +47,11 @@ const logService = new LogService(sequelize)
  *           type: string
  *         description: The sector name
  *       - in: path
- *         name: plantRow
+ *         name: thesisName
  *         required: true
  *         schema:
  *           type: string
- *         description: The plantRow
+ *         description: The thesisName
  *       - in: query
  *         name: timeFilterFrom
  *         schema:
@@ -83,18 +83,18 @@ const logService = new LogService(sequelize)
  *       '500':
  *         description: Error on retrieving data.
  */
-logsRouter.get("/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/", async (req, res) => {
+logsRouter.get("/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/", async (req, res) => {
     const refStructureName = req.params.refStructureName;
     const companyName = req.params.companyName;
     const fieldName = req.params.fieldName;
     const sectorName = req.params.sectorName;
-    const plantRow = req.params.plantRow;
+    const thesisName = req.params.thesisName;
     const timeFilterFrom = req.query.timeFilterFrom;
     const timeFilterTo = req.query.timeFilterTo;
 
     try {
         const user = await authenticationService.validateJwt(req.headers.authorization);
-        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'MO', timeFilterFrom, timeFilterTo)))
+        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
             return res.status(401).json({ message: 'Unauthorized request' });
     } catch (error) {
         return res.status(403).json({ message: 'Authentication failed' });
@@ -102,7 +102,7 @@ logsRouter.get("/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow
 
     try {
 
-        const result = await logService.getLogs(refStructureName, companyName, fieldName, sectorName, plantRow, timeFilterFrom, timeFilterTo);
+        const result = await logService.getLogs(refStructureName, companyName, fieldName, sectorName, thesisName, timeFilterFrom, timeFilterTo);
         res.status(200).json(result);
     } catch (error) {
         return res.status(500).json({ message: error.message });

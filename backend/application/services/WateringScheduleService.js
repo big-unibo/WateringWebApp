@@ -19,8 +19,8 @@ class WateringScheduleService {
         this.fieldRepository = new FieldRepository(initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), initWateringThesis(sequelize), initWateringSector(sequelize), initWateringAlgorithmParams(sequelize), sequelize);
     }
 
-    async getSchedule(refStructureName, companyName, fieldName, sectorName, plantRow, timestampFrom, timestampTo) {
-        const results = await this.wateringScheduleRepository.getSchedule(refStructureName, companyName, fieldName, sectorName, plantRow, timestampFrom, timestampTo)
+    async getSchedule(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {
+        const results = await this.wateringScheduleRepository.getSchedule(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo)
         if (results.length == 0) {
             return new WateringScheduleResponse('iFarming', refStructureName, companyName, fieldName, sectorName, [])
         }

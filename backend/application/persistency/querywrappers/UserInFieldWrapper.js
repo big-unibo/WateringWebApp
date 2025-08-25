@@ -1,11 +1,11 @@
 export class UserInFieldWrapper {
 
-    constructor(refStructureName, companyName, fieldName, sectorName, plantRow, colture, coltureType) {
+    constructor(refStructureName, companyName, fieldName, sectorName, thesisName, colture, coltureType) {
         this.refStructureName = refStructureName;
         this.companyName = companyName;
         this.fieldName = fieldName;
         this.sectorName = sectorName;
-        this.plantRow = plantRow;
+        this.thesisName = thesisName;
         this.colture = colture;
         this.coltureType = coltureType;
     }

@@ -5,7 +5,7 @@ import { DataInterpolatedMeanWrapper } from '../querywrappers/DataInterpolatedMe
 
 import { QueryTypes } from 'sequelize';
 
-const getResults = async (refStructureName, companyName, fieldName, sectorName, plantRow, timestampFrom, timestampTo, sequelize) => {
+const getResults = async (refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo, sequelize) => {
 
     const query = `
         SELECT DISTINCT "source",
@@ -13,7 +13,7 @@ const getResults = async (refStructureName, companyName, fieldName, sectorName, 
                         "companyName",
                         "fieldName",
                         "sectorName",
-                        "plantRow",
+                        "thesisName",
                         "zz",
                         "yy",
                         "xx",
@@ -25,11 +25,11 @@ const getResults = async (refStructureName, companyName, fieldName, sectorName, 
           AND "companyName" = '${companyName}'
           AND "fieldName" = '${fieldName}'
           AND "sectorName" = '${sectorName}'
-          AND "plantRow" = '${plantRow}'
+          AND "thesisName" = '${thesisName}'
           AND "timestamp" >= '${timestampFrom}'
           AND "timestamp" <= '${timestampTo}'
           AND ("zz" = 0 OR "zz" IS NULL)
-        ORDER BY "source", "refStructureName", "companyName", "fieldName", "sectorName", "plantRow", "timestamp", "zz", "yy", "xx"`;
+        ORDER BY "source", "refStructureName", "companyName", "fieldName", "sectorName", "thesisName", "timestamp", "zz", "yy", "xx"`;
 
     const results = await sequelize.query(query,
         {
@@ -39,7 +39,7 @@ const getResults = async (refStructureName, companyName, fieldName, sectorName, 
                 companyName,
                 fieldName,
                 sectorName,
-                plantRow,
+                thesisName,
                 timestampFrom,
                 timestampTo
             }
@@ -51,7 +51,7 @@ const getResults = async (refStructureName, companyName, fieldName, sectorName, 
         result.companyName,
         result.fieldName,
         result.sectorName,
-        result.plantRow,
+        result.thesisName,
         result.zz,
         result.yy,
         result.xx,
@@ -67,7 +67,7 @@ class DataInterpolatedRepository {
         this.sequelize = sequelize;
     }
 
-    async findLastInterpolationTimestamp(refStructureName, companyName, fieldName, sectorName, plantRow, timestampFrom, timestampTo)
+    async findLastInterpolationTimestamp(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo)
     {
         const query = `
             SELECT MAX("timestamp") AS "lastTimestamp"
@@ -77,7 +77,7 @@ class DataInterpolatedRepository {
               AND "companyName" = '${companyName}'
               AND "fieldName" = '${fieldName}'
               AND "sectorName" = '${sectorName}'
-              AND "plantRow" = '${plantRow}'
+              AND "thesisName" = '${thesisName}'
               AND "timestamp" BETWEEN '${Math.floor(timestampFrom)}' AND '${Math.ceil(timestampTo)}'`;
 
         const result = await this.sequelize.query(query, {
@@ -87,7 +87,7 @@ class DataInterpolatedRepository {
                 companyName,
                 fieldName,
                 sectorName,
-                plantRow,
+                thesisName,
                 timestampFrom,
                 timestampTo
             }
@@ -96,15 +96,15 @@ class DataInterpolatedRepository {
         return result.length > 0 ? result[0].lastTimestamp : null;
     }
 
-    async findDataInterpolated(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp) {
-        return getResults(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp, timestamp, this.sequelize);
+    async findDataInterpolated(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp) {
+        return getResults(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp, timestamp, this.sequelize);
     }
 
-    async findDataInterpolatedRange(refStructureName, companyName, fieldName, sectorName, plantRow, timestampFrom, timestampTo) {
-        return getResults(refStructureName, companyName, fieldName, sectorName, plantRow, timestampFrom, timestampTo, this.sequelize);
+    async findDataInterpolatedRange(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {
+        return getResults(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo, this.sequelize);
     }
 
-    async findInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, plantRow, timestampFrom, timestampTo) {
+    async findInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {
 
         const query = `
             SELECT "zz", "yy", "xx", AVG(value * -1)::numeric AS mean, STDDEV(value) ::numeric AS std
@@ -114,7 +114,7 @@ class DataInterpolatedRepository {
               AND "companyName" = '${companyName}'
               AND "fieldName" = '${fieldName}'
               AND "sectorName" = '${sectorName}'
-              AND "plantRow" = '${plantRow}'
+              AND "thesisName" = '${thesisName}'
               AND "timestamp" >= '${timestampFrom}'
               AND "timestamp" <= '${timestampTo}'
               AND "value" < 0
@@ -130,7 +130,7 @@ class DataInterpolatedRepository {
                     companyName,
                     fieldName,
                     sectorName,
-                    plantRow
+                    thesisName
                 }
             }
         );
@@ -145,7 +145,7 @@ class DataInterpolatedRepository {
         ));
     }
 
-    async findThesisPoints(refStructureName, companyName, fieldName, sectorName, plantRow) {
+    async findThesisPoints(refStructureName, companyName, fieldName, sectorName, thesisName) {
 
         const query = `
             SELECT "xx", "yy", "zz" 
@@ -155,7 +155,7 @@ class DataInterpolatedRepository {
                 AND "companyName" = '${companyName}'
                 AND "fieldName" = '${fieldName}'
                 AND "sectorName" = '${sectorName}'
-                AND "plantRow" = '${plantRow}'
+                AND "thesisName" = '${thesisName}'
                 AND  "timestamp" = (
                     SELECT MAX(timestamp) 
                     FROM data_interpolated 
@@ -164,7 +164,7 @@ class DataInterpolatedRepository {
                         AND "companyName" = '${companyName}'
                         AND "fieldName" = '${fieldName}'
                         AND "sectorName" = '${sectorName}'
-                        AND "plantRow" = '${plantRow}')
+                        AND "thesisName" = '${thesisName}')
             ORDER BY "xx", "yy", "zz"`;
 
         const results = await this.sequelize.query(query,
@@ -175,7 +175,7 @@ class DataInterpolatedRepository {
                   companyName,
                   fieldName,
                   sectorName,
-                  plantRow
+                  thesisName
               }
           }
         );

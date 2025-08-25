@@ -1,12 +1,12 @@
 
 export class WateringAdviceDto {
 
-  constructor(refStructureName, companyName, fieldName, sectorName, plantRow, advice, computedOn, duration, wateringStart, wateringEnd, r, ki, kp, lastIrrigation, baselineFlag) {
+  constructor(refStructureName, companyName, fieldName, sectorName, thesisName, advice, computedOn, duration, wateringStart, wateringEnd, r, ki, kp, lastIrrigation, baselineFlag) {
     this.refStructureName = refStructureName;
     this.companyName = companyName;
     this.fieldName = fieldName;
     this.sectorName = sectorName;
-    this.plantRow = plantRow;
+    this.thesisName = thesisName;
     this.advice = advice;
     this.computedOn = computedOn;
     this.duration = duration;

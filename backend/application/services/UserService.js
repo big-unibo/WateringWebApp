@@ -43,7 +43,7 @@ class UserService {
             if(role === 'partner'){
                 const affiliationFields = await this.userRepository.findFieldsByAffiliation(affiliation)
                 request.grants.map(grant => {
-                    const key = `${grant.refStructureName} - ${grant.companyName} - ${grant.fieldName} - ${grant.sectorName} - ${grant.plantRow}`;
+                    const key = `${grant.refStructureName} - ${grant.companyName} - ${grant.fieldName} - ${grant.sectorName} - ${grant.thesisName}`;
                     if (affiliation !== grant.source || !affiliationFields.has(key))
                         throw Error(`Affiliation ${affiliation} has no permission to create grants for field ${key}`)
                 })
@@ -62,7 +62,7 @@ class UserService {
                 }
             }
             for(const permit of grant.permits)
-                await this.userRepository.createFieldPermit(userToGrant.userid, grant.source, grant.refStructureName, grant.companyName, grant.fieldName, grant.sectorName, grant.plantRow, permit)
+                await this.userRepository.createFieldPermit(userToGrant.userid, grant.source, grant.refStructureName, grant.companyName, grant.fieldName, grant.sectorName, grant.thesisName, permit)
         }
     }
 
@@ -105,7 +105,7 @@ class UserService {
                     field.companyName,
                     field.fieldName,
                     field.sectorName,
-                    field.plantRow
+                    field.thesisName
                 );
 
                 if (fieldDetails) {
@@ -131,7 +131,7 @@ class UserService {
                     key.companyName,
                     key.fieldName,
                     key.sectorName,
-                    key.plantRow,
+                    key.thesisName,
                     key.colture,
                     key.coltureType,
                   [...permissions] // Spread operator to convert Set to Array

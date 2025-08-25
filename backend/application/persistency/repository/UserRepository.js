@@ -35,8 +35,8 @@ class UserRepository {
         try {
             this.TranscodingField.removeAttribute('id')
             const res = (await this.TranscodingField.findAll({
-                attributes: ['source', 'refStructureName', 'companyName', 'fieldName', 'sectorName', 'plantRow'],
-                group: ['source', 'refStructureName', 'companyName', 'fieldName', 'sectorName', 'plantRow']
+                attributes: ['source', 'refStructureName', 'companyName', 'fieldName', 'sectorName', 'thesisName'],
+                group: ['source', 'refStructureName', 'companyName', 'fieldName', 'sectorName', 'thesisName']
             })).map(el => el.dataValues);
 
 
@@ -49,18 +49,18 @@ class UserRepository {
     async findUserPermissionsInPeriod(userid, timestamp_from, timestamp_to) {
         try {
             const query = `
-                SELECT DISTINCT permit.userid, permit."source", permit."refStructureName", permit."companyName", permit."fieldName", permit."sectorName", permit."plantRow", permit.permit
+                SELECT DISTINCT permit.userid, permit."source", permit."refStructureName", permit."companyName", permit."fieldName", permit."sectorName", permit."thesisName", permit.permit
                     FROM public.permit_fields AS permit
                     JOIN public.transcoding_field AS transcoding
                         ON permit."refStructureName" = transcoding."refStructureName"
                             AND permit."companyName" = transcoding."companyName"
                             AND permit."fieldName" = transcoding."fieldName"
                             AND permit."sectorName" = transcoding."sectorName"
-                            AND permit."plantRow" = transcoding."plantRow"
+                            AND permit."thesisName" = transcoding."thesisName"
                     WHERE (permit.userid = '${userid}') 
                         AND transcoding.valid_from < '${timestamp_to}' 
                         AND (transcoding.valid_to > '${timestamp_from}' OR transcoding.valid_to IS NULL)
-                    ORDER BY permit."refStructureName", permit."companyName", permit."fieldName", permit."sectorName", permit."plantRow"`
+                    ORDER BY permit."refStructureName", permit."companyName", permit."fieldName", permit."sectorName", permit."thesisName"`
 
             return await this.sequelize.query(query, {
                 type: QueryTypes.SELECT,
@@ -79,8 +79,8 @@ class UserRepository {
         try {
             this.TranscodingField.removeAttribute('id')
             const res = (await this.TranscodingField.findAll({
-                attributes: ['source', 'refStructureName', 'companyName', 'fieldName', 'sectorName', 'plantRow'],
-                group: ['source', 'refStructureName', 'companyName', 'fieldName', 'sectorName', 'plantRow'],
+                attributes: ['source', 'refStructureName', 'companyName', 'fieldName', 'sectorName', 'thesisName'],
+                group: ['source', 'refStructureName', 'companyName', 'fieldName', 'sectorName', 'thesisName'],
                 where: {
                     valid_from: {
                         [Op.lt]: Number(timestamp_to)
@@ -92,7 +92,7 @@ class UserRepository {
                         }
                     }
                 },
-                order: ['refStructureName', 'companyName', 'fieldName', 'sectorName', 'plantRow']
+                order: ['refStructureName', 'companyName', 'fieldName', 'sectorName', 'thesisName']
             })).map(el => el.dataValues);
             return res
         } catch (error) {
@@ -118,7 +118,7 @@ class UserRepository {
         }
     }
 
-    async createFieldPermit(userId, source, refStructureName, companyName, fieldName, sectorName, plantRow, permit) {
+    async createFieldPermit(userId, source, refStructureName, companyName, fieldName, sectorName, thesisName, permit) {
         let model = this.FieldsPermit.build({
             userid: userId,
             source: source,
@@ -126,7 +126,7 @@ class UserRepository {
             companyName: companyName,
             fieldName: fieldName,
             sectorName: sectorName,
-            plantRow: plantRow,
+            thesisName: thesisName,
             permit: permit
         })
         this.FieldsPermit.removeAttribute('id')
@@ -147,10 +147,10 @@ class UserRepository {
                     companyName,
                     fieldName,
                     sectorName,
-                    plantRow
+                    thesisName
                 } = model;
 
-                const key = `${refStructureName} - ${companyName} - ${fieldName} - ${sectorName} - ${plantRow}`;
+                const key = `${refStructureName} - ${companyName} - ${fieldName} - ${sectorName} - ${thesisName}`;
                 response.add(key)
             });
 

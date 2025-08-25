@@ -16,7 +16,7 @@ const fieldService = new FieldService(sequelize);
 
 /**
  * @swagger
- * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/groundWaterPotential:
+ * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/groundWaterPotential:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -48,11 +48,11 @@ const fieldService = new FieldService(sequelize);
  *           type: string
  *         description: The sector name
  *       - in: path
- *         name: plantRow
+ *         name: thesisName
  *         required: true
  *         schema:
  *           type: string
- *         description: The plantRow
+ *         description: The thesisName
  *       - in: query
  *         name: timeFilterFrom
  *         schema:
@@ -84,19 +84,19 @@ const fieldService = new FieldService(sequelize);
  *       500:
  *         description: Internal server error
  */
-fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/groundWaterPotential', async (req, res) => {
+fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/groundWaterPotential', async (req, res) => {
 
     const refStructureName = req.params.refStructureName;
     const companyName = req.params.companyName;
     const fieldName = req.params.fieldName;
     const sectorName = req.params.sectorName;
-    const plantRow = req.params.plantRow;
+    const thesisName = req.params.thesisName;
     const timeFilterFrom = req.query.timeFilterFrom;
     const timeFilterTo = req.query.timeFilterTo;
 
     try {
         const user = await authenticationService.validateJwt(req.headers.authorization);
-        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'MO', timeFilterFrom, timeFilterTo)))
+        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
             return res.status(401).json({message: 'Unauthorized request'});
     } catch (error) {
         return res.status(403).json({message: 'Authentication failed'});
@@ -106,7 +106,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
 
         const detectedValueTypeId = ['GRND_WATER_G', 'GRND_WATER_W', 'GRND_WATER'];
 
-        const result = await fieldService.getAverageByFieldReference(detectedValueTypeId, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow);
+        const result = await fieldService.getAverageByFieldReference(detectedValueTypeId, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName);
 
         res.status(200).json(result);
     } catch (error) {
@@ -117,7 +117,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
 
 /**
  * @swagger
- * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/dripperAndPluv:
+ * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/dripperAndPluv:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -145,7 +145,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         schema:
  *           type: string
  *       - in: path
- *         name: plantRow
+ *         name: thesisName
  *         required: true
  *         schema:
  *           type: string
@@ -178,19 +178,19 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *       500:
  *         description: Internal server error
  */
-fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/dripperAndPluv', async (req, res) => {
+fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/dripperAndPluv', async (req, res) => {
 
     const refStructureName = req.params.refStructureName;
     const companyName = req.params.companyName;
     const fieldName = req.params.fieldName;
     const sectorName = req.params.sectorName;
-    const plantRow = req.params.plantRow;
+    const thesisName = req.params.thesisName;
     const timeFilterFrom = req.query.timeFilterFrom;
     const timeFilterTo = req.query.timeFilterTo;
 
     try {
         const user = await authenticationService.validateJwt(req.headers.authorization);
-        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'MO', timeFilterFrom, timeFilterTo)))
+        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
             return res.status(401).json({message: 'Unauthorized request'});
     } catch (error) {
         return res.status(403).json({message: 'Authentication failed'});
@@ -199,7 +199,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
     try {
         const detectedValueTypeId = ['DRIPPER', 'PLUV_CURR', 'SPRINKLER'];
 
-        const result = await fieldService.getHumidityEventsByFieldReference(detectedValueTypeId, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow);
+        const result = await fieldService.getHumidityEventsByFieldReference(detectedValueTypeId, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName);
 
         res.status(200).json(result);
     } catch (error) {
@@ -211,7 +211,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
 
 /**
  * @swagger
- * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/dripper:
+ * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/dripper:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -239,7 +239,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         schema:
  *           type: string
  *       - in: path
- *         name: plantRow
+ *         name: thesisName
  *         required: true
  *         schema:
  *           type: string
@@ -272,19 +272,19 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *       500:
  *         description: Internal server error
  */
-fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/dripper', async (req, res) => {
+fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/dripper', async (req, res) => {
 
     const refStructureName = req.params.refStructureName;
     const companyName = req.params.companyName;
     const fieldName = req.params.fieldName;
     const sectorName = req.params.sectorName;
-    const plantRow = req.params.plantRow;
+    const thesisName = req.params.thesisName;
     const timeFilterFrom = req.query.timeFilterFrom;
     const timeFilterTo = req.query.timeFilterTo;
 
     try {
         const user = await authenticationService.validateJwt(req.headers.authorization);
-        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'MO', timeFilterFrom, timeFilterTo)))
+        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
             return res.status(401).json({message: 'Unauthorized request'});
     } catch (error) {
         console.log(error)
@@ -294,7 +294,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
     try {
         const detectedValueTypeId = ['DRIPPER'];
 
-        const result = await fieldService.getHumidityEventsByFieldReference(detectedValueTypeId, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow);
+        const result = await fieldService.getHumidityEventsByFieldReference(detectedValueTypeId, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName);
 
         res.status(200).json(result);
     } catch (error) {
@@ -306,7 +306,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
 
 /**
  * @swagger
- * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/pluv:
+ * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/pluv:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -334,7 +334,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         schema:
  *           type: string
  *       - in: path
- *         name: plantRow
+ *         name: thesisName
  *         required: true
  *         schema:
  *           type: string
@@ -367,19 +367,19 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *       500:
  *         description: Internal server error
  */
-fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/pluv', async (req, res) => {
+fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/pluv', async (req, res) => {
 
     const refStructureName = req.params.refStructureName;
     const companyName = req.params.companyName;
     const fieldName = req.params.fieldName;
     const sectorName = req.params.sectorName;
-    const plantRow = req.params.plantRow;
+    const thesisName = req.params.thesisName;
     const timeFilterFrom = req.query.timeFilterFrom;
     const timeFilterTo = req.query.timeFilterTo;
 
     try {
         const user = await authenticationService.validateJwt(req.headers.authorization);
-        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'MO', timeFilterFrom, timeFilterTo)))
+        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
             return res.status(401).json({message: 'Unauthorized request'});
     } catch (error) {
         return res.status(403).json({message: 'Authentication failed'});
@@ -388,7 +388,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
     try {
         const detectedValueTypeId = ['PLUV_CURR'];
 
-        const result = await fieldService.getHumidityEventsByFieldReference(detectedValueTypeId, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow);
+        const result = await fieldService.getHumidityEventsByFieldReference(detectedValueTypeId, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName);
 
         res.status(200).json(result);
     } catch (error) {
@@ -400,7 +400,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
 
 /**
  * @swagger
- * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/waterAggregate:
+ * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/waterAggregate:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -428,7 +428,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         schema:
  *           type: string
  *       - in: path
- *         name: plantRow
+ *         name: thesisName
  *         required: true
  *         schema:
  *           type: string
@@ -461,26 +461,26 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *       500:
  *         description: Internal server error
  */
-fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/waterAggregate', async (req, res) => {
+fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/waterAggregate', async (req, res) => {
 
     const refStructureName = req.params.refStructureName;
     const companyName = req.params.companyName;
     const fieldName = req.params.fieldName;
     const sectorName = req.params.sectorName;
-    const plantRow = req.params.plantRow;
+    const thesisName = req.params.thesisName;
     const timeFilterFrom = req.query.timeFilterFrom;
     const timeFilterTo = req.query.timeFilterTo;
 
     try {
         const user = await authenticationService.validateJwt(req.headers.authorization);
-        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'MO', timeFilterFrom, timeFilterTo)))
+        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
             return res.status(401).json({message: 'Unauthorized request'});
     } catch (error) {
         return res.status(403).json({message: 'Authentication failed'});
     }
 
     try {
-        const result = await fieldService.getWaterAggregate(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow);
+        const result = await fieldService.getWaterAggregate(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName);
 
         res.status(200).json(result);
     } catch (error) {
@@ -491,7 +491,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
 
 /**
  * @swagger
- * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/airTemp:
+ * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/airTemp:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -519,7 +519,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         schema:
  *           type: string
  *       - in: path
- *         name: plantRow
+ *         name: thesisName
  *         required: true
  *         schema:
  *           type: string
@@ -552,19 +552,19 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *       500:
  *         description: Internal server error
  */
-fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/airTemp', async (req, res) => {
+fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/airTemp', async (req, res) => {
 
     const refStructureName = req.params.refStructureName;
     const companyName = req.params.companyName;
     const fieldName = req.params.fieldName;
     const sectorName = req.params.sectorName;
-    const plantRow = req.params.plantRow;
+    const thesisName = req.params.thesisName;
     const timeFilterFrom = req.query.timeFilterFrom;
     const timeFilterTo = req.query.timeFilterTo;
 
     try {
         const user = await authenticationService.validateJwt(req.headers.authorization);
-        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'MO', timeFilterFrom, timeFilterTo)))
+        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
             return res.status(401).json({message: 'Unauthorized request'});
     } catch (error) {
         return res.status(403).json({message: 'Authentication failed'});
@@ -573,7 +573,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
     try {
         const detectedValueTypeId = ['AIR_TEMP', 'AIR_TEMP_FOL'];
 
-        const result = await fieldService.getAverageByFieldReference(detectedValueTypeId, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow);
+        const result = await fieldService.getAverageByFieldReference(detectedValueTypeId, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName);
 
         res.status(200).json(result);
     } catch (error) {
@@ -584,7 +584,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
 
 /**
  * @swagger
- * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/groundTemp:
+ * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/groundTemp:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -612,7 +612,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         schema:
  *           type: string
  *       - in: path
- *         name: plantRow
+ *         name: thesisName
  *         required: true
  *         schema:
  *           type: string
@@ -645,19 +645,19 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *       500:
  *         description: Internal server error
  */
-fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/groundTemp', async (req, res) => {
+fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/groundTemp', async (req, res) => {
 
     const refStructureName = req.params.refStructureName;
     const companyName = req.params.companyName;
     const fieldName = req.params.fieldName;
     const sectorName = req.params.sectorName;
-    const plantRow = req.params.plantRow;
+    const thesisName = req.params.thesisName;
     const timeFilterFrom = req.query.timeFilterFrom;
     const timeFilterTo = req.query.timeFilterTo;
 
     try {
         const user = await authenticationService.validateJwt(req.headers.authorization);
-        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'MO', timeFilterFrom, timeFilterTo)))
+        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
             return res.status(401).json({message: 'Unauthorized request'});
     } catch (error) {
         return res.status(403).json({message: 'Authentication failed'});
@@ -666,7 +666,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
     try {
         const detectedValueTypeId = ['GRND_TEMP'];
 
-        const result = await fieldService.getAverageByFieldReference(detectedValueTypeId, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow);
+        const result = await fieldService.getAverageByFieldReference(detectedValueTypeId, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName);
 
         res.status(200).json(result);
     } catch (error) {
@@ -677,7 +677,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
 
 /**
  * @swagger
- * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/humidityEvents:
+ * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/humidityEvents:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -705,7 +705,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         schema:
  *           type: string
  *       - in: path
- *         name: plantRow
+ *         name: thesisName
  *         required: true
  *         schema:
  *           type: string
@@ -738,19 +738,19 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *       500:
  *         description: Internal server error
  */
-fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/humidityEvents', async (req, res) => {
+fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/humidityEvents', async (req, res) => {
 
     const refStructureName = req.params.refStructureName;
     const companyName = req.params.companyName;
     const fieldName = req.params.fieldName;
     const sectorName = req.params.sectorName;
-    const plantRow = req.params.plantRow;
+    const thesisName = req.params.thesisName;
     const timeFilterFrom = req.query.timeFilterFrom;
     const timeFilterTo = req.query.timeFilterTo;
 
     try {
         const user = await authenticationService.validateJwt(req.headers.authorization);
-        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'MO', timeFilterFrom, timeFilterTo)))
+        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
             return res.status(401).json({message: 'Unauthorized request'});
     } catch (error) {
         return res.status(403).json({message: 'Authentication failed'});
@@ -759,7 +759,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
     try {
         const detectedValueTypeId = ['DRIPPER', 'PLUV_CURR', 'IGA'];
 
-        const result = await fieldService.getHumidityEventsByFieldReference(detectedValueTypeId, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow);
+        const result = await fieldService.getHumidityEventsByFieldReference(detectedValueTypeId, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName);
 
         res.status(200).json(result);
     } catch (error) {
@@ -770,7 +770,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
 
 /**
  * @swagger
- * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/electCondition:
+ * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/electCondition:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -798,7 +798,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         schema:
  *           type: string
  *       - in: path
- *         name: plantRow
+ *         name: thesisName
  *         required: true
  *         schema:
  *           type: string
@@ -831,26 +831,26 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *       500:
  *         description: Internal server error
  */
-fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/electCondition', async (req, res) => {
+fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/electCondition', async (req, res) => {
 
     const refStructureName = req.params.refStructureName;
     const companyName = req.params.companyName;
     const fieldName = req.params.fieldName;
     const sectorName = req.params.sectorName;
-    const plantRow = req.params.plantRow;
+    const thesisName = req.params.thesisName;
     const timeFilterFrom = req.query.timeFilterFrom;
     const timeFilterTo = req.query.timeFilterTo;
 
     try {
         const user = await authenticationService.validateJwt(req.headers.authorization);
-        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'MO', timeFilterFrom, timeFilterTo)))
+        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
             return res.status(401).json({message: 'Unauthorized request'});
     } catch (error) {
         return res.status(403).json({message: 'Authentication failed'});
     }
     
     try {
-        const result = await fieldService.getEcAverageByFieldReference(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow);
+        const result = await fieldService.getEcAverageByFieldReference(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName);
 
         res.status(200).json(result);
     } catch (error) {
@@ -861,7 +861,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
 
 /**
  * @swagger
- * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/humidityBins:
+ * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/humidityBins:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -889,7 +889,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         schema:
  *           type: string
  *       - in: path
- *         name: plantRow
+ *         name: thesisName
  *         required: true
  *         schema:
  *           type: string
@@ -922,19 +922,19 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *       500:
  *         description: Internal server error
  */
-fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/humidityBins', async (req, res) => {
+fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/humidityBins', async (req, res) => {
 
     const refStructureName = req.params.refStructureName;
     const companyName = req.params.companyName;
     const fieldName = req.params.fieldName;
     const sectorName = req.params.sectorName;
-    const plantRow = req.params.plantRow;
+    const thesisName = req.params.thesisName;
     const timeFilterFrom = req.query.timeFilterFrom;
     const timeFilterTo = req.query.timeFilterTo;
 
     try {
         const user = await authenticationService.validateJwt(req.headers.authorization);
-        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'MO', timeFilterFrom, timeFilterTo)))
+        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
             return res.status(401).json({message: 'Unauthorized request'});
     } catch (error) {
         return res.status(403).json({message: 'Authentication failed'});
@@ -942,7 +942,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
 
     try {
 
-        const result = await fieldService.getHumidityBins(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow);
+        const result = await fieldService.getHumidityBins(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName);
 
         res.status(200).json(result);
     } catch (error) {
@@ -953,7 +953,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
 
 /**
  * @swagger
- * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/dynamicHeatmap:
+ * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/dynamicHeatmap:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -981,7 +981,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         schema:
  *           type: string
  *       - in: path
- *         name: plantRow
+ *         name: thesisName
  *         required: true
  *         schema:
  *           type: string
@@ -1014,19 +1014,19 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *       500:
  *         description: Internal server error
  */
-fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/dynamicHeatmap', async (req, res) => {
+fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/dynamicHeatmap', async (req, res) => {
 
     const refStructureName = req.params.refStructureName;
     const companyName = req.params.companyName;
     const fieldName = req.params.fieldName;
     const sectorName = req.params.sectorName;
-    const plantRow = req.params.plantRow;
+    const thesisName = req.params.thesisName;
     const timeFilterFrom = req.query.timeFilterFrom;
     const timeFilterTo = req.query.timeFilterTo;
 
     try {
         const user = await authenticationService.validateJwt(req.headers.authorization);
-        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'MO', timeFilterFrom, timeFilterTo)))
+        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
             return res.status(401).json({message: 'Unauthorized request'});
     } catch (error) {
         return res.status(403).json({message: 'Authentication failed'});
@@ -1035,7 +1035,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
     try {
 
 
-        const result = await fieldService.getDataInterpolatedRange(refStructureName, companyName, fieldName, sectorName, plantRow, timeFilterFrom, timeFilterTo);
+        const result = await fieldService.getDataInterpolatedRange(refStructureName, companyName, fieldName, sectorName, thesisName, timeFilterFrom, timeFilterTo);
 
         res.status(200).json(result);
 
@@ -1047,7 +1047,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
 
 /**
  * @swagger
- * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/heatmap:
+ * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/heatmap:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -1075,7 +1075,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         schema:
  *           type: string
  *       - in: path
- *         name: plantRow
+ *         name: thesisName
  *         required: true
  *         schema:
  *           type: string
@@ -1108,19 +1108,19 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *       500:
  *         description: Internal server error
  */
-fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/heatmap', async (req, res) => {
+fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/heatmap', async (req, res) => {
 
     const refStructureName = req.params.refStructureName;
     const companyName = req.params.companyName;
     const fieldName = req.params.fieldName;
     const sectorName = req.params.sectorName;
-    const plantRow = req.params.plantRow;
+    const thesisName = req.params.thesisName;
     const timestampFrom = req.query.timeFilterFrom
     const timestampTo = req.query.timeFilterTo
 
     try {
         const user = await authenticationService.validateJwt(req.headers.authorization);
-        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'MO', timestampFrom, timestampTo)))
+        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestampFrom, timestampTo)))
             return res.status(401).json({message: 'Unauthorized request'});
     } catch (error) {
         return res.status(403).json({message: 'Authentication failed'});
@@ -1128,7 +1128,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
 
     try {
 
-        const result = await fieldService.getDataInterpolatedRange(refStructureName, companyName, fieldName, sectorName, plantRow, timestampFrom, timestampTo);
+        const result = await fieldService.getDataInterpolatedRange(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo);
         res.status(200).json(result);
     } catch (error) {
         return res.status(500).json({message: error.message});
@@ -1137,7 +1137,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
 
 /**
  * @swagger
- * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/statisticsChart:
+ * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/statisticsChart:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -1165,7 +1165,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         schema:
  *           type: string
  *       - in: path
- *         name: plantRow
+ *         name: thesisName
  *         required: true
  *         schema:
  *           type: string
@@ -1198,19 +1198,19 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *       500:
  *         description: Internal server error
  */
-fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/statisticsChart', async (req, res) => {
+fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/statisticsChart', async (req, res) => {
 
     const refStructureName = req.params.refStructureName;
     const companyName = req.params.companyName;
     const fieldName = req.params.fieldName;
     const sectorName = req.params.sectorName;
-    const plantRow = req.params.plantRow;
+    const thesisName = req.params.thesisName;
     const timeFilterFrom = req.query.timeFilterFrom;
     const timeFilterTo = req.query.timeFilterTo;
 
     try {
         const user = await authenticationService.validateJwt(req.headers.authorization);
-        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'MO', timeFilterFrom, timeFilterTo)))
+        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
             return res.status(401).json({message: 'Unauthorized request'});
     } catch (error) {
         return res.status(403).json({message: 'Authentication failed'});
@@ -1218,7 +1218,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
 
     try {
 
-        const result = await fieldService.getInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, plantRow, timeFilterFrom, timeFilterTo);
+        const result = await fieldService.getInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timeFilterFrom, timeFilterTo);
 
         res.status(200).json(new InterpolatedDataResponse(result));
     } catch (error) {
@@ -1229,7 +1229,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
 
 /**
  * @swagger
- * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/delta:
+ * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/delta:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -1257,7 +1257,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *         schema:
  *           type: string
  *       - in: path
- *         name: plantRow
+ *         name: thesisName
  *         required: true
  *         schema:
  *           type: string
@@ -1290,19 +1290,19 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *       500:
  *         description: Internal server error
  */
-fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/delta', async (req, res) => {
+fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/delta', async (req, res) => {
 
     const refStructureName = req.params.refStructureName;
     const companyName = req.params.companyName;
     const fieldName = req.params.fieldName;
     const sectorName = req.params.sectorName;
-    const plantRow = req.params.plantRow;
+    const thesisName = req.params.thesisName;
     const timeFilterFrom = req.query.timeFilterFrom;
     const timeFilterTo = req.query.timeFilterTo;
 
     try {
         const user = await authenticationService.validateJwt(req.headers.authorization);
-        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'WA', timeFilterFrom, timeFilterTo)))
+        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timeFilterFrom, timeFilterTo)))
             return res.status(401).json({message: 'Unauthorized request'});
     } catch (error) {
         return res.status(403).json({message: 'Authentication failed'});
@@ -1311,7 +1311,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
     try {
 
 
-        const result = await fieldService.getDelta(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow);
+        const result = await fieldService.getDelta(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName);
 
         res.status(200).json(result);
     } catch (error) {
@@ -1322,7 +1322,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
 
 /**
  * @swagger
- * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/getOptimalState:
+ * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/getOptimalState:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -1355,11 +1355,11 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *           type: string
  *         description: The sector name
  *       - in: path
- *         name: plantRow
+ *         name: thesisName
  *         required: true
  *         schema:
  *           type: string
- *         description: The plantRow
+ *         description: The thesisName
  *       - in: query
  *         name: timestamp
  *         schema:
@@ -1386,25 +1386,25 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *       '500':
  *         description: Error on retrieve optimal field matrix.
  */
-fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/getOptimalState', async (req, res) => {
+fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/getOptimalState', async (req, res) => {
   
     const refStructureName = req.params.refStructureName;
     const companyName = req.params.companyName;
     const fieldName = req.params.fieldName;
     const sectorName = req.params.sectorName;
-    const plantRow = req.params.plantRow;
+    const thesisName = req.params.thesisName;
     const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
   
     try {
       const user = await authenticationService.validateJwt(req.headers.authorization);
-      if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'MO', timestamp, timestamp)))
+      if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
         return res.status(401).json({ message: 'Unauthorized request' });
     } catch (error) {
       return res.status(403).json({ message: 'Authentication failed' });
     }
   
     try {
-      const result = await fieldService.getOptimalState(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp);
+      const result = await fieldService.getOptimalState(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp);
       res.status(200).json(result);
     } catch (error) {
       return res.status(500).json({ message: error.message });
@@ -1414,7 +1414,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
 
   /**
  * @swagger
- * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/getDistanceFromOptimalState:
+ * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/getDistanceFromOptimalState:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -1447,11 +1447,11 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *           type: string
  *         description: The sector name
  *       - in: path
- *         name: plantRow
+ *         name: thesisName
  *         required: true
  *         schema:
  *           type: string
- *         description: The plantRow
+ *         description: The thesisName
  *       - in: query
  *         name: timestamp
  *         schema:
@@ -1473,26 +1473,26 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:pl
  *       '500':
  *         description: Error on retrieve optimal field matrix.
  */
-fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/getDistanceFromOptimalState', async (req, res) => {
+fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/getDistanceFromOptimalState', async (req, res) => {
   
     const refStructureName = req.params.refStructureName;
     const companyName = req.params.companyName;
     const fieldName = req.params.fieldName;
     const sectorName = req.params.sectorName;
-    const plantRow = req.params.plantRow;
+    const thesisName = req.params.thesisName;
     const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
     console.log(req.query)
 
     try {
       const user = await authenticationService.validateJwt(req.headers.authorization);
-      if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'MO', timestamp, timestamp)))
+      if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
         return res.status(401).json({ message: 'Unauthorized request' });
     } catch (error) {
       return res.status(403).json({ message: 'Authentication failed' });
     }
   
     try {
-      const result = await fieldService.getPunctualDistance(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp);
+      const result = await fieldService.getPunctualDistance(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp);
       res.status(200).json(result);
     } catch (error) {
       return res.status(500).json({ message: error.message });

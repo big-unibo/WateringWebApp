@@ -14,11 +14,11 @@ class WateringScheduleRepository {
         WateringSchedule.belongsTo(Users, { foreignKey: 'userId' });
     }
 
-    async getSchedule(refStructureName, companyName, fieldName, sectorName, plantRow, timestampFrom, timestampTo) {
+    async getSchedule(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {
         try {
             this.WateringThesis.removeAttribute('id')
             const masterThesis = await this.WateringThesis.findAll({
-                attributes: ['timestamp_from', 'timestamp_to', 'plantRow'],
+                attributes: ['timestamp_from', 'timestamp_to', 'thesisName'],
                 where: {
                     refStructureName: refStructureName,
                     companyName: companyName,
@@ -41,14 +41,14 @@ class WateringScheduleRepository {
                         [Op.gte]: el.dataValues.timestamp_from,
                         [Op.lte]: el.dataValues.timestamp_to ? el.dataValues.timestamp_to : 9999999999
                     },
-                    plantRow: el.dataValues.plantRow
+                    thesisName: el.dataValues.thesisName
                 }
             }).map(filter => { return { [Op.and]: filter } })
 
             this.WateringSchedule.removeAttribute('id')
 
             return (await this.WateringSchedule.findAll({
-                attributes: ['source', 'refStructureName', 'companyName', 'fieldName', 'sectorName', 'plantRow', 'date',
+                attributes: ['source', 'refStructureName', 'companyName', 'fieldName', 'sectorName', 'thesisName', 'date',
                     ['watering_start', 'wateringStart'], ['watering_end', 'wateringEnd'], 'duration',
                     'enabled', ['expected_water', 'expectedWater'], 'advice', ['advice_timestamp', 'adviceTimestamp'],
                     ['update_timestamp', 'updateTimestamp'], 'note'],
@@ -147,7 +147,7 @@ class WateringScheduleRepository {
                     companyName: event.companyName,
                     fieldName: event.fieldName,
                     sectorName: event.sectorName,
-                    plantRow: thesis.plantRow,
+                    thesisName: thesis.thesisName,
                     date: event.date,
                     watering_start: event.wateringStart,
                     enabled: event.enabled,

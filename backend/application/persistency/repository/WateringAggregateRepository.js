@@ -7,7 +7,7 @@ class WateringAggregateRepository {
         this.sequelize = sequelize;
     }
 
-    async findWaterAggregate(timefilterFrom, timefilterTo, refStructureName, companyName, fieldName, sectorName, plantRow) {
+    async findWaterAggregate(timefilterFrom, timefilterTo, refStructureName, companyName, fieldName, sectorName, thesisName) {
 
         const queryString = `
             SELECT DISTINCT "source",
@@ -16,11 +16,11 @@ class WateringAggregateRepository {
                             "fieldName",
                             "detectedValueTypeDescription",
                             "sectorName",
-                            "plantRow",
+                            "thesisName",
                             MAX("value") as value, timestamp
             FROM (
                 (
-                SELECT DISTINCT "source", "refStructureName", "companyName", "fieldName", 'Pluv Curr (mm)' "detectedValueTypeDescription", "sectorName", "plantRow", SUM ("value") as value, EXTRACT(EPOCH FROM date_trunc('day', to_timestamp(timestamp))) as timestamp
+                SELECT DISTINCT "source", "refStructureName", "companyName", "fieldName", 'Pluv Curr (mm)' "detectedValueTypeDescription", "sectorName", "thesisName", SUM ("value") as value, EXTRACT(EPOCH FROM date_trunc('day', to_timestamp(timestamp))) as timestamp
                 FROM view_data_original
                 WHERE "detectedValueTypeId" IN ('PLUV_CURR')
                 AND "timestamp" >= '${timefilterFrom}'
@@ -30,8 +30,8 @@ class WateringAggregateRepository {
                 AND "companyName" = '${companyName}'
                 AND "fieldName" = '${fieldName}'
                 AND "sectorName" = '${sectorName}'
-                AND "plantRow" = '${plantRow}'
-                GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", EXTRACT(EPOCH FROM date_trunc('day', to_timestamp(timestamp)))
+                AND "thesisName" = '${thesisName}'
+                GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "thesisName", EXTRACT(EPOCH FROM date_trunc('day', to_timestamp(timestamp)))
                 ORDER BY timestamp ASC
                 )
             UNION
@@ -41,7 +41,7 @@ class WateringAggregateRepository {
                             vdo."fieldName",
                             'Dripper (L)' as "detectedValueTypeDescription",
                             vdo."sectorName",
-                            vdo."plantRow",
+                            vdo."thesisName",
                             SUM(vdo."value" * COALESCE(ws."dripper_scaling_factor",1)) as value, 
                             EXTRACT(EPOCH FROM date_trunc('day', to_timestamp(vdo.timestamp))) as timestamp
             FROM view_data_original AS vdo
@@ -61,8 +61,8 @@ class WateringAggregateRepository {
               AND vdo."companyName" = '${companyName}'
               AND vdo."fieldName" = '${fieldName}'
               AND vdo."sectorName" = '${sectorName}'
-              AND vdo."plantRow" = '${plantRow}'
-            GROUP BY vdo."source", vdo."refStructureName", vdo."companyName", vdo."fieldName", "detectedValueTypeDescription", vdo."sectorName", vdo."plantRow", EXTRACT(EPOCH FROM date_trunc('day', to_timestamp(vdo.timestamp)))
+              AND vdo."thesisName" = '${thesisName}'
+            GROUP BY vdo."source", vdo."refStructureName", vdo."companyName", vdo."fieldName", "detectedValueTypeDescription", vdo."sectorName", vdo."thesisName", EXTRACT(EPOCH FROM date_trunc('day', to_timestamp(vdo.timestamp)))
             ORDER BY timestamp ASC)
             UNION            
             (SELECT DISTINCT "source", 
@@ -71,7 +71,7 @@ class WateringAggregateRepository {
                             "fieldName",
                             'Sprinkler (L)' as "detectedValueTypeDescription",
                             "sectorName",
-                            "plantRow",
+                            "thesisName",
                             SUM("value") as value, 
                             EXTRACT(EPOCH FROM date_trunc('day', to_timestamp(timestamp))) as timestamp
             FROM view_data_original
@@ -83,8 +83,8 @@ class WateringAggregateRepository {
               AND "companyName" = '${companyName}'
               AND "fieldName" = '${fieldName}'
               AND "sectorName" = '${sectorName}'
-              AND "plantRow" = '${plantRow}'
-            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", timestamp
+              AND "thesisName" = '${thesisName}'
+            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "thesisName", timestamp
             ORDER BY timestamp ASC)
             UNION
             (SELECT DISTINCT "source", 
@@ -93,7 +93,7 @@ class WateringAggregateRepository {
                             "fieldName",
                             'Pot Evap (mm)' AS "detectedValueTypeDescription",
                             "sectorName",
-                            "plantRow",
+                            "thesisName",
                             AVG(-"value") as value,
                             EXTRACT(EPOCH FROM date_trunc('day', to_timestamp(timestamp))) as timestamp
             FROM view_data_original
@@ -105,8 +105,8 @@ class WateringAggregateRepository {
               AND "companyName" = '${companyName}'
               AND "fieldName" = '${fieldName}'
               AND "sectorName" = '${sectorName}'
-              AND "plantRow" = '${plantRow}'
-            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", timestamp
+              AND "thesisName" = '${thesisName}'
+            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "thesisName", timestamp
             ORDER BY timestamp ASC)
             UNION
             (SELECT DISTINCT "source", 
@@ -115,7 +115,7 @@ class WateringAggregateRepository {
                             "fieldName",
                             'Advice (L)' as "detectedValueTypeDescription",
                             "sectorName",
-                            "plantRow",
+                            "thesisName",
                             AVG("advice") as value,
                             EXTRACT(EPOCH FROM date_trunc('day', to_timestamp(watering_start))) as timestamp
             FROM watering_schedule
@@ -126,9 +126,9 @@ class WateringAggregateRepository {
               AND "companyName" = '${companyName}'
               AND "fieldName" = '${fieldName}'
               AND "sectorName" = '${sectorName}'
-              AND "plantRow" = '${plantRow}'
+              AND "thesisName" = '${thesisName}'
               AND "latest" = true
-            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", timestamp
+            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "thesisName", timestamp
             ORDER BY timestamp ASC)
             UNION
             (SELECT DISTINCT "source",
@@ -137,7 +137,7 @@ class WateringAggregateRepository {
                             "fieldName",
                             'Expected Water (L)' as "detectedValueTypeDescription",
                             "sectorName",
-                            "plantRow",
+                            "thesisName",
                             "expected_water" as value,
                             EXTRACT(EPOCH FROM date_trunc('day', to_timestamp(watering_start))) as timestamp
             FROM watering_schedule
@@ -149,11 +149,11 @@ class WateringAggregateRepository {
               AND "companyName" = '${companyName}'
               AND "fieldName" = '${fieldName}'
               AND "sectorName" = '${sectorName}'
-              AND "plantRow" = '${plantRow}'
-            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "expected_water", "sectorName", "plantRow", timestamp
+              AND "thesisName" = '${thesisName}'
+            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "expected_water", "sectorName", "thesisName", timestamp
             ORDER BY timestamp ASC)
                 ) A
-            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", timestamp
+            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "thesisName", timestamp
             ORDER BY timestamp ASC, "detectedValueTypeDescription" ASC
         `;
 
@@ -166,7 +166,7 @@ class WateringAggregateRepository {
                 companyName,
                 fieldName,
                 sectorName,
-                plantRow
+                thesisName
             }
         });
 
@@ -176,7 +176,7 @@ class WateringAggregateRepository {
             result.fieldName,
             result.detectedValueTypeDescription,
             result.sectorName,
-            result.plantRow,
+            result.thesisName,
             result.value,
             result.timestamp
         ));

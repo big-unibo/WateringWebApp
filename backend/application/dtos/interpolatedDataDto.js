@@ -8,12 +8,12 @@ export class InterpolatedDataResponse {
 
 export class InterpolatedDataValue {
 
-    constructor(refStructureName, companyName, fieldName, sectorName, plantRow, measures) {
+    constructor(refStructureName, companyName, fieldName, sectorName, thesisName, measures) {
         this.refStructureName = refStructureName;
         this.companyName = companyName;
         this.fieldName = fieldName;
         this.sectorName = sectorName;
-        this.plantRow = plantRow;
+        this.thesisName = thesisName;
         this.measures = measures;
     }
 

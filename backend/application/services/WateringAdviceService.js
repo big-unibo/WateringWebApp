@@ -83,15 +83,15 @@ export class WateringAdviceService {
     
     }
 
-    async getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp) {
-        const result = await this.wateringAdviceRepository.getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp)
+    async getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp) {
+        const result = await this.wateringAdviceRepository.getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp)
         if (result.length > 0){
             return dtoConverter.convertWateringAdviceWrapper(result)
         }
-        return new WateringAdviceDto(refStructureName, companyName, fieldName, sectorName, plantRow)
+        return new WateringAdviceDto(refStructureName, companyName, fieldName, sectorName, thesisName)
     }
 
-    async getWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, expectedWater, timestamp) {
+    async getWateringAdvice(refStructureName, companyName, fieldName, sectorName, thesisName, expectedWater, timestamp) {
         try{
 
             let r, humidityBins
@@ -103,15 +103,15 @@ export class WateringAdviceService {
                 throw new Error("Sector details or algorithm params not found");
             }
 
-            const lastImageTimestamp = await this.dataInterpolatedRepository.findLastInterpolationTimestamp(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp - algorithmParams.irrigation_frequency * 3600, timestamp);
+            const lastImageTimestamp = await this.dataInterpolatedRepository.findLastInterpolationTimestamp(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp - algorithmParams.irrigation_frequency * 3600, timestamp);
 
             if (lastImageTimestamp) {
-                humidityBins = await this.humidityBinsRepository.findHumidityBins(lastImageTimestamp, lastImageTimestamp, refStructureName, companyName, fieldName, sectorName, plantRow)
+                humidityBins = await this.humidityBinsRepository.findHumidityBins(lastImageTimestamp, lastImageTimestamp, refStructureName, companyName, fieldName, sectorName, thesisName)
 
-                const differences = await this.deltaRepository.findPunctualDelta(refStructureName, companyName, fieldName, sectorName, plantRow, lastImageTimestamp)
+                const differences = await this.deltaRepository.findPunctualDelta(refStructureName, companyName, fieldName, sectorName, thesisName, lastImageTimestamp)
                 r = differences.reduce((acc, curr) => acc + curr.distance, 0) / differences.reduce((acc, curr) => acc + curr.weight, 0)
 
-                const oldParams = await this.getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, Math.min(timestamp - (algorithmParams.irrigation_frequency/2 * 3600), lastImageTimestamp));
+                const oldParams = await this.getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, thesisName, Math.min(timestamp - (algorithmParams.irrigation_frequency/2 * 3600), lastImageTimestamp));
 
                 console.log("Last advice params:", oldParams);
                 if (oldParams.advice != null && oldParams.r != null && oldParams.computedOn != null) {
@@ -127,7 +127,7 @@ export class WateringAdviceService {
                         companyName, 
                         fieldName, 
                         sectorName, 
-                        plantRow, 
+                        thesisName, 
                         (lastImageTimestamp - oldParams.computedOn + 2) * 2))[0]?.value || 0;
 
                     return new WateringAdviceDto(
@@ -135,7 +135,7 @@ export class WateringAdviceService {
                         companyName, 
                         fieldName, 
                         sectorName, 
-                        plantRow, 
+                        thesisName, 
                         advice, 
                         Number(lastImageTimestamp), 
                         duration, 
@@ -160,7 +160,7 @@ export class WateringAdviceService {
                 companyName,
                 fieldName,
                 sectorName,
-                plantRow,
+                thesisName,
                 advice,
                 Number(lastImageTimestamp),
                 duration,

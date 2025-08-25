@@ -16,7 +16,7 @@ function initViewDataOriginal(sequelize) {
         plantId: DataTypes.DOUBLE,
         plantName: DataTypes.TEXT,
         sectorName: DataTypes.DOUBLE,
-        plantRow: DataTypes.TEXT,
+        thesisName: DataTypes.TEXT,
         colture: DataTypes.TEXT,
         coltureType: DataTypes.TEXT,
         nodeId: DataTypes.TEXT,
