@@ -70,7 +70,7 @@ fieldsRouter.post('/createMonitoringThesis', async (req, res) => {
     const thesis = new Thesis(source, refStructureName, companyName, fieldName, sectorName, thesisName, dripperPosition) 
     
     try {
-        if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, '*')))
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'partner')))
             return res.status(401).json({message: 'Unauthorized request'});
 
         await fieldService.createMonitoringThesis(thesis, req.body.timestampFrom)
