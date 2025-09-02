@@ -1,7 +1,6 @@
 import { HumidityBinWrapper } from '../querywrappers/HumidityBinWrapper.js';
-import { HumidityBinEventWrapper } from '../querywrappers/HumidityBinEventWrapper.js';
 
-import { QueryTypes, DataTypes } from 'sequelize';
+import { QueryTypes } from 'sequelize';
 
 class HumidityBinsRepository {
 
@@ -85,57 +84,6 @@ class HumidityBinsRepository {
             result.humidity_bin
         ));
     }
-
-    async findHumidityBinEvents(detectedValueTypeId, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName) {
-
-        const query = `SELECT DISTINCT "source",
-                                       "refStructureName",
-                                       "companyName",
-                                       "fieldName",
-                                       "detectedValueTypeDescription",
-                                       "sectorName",
-                                       "thesisName",
-                                       SUM("value") as value, 
-                                       "timestamp"
-                       FROM view_data_original
-                       WHERE "detectedValueTypeId" = ANY '${detectedValueTypeId}'
-                         AND "timestamp" >= '${timeFilterFrom}'
-                         AND "timestamp" <= '${timeFilterTo}'
-                         AND "source" = 'iFarming'
-                         AND "refStructureName" = '${refStructureName}'
-                         AND "companyName" = '${companyName}'
-                         AND "fieldName" = '${fieldName}'
-                         AND "sectorName" = '${sectorName}'
-                         AND "thesisName" = '${thesisName}'
-                       GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "thesisName", "timestamp"
-                       ORDER BY "timestamp" ASC`;
-
-        const results = await this.sequelize.query(query, {
-            type: QueryTypes.SELECT,
-            bind: {
-                detectedValueTypeId,
-                timeFilterFrom,
-                timeFilterTo,
-                refStructureName,
-                companyName,
-                fieldName,
-                sectorName,
-                thesisName
-            }
-        });
-
-        return results.map(result => new HumidityBinEventWrapper(
-            result.refStructureName,
-            result.companyName,
-            result.fieldName,
-            result.detectedValueTypeDescription,
-            result.sectorName,
-            result.thesisName,
-            result.value,
-            result.timestamp
-        ));
-    }
-
 }
 
 export default HumidityBinsRepository;

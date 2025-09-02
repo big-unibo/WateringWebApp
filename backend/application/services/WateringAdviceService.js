@@ -77,7 +77,6 @@ export class WateringAdviceService {
         this.humidityBinsRepository = new HumidityBinsRepository(sequelize);
         this.viewDataOriginalRepository = new ViewDataOriginalRepository(sequelize);
         this.wateringAggregateRepository = new WateringAggregateRepository(sequelize);
-        this.humidityBinsRepository = new HumidityBinsRepository(sequelize);
         this.wateringAdviceRepository = new WateringAdviceRepository(sequelize);
         this.fieldRepository = new FieldRepository(initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), initWateringThesis(sequelize), initWateringSector(sequelize), initWateringAlgorithmParams(sequelize), sequelize);
     

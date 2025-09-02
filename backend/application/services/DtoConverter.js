@@ -29,10 +29,6 @@ class DtoConverter {
         return new InterpolatedDataResponse(interpolatedValues);
     }
 
-    convertHumidityBinEventWrapper(wrappers) {
-        return this.#convertGenericReferenceData(wrappers);
-    }
-
     convertHumidityBinWrapper(wrappers) {
         const map = this.#buildGenericReferenceMap(wrappers);
 
