@@ -25,8 +25,12 @@ components:
           type: string
         fieldName:
           type: string
-        plant:
-          $ref: '#/components/schemas/PlantDto'
+        sectorName:
+          type: string
+        thesisName:
+          type: string
+        colture:
+          $ref: '#/components/schemas/ColtureDto'
         measures:
           type: array
           items:
@@ -63,26 +67,6 @@ components:
         colture:
           type: string
         coltureType:
-          type: string
-
-    PlantDto:
-      type: object
-      required:
-        - plantId
-        - sectorName
-        - plantRow
-        - plantName
-        - colture
-      properties:
-        plantId:
-          type: integer
-        sectorName:
-          type: string
-        plantrow:
-          type: string
-        plantName:
-          type: string
-        colture:
           type: string
 
     ThesisDto:
@@ -173,7 +157,7 @@ components:
           type: string
         sectorName:
           type: string
-        plantRow:
+        thesisName:
           type: string
         permits:
           type: array
@@ -195,7 +179,7 @@ components:
           type: string
         sectorName:
           type: string
-        plantRow:
+        thesisName:
           type: string
         validFrom:
           type: string
@@ -275,13 +259,13 @@ components:
           type: string
         sectorName:
           type: string
-        plantRow:
+        thesisName:
           type: string
 
     WateringEventDto:
       type: object
       properties:
-        plantRow: 
+        thesisName: 
           type: string
         date: 
           type: string
@@ -384,7 +368,7 @@ components:
           type: string
         sectorName:
           type: string
-        plantRow:
+        thesisName:
           type: string
         timestamp:
           type: number

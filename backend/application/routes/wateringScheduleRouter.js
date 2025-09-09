@@ -16,7 +16,7 @@ const authorizationService = new AuthorizationService(sequelize)
 
 /**
  * @swagger
- * /wateringSchedule/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/calendar:
+ * /wateringSchedule/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/calendar:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -49,11 +49,11 @@ const authorizationService = new AuthorizationService(sequelize)
  *           type: string
  *         description: The sector name
  *       - in: path
- *         name: plantRow
+ *         name: thesisName
  *         required: true
  *         schema:
  *           type: string
- *         description: The plantRow
+ *         description: The thesisName
  *       - in: query
  *         name: timeFilterFrom
  *         schema:
@@ -78,18 +78,18 @@ const authorizationService = new AuthorizationService(sequelize)
  *       '500':
  *         description: Error on retrieving data.
  */
-wateringScheduleRouter.get("/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/calendar", async (req, res) => {
+wateringScheduleRouter.get("/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/calendar", async (req, res) => {
     const refStructureName = req.params.refStructureName;
     const companyName = req.params.companyName;
     const fieldName = req.params.fieldName;
     const sectorName = req.params.sectorName;
-    const plantRow = req.params.plantRow;
+    const thesisName = req.params.thesisName;
     const timestampFrom = req.query.timeFilterFrom
     const timestampTo = req.query.timeFilterTo
     try {
 
         const user = await authenticationService.validateJwt(req.headers.authorization);
-        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'WA', timestampFrom, timestampTo)))
+        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestampFrom, timestampTo)))
             return res.status(401).json({ message: 'Unauthorized request' });
     } catch (error) {
         return res.status(403).json({ message: 'Authentication failed' });
@@ -98,7 +98,7 @@ wateringScheduleRouter.get("/:refStructureName/:companyName/:fieldName/:sectorNa
     try {
 
 
-        const result = await wateringScheduleService.getSchedule(refStructureName, companyName, fieldName, sectorName, plantRow, timestampFrom, timestampTo);
+        const result = await wateringScheduleService.getSchedule(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo);
         res.status(200).json(result);
     } catch (error) {
         return res.status(500).json({ message: error.message });
@@ -144,7 +144,7 @@ wateringScheduleRouter.put("/updateWateringEvent", async (req, res) => {
     if (!req.body && req.body === '')
         return res.status(400).json({ message: 'Invalid request' })
 
-    if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, req.body.refStructureName, req.body.companyName, req.body.fieldName, req.body.sectorName, req.body.plantRow, 'WA')))
+    if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, req.body.refStructureName, req.body.companyName, req.body.fieldName, req.body.sectorName, req.body.thesisName, 'WA')))
         return res.status(401).json({ message: 'Unauthorized request' });
 
     try {
@@ -194,7 +194,7 @@ wateringScheduleRouter.post("/createWateringEvent", async (req, res) => {
     if (!req.body && req.body === '')
         return res.status(400).json({ message: 'Invalid request' })
 
-    if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, req.body.refStructureName, req.body.companyName, req.body.fieldName, req.body.sectorName, req.body.plantRow, 'WA')))
+    if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, req.body.refStructureName, req.body.companyName, req.body.fieldName, req.body.sectorName, req.body.thesisName, 'WA')))
         return res.status(401).json({ message: 'Unauthorized request' });
 
     try {

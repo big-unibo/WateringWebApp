@@ -9,7 +9,7 @@ function initWateringSchedule(sequelize) {
         companyName: DataTypes.TEXT,
         fieldName: DataTypes.TEXT,
         sectorName: DataTypes.TEXT,
-        plantRow: DataTypes.TEXT,
+        thesisName: DataTypes.TEXT,
         date: DataTypes.DATEONLY,
         watering_start: DataTypes.DOUBLE,
         watering_end: DataTypes.DOUBLE,

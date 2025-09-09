@@ -23,7 +23,7 @@ class FieldRepository {
             companyName: thesis.companyName,
             fieldName: thesis.fieldName,
             sectorName: thesis.sectorName,
-            plantRow: thesis.plantRow,
+            thesisName: thesis.thesisName,
             dripper_pos: thesis.dripperPosition,
             weight: thesis.weight,
             timestamp_from: timestampFrom,
@@ -97,7 +97,7 @@ class FieldRepository {
         return await model.save()
     }
 
-    async createMatrixField(source, refStructureName, companyName, fieldName, sectorName, plantRow, validFrom, validTo, matrixId) {
+    async createMatrixField(source, refStructureName, companyName, fieldName, sectorName, thesisName, validFrom, validTo, matrixId) {
         try {
             let newMatrixId
             if(matrixId){
@@ -127,7 +127,7 @@ class FieldRepository {
                         companyName: companyName,
                         fieldName: fieldName,
                         sectorName: sectorName,
-                        plantRow: plantRow,
+                        thesisName: thesisName,
                         current: true
                     }
                 }
@@ -139,7 +139,7 @@ class FieldRepository {
                     companyName: companyName,
                     fieldName: fieldName,
                     sectorName: sectorName,
-                    plantRow: plantRow,
+                    thesisName: thesisName,
                     timestamp_from: Math.floor(validFrom),
                     timestamp_to: validTo ? Math.floor(validTo) : null,
                     current: true,
@@ -153,7 +153,7 @@ class FieldRepository {
         }
     }
 
-    async getOptimalState(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp){
+    async getOptimalState(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp){
         try {
             const query = `SELECT 
                     "matrix_profile"."xx", 
@@ -167,7 +167,7 @@ class FieldRepository {
                     "field_matrix"."companyName", 
                     "field_matrix"."fieldName", 
                     "field_matrix"."sectorName", 
-                    "field_matrix"."plantRow", 
+                    "field_matrix"."thesisName", 
                     "field_matrix"."timestamp_from" AS "validFrom", 
                     "field_matrix"."timestamp_to" AS "validTo" 
                 FROM "matrix_profile" 
@@ -186,7 +186,7 @@ class FieldRepository {
                     AND "companyName" = '${companyName}'
                     AND "fieldName" = '${fieldName}'
                     AND "sectorName" = '${sectorName}'
-                    AND "plantRow" = '${plantRow}'
+                    AND "thesisName" = '${thesisName}'
                     GROUP BY xx, yy, zz
                 ) AS actual_profile
                     ON "matrix_profile".xx = actual_profile.xx
@@ -196,7 +196,7 @@ class FieldRepository {
                     AND "field_matrix"."companyName" = '${companyName}' 
                     AND "field_matrix"."fieldName" = '${fieldName}' 
                     AND "field_matrix"."sectorName" = '${sectorName}' 
-                    AND "field_matrix"."plantRow" = '${plantRow}' 
+                    AND "field_matrix"."thesisName" = '${thesisName}' 
                     AND "field_matrix"."timestamp_from" < ${timestamp} 
                     AND ("field_matrix"."timestamp_to" IS NULL OR "field_matrix"."timestamp_to" > ${timestamp});`
 
@@ -207,7 +207,7 @@ class FieldRepository {
                 companyName,
                 fieldName,
                 sectorName,
-                plantRow,
+                thesisName,
                 timestamp
                 }
             });
@@ -219,7 +219,7 @@ class FieldRepository {
         }
     }
 
-    async getFieldDetails(refStructureName, companyName, fieldName, sectorName, plantRow) {
+    async getFieldDetails(refStructureName, companyName, fieldName, sectorName, thesisName) {
         try {
             this.TranscodingField.removeAttribute('id')
             return await this.TranscodingField.findOne({
@@ -228,7 +228,7 @@ class FieldRepository {
                 companyName: companyName,
                 fieldName: fieldName,
                 sectorName: sectorName,
-                plantRow: plantRow,
+                thesisName: thesisName,
                 }
             });
         } catch (error) {
@@ -236,7 +236,7 @@ class FieldRepository {
         }
     }
 
-    async getDripperInfo(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp) {
+    async getDripperInfo(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp) {
         try {
             this.WateringThesis.removeAttribute('id')
             const result = await this.WateringThesis.findOne({
@@ -245,7 +245,7 @@ class FieldRepository {
                     companyName: companyName,
                     fieldName: fieldName,
                     sectorName: sectorName,
-                    plantRow: plantRow,
+                    thesisName: thesisName,
                     timestamp_from: { [Op.lt]: timestamp },
                     timestamp_to: {
                         [Op.or]: {
@@ -368,7 +368,7 @@ class FieldRepository {
         )
 
         for(const thesis of oldTheses){
-            thesis.weight = thesis.plantRow == prescriptiveThesis ? 1 : 0
+            thesis.weight = thesis.thesisName == prescriptiveThesis ? 1 : 0
             thesis.dripperPosition = thesis.dripper_pos
             await this.createThesis(thesis, timestampFrom)
         }
@@ -396,8 +396,31 @@ class FieldRepository {
         )
     }
 
-    async disableWateringSectorThesis(refStructureName, companyName, fieldName, sectorName, timestamp){
-        // Disable all thesis of a sector
+    async disableMonitoringThesis(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp){
+        await this.WateringThesis.update(
+            {
+                timestamp_to: timestamp
+            },
+            {
+                where:{
+                    refStructureName: refStructureName,
+                    companyName: companyName,
+                    fieldName: fieldName,
+                    sectorName: sectorName,
+                    thesisName: thesisName,
+                    timestamp_from: {
+                        [Op.lt]: timestamp
+                    },
+                    timestamp_to: {
+                        [Op.is]: null
+                    },
+                }
+            }
+        )
+    }
+
+    async disableSector(refStructureName, companyName, fieldName, sectorName, timestamp){
+        // Disable all monitoring thesis of a sector
         await this.WateringThesis.update(
             {
                 timestamp_to: timestamp
@@ -417,11 +440,29 @@ class FieldRepository {
                 }
             }
         )
-
+        await this.WateringSector.update(
+            {
+                timestamp_to: timestamp
+            },
+            {
+                where:{
+                    refStructureName: refStructureName,
+                    companyName: companyName,
+                    fieldName: fieldName,
+                    sectorName: sectorName,
+                    timestamp_from: {
+                        [Op.lt]: timestamp
+                    },
+                    timestamp_to: {
+                        [Op.is]: null
+                    },
+                }
+            }
+        )
     }
 
     async disableOptimalState(refStructureName, companyName, fieldName, sectorName, timestamp){
-        // Disable all thesis of a sector
+        // Disable optimal for all thesis of a sector
         await this.MatrixField.update(
             {
                 timestamp_to: timestamp,
@@ -440,6 +481,29 @@ class FieldRepository {
 
     }
 
+    async disableNode(refStructureName, companyName, fieldName, sectorName, thesisName, nodeId, timestamp){
+        await this.TranscodingField.update(
+            {
+                valid_to: timestamp
+            },
+            {
+                where:{
+                    refStructureName: refStructureName,
+                    companyName: companyName,
+                    fieldName: fieldName,
+                    sectorName: sectorName,
+                    thesisName: thesisName,
+                    nodeId: nodeId,
+                    valid_from: {
+                        [Op.lt]: timestamp
+                    },
+                    valid_to: {
+                        [Op.is]: null
+                    },
+                }
+            }
+        )
+    }
 }
 
 export default FieldRepository

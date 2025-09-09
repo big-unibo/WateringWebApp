@@ -12,7 +12,7 @@ function initWateringThesis(sequelize) {
         companyName: DataTypes.TEXT,
         fieldName: DataTypes.TEXT,
         sectorName: DataTypes.TEXT,
-        plantRow: DataTypes.TEXT,
+        thesisName: DataTypes.TEXT,
         timestamp_from: DataTypes.DOUBLE,
         timestamp_to: DataTypes.DOUBLE,
         dripper_pos: DataTypes.INTEGER,

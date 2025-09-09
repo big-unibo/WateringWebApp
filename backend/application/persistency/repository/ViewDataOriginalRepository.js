@@ -2,7 +2,7 @@ import { ViewDataOriginalWrapper } from '../querywrappers/ViewDataOriginalWrappe
 
 import { QueryTypes } from 'sequelize';
 
-const getResults = async (calculationType, detectedValueTypeDescription, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow, aggregationPeriod, sequelize) => {
+const getResults = async (calculationType, detectedValueTypeDescription, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName, aggregationPeriod, sequelize) => {
 
     const query = `
             SELECT DISTINCT "source",
@@ -11,7 +11,7 @@ const getResults = async (calculationType, detectedValueTypeDescription, timeFil
                             "fieldName",
                             "detectedValueTypeDescription",
                             "sectorName",
-                            "plantRow",
+                            "thesisName",
                             "colture",
                             "coltureType",
                             ${calculationType} as value,
@@ -25,8 +25,8 @@ const getResults = async (calculationType, detectedValueTypeDescription, timeFil
               AND "companyName" = '${companyName}'
               AND "fieldName" = '${fieldName}'
               AND "sectorName" = '${sectorName}'
-              AND "plantRow" = '${plantRow}'
-            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "plantRow", "colture", "coltureType", round("timestamp"::numeric/${aggregationPeriod})*${aggregationPeriod}
+              AND "thesisName" = '${thesisName}'
+            GROUP BY "source", "refStructureName", "companyName", "fieldName", "detectedValueTypeDescription", "sectorName", "thesisName", "colture", "coltureType", round("timestamp"::numeric/${aggregationPeriod})*${aggregationPeriod}
             ORDER BY timestamp ASC`;
 
     const results = await sequelize.query(query,
@@ -40,7 +40,7 @@ const getResults = async (calculationType, detectedValueTypeDescription, timeFil
                 companyName,
                 fieldName,
                 sectorName,
-                plantRow,
+                thesisName,
                 calculationType
             }
         }
@@ -51,7 +51,7 @@ const getResults = async (calculationType, detectedValueTypeDescription, timeFil
         result.companyName,
         result.fieldName,
         result.sectorName,
-        result.plantRow,
+        result.thesisName,
         result.colture,
         result.coltureType,
         result.detectedValueTypeDescription,
@@ -60,7 +60,7 @@ const getResults = async (calculationType, detectedValueTypeDescription, timeFil
     ));
 }
 
-const getDripperAdjustedData = async (timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow, aggregationPeriod, sequelize)=>{
+const getDripperAdjustedData = async (timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName, aggregationPeriod, sequelize)=>{
     const query = `
         SELECT vdo."source",
                 vdo."refStructureName",
@@ -68,7 +68,7 @@ const getDripperAdjustedData = async (timeFilterFrom, timeFilterTo, refStructure
                 vdo."fieldName",
                 vdo."detectedValueTypeDescription",
                 vdo."sectorName",
-                vdo."plantRow",
+                vdo."thesisName",
                 vdo."colture",
                 vdo."coltureType",
                 SUM(vdo."value" * COALESCE(ws."dripper_scaling_factor",1)) as value,
@@ -90,8 +90,8 @@ const getDripperAdjustedData = async (timeFilterFrom, timeFilterTo, refStructure
         AND vdo."companyName" = '${companyName}'
         AND vdo."fieldName" = '${fieldName}'
         AND vdo."sectorName" = '${sectorName}'
-        AND vdo."plantRow" = '${plantRow}'
-        GROUP BY vdo."source", vdo."refStructureName", vdo."companyName", vdo."fieldName", vdo."detectedValueTypeDescription", vdo."sectorName", vdo."plantRow", vdo."colture", vdo."coltureType", round("timestamp"::numeric/${aggregationPeriod})*${aggregationPeriod}
+        AND vdo."thesisName" = '${thesisName}'
+        GROUP BY vdo."source", vdo."refStructureName", vdo."companyName", vdo."fieldName", vdo."detectedValueTypeDescription", vdo."sectorName", vdo."thesisName", vdo."colture", vdo."coltureType", round("timestamp"::numeric/${aggregationPeriod})*${aggregationPeriod}
         ORDER BY timestamp ASC`;
 
     const results = await sequelize.query(query,
@@ -104,7 +104,7 @@ const getDripperAdjustedData = async (timeFilterFrom, timeFilterTo, refStructure
             companyName,
             fieldName,
             sectorName,
-            plantRow,
+            thesisName,
             aggregationPeriod
         }
     }
@@ -115,7 +115,7 @@ const getDripperAdjustedData = async (timeFilterFrom, timeFilterTo, refStructure
     result.companyName,
     result.fieldName,
     result.sectorName,
-    result.plantRow,
+    result.thesisName,
     result.colture,
     result.coltureType,
     result.detectedValueTypeDescription,
@@ -130,20 +130,20 @@ class ViewDataOriginalRepository {
         this.sequelize = sequelize;
     }
 
-    async findAverageByFieldReference(detectedValueTypeDescription, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow, aggregationPeriod) {
-        return getResults('AVG(\"value\")', detectedValueTypeDescription, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow, aggregationPeriod, this.sequelize);
+    async findAverageByFieldReference(detectedValueTypeDescription, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName, aggregationPeriod) {
+        return getResults('AVG(\"value\")', detectedValueTypeDescription, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName, aggregationPeriod, this.sequelize);
     }
 
-    async findEcAverageByFieldReference(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow, aggregationPeriod) {
-        return getResults('AVG(64.3 * \"value\" -15.2)', ['ELECT_COND'], timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow, aggregationPeriod, this.sequelize);
+    async findEcAverageByFieldReference(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName, aggregationPeriod) {
+        return getResults('AVG(64.3 * \"value\" -15.2)', ['ELECT_COND'], timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName, aggregationPeriod, this.sequelize);
     }
 
-    async findHumidityEventsByFieldReference(detectedValueTypeDescription, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow, aggregationPeriod) {
+    async findHumidityEventsByFieldReference(detectedValueTypeDescription, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName, aggregationPeriod) {
         const dripperData = []
         if (detectedValueTypeDescription.includes('DRIPPER')) {
-            dripperData.push(...(await getDripperAdjustedData(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow, aggregationPeriod, this.sequelize)))
+            dripperData.push(...(await getDripperAdjustedData(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName, aggregationPeriod, this.sequelize)))
         }
-        dripperData.push(...(await getResults('SUM(\"value\")', detectedValueTypeDescription.filter(e => e !== 'DRIPPER'), timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, plantRow, aggregationPeriod, this.sequelize)))
+        dripperData.push(...(await getResults('SUM(\"value\")', detectedValueTypeDescription.filter(e => e !== 'DRIPPER'), timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName, aggregationPeriod, this.sequelize)))
         return dripperData
     }
 }

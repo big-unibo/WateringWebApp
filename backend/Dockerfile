@@ -14,5 +14,7 @@ WORKDIR /backend/application
 
 EXPOSE 8081
 
+ENV TZ=Europe/Rome
+
 # Compila l'app per la produzione
 CMD npm run start

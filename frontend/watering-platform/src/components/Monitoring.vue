@@ -168,7 +168,7 @@ function createFieldName(item) {
 
 function createThesisName(item){
   if(!item) return ''
-  return `Settore ${item.sectorName}; Tesi ${item.plantRow}; ${item.colture}; ${item.coltureType}`
+  return `Settore ${item.sectorName}; Tesi ${item.thesisName}; ${item.colture}; ${item.coltureType}`
 }
 
 function isLabelSelected(value) {

@@ -9,7 +9,7 @@ class LogRepository {
         this.sequelize = sequelize
     }
 
-    async getLogs(refStructureName, companyName, fieldName, sectorName, plantRow, timestampFrom, timestampTo) {
+    async getLogs(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {
         try {
             this.Log.removeAttribute('id')
             return (await this.Log.findAll({
@@ -22,9 +22,9 @@ class LogRepository {
                         [Op.gt]: timestampFrom,
                         [Op.lt]: timestampTo
                     },
-                    plantRow: {
+                    thesisName: {
                         [Op.or]: {
-                            [Op.like]: plantRow,
+                            [Op.like]: thesisName,
                             [Op.is]: null
                         },
                     }

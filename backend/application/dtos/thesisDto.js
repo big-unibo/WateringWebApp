@@ -5,7 +5,7 @@ export class Thesis {
      * @param {string} companyName - Company name
      * @param {string} fieldName - Field name
      * @param {string} sectorName - Sector name
-     * @param {string} plantRow - Plant row
+     * @param {string} thesisName - Plant row
      * @param {number} dripperPosition - Dripper position
      */
     constructor(
@@ -14,7 +14,7 @@ export class Thesis {
         companyName,
         fieldName,
         sectorName,
-        plantRow,
+        thesisName,
         dripperPosition
     ) {
         this.source = source
@@ -22,7 +22,7 @@ export class Thesis {
         this.companyName = companyName
         this.fieldName = fieldName
         this.sectorName = sectorName
-        this.plantRow = plantRow
+        this.thesisName = thesisName
         this.dripperPosition = dripperPosition
     }
 }

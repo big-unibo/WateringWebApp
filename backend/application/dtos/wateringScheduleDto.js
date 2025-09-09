@@ -13,8 +13,8 @@ export class WateringScheduleResponse {
 
 export class WateringEventDto {
 
-    constructor(plantRow, date, wateringStart, wateringEnd, duration, enabled, expectedWater, advice, adviceTimestamp, updatedBy, updateTimestamp, note) {
-        this.plantRow = plantRow;
+    constructor(thesisName, date, wateringStart, wateringEnd, duration, enabled, expectedWater, advice, adviceTimestamp, updatedBy, updateTimestamp, note) {
+        this.thesisName = thesisName;
         this.date = date;
         this.wateringStart = wateringStart;
         this.wateringEnd = wateringEnd;

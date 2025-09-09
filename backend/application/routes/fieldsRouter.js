@@ -64,13 +64,13 @@ fieldsRouter.post('/createMonitoringThesis', async (req, res) => {
     const companyName = req.body.companyName;
     const fieldName = req.body.fieldName;
     const sectorName = req.body.sectorName;
-    const plantRow = req.body.plantRow;
+    const thesisName = req.body.thesisName;
     const dripperPosition = req.body.dripperPosition;
 
-    const thesis = new Thesis(source, refStructureName, companyName, fieldName, sectorName, plantRow, dripperPosition) 
+    const thesis = new Thesis(source, refStructureName, companyName, fieldName, sectorName, thesisName, dripperPosition) 
     
     try {
-        if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, plantRow, '*')))
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'partner')))
             return res.status(401).json({message: 'Unauthorized request'});
 
         await fieldService.createMonitoringThesis(thesis, req.body.timestampFrom)
@@ -82,6 +82,87 @@ fieldsRouter.post('/createMonitoringThesis', async (req, res) => {
     }
   
   });
+
+/**
+ * @swagger
+ * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/disableMonitoring:
+ *   post:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Set the end of validity for a monitoring thesis
+ *     description: Set the end of validity for a monitoring thesis
+ *     tags: [Field Operations]
+ *     parameters:
+ *       - in: path
+ *         name: refStructureName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The reference structure name
+ *       - in: path
+ *         name: companyName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The company name
+ *       - in: path
+ *         name: fieldName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The field name
+ *       - in: path
+ *         name: sectorName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The sector name
+ *       - in: path
+ *         name: thesisName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The thesisName
+ *       - in: query
+ *         name: timestamp
+ *         schema:
+ *           type: number
+ *         description: The timestamp to set as the end of validity for the thesis
+ *     responses:
+ *       '200':
+ *         description: Monitoring thesis disabled successfully.
+ *       '401':
+ *         description: Unauthorized request.
+ *       '403':
+ *         description: Authentication failed.
+ *       '500':
+ *         description: Error on disabling monitoring thesis.
+ */
+fieldsRouter.post('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/disableMonitoring', async (req, res) => {
+  let requestUserData
+  try {
+    requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+  } catch (error) {
+    return res.status(403).json({message: 'Authentication failed'});
+  }
+
+  const { refStructureName, companyName, fieldName, sectorName, thesisName } = req.params;
+
+  try {
+    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, '*')))
+      return res.status(401).json({message: 'Unauthorized request'});
+
+    const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
+
+    await fieldService.disableMonitoringThesis(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp)
+    //TODO disable all nodes related to this thesis
+
+    return res.status(200).json({message: `Monitoring thesis disabled successfully`})
+  } catch (error) {
+    console.log(`Fail disabling monitoring thesis caused by: ${error.message}`)
+    return res.status(500).json({error: "Error on disabling monitoring thesis"})
+  }
+});
 
   /**
  * @swagger
@@ -180,6 +261,80 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/setWate
 
 /**
  * @swagger
+ * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/expireSector:
+ *   post:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Set the end of validity for a watering sector and its thesis
+ *     description: Set the end of validity for a watering sector and its thesis
+ *     tags: [Field Operations]
+ *     parameters:
+ *       - in: path
+ *         name: refStructureName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The reference structure name
+ *       - in: path
+ *         name: companyName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The company name
+ *       - in: path
+ *         name: fieldName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The field name
+ *       - in: path
+ *         name: sectorName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The sector name
+ *       - in: query
+ *         name: timestamp
+ *         schema:
+ *           type: number
+ *         description: The timestamp to set as the end of validity for the sector
+ *     responses:
+ *       '200':
+ *         description: Monitoring sector disabled successfully.
+ *       '401':
+ *         description: Unauthorized request.
+ *       '403':
+ *         description: Authentication failed.
+ *       '500':
+ *         description: Error on disabling sector.
+ */
+fieldsRouter.post('/:refStructureName/:companyName/:fieldName/:sectorName/expireSector', async (req, res) => {
+  let requestUserData
+  try {
+    requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+  } catch (error) {
+    return res.status(403).json({message: 'Authentication failed'});
+  }
+
+  const { refStructureName, companyName, fieldName, sectorName } = req.params;
+
+  try {
+    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, null, '*')))
+      return res.status(401).json({message: 'Unauthorized request'});
+
+    const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
+
+    await fieldService.disableSector(refStructureName, companyName, fieldName, sectorName, timestamp)
+
+    return res.status(200).json({message: `Sector disabled successfully`})
+  } catch (error) {
+    console.log(`Fail disabling sector caused by: ${error.message}`)
+    return res.status(500).json({error: "Error on disabling sector"})
+  }
+});
+
+/**
+ * @swagger
  * /fields/setOptState:
  *   put:
  *     security:
@@ -220,18 +375,18 @@ fieldsRouter.put('/setOptState', async (req, res) => {
   const companyName = req.body.companyName;
   const fieldName = req.body.fieldName;
   const sectorName = req.body.sectorName;
-  const plantRow = req.body.plantRow;
+  const thesisName = req.body.thesisName;
   
   try {
-    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'WA')))
+    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA')))
       return res.status(401).json({message: 'Unauthorized request'});
 
     if(!req.body.validFrom || !req.body.optimalState)
       return res.status(400).json({message: 'Invalid request'});
 
-    const bodyRequest = new OptStateDto(refStructureName, companyName, fieldName, sectorName, plantRow, req.body.validFrom, req.body.validTo, undefined, req.body.optimalState)
+    const bodyRequest = new OptStateDto(refStructureName, companyName, fieldName, sectorName, thesisName, req.body.validFrom, req.body.validTo, undefined, req.body.optimalState)
 
-    const thesisPoints = await fieldService.findThesisPoints(refStructureName, companyName, fieldName, sectorName, plantRow)
+    const thesisPoints = await fieldService.findThesisPoints(refStructureName, companyName, fieldName, sectorName, thesisName)
 
     if(!checkOptState(thesisPoints, req.body.optimalState))
       return res.status(400).json({error: "Opt state matrix does not match"})
@@ -248,7 +403,7 @@ fieldsRouter.put('/setOptState', async (req, res) => {
 
 /**
  * @swagger
- * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/setOptState:
+ * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/setOptState:
  *   put:
  *     security:
  *       - bearerAuth: []
@@ -287,11 +442,11 @@ fieldsRouter.put('/setOptState', async (req, res) => {
  *          type: string
  *        description: The sector name
  *      - in: path
- *        name: plantRow
+ *        name: thesisName
  *        required: true
  *        schema:
  *          type: string
- *        description: The plantRow
+ *        description: The thesisName
  *      - in: query
  *        name: imageTimestamp
  *        type: number
@@ -315,7 +470,7 @@ fieldsRouter.put('/setOptState', async (req, res) => {
  *       '500':
  *         description: Error on creating field opt matrix.
  */
-fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/setOptState', async (req, res) => {
+fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/setOptState', async (req, res) => {
   let requestUserData
   try {
     requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -327,10 +482,10 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
   const dst_companyName = req.params.companyName;
   const dst_fieldName = req.params.fieldName;
   const dst_sectorName = req.params.sectorName;
-  const dst_plantRow = req.params.plantRow;
+  const dst_thesisName = req.params.thesisName;
 
   try {
-    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, dst_refStructureName, dst_companyName, dst_fieldName, dst_sectorName, dst_plantRow, 'WA')))
+    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, dst_refStructureName, dst_companyName, dst_fieldName, dst_sectorName, dst_thesisName, 'WA')))
       return res.status(401).json({message: 'Unauthorized request'});
 
 	if(req.query.imageTimestamp){
@@ -338,19 +493,19 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
 		const src_companyName = req.body.companyName || req.params.companyName;
 		const src_fieldName = req.body.fieldName || req.params.fieldName;
 		const src_sectorName = req.body.sectorName || req.params.sectorName;
-		const src_plantRow = req.body.plantRow || req.params.plantRow;
-		if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, src_refStructureName, src_companyName, src_fieldName, src_sectorName, src_plantRow, 'MO'))){
+		const src_thesisName = req.body.thesisName || req.params.thesisName;
+		if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, src_refStructureName, src_companyName, src_fieldName, src_sectorName, src_thesisName, 'MO'))){
       		return res.status(401).json({message: 'Unauthorized request'});
 		}
-		const interpolatedMatrix = await fieldService.getDataInterpolated(src_refStructureName, src_companyName, src_fieldName, src_sectorName, src_plantRow, req.query.imageTimestamp)
+		const interpolatedMatrix = await fieldService.getDataInterpolated(src_refStructureName, src_companyName, src_fieldName, src_sectorName, src_thesisName, req.query.imageTimestamp)
 
 		if(!interpolatedMatrix || !(interpolatedMatrix.values.length > 0)){
 			return res.status(400).json({message: 'Invalid request, given timestamp not found'});
 		}
-		const selectedOptimal = new OptStateDto(dst_refStructureName, dst_companyName, dst_fieldName, dst_sectorName, dst_plantRow, req.query.timestampFrom || Date.now()/1000, undefined, undefined, interpolatedMatrix.values[0].measures[0].image)
+		const selectedOptimal = new OptStateDto(dst_refStructureName, dst_companyName, dst_fieldName, dst_sectorName, dst_thesisName, req.query.timestampFrom || Date.now()/1000, undefined, undefined, interpolatedMatrix.values[0].measures[0].image)
 		await fieldService.createMatrixOptState(selectedOptimal)
 	} else if(req.query.matrixId){
-		await fieldService.setOptimalState(dst_refStructureName, dst_companyName, dst_fieldName, dst_sectorName, dst_plantRow, req.query.matrixId, req.query.timestampFrom || Date.now()/1000)
+		await fieldService.setOptimalState(dst_refStructureName, dst_companyName, dst_fieldName, dst_sectorName, dst_thesisName, req.query.matrixId, req.query.timestampFrom || Date.now()/1000)
 
 	} else {
 		return res.status(400).json({message: 'Invalid request, specify either imageTimestamp or matrixId'});
@@ -366,7 +521,7 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
 
 /**
  * @swagger
- * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/lastWateringAdvice:
+ * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/lastWateringAdvice:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -398,11 +553,11 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
  *          type: string
  *        description: The sector name
  *      - in: path
- *        name: plantRow
+ *        name: thesisName
  *        required: true
  *        schema:
  *          type: string
- *        description: The plantRow
+ *        description: The thesisName
  *      - in: query
  *        name: timestamp
  *        type: number
@@ -423,7 +578,7 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
  *       '500':
  *         description: Error on retrieving advice.
  */
-fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/lastWateringAdvice', async (req, res) => {
+fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/lastWateringAdvice', async (req, res) => {
   let requestUserData
   try {
     requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -435,14 +590,14 @@ fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
   const companyName = req.params.companyName;
   const fieldName = req.params.fieldName;
   const sectorName = req.params.sectorName;
-  const plantRow = req.params.plantRow;
+  const thesisName = req.params.thesisName;
   const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
 
   try {
-      if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'WA', timestamp, timestamp)))
+      if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
         return res.status(401).json({message: 'Unauthorized request'});
 
-    const result = await wateringAdviceService.getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp)
+    const result = await wateringAdviceService.getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp)
 
     return res.status(200).json(result)
   } catch (error) {
@@ -453,7 +608,7 @@ fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
 
 /**
  * @swagger
- * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/wateringAdvice:
+ * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/wateringAdvice:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -485,11 +640,11 @@ fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
  *          type: string
  *        description: The sector name
  *      - in: path
- *        name: plantRow
+ *        name: thesisName
  *        required: true
  *        schema:
  *          type: string
- *        description: The plantRow
+ *        description: The thesisName
  *      - in: query
  *        name: expectedWater
  *        type: number
@@ -513,7 +668,7 @@ fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
  *       '500':
  *         description: Error on computing advice.
  */
-fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/wateringAdvice', async (req, res) => {
+fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/wateringAdvice', async (req, res) => {
   let requestUserData
   try {
     requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -525,15 +680,15 @@ fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
   const companyName = req.params.companyName;
   const fieldName = req.params.fieldName;
   const sectorName = req.params.sectorName;
-  const plantRow = req.params.plantRow;
+  const thesisName = req.params.thesisName;
   const expectedWater = req.query.expectedWater ? req.query.expectedWater : 0;
   const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
 
   try {
-    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'WA', timestamp, timestamp)))
+    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
       return res.status(401).json({message: 'Unauthorized request'});
 
-    const result = await wateringAdviceService.getWateringAdvice(refStructureName, companyName, fieldName, sectorName, plantRow, expectedWater, timestamp)
+    const result = await wateringAdviceService.getWateringAdvice(refStructureName, companyName, fieldName, sectorName, thesisName, expectedWater, timestamp)
 
     return res.status(200).json(result)
   } catch (error) {
@@ -544,7 +699,7 @@ fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
 
 /**
  * @swagger
- * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{plantRow}/dripperInfo:
+ * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/dripperInfo:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -577,11 +732,11 @@ fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
  *           type: string
  *         description: The sector name
  *       - in: path
- *         name: plantRow
+ *         name: thesisName
  *         required: true
  *         schema:
  *           type: string
- *         description: The plantRow
+ *         description: The thesisName
  *       - in: query
  *         name: timestamp
  *         schema:
@@ -608,24 +763,24 @@ fieldsRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:plantR
  *       '500':
  *         description: Error on retrieving data.
  */
-fieldsRouter.get("/:refStructureName/:companyName/:fieldName/:sectorName/:plantRow/dripperInfo", async (req, res) => {
+fieldsRouter.get("/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/dripperInfo", async (req, res) => {
   const refStructureName = req.params.refStructureName;
   const companyName = req.params.companyName;
   const fieldName = req.params.fieldName;
   const sectorName = req.params.sectorName;
-  const plantRow = req.params.plantRow;
+  const thesisName = req.params.thesisName;
   const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
 
   try {
     const user = await authenticationService.validateJwt(req.headers.authorization);
-    if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, plantRow, 'MO', timestamp, timestamp)))
+    if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
       return res.status(401).json({ message: 'Unauthorized request' });
   } catch (error) {
     return res.status(403).json({ message: 'Authentication failed' });
   }
 
   try {
-    const result = await fieldService.getDripperInfo(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp);
+    const result = await fieldService.getDripperInfo(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp);
     res.status(200).json(result);
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -825,6 +980,92 @@ fieldsRouter.put('/:refStructureName/:companyName/:fieldName/:sectorName/setPres
     return res.status(500).json({error: "Error on update watering baseline"})
   }
 
+});
+
+/**
+ * @swagger
+ * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/{nodeId}/disable:
+ *   post:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Set the end of validity for a node of a thesis
+ *     description: Set the end of validity for a node of a thesis
+ *     tags: [Field Operations]
+ *     parameters:
+ *       - in: path
+ *         name: refStructureName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The reference structure name
+ *       - in: path
+ *         name: companyName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The company name
+ *       - in: path
+ *         name: fieldName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The field name
+ *       - in: path
+ *         name: sectorName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The sector name
+ *       - in: path
+ *         name: thesisName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The thesisName
+ *       - in: path
+ *         name: nodeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The node id to disable
+ *       - in: query
+ *         name: timestamp
+ *         schema:
+ *           type: number
+ *         description: The timestamp to set as the end of validity for the node
+ *     responses:
+ *       '200':
+ *         description: Node disabled successfully.
+ *       '401':
+ *         description: Unauthorized request.
+ *       '403':
+ *         description: Authentication failed.
+ *       '500':
+ *         description: Error on disabling monitoring thesis.
+ */
+fieldsRouter.post('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/:nodeId/disable', async (req, res) => {
+  let requestUserData
+  try {
+    requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+  } catch (error) {
+    return res.status(403).json({message: 'Authentication failed'});
+  }
+
+  const { refStructureName, companyName, fieldName, sectorName, thesisName, nodeId } = req.params;
+
+  try {
+    if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, '*')))
+      return res.status(401).json({message: 'Unauthorized request'});
+
+    const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
+
+    await fieldService.disableNode(refStructureName, companyName, fieldName, sectorName, thesisName, nodeId, timestamp)
+
+    return res.status(200).json({message: `Node disabled successfully`})
+  } catch (error) {
+    console.log(`Fail disabling node caused by: ${error.message}`)
+    return res.status(500).json({error: "Error on disabling node"})
+  }
 });
 
 export default fieldsRouter;

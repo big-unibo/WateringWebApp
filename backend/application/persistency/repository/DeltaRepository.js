@@ -7,11 +7,11 @@ class DeltaRepository {
         this.sequelize = sequelize;
     }
 
-    async findDelta(timestampFrom, timestampTo, refStructureName, companyName, fieldName, sectorName, plantRow) {
+    async findDelta(timestampFrom, timestampTo, refStructureName, companyName, fieldName, sectorName, thesisName) {
 
         const queryString = ` 
             WITH field_data AS (
-                SELECT fi."source", fi."refStructureName", fi."companyName", fi."fieldName", fi."sectorName", fi."plantRow", 
+                SELECT fi."source", fi."refStructureName", fi."companyName", fi."fieldName", fi."sectorName", fi."thesisName", 
                     mp."xx", mp."yy", mp."weight", mp."optValue", fi."timestamp_from", fi."timestamp_to"
                 FROM field_matrix AS fi
                 JOIN matrix_profile AS mp ON fi."matrixId" = mp."matrixId"
@@ -19,7 +19,7 @@ class DeltaRepository {
                     AND fi."companyName" = '${companyName}'
                     AND fi."fieldName" = '${fieldName}'
                     AND fi."sectorName" = '${sectorName}'
-                    AND fi."plantRow" = '${plantRow}'
+                    AND fi."thesisName" = '${thesisName}'
                     AND fi."timestamp_from" < '${timestampTo}'
                     AND (fi."timestamp_to" > '${timestampFrom}' OR fi."timestamp_to" IS NULL)
                 ),
@@ -33,18 +33,18 @@ class DeltaRepository {
                 AND "companyName" = '${companyName}'
                 AND "fieldName" = '${fieldName}'
                 AND "sectorName" = '${sectorName}'
-                AND "plantRow" = '${plantRow}'
+                AND "thesisName" = '${thesisName}'
             )
-            SELECT iq."source", iq."refStructureName", iq."companyName", iq."fieldName", iq."sectorName", iq."plantRow",
+            SELECT iq."source", iq."refStructureName", iq."companyName", iq."fieldName", iq."sectorName", iq."thesisName",
                 ROUND((SUM(CASE WHEN iq."value" > -300 THEN LN(ABS(iq."value")) * iq."weight"
                             ELSE LN(ABS(-300)) * iq."weight" END) / SUM(iq."weight"))::numeric,6) AS "value",
                 EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(iq."timestamp")))::INT AS "timestamp",
                 'Media Pot. Idr. Giornaliera' AS "detectedValueTypeDescription"
             FROM (
-                SELECT di."source", di."refStructureName", di."companyName", di."fieldName", di."sectorName", di."plantRow", 
+                SELECT di."source", di."refStructureName", di."companyName", di."fieldName", di."sectorName", di."thesisName", 
                     di."timestamp", di."value", fd."weight" 
                 FROM (
-                    SELECT di."source", di."refStructureName", di."companyName", di."fieldName", di."sectorName", di."plantRow", 
+                    SELECT di."source", di."refStructureName", di."companyName", di."fieldName", di."sectorName", di."thesisName", 
                     wd."watering_start" AS "timestamp", di."value", di."xx", di."yy"
                     FROM data_interpolated AS di
                         JOIN watering_data AS wd ON wd."timestamp" = di."timestamp"
@@ -55,15 +55,15 @@ class DeltaRepository {
                         AND fd."companyName" = di."companyName"
                         AND fd."fieldName" = di."fieldName"
                         AND fd."sectorName" = di."sectorName"
-                        AND fd."plantRow" = di."plantRow"
+                        AND fd."thesisName" = di."thesisName"
                         AND fd."xx" = di."xx"
                         AND fd."yy" = di."yy"
                         AND di."timestamp" > fd."timestamp_from"
                         AND (di."timestamp" < fd."timestamp_to" OR fd."timestamp_to" IS NULL)
             ) AS iq
-            GROUP BY iq."source", iq."refStructureName", iq."companyName", iq."fieldName", iq."sectorName", iq."plantRow", iq."timestamp"
+            GROUP BY iq."source", iq."refStructureName", iq."companyName", iq."fieldName", iq."sectorName", iq."thesisName", iq."timestamp"
             UNION
-                (SELECT fd."source", fd."refStructureName", fd."companyName", fd."fieldName", fd."sectorName", fd."plantRow",
+                (SELECT fd."source", fd."refStructureName", fd."companyName", fd."fieldName", fd."sectorName", fd."thesisName",
                 ROUND((SUM(CASE WHEN fd."optValue" > -300 THEN LN(ABS(fd."optValue")) * fd."weight"
                             ELSE LN(ABS(-300)) * fd."weight" END)/SUM(fd."weight"))::numeric,6) AS "value",
                 EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd."watering_start")))::INT AS "timestamp",
@@ -77,18 +77,18 @@ class DeltaRepository {
                     AND "companyName" = '${companyName}'
                     AND "fieldName" = '${fieldName}'
                     AND "sectorName" = '${sectorName}'
-                    AND "plantRow" = '${plantRow}'
+                    AND "thesisName" = '${thesisName}'
                     AND timestamp BETWEEN '${timestampFrom}' AND '${timestampTo}'
                 )
-                GROUP BY fd."source", fd."refStructureName", fd."companyName", fd."fieldName", fd."sectorName", fd."plantRow", wd."watering_start")
+                GROUP BY fd."source", fd."refStructureName", fd."companyName", fd."fieldName", fd."sectorName", fd."thesisName", wd."watering_start")
             UNION
-                (SELECT 'iFarming', '${refStructureName}', '${companyName}', '${fieldName}', '${sectorName}', '${plantRow}',
+                (SELECT 'iFarming', '${refStructureName}', '${companyName}', '${fieldName}', '${sectorName}', '${thesisName}',
                 ROUND(LN(ABS(-300))::numeric,6) AS "value",
                 EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd."watering_start")))::INT AS "timestamp",
                 'Pot. Idr. Asciutto (-300 cbar)' AS "detectedValueTypeDescription"       
                 FROM watering_data AS wd)
             UNION
-                (SELECT 'iFarming', '${refStructureName}', '${companyName}', '${fieldName}', '${sectorName}', '${plantRow}',
+                (SELECT 'iFarming', '${refStructureName}', '${companyName}', '${fieldName}', '${sectorName}', '${thesisName}',
                 ROUND(LN(ABS(-20))::numeric,6) AS "value",
                 EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd."watering_start")))::INT AS "timestamp",
                 'Pot. Idr. Capacità di campo (-20 cbar)' AS "detectedValueTypeDescription"       
@@ -105,7 +105,7 @@ class DeltaRepository {
                companyName,
                fieldName,
                sectorName,
-               plantRow
+               thesisName
            }
         });
 
@@ -114,14 +114,14 @@ class DeltaRepository {
             result.companyName,
             result.fieldName,
             result.sectorName,
-            result.plantRow,
+            result.thesisName,
             result.value,
             result.timestamp,
             result.detectedValueTypeDescription
         ));
     }
 
-    async findPunctualDelta(refStructureName, companyName, fieldName, sectorName, plantRow, timestamp) {
+    async findPunctualDelta(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp) {
 
         const queryString = `
             SELECT q1."source",
@@ -129,18 +129,18 @@ class DeltaRepository {
                    q1."companyName",
                    q1."fieldName",
                    q1."sectorName",
-                   q1."plantRow",
+                   q1."thesisName",
                    q1.xx,
                    q1.yy,
                    q1."value" - q2."value" as distance,
                    q1."weight",
                    q1."timestamp"
             FROM (
-                SELECT di."source", di."refStructureName", di."companyName", di."fieldName", di."sectorName", di."plantRow", di."timestamp", (CASE WHEN di."value" > -300 THEN LN(ABS(di."value")) * weighted."weight"
+                SELECT di."source", di."refStructureName", di."companyName", di."fieldName", di."sectorName", di."thesisName", di."timestamp", (CASE WHEN di."value" > -300 THEN LN(ABS(di."value")) * weighted."weight"
                 ELSE LN(ABS(-300)) * weighted."weight" END) as "value", weighted."weight", di."xx", di."yy"
                 FROM data_interpolated as di
                 JOIN (
-                    SELECT "source", "refStructureName", "companyName", "fieldName", "sectorName", "plantRow", "xx", "yy", "weight"
+                    SELECT "source", "refStructureName", "companyName", "fieldName", "sectorName", "thesisName", "xx", "yy", "weight"
                     FROM field_matrix as fi
                     JOIN matrix_profile as mp ON fi."matrixId" = mp."matrixId"
                     WHERE "source" = 'iFarming' 
@@ -148,7 +148,7 @@ class DeltaRepository {
                     AND "companyName" = '${companyName}'
                     AND "fieldName" = '${fieldName}'
                     AND "sectorName" = '${sectorName}'
-                    AND "plantRow" = '${plantRow}'
+                    AND "thesisName" = '${thesisName}'
                     AND "timestamp_from" < '${parseInt(timestamp)}' 
                     AND ("timestamp_to" > '${parseInt(timestamp)}' OR "timestamp_to" IS NULL)
                 ) as weighted 
@@ -157,13 +157,13 @@ class DeltaRepository {
                         AND weighted."companyName" = di."companyName"
                         AND weighted."fieldName" = di."fieldName"
                         AND weighted."sectorName" = di."sectorName"
-                        AND weighted."plantRow" = di."plantRow"
+                        AND weighted."thesisName" = di."thesisName"
                         AND weighted."xx" = di."xx"
                         AND weighted."yy" = di."yy"
                 WHERE di."timestamp" = ${timestamp}/3600::INT*3600
                 ) as q1
             JOIN (
-                SELECT "source", "refStructureName", "companyName", "fieldName", "sectorName", "plantRow", "xx", "yy", (CASE WHEN "optValue" > -300 THEN LN(ABS("optValue")) * "weight"
+                SELECT "source", "refStructureName", "companyName", "fieldName", "sectorName", "thesisName", "xx", "yy", (CASE WHEN "optValue" > -300 THEN LN(ABS("optValue")) * "weight"
                     ELSE LN(ABS(-300)) * "weight" END) as "value"
                 FROM field_matrix as fm
                 JOIN matrix_profile as mp ON fm."matrixId" = mp."matrixId"
@@ -171,7 +171,7 @@ class DeltaRepository {
                     AND "companyName" = '${companyName}'
                     AND "fieldName" = '${fieldName}'
                     AND "sectorName" = '${sectorName}'
-                    AND "plantRow" = '${plantRow}'
+                    AND "thesisName" = '${thesisName}'
                     AND "timestamp_from" < '${parseInt(timestamp)}' 
                     AND ("timestamp_to" > '${parseInt(timestamp)}' OR "timestamp_to" IS NULL)
                 ) as q2
@@ -180,7 +180,7 @@ class DeltaRepository {
                         AND q1."companyName" = q2."companyName"
                         AND q1."fieldName" = q2."fieldName"
                         AND q1."sectorName" = q2."sectorName"
-                        AND q1."plantRow" = q2."plantRow"
+                        AND q1."thesisName" = q2."thesisName"
                         AND q1."xx" = q2."xx"
                         AND q1."yy" = q2."yy"`;
 
@@ -192,7 +192,7 @@ class DeltaRepository {
                companyName,
                fieldName,
                sectorName,
-               plantRow
+               thesisName
            }
         });
         return results
