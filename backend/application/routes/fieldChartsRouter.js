@@ -121,7 +121,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:th
  *   get:
  *     security:
  *       - bearerAuth: []
- *     summary: Retrieves dripper and pluv data
+ *     summary: Retrieves dripper, pluv and sprinkler punctual data
  *     tags: [Field Chart Data]
  *     parameters:
  *       - in: path
@@ -677,100 +677,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:th
 
 /**
  * @swagger
- * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/humidityEvents:
- *   get:
- *     security:
- *       - bearerAuth: []
- *     summary: Retrieves humidity events data
- *     tags: [Field Chart Data]
- *     parameters:
- *       - in: path
- *         name: refStructureName
- *         required: true
- *         schema:
- *           type: string
- *       - in: path
- *         name: companyName
- *         required: true
- *         schema:
- *           type: string
- *       - in: path
- *         name: fieldName
- *         required: true
- *         schema:
- *           type: string
- *       - in: path
- *         name: sectorName
- *         required: true
- *         schema:
- *           type: string
- *       - in: path
- *         name: thesisName
- *         required: true
- *         schema:
- *           type: string
- *       - in: query
- *         name: timeFilterFrom
- *         schema:
- *           type: string
- *         required: true
- *       - in: query
- *         name: timeFilterTo
- *         schema:
- *           type: string
- *         required: true
- *     responses:
- *       200:
- *         description: Success
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/DataResponse'
- *       401:
- *         description: Unauthorized request
- *       403:
- *         description: Authentication failed
- *       500:
- *         description: Internal server error
- */
-fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/humidityEvents', async (req, res) => {
-
-    const refStructureName = req.params.refStructureName;
-    const companyName = req.params.companyName;
-    const fieldName = req.params.fieldName;
-    const sectorName = req.params.sectorName;
-    const thesisName = req.params.thesisName;
-    const timeFilterFrom = req.query.timeFilterFrom;
-    const timeFilterTo = req.query.timeFilterTo;
-
-    try {
-        const user = await authenticationService.validateJwt(req.headers.authorization);
-        if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
-            return res.status(401).json({message: 'Unauthorized request'});
-    } catch (error) {
-        return res.status(403).json({message: 'Authentication failed'});
-    }
-
-    try {
-        const detectedValueTypeId = ['DRIPPER', 'PLUV_CURR', 'IGA'];
-
-        const result = await fieldService.getHumidityEventsByFieldReference(detectedValueTypeId, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName);
-
-        res.status(200).json(result);
-    } catch (error) {
-        return res.status(500).json({message: error.message});
-    }
-
-});
-
-/**
- * @swagger
- * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/electCondition:
+ * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/electricalConductivity:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -831,7 +738,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:th
  *       500:
  *         description: Internal server error
  */
-fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/electCondition', async (req, res) => {
+fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/electricalConductivity', async (req, res) => {
 
     const refStructureName = req.params.refStructureName;
     const companyName = req.params.companyName;
@@ -1137,7 +1044,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:th
 
 /**
  * @swagger
- * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/statisticsChart:
+ * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/profileStatistics:
  *   get:
  *     security:
  *       - bearerAuth: []
@@ -1198,7 +1105,7 @@ fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:th
  *       500:
  *         description: Internal server error
  */
-fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/statisticsChart', async (req, res) => {
+fieldChartRouter.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/profileStatistics', async (req, res) => {
 
     const refStructureName = req.params.refStructureName;
     const companyName = req.params.companyName;
