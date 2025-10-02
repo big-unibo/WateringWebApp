@@ -5,6 +5,7 @@ import fieldChartRouter from './routes/fieldChartsRouter.js';
 import wateringScheduleRouter from './routes/wateringScheduleRouter.js';
 import logsRouter from './routes/logsRouter.js'
 import organizationRouter from './routes/organizationRouter.js';
+import companyRouter from './routes/companyRouter.js';
 import swaggerJsdoc from 'swagger-jsdoc';
 import { serve, setup } from 'swagger-ui-express';
 
@@ -52,4 +53,5 @@ app.use('/fieldCharts', fieldChartRouter);
 app.use('/wateringSchedule', wateringScheduleRouter);
 app.use('/logs', logsRouter)
 app.use('/organizations', organizationRouter);
+app.use('/companies', companyRouter);
 app.use('/api-docs', serve, setup(swaggerSpec));
