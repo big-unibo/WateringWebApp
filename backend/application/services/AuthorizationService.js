@@ -38,7 +38,7 @@ class AuthorizationService {
     return false;
   }
 
-  async isUserAuthorized(userid, permit, table, timestampFrom, timestampTo) {
+  async isUserAuthorized(userid, permit, table) {
     const userPermissions = await this.userService.findUserPermissions(userid,timestampFrom,timestampTo);
     if(userPermissions.role === 'admin') return true;
 
