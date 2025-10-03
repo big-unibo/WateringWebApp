@@ -99,7 +99,7 @@ companyRouter.put('/createCompany', async (req, res) => {
         if (!(await authorizationService.isUserAuthorized(user.userid, 'create', 'company')))
             return res.status(401).json({message: 'Unauthorized request'});
 
-        if(!req.body && req.body === '')
+        if(!req.body || req.body === '')
             throw new Error('Body is empty');
 
         const company_name = req.body.company_name;

@@ -65,18 +65,18 @@ const organizationService = new OrganizationService(sequelize);
 
 organizationRouter.put('/createOrganization', async (req, res) => {
     let requestUserData
-    try {
-        requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-    } catch (error) {
-        return res.status(403).json({message: 'Authentication failed'});
-    }
+    // try {
+    //     requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+    // } catch (error) {
+    //     return res.status(403).json({message: 'Authentication failed'});
+    // }
 
     try {
         const user = await userService.findUser(requestUserData.userid)
         if (!(await authorizationService.isUserAuthorized(user.userid, 'create', 'organization')))
             return res.status(401).json({message: 'Unauthorized request'});
 
-        if(!req.body && req.body === '')
+        if(!req.body || req.body === '')
             throw new Error('Body is empty');
 
         const organization_name = req.body.organization_name;
