@@ -89,18 +89,17 @@ companyRouter.put('/createCompany', async (req, res) => {
 
     try {
         const user = await userService.findUser(requestUserData.userid);
-        const organizationRaw = await requestUserData.organizationid;
 
+        if(!req.body || req.body === '')
+            throw new Error('Body is empty');
+        
+        const organizationRaw = await requestUserData.organizationid;
         if (!organizationRaw || isNaN(parseInt(organizationraw))) {
             return res.status(400).json({ message: 'organizationid is required and must be a number' });
         }
         const organization = parseInt(organizationRaw)
-
         if (!(await authorizationService.isUserAuthorized(user.userid, 'create', 'company')))
             return res.status(401).json({message: 'Unauthorized request'});
-
-        if(!req.body || req.body === '')
-            throw new Error('Body is empty');
 
         const company_name = req.body.company_name;
         const result = await companyService.createCompany(company_name,organization);
