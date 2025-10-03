@@ -6,7 +6,7 @@ class Organization extends Model {
 
 function initOrganization(sequelize) {
     Organization.init({
-        organizationid: {
+        id: {
             type: DataTypes.INTEGER,
             primaryKey: true
         },
@@ -15,7 +15,7 @@ function initOrganization(sequelize) {
             allowNull: false
         }
     }, {
-        modelName: 'organization',
+        modelName: 'organizations',
         timestamps: false,
         sequelize
     });

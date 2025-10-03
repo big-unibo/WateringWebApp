@@ -65,15 +65,15 @@ const organizationService = new OrganizationService(sequelize);
 
 organizationRouter.put('/createOrganization', async (req, res) => {
     let requestUserData
-    // try {
-    //     requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-    // } catch (error) {
-    //     return res.status(403).json({message: 'Authentication failed'});
-    // }
+    try {
+        requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+    } catch (error) {
+        return res.status(403).json({message: 'Authentication failed'});
+    }
 
     try {
         const user = await userService.findUser(requestUserData.userid)
-        if (!(await authorizationService.isUserAuthorized(user.userid, 'create', 'organization')))
+        if (!(await authorizationService.isUserAuthorized(user.userid, 'create', 'organizations')))
             return res.status(401).json({message: 'Unauthorized request'});
 
         if(!req.body || req.body === '')
@@ -81,10 +81,10 @@ organizationRouter.put('/createOrganization', async (req, res) => {
 
         const organization_name = req.body.organization_name;
         const result = await organizationService.createOrganization(organization_name);
-        return res.status(200).json({message: `Organization created with success`})
+        return res.status(200).json({message: `Organization created with success`});
     } catch (error) {
-        console.log(`Failed creating organization caused by: ${error.message}`)
-        return res.status(500).json({message: "Error on creating organization"})
+        console.log(`Failed creating organization caused by: ${error.message}`);
+        return res.status(500).json({message: "Error on creating organization"});
     }
 })
 

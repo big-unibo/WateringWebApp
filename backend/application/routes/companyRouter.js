@@ -23,12 +23,12 @@ const companyService = new CompanyService(sequelize);
  *             type: object
  *             required:
  *               - company_name
- *               - organizationid
+ *               - organization_id
  *             properties:
  *               company_name:
  *                 type: string
  *                 description: Name of the company to be created
- *               organizationid:
+ *               organization_id:
  *                 type: integer
  *                 description: ID of the organization to associate the company with
  *     responses:
@@ -89,20 +89,20 @@ companyRouter.put('/createCompany', async (req, res) => {
 
     try {
         const user = await userService.findUser(requestUserData.userid);
+        if (!(await authorizationService.isUserAuthorized(user.userid, 'create', 'companies')))
+            return res.status(401).json({message: 'Unauthorized request'});
 
         if(!req.body || req.body === '')
             throw new Error('Body is empty');
-        
-        const organizationRaw = await requestUserData.organizationid;
-        if (!organizationRaw || isNaN(parseInt(organizationraw))) {
-            return res.status(400).json({ message: 'organizationid is required and must be a number' });
+
+        const organizationRaw = await req.body.organization_id;
+        if (!organizationRaw || isNaN(parseInt(organizationRaw))) {
+            return res.status(400).json({ message: 'organization_id is required and must be a number' });
         }
-        const organization = parseInt(organizationRaw)
-        if (!(await authorizationService.isUserAuthorized(user.userid, 'create', 'company')))
-            return res.status(401).json({message: 'Unauthorized request'});
+        const organization_id = parseInt(organizationRaw)
 
         const company_name = req.body.company_name;
-        const result = await companyService.createCompany(company_name,organization);
+        const result = await companyService.createCompany(company_name,organization_id);
         return res.status(200).json({message: `Company created with success`})
     } catch (error) {
         console.log(`Failed creating company caused by: ${error.message}`)

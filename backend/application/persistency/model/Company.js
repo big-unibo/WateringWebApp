@@ -6,7 +6,7 @@ class Company extends Model {
 
 function initCompany(sequelize) {
     Company.init({
-        companyid: {
+        id: {
             type: DataTypes.INTEGER,
             primaryKey: true
         },
@@ -14,13 +14,13 @@ function initCompany(sequelize) {
             type: DataTypes.STRING,
             allowNull: false
         },
-        organizationid: {
+        organization_id: {
             type: DataTypes.INTEGER,
             allowNull: false
         }
     }, {
-        modelName : 'company',
-        timpestamps: false,
+        modelName : 'companies',
+        timestamps : false,
         sequelize
     });
 

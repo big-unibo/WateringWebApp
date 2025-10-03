@@ -6,9 +6,9 @@ class OrganizationRepository {
 
     async createOrganization(organization_name) {
         try {
-            const maxId = await this.Organization.max('organizationid') || 0;
+            const maxId = await this.Organization.max('id') || 0;
             const organizationCreated = this.Organization.build({
-                organizationid: maxId + 1,
+                id: maxId + 1,
                 organization_name: organization_name
             });
 
