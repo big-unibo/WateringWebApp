@@ -20,6 +20,38 @@ import WateringBaseline from '../dtos/wateringBaselineDto.js';
 import { Thesis } from '../dtos/thesisDto.js';
 import { WateringSectorDto } from '../dtos/wateringSectorDto.js';
 
+fieldsRouter.post('/createField', async (req, res) => {
+    let requestUserData
+    // try {
+    //     requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+    // } catch (error) {
+    //     return res.status(403).json({message: 'Authentication failed'});
+    // }
+
+    try {
+        if(!req.body || req.body === '')
+            throw new Error('Body is empty');
+        
+        // const companyRaw = await req.body.company_id;
+        // if (!companyRaw || isNaN(parseInt(companyRaw ))) {
+        //     return res.status(400).json({ message: 'compnay_id is required and must be a number' });
+        // }
+        // const company_id = parseInt(companyRaw)
+
+        const user = await userService.findUser(requestUserData.userid);
+        if (!(await authorizationService.isUserAuthorizedById(user.userid, 'update', 'companies', company_id)))
+            return res.status(401).json({message: 'Unauthorized request'});
+
+        const field_name = req.body.field_name;
+        const location = req.body.location;
+        const result = await fieldService.createField(field_name,company_id,location);
+
+        return res.status(200).json({message: `Field created with success`})
+    } catch (error) {
+        console.log(`Failed creating field caused by: ${error.message}`)
+        return res.status(500).json({message: "Error on creating field"})
+    }
+})
 
 /**
  * @swagger

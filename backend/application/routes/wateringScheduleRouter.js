@@ -141,7 +141,7 @@ wateringScheduleRouter.put("/updateWateringEvent", async (req, res) => {
         return res.status(403).json({ message: 'Authentication failed' });
     }
 
-    if (!req.body && req.body === '')
+    if (!req.body || req.body === '')
         return res.status(400).json({ message: 'Invalid request' })
 
     if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, req.body.refStructureName, req.body.companyName, req.body.fieldName, req.body.sectorName, req.body.thesisName, 'WA')))

@@ -1,10 +1,7 @@
-
-import UserService from './UserService.js';
-
 class AuthorizationService {
 
-  constructor(sequelize) {
-    this.userService = new UserService(sequelize)
+  constructor(userService) {
+    this.userService = userService;
   }
 
   async isUserAuthorized(userid, permission, timestampFrom, timestampTo) {
@@ -49,6 +46,27 @@ class AuthorizationService {
       const match =
         field.permit === permit &&
         field.table === table;
+
+      if (match) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+
+  async isUserAuthorizedById(userid, permit, table, id_key) {
+    const userPermissions = await this.userService.findUserPermissions(userid);
+    if(userPermissions.role === 'admin') return true;
+
+    if (!userPermissions.permissions || userPermissions.permissions.length === 0)
+      return false;
+
+    for (const field of userPermissions.permissions) {
+      const match =
+        field.permit === permit &&
+        field.table === table;
+        field.id_key === id_key;
 
       if (match) {
         return true;

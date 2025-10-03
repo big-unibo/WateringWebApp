@@ -1,31 +1,34 @@
 import { Model, DataTypes } from 'sequelize';
 
-class Company extends Model {
+class Field extends Model {
 
 }
 
-function initCompany(sequelize) {
-    Company.init({
+function initField(sequelize) {
+    Field.init({
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true
         },
-        company_name: {
+        field_name: {
             type: DataTypes.STRING,
             allowNull: false
         },
-        organization_id: {
+        company_id: {
             type: DataTypes.INTEGER,
+            allowNull: false
+        },
+        location: {
+            type: DataTypes.GEOMETRY,
             allowNull: false
         }
     }, {
-        modelName : 'Company',
-        tableName : 'companies',
+        modelName : 'fields',
         timestamps : false,
         sequelize
     });
 
-    return Company;
+    return Field;
 }
 
-export default initCompany;
+export default initField;

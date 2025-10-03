@@ -6,12 +6,14 @@ import initFieldsPermit from '../persistency/model/FieldsPermit.js';
 import initTranscodingField from '../persistency/model/TranscodingField.js';
 import initMatrixProfile from '../persistency/model/MatrixProfile.js';
 import initMatrixField from '../persistency/model/MatrixField.js';
+import initField from '../persistency/model/Field.js';
+import initCompany from '../persistency/model/Company.js';
 
 class UserService {
 
     constructor(sequelize) {
         this.userRepository = new UserRepository(initUser(sequelize), initFieldsPermit(sequelize), initTranscodingField(sequelize), sequelize);
-        this.fieldRepository = new FieldRepository(initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), undefined, undefined, undefined, sequelize)
+        //this.fieldRepository = new FieldRepository(initField(sequelize), initCompany(sequelize),initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), undefined, undefined, undefined, sequelize)
     }
 
     async findUser(user) {
@@ -95,53 +97,53 @@ class UserService {
         }
     }
 
-    async computeUserPermissions(user, results) {
-        try {
-            const fields = new Map();
+    // async computeUserPermissions(user, results) {
+    //     try {
+    //         const fields = new Map();
 
-            for (const field of results) {
-                const fieldDetails = await this.fieldRepository.getFieldDetails(
-                    field.refStructureName,
-                    field.companyName,
-                    field.fieldName,
-                    field.sectorName,
-                    field.thesisName
-                );
+    //         for (const field of results) {
+    //             const fieldDetails = await this.fieldRepository.getFieldDetails(
+    //                 field.refStructureName,
+    //                 field.companyName,
+    //                 field.fieldName,
+    //                 field.sectorName,
+    //                 field.thesisName
+    //             );
 
-                if (fieldDetails) {
-                    const keyString = JSON.stringify(fieldDetails.dataValues);
+    //             if (fieldDetails) {
+    //                 const keyString = JSON.stringify(fieldDetails.dataValues);
 
-                    if (!fields.has(keyString)) {
-                        fields.set(keyString, new Set());
-                    }
+    //                 if (!fields.has(keyString)) {
+    //                     fields.set(keyString, new Set());
+    //                 }
 
-                    if (field.permit) {
-                        fields.get(keyString).add(field.permit);
-                    } else if (user.role === "admin") {
-                        fields.get(keyString).add("*")
-                    }
-                }
-            }
+    //                 if (field.permit) {
+    //                     fields.get(keyString).add(field.permit);
+    //                 } else if (user.role === "admin") {
+    //                     fields.get(keyString).add("*")
+    //                 }
+    //             }
+    //         }
 
-            const userFieldsPermissions = Array.from(fields, ([keyString, permissions]) => {
-                const key = JSON.parse(keyString);
-                return new UserFieldPermission(
-                    key.source,
-                    key.refStructureName,
-                    key.companyName,
-                    key.fieldName,
-                    key.sectorName,
-                    key.thesisName,
-                    key.colture,
-                    key.coltureType,
-                  [...permissions] // Spread operator to convert Set to Array
-                );
-            });
-            return new UserFieldPermissions(user.email, user.affiliation, user.role, userFieldsPermissions)
-        } catch (error) {
-            console.error(error)
-        }
-    }
+    //         const userFieldsPermissions = Array.from(fields, ([keyString, permissions]) => {
+    //             const key = JSON.parse(keyString);
+    //             return new UserFieldPermission(
+    //                 key.source,
+    //                 key.refStructureName,
+    //                 key.companyName,
+    //                 key.fieldName,
+    //                 key.sectorName,
+    //                 key.thesisName,
+    //                 key.colture,
+    //                 key.coltureType,
+    //               [...permissions] // Spread operator to convert Set to Array
+    //             );
+    //         });
+    //         return new UserFieldPermissions(user.email, user.affiliation, user.role, userFieldsPermissions)
+    //     } catch (error) {
+    //         console.error(error)
+    //     }
+    // }
 
 }
 

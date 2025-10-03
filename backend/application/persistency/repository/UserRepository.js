@@ -2,16 +2,12 @@ import { QueryTypes, Op } from "sequelize";
 
 class UserRepository {
 
-    constructor(User, FieldsPermit, TranscodingField, sequelize) {
-        this.User = User
-        this.FieldsPermit = FieldsPermit
-        this.TranscodingField = TranscodingField
-        this.sequelize = sequelize
-
-        User.hasMany(FieldsPermit, { foreignKey: 'userid'});
-        FieldsPermit.belongsTo(User, { foreignKey: 'userid'});
+     constructor(models) {
+        this.User = models.User;
+        this.FieldsPermit = models.FieldsPermit;
+        this.TranscodingField = models.TranscodingField;
     }
-
+    
     async findUser(userid) {
         return await this.User.findOne({ where: { userid: userid } });
     }

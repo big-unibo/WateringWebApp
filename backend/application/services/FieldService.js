@@ -13,6 +13,10 @@ import initTranscodingField from '../persistency/model/TranscodingField.js';
 import initWateringThesis from '../persistency/model/WateringThesis.js';
 import initWateringAlgorithmParams from '../persistency/model/WateringAlgorithmParams.js';
 import initWateringSector from '../persistency/model/WateringSector.js';
+import initField from '../persistency/model/Field.js';
+import initCompany from '../persistency/model/Company.js'
+import CompanyRepository from '../persistency/repository/CompanyRepository.js';
+import initOrganization from '../persistency/model/Organization.js';
 
 const dtoConverter = new DtoConverter();
 
@@ -27,7 +31,17 @@ class FieldService {
         this.humidityBinsRepository = new HumidityBinsRepository(sequelize);
         this.viewDataOriginalRepository = new ViewDataOriginalRepository(sequelize);
         this.wateringAggregateRepository = new WateringAggregateRepository(sequelize);
-        this.fieldRepository = new FieldRepository(initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), initWateringThesis(sequelize), initWateringSector(sequelize), initWateringAlgorithmParams(sequelize), sequelize);
+        this.companyRepository = new CompanyRepository(initOrganization(sequelize));
+        this.fieldRepository = new FieldRepository(initField(sequelize), initCompany(sequelize), initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), initWateringThesis(sequelize), initWateringSector(sequelize), initWateringAlgorithmParams(sequelize), sequelize);
+    }
+
+    async createField(field_name, company_id, location){ 
+        try {
+            await this.FieldRepository.createField(field_name, company_id, location);
+        } catch (error) {
+            console.error(`Error creating field ${field_name}: ${error.message}`);
+            throw error;
+        }    
     }
 
     async getInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {

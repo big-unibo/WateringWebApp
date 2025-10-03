@@ -1,10 +1,8 @@
 class CompanyRepository {
-    constructor(Company, Organization, sequelize) {
-        this.Company = Company;
-        this.Organization = Organization;
+    constructor(models, sequelize) {
+        this.Company = models.Company;
+        this.Organization = models.Organization;
         this.sequelize = sequelize;
-
-        Company.belongsTo(Organization, { foreignKey: 'organization_id' });
     }
 
     async createCompany(company_name, organization_id) {

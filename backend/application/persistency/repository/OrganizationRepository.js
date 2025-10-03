@@ -1,7 +1,7 @@
-
 class OrganizationRepository {
-    constructor(Organization) {
-        this.Organization = Organization;
+    constructor(models, sequelize) {
+        this.Organization = models.Organization;
+        this.sequelize = sequelize;
     }
 
     async createOrganization(organization_name) {
