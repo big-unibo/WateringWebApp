@@ -5,9 +5,9 @@ class CompanyService {
 
     async createCompany(request){ 
         try {
-            await this.companyRepository.createCompany(request.companyName,organizationid);
+            await this.companyRepository.createCompany(request.companyName,request.organizationid);
         } catch (error) {
-            console.error(`Error creating Company ${companyName}: ${error.message}`);
+            console.error(`Error creating Company ${request.companyName}: ${error.message}`);
             throw error;
         }    
     }

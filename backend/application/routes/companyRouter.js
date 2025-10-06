@@ -19,7 +19,7 @@ const createCompanyRouter = ({ companyService, userService, authenticationServic
      *           schema:
      *             type: object
      *             required:
-     *               - companName
+     *               - companyName
      *               - organizationId
      *             properties:
      *               companyName:

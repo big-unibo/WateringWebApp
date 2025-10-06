@@ -11,13 +11,15 @@ function initField(sequelize) {
             primaryKey: true,
             autoIncrement: true
         },
-        field_name: {
+        fieldName: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: false,
+            field: "field_name"
         },
-        company_id: {
+        companyName: {
             type: DataTypes.INTEGER,
-            allowNull: false
+            allowNull: false,
+            field: "company_name"
         },
         location: {
             type: DataTypes.GEOMETRY,
