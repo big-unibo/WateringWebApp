@@ -1,32 +1,76 @@
 import { Model, DataTypes } from 'sequelize';
 
-class WateringSector extends Model {
+class Sector extends Model {
 
 }
 
-function initWateringSector(sequelize) {
+function initSector(sequelize) {
+    Field.init({
+        id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+        },
+        sectorName: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            field: "sector_name"
+        },
+        fieldId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            field: "field_id"
+        },
+        culture: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+        cultureType: {
+            type: DataTypes.STRING,
+            allowNull: true,
+            field: "culture_type"
+        },
 
-    WateringSector.init({
-        source: DataTypes.TEXT,
-        refStructureName: DataTypes.TEXT,
-        companyName: DataTypes.TEXT,
-        fieldName: DataTypes.TEXT,
-        sectorName: DataTypes.TEXT,
-        prescriptive: DataTypes.BOOLEAN,
-        advice: DataTypes.BOOLEAN,
-        dripper_capacity: DataTypes.DOUBLE,
-        dripper_scaling_factor: DataTypes.DOUBLE,
-        sprinkler_capacity: DataTypes.DOUBLE,
-        valve_id: DataTypes.TEXT,
-        timestamp_from: DataTypes.DOUBLE,
-        timestamp_to: DataTypes.DOUBLE
+        location: {
+            type: DataTypes.GEOMETRY,
+            allowNull: true
+        },
+
+        prescriptive: {
+            type: DataTypes.BOOLEAN,
+            allowNull: true
+        },
+
+        advice: {
+            type: DataTypes.BOOLEAN,
+            allowNull: true
+        },
+
+        dripperCapacity: {
+            type: DataTypes.DOUBLE,
+            allowNull: true,
+            field : "dripper_capacity"
+        },
+
+        sprinklerCapacity: {
+            type: DataTypes.DOUBLE,
+            allowNull: true,
+            field : "sprinkler_capacity"
+        },
+
+        dripperScalingFactor: {
+            type: DataTypes.DOUBLE,
+            allowNull: true,
+            field : "dripper_scaling_factor"
+        }
+
     }, {
-        modelName: 'watering_sector',
-        timestamps: false,
+        modelName : 'sectors',
+        timestamps : false,
         sequelize
     });
 
-    return WateringSector;
+    return Sector;
 }
 
-export default initWateringSector;
+export default initSector;

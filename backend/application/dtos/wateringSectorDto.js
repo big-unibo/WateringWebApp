@@ -1,40 +1,37 @@
-export class WateringSectorDto {
-    /**
-     * @param {string} source - source
-     * @param {string} refStructureName - Reference structure name
-     * @param {string} companyName - Company name
-     * @param {string} fieldName - Field name
-     * @param {string} sectorName - Sector name
-     * @param {boolean} advice - Flag that indicates if the advice is enabled
-     * @param {boolean} prescriptive - Flag that indicates if operate on valves
-     * @param {string} valveId - Valve identifier
-     * @param {number} dripperCapacity - Dripper capacity
-     * @param {number} dripperScalingFactor - Dripper scaling factor
-     * @param {number} sprinklerCapacity - Sprinkler capacity
-     */
-    constructor(
-        source,
-        refStructureName,
-        companyName,
-        fieldName,
-        sectorName,
-        advice,
-        prescriptive,
-        valveId,
-        dripperCapacity,
-        dripperScalingFactor,
-        sprinklerCapacity
-    ) {
-        this.source = source
-        this.refStructureName = refStructureName
-        this.companyName = companyName
-        this.fieldName = fieldName
-        this.sectorName = sectorName
-        this.advice = advice
-        this.prescriptive = prescriptive
-        this.valveId = valveId
-        this.dripperCapacity = dripperCapacity
-        this.dripperScalingFactor = dripperScalingFactor
-        this.sprinklerCapacity = sprinklerCapacity
-    }
+export class WateringSector {
+  /**
+   * @param {string} sectorName - Name of the sector
+   * @param {number} fieldId - Id of the field this sector belongs to
+   * @param {string} culture - Culture of the sector
+   * @param {string} [cultureType] - Optional type of culture
+   * @param {Object} [location] - Optional location as a geometry object
+   * @param {boolean} [prescriptive] - Optional prescriptive flag
+   * @param {boolean} [advice] - Optional advice flag
+   * @param {number} [dripperCapacity] - Optional dripper capacity
+   * @param {number} [sprinklerCapacity] - Optional sprinkler capacity
+   * @param {number} [dripperScalingFactor] - Optional dripper scaling factor
+   */
+  constructor(
+    sectorName,
+    fieldId,
+    culture,
+    cultureType = null,
+    location = null,
+    prescriptive = null,
+    advice = null,
+    dripperCapacity = null,
+    sprinklerCapacity = null,
+    dripperScalingFactor = null
+  ) {
+    this.sectorName = sectorName;
+    this.fieldId = fieldId;
+    this.culture = culture;
+    this.cultureType = cultureType;
+    this.location = location;
+    this.prescriptive = prescriptive;
+    this.advice = advice;
+    this.dripperCapacity = dripperCapacity;
+    this.sprinklerCapacity = sprinklerCapacity;
+    this.dripperScalingFactor = dripperScalingFactor;
+  }
 }

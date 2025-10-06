@@ -18,7 +18,7 @@ const wateringAdviceService = new WateringAdviceService(sequelize);
 
 import WateringBaseline from '../dtos/wateringBaselineDto.js';
 import { Thesis } from '../dtos/thesisDto.js';
-import { WateringSectorDto } from '../dtos/wateringSectorDto.js';
+import { WateringSector, WateringSectorDto } from '../dtos/wateringSectorDto.js';
 import { Field } from '../dtos/fieldDto.js';
 import { Sector } from '../dtos/sectorDto.js';
 
@@ -239,7 +239,7 @@ fieldsRouter.post('/createSector', async( req, res) => {
       if (!(await authorizationService.isUserAuthorizedById(user.userid, 'update', 'companies', companyId)))
           return res.status(401).json({message: 'Unauthorized request'});
 
-      const sector = new Sector(
+      const sector = new WateringSector(
           req.body.sectorName,
           fieldId,
           req.body.culture,

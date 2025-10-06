@@ -9,7 +9,7 @@ import initWateringThesis from './WateringThesis.js';
 import initWateringSector from './WateringSector.js';
 import initWateringAlgorithmParams from './WateringAlgorithmParams.js';
 import initPermit from './Permit.js';
-import initSector from './Sector.js';
+import initSector from './WateringSector.js';
 
 export default function initModels(sequelize) {
   const models = {
