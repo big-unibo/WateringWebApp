@@ -11,9 +11,10 @@ function initOrganization(sequelize) {
             primaryKey: true,
             autoIncrement: true
         },
-        organization_name: {
+        organizationName: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: false,
+            field: "organization_name"
         }
     }, {
         modelName: 'Organization',

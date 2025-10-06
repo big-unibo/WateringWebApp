@@ -11,13 +11,15 @@ function initCompany(sequelize) {
             primaryKey: true,
             autoIncrement: true
         },
-        company_name: {
+        companyName: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: false,
+            field: "company_name"
         },
-        organization_id: {
+        organizationId: {
             type: DataTypes.INTEGER,
-            allowNull: false
+            allowNull: false,
+            field: "organization_id"
         }
     }, {
         tableName : 'companies',
