@@ -19,6 +19,8 @@ const wateringAdviceService = new WateringAdviceService(sequelize);
 import WateringBaseline from '../dtos/wateringBaselineDto.js';
 import { Thesis } from '../dtos/thesisDto.js';
 import { WateringSectorDto } from '../dtos/wateringSectorDto.js';
+import { Field } from '../dtos/fieldDto.js';
+import { Sector } from '../dtos/sectorDto.js';
 
 
 /**
@@ -132,14 +134,130 @@ fieldsRouter.post('/createField', async (req, res) => {
         if (!(await authorizationService.isUserAuthorizedById(user.userid, 'update', 'companies', companyId)))
             return res.status(401).json({message: 'Unauthorized request'});
 
-        const request = new FieldDto(req.body.fieldName, companyId, req.body.location);
-        const result = await fieldService.createField(request);
+        const field = new Field(req.body.fieldName, companyId, req.body.location);
+        const result = await fieldService.createField(field);
 
         return res.status(200).json({message: `Field created with success`})
     } catch (error) {
         console.log(`Failed creating field caused by: ${error.message}`)
         return res.status(500).json({message: "Error on creating field"})
     }
+})
+
+/**
+ * @swagger
+ * /createSector:
+ *   post:
+ *     summary: Create a new sector
+ *     description: Creates a new sector associated with a field. Requires authentication and proper authorization.
+ *     tags:
+ *       - Fields
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - sectorName
+ *               - fieldId
+ *               - culture
+ *             properties:
+ *               sectorName:
+ *                 type: string
+ *                 description: Name of the sector
+ *               fieldId:
+ *                 type: integer
+ *                 description: ID of the field to associate the sector with
+ *               culture:
+ *                 type: string
+ *                 description: Main culture of the sector
+ *               cultureType:
+ *                 type: string
+ *                 description: Optional type of the culture
+ *               location:
+ *                 type: object
+ *                 description: Optional geographic location (geometry)
+ *               prescriptive:
+ *                 type: boolean
+ *                 description: Optional prescriptive flag
+ *               advice:
+ *                 type: boolean
+ *                 description: Optional advice flag
+ *               dripperCapacity:
+ *                 type: number
+ *                 format: double
+ *                 description: Optional dripper capacity
+ *               sprinklerCapacity:
+ *                 type: number
+ *                 format: double
+ *                 description: Optional sprinkler capacity
+ *               dripperScalingFactor:
+ *                 type: number
+ *                 format: double
+ *                 description: Optional dripper scaling factor
+ *     responses:
+ *       200:
+ *         description: Sector created successfully
+ *       400:
+ *         description: Bad request (missing or invalid fieldId, sectorName, or culture)
+ *       401:
+ *         description: Unauthorized request
+ *       403:
+ *         description: Authentication failed
+ *       500:
+ *         description: Internal server error
+ *
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ */
+fieldsRouter.post('/createSector', async( req, res) => {
+  let requestUserData
+  try {
+    requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+  } catch (error) {
+      return res.status(403).json({message: 'Authentication failed'});
+  }
+
+  try {
+      if(!req.body || req.body === '')
+          throw new Error('Body is empty');
+      
+      const fieldRaw = await req.body.fieldId;
+      if (!fieldRaw || isNaN(parseInt(fieldRaw ))) {
+          return res.status(400).json({ message: 'fieldId is required and must be a number' });
+      }
+      const fieldId = parseInt(fieldRaw)
+
+      const user = await userService.findUser(requestUserData.userid);
+      if (!(await authorizationService.isUserAuthorizedById(user.userid, 'update', 'companies', companyId)))
+          return res.status(401).json({message: 'Unauthorized request'});
+
+      const sector = new Sector(
+          req.body.sectorName,
+          fieldId,
+          req.body.culture,
+          req.body.cultureType,
+          req.body.location,
+          req.body.prescriptive,
+          req.body.advice,
+          req.body.dripperCapacity,
+          req.body.sprinklerCapacity,
+          req.body.dripperScalingFactor
+      )
+
+      const result = await fieldService.createSector(sector);
+      return res.status(200).json({message: `Sector created with success`})
+  } catch (error) {
+      console.log(`Failed creating sector caused by: ${error.message}`)
+      return res.status(500).json({message: "Error on creating sector"})
+  }
 })
 
 /**

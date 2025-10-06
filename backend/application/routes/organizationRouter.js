@@ -50,8 +50,8 @@ const organizationRouter = (organizationService, authenticationService, userServ
                 throw new Error('Body is empty or missing organizationName');
             }
 
-            const request = new OrganizationDto(req.body.organizationName);
-            await organizationService.createOrganization(request);
+            const organization = new OrganizationDto(req.body.organizationName);
+            await organizationService.createOrganization(organization);
             return res.status(200).json({ message: 'Organization created successfully' });
         } catch (error) {
             console.error(`Failed creating organization caused by: ${error.message}`);

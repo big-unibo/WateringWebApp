@@ -35,14 +35,37 @@ class FieldService {
         this.fieldRepository = new FieldRepository(initField(sequelize), initCompany(sequelize), initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), initWateringThesis(sequelize), initWateringSector(sequelize), initWateringAlgorithmParams(sequelize), sequelize);
     }
 
-    async createField(request){ 
+    async createField(field){ 
         try {
-            await this.FieldRepository.createField(request.fieldName, request.companyId, request.location);
+            await this.FieldRepository.createField(field.fieldName, field.companyId, field.location);
         } catch (error) {
-            console.error(`Error creating field ${request.fieldName}: ${error.message}`);
+            console.error(`Error creating field ${field.fieldName}: ${error.message}`);
             throw error;
         }    
     }
+
+    async createSector(sector) {
+        try {
+            const result = await this.FieldRepository.createSector({
+                sectorName: sector.sectorName,
+                fieldId: sector.fieldId,
+                culture: sector.culture,
+                cultureType: sector.cultureType,
+                location: sector.location,
+                prescriptive: sector.prescriptive,
+                advice: sector.advice,
+                dripperCapacity: sector.dripperCapacity,
+                sprinklerCapacity: sector.sprinklerCapacity,
+                dripperScalingFactor: sector.dripperScalingFactor
+            });
+
+            return result;
+        } catch (error) {
+            console.error(`Error creating sector ${sector.sectorName}: ${error.message}`);
+            throw error;
+        }
+    }
+
 
     async getInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {
         const result = await this.dataInterpolatedRepository.findInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo);

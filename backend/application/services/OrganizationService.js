@@ -3,11 +3,11 @@ class OrganizationService {
         this.organizationRepository = organizationRepository;
     }
 
-    async createOrganization(request){ 
+    async createOrganization(organization){ 
         try {
-            await this.organizationRepository.createOrganization(request.organizationName);
+            await this.organizationRepository.createOrganization(organization.organizationName);
         } catch (error) {
-            console.error(`Error creating organization ${request.organizationName}: ${error.message}`);
+            console.error(`Error creating organization ${organization.organizationName}: ${error.message}`);
             throw error;
         }    
     }

@@ -62,9 +62,9 @@ const createCompanyRouter = ({ companyService, userService, authenticationServic
 
             const organizationId = parseInt(organizationRaw);
             const companyName = req.body.companyName;
-            const request = new CompanyDto(companyName,organizationId);
+            const company = new CompanyDto(companyName,organizationId);
 
-            await companyService.createCompany(request);
+            await companyService.createCompany(company);
             return res.status(200).json({ message: `Company created with success` });
         } catch (error) {
             console.log(`Failed creating company caused by: ${error.message}`);
