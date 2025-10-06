@@ -5,16 +5,16 @@ class CompanyRepository {
         this.sequelize = sequelize;
     }
 
-    async createCompany(company_name, organization_id) {
+    async createCompany(companyName, organizationId) {
         try {
-            const organization = await this.Organization.findByPk(organization_id);
+            const organization = await this.Organization.findByPk(organizationId);
             if (!organization) {
-            throw new Error(`Organization with ID ${organization_id} does not exist.`);
+            throw new Error(`Organization with ID ${organizationId} does not exist.`);
             }
 
             const companyCreated = await this.Company.create({
-            company_name,
-            organization_id
+            companyName,
+            organizationId
             });
 
             return companyCreated;
