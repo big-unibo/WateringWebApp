@@ -19,7 +19,7 @@ const organizationRouter = (organizationService, authenticationService, userServ
      *           schema:
      *             type: object
      *             properties:
-     *               organization_name:
+     *               organizationName:
      *                 type: string
      *     responses:
      *       '200':
@@ -46,11 +46,12 @@ const organizationRouter = (organizationService, authenticationService, userServ
             const authorized = await authorizationService.isUserAuthorized(user.userid, 'create', 'organizations');
             if (!authorized) return res.status(401).json({ message: 'Unauthorized request' });
 
-            if (!req.body || !req.body.organization_name) {
-                throw new Error('Body is empty or missing organization_name');
+            if (!req.body || !req.body.organizationName) {
+                throw new Error('Body is empty or missing organizationName');
             }
 
-            await organizationService.createOrganization(req.body.organization_name);
+            const request = new OrganizationDto(req.body.organizationName);
+            await organizationService.createOrganization(request);
             return res.status(200).json({ message: 'Organization created successfully' });
         } catch (error) {
             console.error(`Failed creating organization caused by: ${error.message}`);

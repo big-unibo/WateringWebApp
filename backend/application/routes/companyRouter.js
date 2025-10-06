@@ -19,12 +19,12 @@ const createCompanyRouter = ({ companyService, userService, authenticationServic
      *           schema:
      *             type: object
      *             required:
-     *               - company_name
-     *               - organization_id
+     *               - companName
+     *               - organizationId
      *             properties:
-     *               company_name:
+     *               companyName:
      *                 type: string
-     *               organization_id:
+     *               organizationId:
      *                 type: integer
      *     responses:
      *       '200':
@@ -55,14 +55,16 @@ const createCompanyRouter = ({ companyService, userService, authenticationServic
             if (!req.body || req.body === '')
                 throw new Error('Body is empty');
 
-            const organizationRaw = req.body.organization_id;
+            const organizationRaw = req.body.organizationId;
             if (!organizationRaw || isNaN(parseInt(organizationRaw))) {
-                return res.status(400).json({ message: 'organization_id is required and must be a number' });
+                return res.status(400).json({ message: 'organizationId is required and must be a number' });
             }
-            const organization_id = parseInt(organizationRaw);
-            const company_name = req.body.company_name;
 
-            await companyService.createCompany(company_name, organization_id);
+            const organizationId = parseInt(organizationRaw);
+            const companyName = req.body.companyName;
+            const request = new CompanyDto(companyName,organizationId);
+
+            await companyService.createCompany(request);
             return res.status(200).json({ message: `Company created with success` });
         } catch (error) {
             console.log(`Failed creating company caused by: ${error.message}`);

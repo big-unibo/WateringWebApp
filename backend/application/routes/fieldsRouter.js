@@ -20,31 +20,120 @@ import WateringBaseline from '../dtos/wateringBaselineDto.js';
 import { Thesis } from '../dtos/thesisDto.js';
 import { WateringSectorDto } from '../dtos/wateringSectorDto.js';
 
+
+/**
+ * @swagger
+ * /createField:
+ *   post:
+ *     summary: Create a new field
+ *     description: Creates a new field associated with a company. Requires authentication and proper authorization.
+ *     tags:
+ *       - Fields
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - fieldName
+ *               - companyId
+ *               - location
+ *             properties:
+ *               fieldName:
+ *                 type: string
+ *                 description: Name of the field
+ *               companyId:
+ *                 type: integer
+ *                 description: ID of the company to associate the field with
+ *               location:
+ *                 type: string
+ *                 description: Geographical location of the field
+ *     responses:
+ *       200:
+ *         description: Field created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Field created with success"
+ *       400:
+ *         description: Bad Request (missing or invalid companyId)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "companyId is required and must be a number"
+ *       401:
+ *         description: Unauthorized (user not allowed to create field)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Unauthorized request"
+ *       403:
+ *         description: Authentication failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Authentication failed"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Error on creating field"
+ *
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ */
 fieldsRouter.post('/createField', async (req, res) => {
     let requestUserData
-    // try {
-    //     requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-    // } catch (error) {
-    //     return res.status(403).json({message: 'Authentication failed'});
-    // }
+    try {
+        requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+    } catch (error) {
+        return res.status(403).json({message: 'Authentication failed'});
+    }
 
     try {
         if(!req.body || req.body === '')
             throw new Error('Body is empty');
         
-        // const companyRaw = await req.body.company_id;
-        // if (!companyRaw || isNaN(parseInt(companyRaw ))) {
-        //     return res.status(400).json({ message: 'compnay_id is required and must be a number' });
-        // }
-        // const company_id = parseInt(companyRaw)
+        const companyRaw = await req.body.companyId;
+        if (!companyRaw || isNaN(parseInt(companyRaw ))) {
+            return res.status(400).json({ message: 'compnayId is required and must be a number' });
+        }
+        const companyId = parseInt(companyRaw)
 
         const user = await userService.findUser(requestUserData.userid);
-        if (!(await authorizationService.isUserAuthorizedById(user.userid, 'update', 'companies', company_id)))
+        if (!(await authorizationService.isUserAuthorizedById(user.userid, 'update', 'companies', companyId)))
             return res.status(401).json({message: 'Unauthorized request'});
 
-        const field_name = req.body.field_name;
-        const location = req.body.location;
-        const result = await fieldService.createField(field_name,company_id,location);
+        const request = new FieldDto(req.body.fieldName, companyId, req.body.location);
+        const result = await fieldService.createField(request);
 
         return res.status(200).json({message: `Field created with success`})
     } catch (error) {

@@ -4,10 +4,10 @@ class OrganizationRepository {
         this.sequelize = sequelize;
     }
 
-    async createOrganization(organization_name) {
+    async createOrganization(organizationName) {
         try {
             const organizationCreated = await this.Organization.create({
-            organization_name
+            organizationName
             });
             return organizationCreated;
         } catch (error) {

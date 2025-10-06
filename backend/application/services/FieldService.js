@@ -35,11 +35,11 @@ class FieldService {
         this.fieldRepository = new FieldRepository(initField(sequelize), initCompany(sequelize), initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), initWateringThesis(sequelize), initWateringSector(sequelize), initWateringAlgorithmParams(sequelize), sequelize);
     }
 
-    async createField(field_name, company_id, location){ 
+    async createField(request){ 
         try {
-            await this.FieldRepository.createField(field_name, company_id, location);
+            await this.FieldRepository.createField(request.fieldName, request.companyId, request.location);
         } catch (error) {
-            console.error(`Error creating field ${field_name}: ${error.message}`);
+            console.error(`Error creating field ${request.fieldName}: ${error.message}`);
             throw error;
         }    
     }
