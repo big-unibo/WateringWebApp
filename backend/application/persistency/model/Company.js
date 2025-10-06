@@ -20,8 +20,8 @@ function initCompany(sequelize) {
             allowNull: false
         }
     }, {
-        modelName : 'Company',
         tableName : 'companies',
+        modelName : 'Company',
         timestamps : false,
         sequelize
     });

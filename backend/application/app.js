@@ -86,4 +86,5 @@ app.use(
   '/companies'
   , companyRouter(companyService,userService,authenticationService,authorizationService)
 );
+
 app.use('/api-docs', serve, setup(swaggerSpec));

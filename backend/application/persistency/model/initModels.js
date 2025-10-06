@@ -8,7 +8,7 @@ import initTranscodingField from './TranscodingField.js';
 import initWateringThesis from './WateringThesis.js';
 import initWateringSector from './WateringSector.js';
 import initWateringAlgorithmParams from './WateringAlgorithmParams.js';
-import initFieldsPermit from './FieldsPermit.js';
+import initPermit from './Permit.js';
 
 export default function initModels(sequelize) {
   const models = {
@@ -22,7 +22,7 @@ export default function initModels(sequelize) {
     WateringThesis: initWateringThesis(sequelize),
     WateringSector: initWateringSector(sequelize),
     WateringAlgorithmParams: initWateringAlgorithmParams(sequelize),
-    FieldsPermit: initFieldsPermit(sequelize),
+    Permit: initPermit(sequelize),
   };
 
   models.Company.belongsTo(models.Organization, { foreignKey: "organization_id" });
@@ -33,6 +33,9 @@ export default function initModels(sequelize) {
 
   models.MatrixField.hasMany(models.MatrixProfile, { foreignKey: "matrixId" });
   models.MatrixProfile.belongsTo(models.MatrixField, { foreignKey: "matrixId" });
+
+  models.User.hasMany(models.Permit, {foreignKey: "user_id" });
+  models.Permit.hasMany(models.User, {foreignKey: "user_id" });
 
   //[TO DO]: il resto....
   return models;

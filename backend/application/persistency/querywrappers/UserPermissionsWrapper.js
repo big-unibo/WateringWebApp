@@ -1,26 +1,18 @@
-export class UserFieldPermissions {
+export class UserPermissions {
 
-  constructor(user, affiliation, role, permissions) {
-    this.user = user
-    this.affiliation = affiliation
+  constructor(id, role, permissions) {
+    this.id = id
     this.role = role
     this.permissions = permissions
   }
 
 }
 
-export class UserFieldPermission {
+export class UserPermission{
 
-  constructor(source, refStructureName, companyName, fieldName, sectorName, thesisName, colture, coltureType, permissions) {
-    this.source = source
-    this.refStructureName = refStructureName
-    this.companyName = companyName
-    this.fieldName = fieldName
-    this.sectorName = sectorName
-    this.thesisName = thesisName
-    this.colture = colture
-    this.coltureType = coltureType
-    this.permissions = permissions
+  constructor(permit, table, id_keys) {
+    this.permit = permit,
+    this.table = table,
+    this.id_keys = id_keys
   }
-
 }

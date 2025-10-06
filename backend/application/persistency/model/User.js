@@ -1,46 +1,38 @@
 import { Model, DataTypes } from 'sequelize';
 
-class User extends Model {
-
-}
+class User extends Model {}
 
 function initUser(sequelize) {
-    User.init({
-        userid: {
-            type: DataTypes.INTEGER,
-            primaryKey: true
-        },
-        email: {
-            type: DataTypes.STRING,
-            allowNull: false
-        },
-        auth_type: {
-            type: DataTypes.STRING,
-            allowNull: false
-        },
-        affiliation: {
-          type: DataTypes.STRING,
-          allowNull: true
-        },
-        pwd: {
-            type: DataTypes.STRING,
-            allowNull: true
-        },
-        name: {
-            type: DataTypes.STRING,
-            allowNull: true
-        },
-        role: {
-            type: DataTypes.STRING,
-            allowNull: false
-        }
-    }, {
-        modelName: 'users',
-        timestamps: false,
-        sequelize
-    });
+  User.init({
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    email: {
+      type: DataTypes.TEXT,
+      allowNull: false
+    },
+    password: {
+      type: DataTypes.TEXT,
+      allowNull: false
+    },
+    name: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    role: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    }
+  }, {
+    tableName: 'users', 
+    modelName: 'User',  
+    timestamps: false,  
+    sequelize
+  });
 
-    return User;
+  return User;
 }
 
 export default initUser;
