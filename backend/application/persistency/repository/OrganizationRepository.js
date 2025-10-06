@@ -6,13 +6,10 @@ class OrganizationRepository {
 
     async createOrganization(organization_name) {
         try {
-            const maxId = await this.Organization.max('id') || 0;
-            const organizationCreated = this.Organization.build({
-                id: maxId + 1,
-                organization_name: organization_name
+            const organizationCreated = await this.Organization.create({
+            organization_name
             });
-
-            return await organizationCreated.save();
+            return organizationCreated;
         } catch (error) {
             throw new Error(`Error creating new organization caused by: ${error.message}`);
         }

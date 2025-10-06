@@ -8,14 +8,16 @@ function initOrganization(sequelize) {
     Organization.init({
         id: {
             type: DataTypes.INTEGER,
-            primaryKey: true
+            primaryKey: true,
+            autoIncrement: true
         },
         organization_name: {
             type: DataTypes.STRING,
             allowNull: false
         }
     }, {
-        modelName: 'organizations',
+        modelName: 'Organization',
+        tableName: 'organizations',
         timestamps: false,
         sequelize
     });

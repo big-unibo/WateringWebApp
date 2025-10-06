@@ -8,7 +8,8 @@ function initCompany(sequelize) {
     Company.init({
         id: {
             type: DataTypes.INTEGER,
-            primaryKey: true
+            primaryKey: true,
+            autoIncrement: true
         },
         company_name: {
             type: DataTypes.STRING,

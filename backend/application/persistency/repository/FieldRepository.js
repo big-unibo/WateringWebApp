@@ -18,23 +18,20 @@ class FieldRepository {
         Field.belongsTo(Company, {foreignKey: 'company_id'});
     }
 
-    async createField(field_name, company_id, location){
+    async createField(field_name, company_id, location) {
         try {
             const company = await this.Company.findByPk(company_id);
             if (!company) {
-                throw new Error(`Company with ID ${company_id} does not exist.`);
+            throw new Error(`Company with ID ${company_id} does not exist.`);
             }
 
-            const maxId = await this.Field.max('id') || 0;
-
-            const FieldCreated = this.Field.build({
-                id: maxId + 1,
-                field_name: field_name,
-                company_id: company_id,
-                location: location
+            const fieldCreated = await this.Field.create({
+            field_name,
+            company_id,
+            location
             });
 
-            return await FieldCreated.save();
+            return fieldCreated;
         } catch (error) {
             throw new Error(`Error creating new field caused by: ${error.message}`);
         }

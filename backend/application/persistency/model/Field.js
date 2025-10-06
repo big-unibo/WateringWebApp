@@ -8,7 +8,8 @@ function initField(sequelize) {
     Field.init({
         id: {
             type: DataTypes.INTEGER,
-            primaryKey: true
+            primaryKey: true,
+            autoIncrement: true
         },
         field_name: {
             type: DataTypes.STRING,
