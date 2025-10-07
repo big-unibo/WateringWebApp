@@ -1,28 +1,19 @@
-export class Thesis {
+export class CreateThesisDto {
     /**
-     * @param {string} source - source
-     * @param {string} refStructureName - Reference structure name
-     * @param {string} companyName - Company name
-     * @param {string} fieldName - Field name
-     * @param {string} sectorName - Sector name
-     * @param {string} thesisName - Plant row
-     * @param {number} dripperPosition - Dripper position
+     * @param {string} thesisName - Name of the thesis
+     * @param {number} sectorId - Id of the sector the thesis is applied to
+     * @param {number} weight - Weight of the thesis in the sector
+     * @param {Date} validFrom - start of validty period for the thesis (optional)
      */
     constructor(
-        source,
-        refStructureName,
-        companyName,
-        fieldName,
-        sectorName,
-        thesisName,
-        dripperPosition
+            thesisName, 
+            sectorId, 
+            weight,
+            validFrom
     ) {
-        this.source = source
-        this.refStructureName = refStructureName
-        this.companyName = companyName
-        this.fieldName = fieldName
-        this.sectorName = sectorName
-        this.thesisName = thesisName
-        this.dripperPosition = dripperPosition
+        this.thesisName = thesisName;
+        this.sectorId = sectorId;
+        this.weight = weight;
+        this.validFrom = validFrom;
     }
 }

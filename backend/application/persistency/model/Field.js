@@ -16,10 +16,10 @@ function initField(sequelize) {
             allowNull: false,
             field: "field_name"
         },
-        companyName: {
+        companyId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            field: "company_name"
+            field: "company_id"
         },
         location: {
             type: DataTypes.GEOMETRY,

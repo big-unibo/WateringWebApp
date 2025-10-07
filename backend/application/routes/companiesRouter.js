@@ -1,6 +1,7 @@
 import { Router } from 'express';
+import { CreateCompanyDto } from '../dtos/companyDto.js';
 
-const createCompanyRouter = ({ companyService, userService, authenticationService, authorizationService }) => {
+const companiesRouter = ({ companyService, userService, authenticationService, authorizationService }) => {
     const router = Router();
 
     /**
@@ -49,7 +50,7 @@ const createCompanyRouter = ({ companyService, userService, authenticationServic
 
         try {
             const user = await userService.findUser(requestUserData.userid);
-            if (!(await authorizationService.isUserAuthorized(user.userid, 'create', 'companies')))
+            if (!(await authorizationService.isUserAuthorized(user.id, 'create', 'companies')))
                 return res.status(401).json({ message: 'Unauthorized request' });
 
             if (!req.body || req.body === '')
@@ -62,7 +63,7 @@ const createCompanyRouter = ({ companyService, userService, authenticationServic
 
             const organizationId = parseInt(organizationRaw);
             const companyName = req.body.companyName;
-            const company = new CompanyDto(companyName,organizationId);
+            const company = new CreateCompanyDto(companyName,organizationId);
 
             await companyService.createCompany(company);
             return res.status(200).json({ message: `Company created with success` });
@@ -75,4 +76,4 @@ const createCompanyRouter = ({ companyService, userService, authenticationServic
     return router;
 };
 
-export default createCompanyRouter;
+export default companiesRouter;

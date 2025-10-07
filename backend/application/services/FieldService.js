@@ -10,9 +10,9 @@ import { OptStateDto } from "../dtos/optStateDto.js";
 import initMatrixProfile from '../persistency/model/MatrixProfile.js';
 import initMatrixField from '../persistency/model/MatrixField.js';
 import initTranscodingField from '../persistency/model/TranscodingField.js';
-import initWateringThesis from '../persistency/model/WateringThesis.js';
+import initWateringThesis from '../persistency/model/Thesis.js';
 import initWateringAlgorithmParams from '../persistency/model/WateringAlgorithmParams.js';
-import initWateringSector from '../persistency/model/WateringSector.js';
+import initWateringSector from '../persistency/model/Sector.js';
 import initField from '../persistency/model/Field.js';
 import initCompany from '../persistency/model/Company.js'
 import CompanyRepository from '../persistency/repository/CompanyRepository.js';
@@ -25,19 +25,24 @@ const MONTH_TO_SECONDS = MINUTE_TO_SECONDS * 60 * 24 * 30
 
 class FieldService {
 
-    constructor(sequelize) {
-        this.dataInterpolatedRepository = new DataInterpolatedRepository(sequelize);
-        this.deltaRepository = new DeltaRepository(sequelize);
-        this.humidityBinsRepository = new HumidityBinsRepository(sequelize);
-        this.viewDataOriginalRepository = new ViewDataOriginalRepository(sequelize);
-        this.wateringAggregateRepository = new WateringAggregateRepository(sequelize);
-        this.companyRepository = new CompanyRepository(initOrganization(sequelize));
-        this.fieldRepository = new FieldRepository(initField(sequelize), initCompany(sequelize), initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), initWateringThesis(sequelize), initWateringSector(sequelize), initWateringAlgorithmParams(sequelize), sequelize);
+    // constructor(sequelize) {
+    //     this.dataInterpolatedRepository = new DataInterpolatedRepository(sequelize);
+    //     this.deltaRepository = new DeltaRepository(sequelize);
+    //     this.humidityBinsRepository = new HumidityBinsRepository(sequelize);
+    //     this.viewDataOriginalRepository = new ViewDataOriginalRepository(sequelize);
+    //     this.wateringAggregateRepository = new WateringAggregateRepository(sequelize);
+    //     this.companyRepository = new CompanyRepository(initOrganization(sequelize));
+    //     this.fieldRepository = new FieldRepository(initField(sequelize), initCompany(sequelize), initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), initWateringThesis(sequelize), initWateringSector(sequelize), initWateringAlgorithmParams(sequelize), sequelize);
+    // }
+
+    constructor(fieldRepository, companyRepository){
+        this.fieldRepository = fieldRepository;
+        this.companyRepository = companyRepository;
     }
 
     async createField(field){ 
         try {
-            await this.FieldRepository.createField(field.fieldName, field.companyId, field.location);
+            await this.fieldRepository.createField(field.fieldName, field.companyId, field.location);
         } catch (error) {
             console.error(`Error creating field ${field.fieldName}: ${error.message}`);
             throw error;
@@ -46,7 +51,7 @@ class FieldService {
 
     async createSector(sector) {
         try {
-            const result = await this.FieldRepository.createSector({
+            const result = await this.fieldRepository.createSector({
                 sectorName: sector.sectorName,
                 fieldId: sector.fieldId,
                 culture: sector.culture,
@@ -66,6 +71,31 @@ class FieldService {
         }
     }
 
+    async getSectorOwner(sectorId){
+        const result = await this.fieldRepository.getSectorDetails(sectorId);
+
+        if (!result || !result.field || !result.field.company) {
+            throw new Error(`Company not found for sector ${sectorId}`);
+        }
+
+        return dtoConverter.convertCompany(result.field.company); 
+    }
+
+    async createThesis(thesis) {
+        const newThesisId = await this.fieldRepository.createThesis(thesis.thesisName);
+        if(!newThesisId){
+            throw Error("Impossible to create thesis")
+        }
+        await this.fieldRepository.assignThesisToSector(newThesisId, thesis.sectorId, thesis.weight , thesis.validFrom || Math.floor(Date.now()/1000));
+    }
+
+    async getFieldOwner(fieldId){
+        const result = await this.fieldRepository.getFieldDetails(fieldId);
+        if (!result ||  !result.company) {
+            throw new Error(`Company not found for field ${fieldId}`);
+        }
+        return dtoConverter.convertCompany(result.company);
+    }
 
     async getInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {
         const result = await this.dataInterpolatedRepository.findInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo);
@@ -134,10 +164,6 @@ class FieldService {
             return dtoConverter.convertOptimalStateWrapper(result)
         }
         return new OptStateDto(refStructureName, companyName, fieldName, sectorName, thesisName, undefined, undefined, undefined, [])
-    }
-
-    async createMonitoringThesis(thesis, timestampFrom) {
-        await this.fieldRepository.createThesis(thesis, timestampFrom || Math.floor(Date.now()/1000))
     }
 
     async updateWateringSectorDetails(sectorDetails, timestampFrom) {

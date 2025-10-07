@@ -1,4 +1,4 @@
-export class WateringSector {
+export class Sector {
   /**
    * @param {string} sectorName - Name of the sector
    * @param {number} fieldId - Id of the field this sector belongs to

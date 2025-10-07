@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { UserTokenRequest, UserTokenResponse } from '../dtos/authenticationDto.js';
 import { RegisterUsersDto, RegisterUserDto } from '../dtos/registerUsersDto.js';
-import { UserGrantsDto } from '../dtos/userGrantsDto.js';
 
 const usersRouter = ({ userService, authenticationService, authorizationService }) => {
         const router = Router();
@@ -34,7 +33,8 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      *                 error:
      *                   type: string
      */
-    usersRouter.post("/login", async  (req, res) => {
+    
+    router.post("/login", async  (req, res) => {
         try {
             if(!req.body && req.body === '')
                 throw new Error('Body is empty');
@@ -78,7 +78,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      *                 error:
      *                   type: string
      */
-    usersRouter.get("/validateToken", async (req, res) => {
+    router.get("/validateToken", async (req, res) => {
         try {
             const bearerHeader = req.headers.authorization;
             const requestUserData = await authenticationService.validateJwt(bearerHeader);
@@ -132,7 +132,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      *                 message:
      *                   type: string
      */
-    usersRouter.get('/userFields', async (req, res) => {
+    router.get('/userFields', async (req, res) => {
         let requestUserData;
 
         try {
@@ -176,7 +176,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      *       '500':
      *         description: Error on creating user.
      */
-    usersRouter.post('/registerUsers', async (req, res) => {
+    router.post('/registerUsers', async (req, res) => {
         let requestUserData
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -234,33 +234,35 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      *       '500':
      *         description: Error on creating grants.
      */
-    usersRouter.put('/createGrants', async (req, res) => {
-        let requestUserData
-        try {
-            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-        } catch (error) {
-            return res.status(403).json({message: 'Authentication failed'});
-        }
+    // router.put('/createGrants', async (req, res) => {
+    //     let requestUserData
+    //     try {
+    //         requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+    //     } catch (error) {
+    //         return res.status(403).json({message: 'Authentication failed'});
+    //     }
 
-        try {
-            const user = await userService.findUser(requestUserData.userid)
-            if (!(await authorizationService.isUserAuthorized(user.userid, 'partner')))
-                return res.status(401).json({message: 'Unauthorized request'});
+    //     try {
+    //         const user = await userService.findUser(requestUserData.userid)
+    //         if (!(await authorizationService.isUserAuthorized(user.userid, 'partner')))
+    //             return res.status(401).json({message: 'Unauthorized request'});
 
-            if(!req.body && req.body === '')
-                throw new Error('Body is empty');
+    //         if(!req.body && req.body === '')
+    //             throw new Error('Body is empty');
 
-            const requestDto = new UserGrantsDto(req.body.grants)
+    //         const requestDto = new UserGrantsDto(req.body.grants)
         
-            await userService.createUserGrants(user.role, user.affiliation, requestDto)
+    //         await userService.createUserGrants(user.role, user.affiliation, requestDto)
 
-            return res.status(200).json({message: `Grants created with success`})
-        } catch (error) {
-            console.log(`Fail creating user grant caused by: ${error.message}`)
-            return res.status(500).json({error: "Error on creating user grant"})
-        }
+    //         return res.status(200).json({message: `Grants created with success`})
+    //     } catch (error) {
+    //         console.log(`Fail creating user grant caused by: ${error.message}`)
+    //         return res.status(500).json({error: "Error on creating user grant"})
+    //     }
 
-    });
+    // });
+
+    return router;
 }
 
 export default usersRouter;

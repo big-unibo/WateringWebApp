@@ -1,11 +1,20 @@
 import { InterpolatedDataResponse, InterpolatedDataValue, InterpolatedMeanMeasureData, InterpolatedMeasureData } from "../dtos/interpolatedDataDto.js";
 import { ColtureDto } from "../dtos/coltureDto.js";
+import { CompanyDto } from "../dtos/companyDto.js";
 import { DataResponse, DataValue, MeasureData, HumidityBinMeasureData } from '../dtos/dataDto.js';
 import { WateringScheduleResponse, WateringEventDto } from "../dtos/wateringScheduleDto.js";
 import { MatrixData, MatrixDistanceData, OptStateDto } from "../dtos/optStateDto.js";
 import { WateringAdviceDto } from "../dtos/wateringAdviceDto.js";
 
 class DtoConverter {
+
+    convertCompany(company){
+        return new CompanyDto(
+            company.id,
+            company.companyName,
+            company.organizationId
+        );
+    }
 
     convertDataInterpolatedMeanWrapper(refStructureName, companyName, fieldName, sectorName, thesisName, wrappers) {
         const measures = wrappers.map(wrapper => new InterpolatedMeanMeasureData(wrapper.zz, wrapper.yy, wrapper.xx, wrapper.std, wrapper.mean));

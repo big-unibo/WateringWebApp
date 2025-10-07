@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-const organizationRouter = (organizationService, authenticationService, userService, authorizationService) => {
+const organizationsRouter = ({organizationService, authenticationService, userService, authorizationService}) => {
     const router = Router();
 
     /**
@@ -62,4 +62,4 @@ const organizationRouter = (organizationService, authenticationService, userServ
     return router;
 };
 
-export default organizationRouter;
+export default organizationsRouter;

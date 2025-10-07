@@ -2,21 +2,30 @@ import { QueryTypes, Op } from 'sequelize'
 
 class FieldRepository {
 
-    constructor(Field, Company,  MatrixProfile, MatrixField, TranscodingField, WateringThesis, WateringSector, WateringAlgorithmParams, sequelize) {
-        this.Field = Field
-        this.Company = Company
-        this.MatrixProfile = MatrixProfile
-        this.MatrixField = MatrixField
-        this.TranscodingField = TranscodingField
-        this.WateringThesis = WateringThesis
-        this.WateringSector = WateringSector
-        this.WateringAlgorithmParams = WateringAlgorithmParams
-        this.sequelize = sequelize
-
-        MatrixField.hasMany(MatrixProfile, { foreignKey: 'matrixId' });
-        MatrixProfile.belongsTo(MatrixField, { foreignKey: 'matrixId' });
-        Field.belongsTo(Company, {foreignKey: 'company_id'});
+    constructor(models, sequelize){
+        this.Company = models.Company;
+        this.Field = models.Field;
+        this.Sector = models.Sector;
+        this.Thesis = models.Thesis;
+        this.ThesisInSector = models.ThesisInSector;
+        this.sequelize = sequelize;
     }
+
+    // constructor(Field, Company,  MatrixProfile, MatrixField, TranscodingField, WateringThesis, WateringSector, WateringAlgorithmParams, sequelize) {
+    //     this.Field = Field
+    //     this.Company = Company
+    //     this.MatrixProfile = MatrixProfile
+    //     this.MatrixField = MatrixField
+    //     this.TranscodingField = TranscodingField
+    //     this.WateringThesis = WateringThesis
+    //     this.WateringSector = WateringSector
+    //     this.WateringAlgorithmParams = WateringAlgorithmParams
+    //     this.sequelize = sequelize
+
+    //     MatrixField.hasMany(MatrixProfile, { foreignKey: 'matrixId' });
+    //     MatrixProfile.belongsTo(MatrixField, { foreignKey: 'matrixId' });
+    //     Field.belongsTo(Company, {foreignKey: 'company_id'});
+    // }
 
     async createField(fieldName, companyId, location) {
         try {
@@ -73,22 +82,58 @@ class FieldRepository {
         }
     }
 
-    // async createThesis(thesis, timestampFrom){
-    //     this.WateringThesis.removeAttribute('id')
-    //     const model = this.WateringThesis.build({
-    //         source: thesis.source,
-    //         refStructureName: thesis.refStructureName,
-    //         companyName: thesis.companyName,
-    //         fieldName: thesis.fieldName,
-    //         sectorName: thesis.sectorName,
-    //         thesisName: thesis.thesisName,
-    //         dripper_pos: thesis.dripperPosition,
-    //         weight: thesis.weight,
-    //         timestamp_from: timestampFrom,
-    //         timestamp_to: null
-    //     })
-    //     return await model.save()
-    // }
+    async getSectorDetails(sectorId){
+        const sector = await this.Sector.findByPk(sectorId, {
+            include: [
+            {
+                model: this.Field,
+                as: 'field',  
+                include: [
+                {
+                    model: this.Company,
+                    as: 'company'  
+                }
+                ]
+            }
+            ]
+        });
+
+        if (!sector) throw new Error(`Sector with id ${sectorId} not found`);
+        return sector;
+    }
+
+    async getFieldDetails(fieldId){
+        const field = await this.Field.findByPk(fieldId, {
+            include: [
+            {
+                model: this.Company,
+                as: 'company'  
+            }
+            ]
+        });
+
+        if (!field) throw new Error(`Field with id ${fieldId} not found`);
+        return field;
+    }
+
+
+    async createThesis(thesisName) {
+        try {
+            const thesis = await this.Thesis.create({ thesisName });
+            return thesis.id;
+        } catch (error) {
+            throw new Error(`Error creating thesis: ${error.message}`);
+        }
+    }
+
+    async assignThesisToSector(thesisId, sectorId, weight, validFrom) {
+        return  await this.ThesisInSector.create({
+            thesisId,
+            sectorId,
+            weight,
+            validFrom,
+        });
+    }
 
     // async updateWateringSectorDetails(sectorDetails, timestampFrom){
     //     this.WateringSector.removeAttribute('id')

@@ -2,15 +2,15 @@ import { QueryTypes, Op } from "sequelize";
 
 class UserRepository {
 
-     constructor(models, sequelize) {
+    constructor(models, sequelize) {
         this.User = models.User;
         this.Permit = models.Permit;
         this.TranscodingField = models.TranscodingField;
         this.sequelize = sequelize;
     }
     
-    async findUser(userid) {
-        return await this.User.findOne({ where: { id: userid } });
+    async findUser(userId) {
+        return await this.User.findOne({ where: { id: userId } });
     }
 
     async findUserByEmail(email) {
@@ -23,7 +23,7 @@ class UserRepository {
                 include: {
                     model: this.Permit,
                     as: 'permits',       
-                    attributes: ['table', 'permit', 'id_key'] 
+                    attributes: ['table', 'permit', 'idKey'] 
                 }
             });
 

@@ -1,11 +1,4 @@
 import express from 'express';
-import userRouter from './routes/usersRouter.js';
-import fieldRouter from './routes/fieldsRouter.js';
-import fieldChartRouter from './routes/fieldChartsRouter.js';
-import wateringScheduleRouter from './routes/wateringScheduleRouter.js';
-import logsRouter from './routes/logsRouter.js'
-import organizationRouter from './routes/organizationRouter.js';
-import companyRouter from './routes/companyRouter.js';
 import swaggerJsdoc from 'swagger-jsdoc';
 import { serve, setup } from 'swagger-ui-express';
 
@@ -23,6 +16,11 @@ import CompanyRepository from './persistency/repository/CompanyRepository.js';
 import CompanyService from './services/CompanyService.js';
 import AuthorizationService from './services/AuthorizationService.js';
 import usersRouter from './routes/usersRouter.js';
+import companiesRouter from './routes/companiesRouter.js';
+import organizationsRouter from './routes/organizationsRouter.js';
+import FieldRepository from './persistency/repository/FieldRepository.js';
+import FieldService from './services/FieldService.js';
+import fieldsRouter from './routes/fieldsRouter.js';
 
 dotenv.config();
 
@@ -61,30 +59,38 @@ const models = initModels(sequelize);
 const userRepository = new UserRepository(models,sequelize);
 const organizationRepository = new OrganizationRepository(models,sequelize);
 const companyRepository = new CompanyRepository(models,sequelize);
+const fieldRepository = new FieldRepository(models,sequelize);
 
 const organizationService = new OrganizationService(organizationRepository);
 const userService = new UserService(userRepository);
 const authenticationService = new AuthenticationService(userService);
 const companyService = new CompanyService(companyRepository);
-const authorizationService = new AuthorizationService(userService);
+const fieldService = new FieldService(fieldRepository,companyRepository);
+const authorizationService = new AuthorizationService(userService, fieldService);
 
 app.use(express.json());
 app.use(cors());
 app.use(
   '/', 
-  usersRouter(userService,authenticationService,authorizationService)
+  usersRouter({ userService, authenticationService, authorizationService })
 );
-app.use('/fields', fieldRouter)
-app.use('/fieldCharts', fieldChartRouter);
-app.use('/wateringSchedule', wateringScheduleRouter);
-app.use('/logs', logsRouter)
+
 app.use(
-    '/organizations',
-    organizationRouter(organizationService, authenticationService, userService, authorizationService)
+  '/fields',
+  fieldsRouter({ userService, authenticationService, authorizationService, fieldService })
 );
+
 app.use(
-  '/companies'
-  , companyRouter(companyService,userService,authenticationService,authorizationService)
+  '/organizations',
+  organizationsRouter({ organizationService, authenticationService, userService, authorizationService })
+);
+
+app.use(
+  '/companies',
+  companiesRouter({ companyService, userService, authenticationService, authorizationService })
 );
 
 app.use('/api-docs', serve, setup(swaggerSpec));
+// app.use('/fieldCharts', fieldChartRouter);
+// app.use('/wateringSchedule', wateringScheduleRouter);
+// app.use('/logs', logsRouter)

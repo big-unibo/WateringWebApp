@@ -5,7 +5,7 @@ class Sector extends Model {
 }
 
 function initSector(sequelize) {
-    Field.init({
+    Sector.init({
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -65,8 +65,9 @@ function initSector(sequelize) {
         }
 
     }, {
-        modelName : 'sectors',
-        timestamps : false,
+        modelName:'Sector',
+        tableName: 'sectors',
+        timestamps: false,
         sequelize
     });
 

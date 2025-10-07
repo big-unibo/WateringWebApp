@@ -17,13 +17,15 @@ function initPermit(sequelize) {
       type: DataTypes.TEXT,
       allowNull: false
     },
-    id_key: {
+    idKey: {
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: true,
+      field: "id_key"
     },
-    user_id: {
+    userId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      field: "user_id"
     }
   }, {
     tableName: 'permits',     

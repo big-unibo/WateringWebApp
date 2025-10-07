@@ -1,23 +1,16 @@
-import UserRepository from '../persistency/repository/UserRepository.js';
-import FieldRepository from '../persistency/repository/FieldRepository.js';
-import { UserFieldPermission, UserFieldPermissions } from '../persistency/querywrappers/UserPermissionsWrapper.js';
-import initUser from '../persistency/model/User.js';
-import initFieldsPermit from '../persistency/model/Permit.js';
-import initTranscodingField from '../persistency/model/TranscodingField.js';
-import initMatrixProfile from '../persistency/model/MatrixProfile.js';
-import initMatrixField from '../persistency/model/MatrixField.js';
-import initField from '../persistency/model/Field.js';
-import initCompany from '../persistency/model/Company.js';
+import { UserPermitDto, UserPermitsDto } from "../dtos/userPermitsDto.js";
+
 
 class UserService {
 
-    constructor(sequelize) {
-        this.userRepository = new UserRepository(initUser(sequelize), initFieldsPermit(sequelize), initTranscodingField(sequelize), sequelize);
+    constructor(userRepository) {
+        this.userRepository = userRepository;
+        //this.userRepository = new UserRepository(initUser(sequelize), initFieldsPermit(sequelize), initTranscodingField(sequelize), sequelize);
         //this.fieldRepository = new FieldRepository(initField(sequelize), initCompany(sequelize),initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), undefined, undefined, undefined, sequelize)
     }
 
-    async findUser(user) {
-        return await this.userRepository.findUser(user);
+    async findUser(userId) {
+        return await this.userRepository.findUser(userId);
     }
 
     async findUserByEmail(email) {
@@ -75,10 +68,10 @@ class UserService {
     //     }
     // }
 
-    async findUserPermissions(userid){
+    async findUserPermissions(userId){
         try{
-            const user = (await this.findUser(userid)).dataValues;
-            const results = await this.userRepository.findUserPermissions(user);
+            const user = (await this.findUser(userId)).dataValues;
+            const results = await this.userRepository.findUserPermissions(user.id);
 
             if (results) {
                 return await this.computeUserPermissions(user, results)
@@ -100,23 +93,23 @@ class UserService {
                     map.set(key, {
                         permit: p.permit,
                         table: p.table,
-                        id_keys: p.id_key !== null ? new Set([p.id_key]) : new Set()
+                        idKeys: p.idKey !== null ? new Set([p.idKey]) : new Set()
                     });
                 } else {
                     if (p.id_key !== null) {
-                        map.get(key).id_keys.add(p.id_key); 
+                        map.get(key).id_keys.add(p.idKey); 
                     }
                 }
             });
 
-            // Trasforma la mappa in array di UserPermission convertendo i Set in array
-            const permissions = Array.from(map.values()).map(p => new UserPermission(
+            //Decidi dove mettere sta logica se qua o nel Dto
+            const permits = Array.from(map.values()).map(p => new UserPermitDto(
                 p.permit,
                 p.table,
-                Array.from(p.id_keys)
+                Array.from(p.idKeys)
             ));
 
-            return new UserPermissions(user.id, user.role, permissions);
+            return new UserPermitsDto(user.id, user.role,permits)
         } catch (error) {
             console.error('Error computing user permissions:', error);
             throw error;
