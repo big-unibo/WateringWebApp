@@ -17,4 +17,94 @@ components:
         organizationId:
           type: integer
           description: ID of the organization to associate
-    
+
+    GeoPoint:
+      type: object
+      description: Geographical location in GeoJSON Point format
+      required:
+        - type
+        - coordinates
+      properties:
+        type:
+          type: string
+          enum: [Point]
+          description: Must be "Point" for GeoJSON
+        coordinates:
+          type: array
+          description: [longitude, latitude]
+          items:
+            type: number
+          minItems: 2
+          maxItems: 2
+
+    CreateField:
+      type: object
+      required:
+        - fieldName
+        - companyId
+      properties:
+        fieldName:
+          type: string
+          description: Name of the field
+        companyId:
+          type: integer
+          description: ID of the company to associate the field with
+        location:
+          $ref: '#/components/schemas/GeoPoint'
+
+    CreateSector:
+      type: object
+      required:
+        - sectorName
+        - fieldId
+        - culture
+      properties:
+        sectorName:
+          type: string
+          description: Name of the sector
+        fieldId:
+          type: integer
+          description: ID of the field to associate the sector with
+        culture:
+          type: string
+          description: Main culture of the sector
+        cultureType:
+          type: string
+          description: Optional type of the culture
+        location:
+          $ref: '#/components/schemas/GeoPoint'
+        prescriptive:
+          type: boolean
+          description: Optional prescriptive flag
+        advice:
+          type: boolean
+          description: Optional advice flag
+        dripperCapacity:
+          type: number
+          format: double
+          description: Optional dripper capacity 
+          example: 1.5
+        sprinklerCapacity:
+          type: number
+          format: double
+          description: Optional sprinkler capacity 
+        dripperScalingFactor:
+          type: number
+          format: double
+          description: Optional dripper scaling factor
+
+    CreateThesis:
+      type: object
+      required:
+        - thesisName
+        - sectorId
+      properties:
+        thesisName:
+          type: string
+          description: Name of the thesis
+        sectorId:
+          type: integer
+          description: ID of the sector to assign the thesis to
+        validFrom: 
+          type: number
+          description: Optional timestamp of thesis validity start
