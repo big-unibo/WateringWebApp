@@ -298,7 +298,6 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
 	 *             required:
 	 *               - sectorId
 	 *               - thesisName
-	 *               - weight
 	 *             properties:
 	 *               sectorId:
 	 *                 type: integer
@@ -306,12 +305,8 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
 	 *               thesisName:
 	 *                 type: string
 	 *                 description: Name of the thesis
-	 *               weight:
-	 *                 type: number
-	 *                 description: Weight of the thesis in the sector
 	 *               validFrom:
-	 *                 type: string
-	 *                 format: date-time
+	 *                 type: number
 	 *                 description: Optional start date of the thesis validity
 	 *     responses:
 	 *       '200':

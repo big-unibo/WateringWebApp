@@ -21,6 +21,9 @@ import organizationsRouter from './routes/organizationsRouter.js';
 import FieldRepository from './persistency/repository/FieldRepository.js';
 import FieldService from './services/FieldService.js';
 import fieldsRouter from './routes/fieldsRouter.js';
+import devicesRouter from './routes/devicesRouter.js';
+import DeviceService from './services/DeviceService.js';
+import DeviceRepository from './persistency/repository/DeviceRepository.js';
 
 dotenv.config();
 
@@ -60,6 +63,7 @@ const userRepository = new UserRepository(models,sequelize);
 const organizationRepository = new OrganizationRepository(models,sequelize);
 const companyRepository = new CompanyRepository(models,sequelize);
 const fieldRepository = new FieldRepository(models,sequelize);
+const deviceRepository = new DeviceRepository(models,sequelize);
 
 const organizationService = new OrganizationService(organizationRepository);
 const userService = new UserService(userRepository);
@@ -67,6 +71,7 @@ const authenticationService = new AuthenticationService(userService);
 const companyService = new CompanyService(companyRepository);
 const fieldService = new FieldService(fieldRepository,companyRepository);
 const authorizationService = new AuthorizationService(userService, fieldService);
+const deviceService = new DeviceService(deviceRepository);
 
 app.use(express.json());
 app.use(cors());
@@ -89,6 +94,11 @@ app.use(
   '/companies',
   companiesRouter({ companyService, userService, authenticationService, authorizationService })
 );
+
+app.use(
+	'/devices',
+	devicesRouter({authenticationService,authorizationService,deviceService})
+)
 
 app.use('/api-docs', serve, setup(swaggerSpec));
 // app.use('/fieldCharts', fieldChartRouter);

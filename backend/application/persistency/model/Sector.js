@@ -12,7 +12,7 @@ function initSector(sequelize) {
             autoIncrement: true
         },
         sectorName: {
-            type: DataTypes.STRING,
+            type: DataTypes.TEXT,
             allowNull: false,
             field: "sector_name"
         },
@@ -22,11 +22,11 @@ function initSector(sequelize) {
             field: "field_id"
         },
         culture: {
-            type: DataTypes.STRING,
+            type: DataTypes.TEXT,
             allowNull: false
         },
         cultureType: {
-            type: DataTypes.STRING,
+            type: DataTypes.TEXT,
             allowNull: true,
             field: "culture_type"
         },

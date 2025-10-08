@@ -12,7 +12,7 @@ function initCompany(sequelize) {
             autoIncrement: true
         },
         companyName: {
-            type: DataTypes.STRING,
+            type: DataTypes.TEXT,
             allowNull: false,
             field: "company_name"
         },

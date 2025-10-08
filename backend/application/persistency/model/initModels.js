@@ -10,6 +10,8 @@ import initWateringAlgorithmParams from './WateringAlgorithmParams.js';
 import initPermit from './Permit.js';
 import initSector from './Sector.js';
 import initThesisInSector from './ThesisInsector.js';
+import initDevice from './Device.js';
+import initSignal from './Signal.js';
 
 
 export default function initModels(sequelize) {
@@ -20,12 +22,14 @@ export default function initModels(sequelize) {
     Field: initField(sequelize),
     Sector: initSector(sequelize),
     Thesis: initThesis(sequelize),
+    Permit: initPermit(sequelize),
     ThesisInSector: initThesisInSector(sequelize),
+    Device: initDevice(sequelize),
+    Signal : initSignal(sequelize),
     MatrixProfile: initMatrixProfile(sequelize),
     MatrixField: initMatrixField(sequelize),
     TranscodingField: initTranscodingField(sequelize),
     WateringAlgorithmParams: initWateringAlgorithmParams(sequelize),
-    Permit: initPermit(sequelize),
   };
 
   models.Company.belongsTo(models.Organization, { foreignKey: "organization_id" });
@@ -48,6 +52,9 @@ export default function initModels(sequelize) {
 
   models.Sector.hasMany(models.ThesisInSector, { foreignKey: "sector_id" });
   models.ThesisInSector.belongsTo(models.Sector, { foreignKey: "sector_id" });
+
+  models.Device.hasMany(models.Signal, {foreignKey: "device_id", as: "signals"});
+  models.Signal.belongsTo(models.Device, {foreignKey: "device_id", as: "device"});
 
   //[TO DO]: il resto....
   return models;

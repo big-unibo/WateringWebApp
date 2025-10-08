@@ -12,7 +12,7 @@ function initThesis(sequelize) {
             autoIncrement: true
         },
         thesisName: {
-            type: DataTypes.STRING,
+            type: DataTypes.TEXT,
             allowNull: false,
             field: "thesis_name"
         },

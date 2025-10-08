@@ -12,7 +12,7 @@ function initField(sequelize) {
             autoIncrement: true
         },
         fieldName: {
-            type: DataTypes.STRING,
+            type: DataTypes.TEXT,
             allowNull: false,
             field: "field_name"
         },

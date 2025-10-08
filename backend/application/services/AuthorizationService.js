@@ -36,6 +36,19 @@ class AuthorizationService {
 	//   return false;
 	// }
 
+	async isUserAuthorized(userId, permit, table) {
+		const userPermissions = await this.userService.findUserPermissions(userId);
+		if (!userPermissions || !Array.isArray(userPermissions.permits)) return false;
+		if (userPermissions.role === 'admin') return true;
+
+		return userPermissions.permits.some(p =>
+			p.permit === permit &&
+			p.table === table
+		);
+	}
+
+
+
 	async isUserAuthorizedById(userId, permit, table, idKey) {
 		const userPermissions = await this.userService.findUserPermissions(userId);
 		if (!userPermissions || !Array.isArray(userPermissions.permits)) return false;

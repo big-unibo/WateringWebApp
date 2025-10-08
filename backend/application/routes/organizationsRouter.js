@@ -43,7 +43,7 @@ const organizationsRouter = ({organizationService, authenticationService, userSe
         try {
             const user = await userService.findUser(requestUserData.userid);
 
-            const authorized = await authorizationService.isUserAuthorized(user.userid, 'create', 'organizations');
+            const authorized = await authorizationService.isUserAuthorized(user.id, 'create', 'organizations');
             if (!authorized) return res.status(401).json({ message: 'Unauthorized request' });
 
             if (!req.body || !req.body.organizationName) {
