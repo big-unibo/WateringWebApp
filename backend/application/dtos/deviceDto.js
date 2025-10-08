@@ -1,4 +1,13 @@
-export class CreateSignalDto {
+export class CreateSignal {
+    /**
+     * @param {number} typeId - ID of the signal type (required)
+     * @param {string} description - Optional description
+     * @param {number} x - X coordinate (required)
+     * @param {number} y - Y coordinate (required)
+     * @param {number} z - Z coordinate (required)
+     * @param {boolean} virtual - Indicates if the signal is virtual
+     * @param {string} unit - Measurement unit
+     */
     constructor({typeId, description, x, y, z, virtual, unit }) {
         this.typeId = typeId;
         this.description = description;
@@ -10,12 +19,19 @@ export class CreateSignalDto {
     }
 }
 
-export class CreateDeviceDto {
+export class CreateDevice {
+    /**
+     * @param {string} type - Device type
+     * @param {number} providerId - Provider ID
+     * @param {string} description - Optional description
+     * @param {Object} location - GeoJSON Point
+     * @param {Array<CreateSignal>} signals - Array of signals
+     */
     constructor( {type, providerId, description, location, signals = [] }) {
         this.type = type;
         this.providerId = providerId;
         this.description = description;
         this.location = location;
-        this.signals = signals.map(sig => new CreateSignalDto(sig));
+        this.signals = signals.map(sig => new CreateSignal(sig));
     }
 }

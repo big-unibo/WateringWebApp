@@ -7,7 +7,7 @@ class OrganizationRepository {
     async createOrganization(organizationName) {
         try {
             const organizationCreated = await this.Organization.create({
-            organizationName
+                organizationName
             });
             return organizationCreated;
         } catch (error) {

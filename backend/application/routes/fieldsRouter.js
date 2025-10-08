@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 import { OptStateDto } from '../dtos/optStateDto.js';
-import { CreateThesisDto } from '../dtos/thesisDto.js';
+import { Thesis } from '../dtos/thesisDto.js';
 import { Field } from '../dtos/fieldDto.js';
 import { Sector } from '../dtos/sectorDto.js';
 
@@ -144,70 +144,29 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
      * @swagger
      * /fields/createSector:
      *   post:
+     *     security:
+     *       - bearerAuth: []
      *     summary: Create a new sector
      *     description: Creates a new sector associated with a field. Requires authentication and proper authorization.
      *     tags:
      *       - Fields
-     *     security:
-     *       - bearerAuth: []
      *     requestBody:
      *       required: true
      *       content:
      *         application/json:
      *           schema:
-     *             type: object
-     *             required:
-     *               - sectorName
-     *               - fieldId
-     *               - culture
-     *             properties:
-     *               sectorName:
-     *                 type: string
-     *                 description: Name of the sector
-     *               fieldId:
-     *                 type: integer
-     *                 description: ID of the field to associate the sector with
-     *               culture:
-     *                 type: string
-     *                 description: Main culture of the sector
-     *               cultureType:
-     *                 type: string
-     *                 description: Optional type of the culture
-     *               location:
-	 *                 type: object
-	 *                 description: Geographical location of the field (GeoJSON Point)
-	 *                 properties:
-	 *                   type:
-	 *                     type: string
-	 *                     enum: [Point]
-	 *                   coordinates:
-	 *                     type: array
-	 *                     description: [longitude, latitude]
-	 *                     items:
-	 *                       type: number
-	 *                     minItems: 2
-	 *                     maxItems: 2
-     *               prescriptive:
-     *                 type: boolean
-     *                 description: Optional prescriptive flag
-     *               advice:
-     *                 type: boolean
-     *                 description: Optional advice flag
-     *               dripperCapacity:
-     *                 type: number
-     *                 format: double
-     *                 description: Optional dripper capacity
-     *               sprinklerCapacity:
-     *                 type: number
-     *                 format: double
-     *                 description: Optional sprinkler capacity
-     *               dripperScalingFactor:
-     *                 type: number
-     *                 format: double
-     *                 description: Optional dripper scaling factor
+     *             $ref: '#/components/schemas/CreateSectorDto'
      *     responses:
      *       200:
      *         description: Sector created successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: "Sector created with success"
      *       400:
      *         description: Bad request (missing or invalid fieldId, sectorName, or culture)
      *       401:
@@ -223,6 +182,62 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
      *       type: http
      *       scheme: bearer
      *       bearerFormat: JWT
+     *
+     *   schemas:
+     *     GeoPoint:
+     *       type: object
+     *       properties:
+     *         type:
+     *           type: string
+     *           enum: [Point]
+     *         coordinates:
+     *           type: array
+     *           items:
+     *             type: number
+     *           minItems: 2
+     *           maxItems: 2
+     *           description: [longitude, latitude]
+     *
+     *     CreateSectorDto:
+     *       type: object
+     *       required:
+     *         - sectorName
+     *         - fieldId
+     *         - culture
+     *       properties:
+     *         sectorName:
+     *           type: string
+     *           description: Name of the sector
+     *         fieldId:
+     *           type: integer
+     *           description: ID of the field to associate the sector with
+     *         culture:
+     *           type: string
+     *           description: Main culture of the sector
+     *         cultureType:
+     *           type: string
+     *           description: Optional type of the culture
+     *         location:
+     *           $ref: '#/components/schemas/GeoPoint'
+     *           description: Geographical location of the sector
+     *         prescriptive:
+     *           type: boolean
+     *           description: Optional prescriptive flag
+     *         advice:
+     *           type: boolean
+     *           description: Optional advice flag
+     *         dripperCapacity:
+     *           type: number
+     *           format: double
+     *           description: Optional dripper capacity
+     *         sprinklerCapacity:
+     *           type: number
+     *           format: double
+     *           description: Optional sprinkler capacity
+     *         dripperScalingFactor:
+     *           type: number
+     *           format: double
+     *           description: Optional dripper scaling factor
      */
     router.post('/createSector', async( req, res) => {
       let requestUserData
@@ -281,84 +296,89 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
 
 
 	/**
-	 * @swagger
-	 * /fields/createThesis:
-	 *   post:
-	 *     security:
-	 *       - bearerAuth: []
-	 *     summary: Create a thesis and associate it with a sector
-	 *     tags: [Fields]
-	 *     description: Endpoint to create a new thesis and link it to a sector.
-	 *     requestBody:
-	 *       required: true
-	 *       content:
-	 *         application/json:
-	 *           schema:
-	 *             type: object
-	 *             required:
-	 *               - sectorId
-	 *               - thesisName
-	 *             properties:
-	 *               sectorId:
-	 *                 type: integer
-	 *                 description: Id of the sector for the thesis
-	 *               thesisName:
-	 *                 type: string
-	 *                 description: Name of the thesis
-	 *               validFrom:
-	 *                 type: number
-	 *                 description: Optional start date of the thesis validity
-	 *     responses:
-	 *       '200':
-	 *         description: Thesis created with success
-	 *       '400':
-	 *         description: Invalid request
-	 *       '401':
-	 *         description: Unauthorized request
-	 *       '403':
-	 *         description: Authentication failed
-	 *       '500':
-	 *         description: Error on creating thesis
-	 */
-    router.post('/createThesis', async (req,res) =>{
-        let requestUserData
-        try {
-          	requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-        } catch (error) {
-          	return res.status(403).json({message: 'Authentication failed'});
-        }
+   * @swagger
+   * /fields/createThesis:
+   *   post:
+   *     security:
+   *       - bearerAuth: []
+   *     summary: Create a thesis and associate it with a sector
+   *     tags: [Fields]
+   *     description: Endpoint to create a new thesis and link it to a sector.
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/CreateThesisDto'
+   *     responses:
+   *       200:
+   *         description: Thesis created with success
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 message:
+   *                   type: string
+   *                   example: "Thesis created with success"
+   *       400:
+   *         description: Invalid request
+   *       401:
+   *         description: Unauthorized request
+   *       403:
+   *         description: Authentication failed
+   *       500:
+   *         description: Error on creating thesis
+   *
+   * components:
+   *   schemas:
+   *     CreateThesisDto:
+   *       type: object
+   *       required:
+   *         - sectorId
+   *         - thesisName
+   *       properties:
+   *         sectorId:
+   *           type: integer
+   *           description: Id of the sector for the thesis
+   *         thesisName:
+   *           type: string
+   *           description: Name of the thesis
+   *         validFrom:
+   *           type: number
+   *           description: Optional start date of the thesis validity
+   */
+	router.post('/createThesis', async (req,res) => {
+		let requestUserData;
+		try {
+			requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+		} catch (error) {
+			return res.status(403).json({message: 'Authentication failed'});
+		}
 
-        if(!req.body || req.body === '')
-        	return res.status(400).json({message: 'Invalid request'});
+		if(!req.body || req.body === '')
+			return res.status(400).json({message: 'Invalid request'});
 
-		const {
-			sectorId,
-			thesisName,
-			weight,
-			validFrom,
-		} = req.body;
-
-		if (!sectorId || isNaN(parseInt(sectorId ))) {
-            return res.status(400).json({ message: 'sectorId is required and must be a number' });
-        }
-        const sectorIdParsed = parseInt(sectorId);
-		const thesis = new CreateThesisDto(thesisName,sectorIdParsed,weight,validFrom);
+		const { sectorId, thesisName, validFrom } = req.body;
+		if (!sectorId || isNaN(parseInt(sectorId))) {
+			return res.status(400).json({ message: 'sectorId is required and must be a number' });
+		}
+		const sectorIdParsed = parseInt(sectorId);
+		const thesis = new Thesis(thesisName, sectorIdParsed, validFrom);
 
 		try {
 			const user = await userService.findUser(requestUserData.userid);
 			if (!(await authorizationService.isUserAuthorizedInSector(user.id, 'update', sectorIdParsed)))
-			if (!(await authorizationService.isUserAuthorizedInSector(1, 'update', sectorIdParsed)))
 				return res.status(401).json({message: 'Unauthorized request'});
 
 			await fieldService.createThesis(thesis);
-		
-			return res.status(200).json({message: 'Thesis created with success'})
-        } catch (error) {
-          console.log(`Fail creating thesis caused by: ${error.message}`)
-          return res.status(500).json({error: "Error on creating thesis"})
-        }
-    })
-   
+			return res.status(200).json({message: 'Thesis created with success'});
+		} catch (error) {
+			console.log(`Fail creating thesis caused by: ${error.message}`);
+			return res.status(500).json({error: "Error on creating thesis"});
+		}
+	});
+
     // router.post('/createMonitoringThesis', async (req, res) => {
     //     let requestUserData
     //     try {

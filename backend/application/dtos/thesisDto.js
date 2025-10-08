@@ -1,4 +1,4 @@
-export class CreateThesisDto {
+export class Thesis {
     /**
      * @param {string} thesisName - Name of the thesis
      * @param {number} sectorId - Id of the sector the thesis is applied to

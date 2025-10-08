@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { CreateDeviceDto, CreateSignalDto } from '../dtos/deviceDto.js'; 
+import { CreateDevice, CreateSignal } from '../dtos/deviceDto.js'; 
 
 
 const devicesRouter = ({authenticationService, authorizationService, deviceService}) => {
@@ -107,26 +107,26 @@ const devicesRouter = ({authenticationService, authorizationService, deviceServi
      */
     router.post('/createDevice', async (req, res) => {
         let requestUserData;
-        // try {
-        //     requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-        // } catch (error) {
-        //     return res.status(403).json({ message: 'Authentication failed' });
-        // }
         try {
-            //const user = await userService.findUser(requestUserData.userid);
-            //if (!(await authorizationService.isUserAuthorizedBy(user.id, 'create', 'devices')))
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(403).json({ message: 'Authentication failed' });
+        }
+        try {
+            const user = await userService.findUser(requestUserData.userid);
+            if (!(await authorizationService.isUserAuthorizedBy(user.id, 'create', 'devices')))
             if (!(await authorizationService.isUserAuthorized(1, 'create', 'devices')))
                 return res.status(401).json({ message: 'Unauthorized request' });
 
             if (!req.body || req.body === '')
                 throw new Error('Body is empty');
 
-            const device = new CreateDeviceDto({
+            const device = new CreateDevice({
                 type: req.body.type,
                 providerId: req.body.providerId,
                 description: req.body.description,
                 location: req.body.location,
-                signals: (req.body.signals || []).map(sig => new CreateSignalDto(sig))
+                signals: (req.body.signals || []).map(sig => new CreateSignal(sig))
             });
 
             await deviceService.createDevice(device);
