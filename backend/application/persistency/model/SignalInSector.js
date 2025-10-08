@@ -1,9 +1,9 @@
 import { Model, DataTypes } from 'sequelize';
 
-class SectorSignal extends Model {}
+class SignalInSector extends Model {}
 
-function initSectorSignal(sequelize) {
-    SectorSignal.init({
+function initSignalInSector(sequelize) {
+    SignalInSector.init({
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -32,12 +32,12 @@ function initSectorSignal(sequelize) {
         },
     }, {
         tableName : 'sectors_signals',
-        modelName : 'SectorSignal',
+        modelName : 'SignalInSector',
         timestamps : false,
         sequelize
     });
 
-    return SectorSignal;
+    return SignalInSector;
 }
 
-export default initSectorSignal;
+export default initSignalInSector;

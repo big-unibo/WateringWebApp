@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { Device, Signal } from '../dtos/deviceDto.js'; 
+import { Device, Signal, SignalAssociation, SignalTargetType } from '../dtos/deviceDto.js'; 
 
 
 const devicesRouter = ({authenticationService, authorizationService, deviceService}) => {
@@ -101,6 +101,59 @@ const devicesRouter = ({authenticationService, authorizationService, deviceServi
             return res.status(500).json({ message: "Error on creating device" });
         }
     });
+
+    router.post('/associateSignal', async (req, res) => {
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(403).json({ message: 'Authentication failed' });
+        }
+
+        try {
+            const user = await userService.findUser(requestUserData.userid);
+
+            if (!req.body || req.body === '')
+                throw new Error('Body is empty');
+
+            const body = req.body;
+            let signalAssociation;
+
+            if ('fieldId' in body) {
+                //[TO DO] Autorizzare..
+                signalAssociation = new SignalAssociation({
+                    signalId: body.signalId,
+                    targetType: SignalTargetType.FIELD,
+                    targetId: body.fieldId,
+                    validFrom: body.validFrom
+                });
+            } else if ('sectorId' in body) {
+                //[TO DO] Autorizzare..
+                signalAssociation = new SignalAssociation({
+                    signalId: body.signalId,
+                    targetType: SignalTargetType.SECTOR,
+                    targetId: body.sectorId,
+                    validFrom: body.validFrom
+                });
+            } else if ('thesisId' in body) {
+                signalAssociation = new SignalAssociation({
+                    signalId: body.signalId,
+                    targetType: SignalTargetType.THESIS,
+                    targetId: body.fieldId,
+                    validFrom: body.validFrom
+                });
+            } else {
+                return res.status(400).json({ message: 'Invalid association object' });
+            }
+
+            await deviceService.associateSignal(signalAssociation);
+            return res.status(200).json({ message: 'Signal successfully associated' });
+        } catch (error) {
+            console.log(`Failed associating signal caused by: ${error.message}`);
+            return res.status(500).json({ message: "Error associating signal" });
+        }
+    });
+
 
     return router;
 }

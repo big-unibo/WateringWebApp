@@ -1,6 +1,7 @@
 class DeviceService {
-    constructor(deviceRepository){
+    constructor(deviceRepository, signalRepository){
         this.deviceRepository = deviceRepository;
+        this.signalRepository = signalRepository
     }
 
     async createDevice(device){
@@ -11,8 +12,6 @@ class DeviceService {
                 description: device.description,
                 location: device.location
             });
-
-            console.log(createdDeviceId);
 
             if(!createdDeviceId){
                 throw new Error("Device creation failed");
@@ -36,6 +35,37 @@ class DeviceService {
         }catch(error){
             console.error(`Error creating Device with signals: ${error.message}`);
             throw error;
+        }
+    }
+
+    async associateSignal(signalAssociation){
+        try{
+            switch(signalAssociation.targetType) {
+                case SignalTargetType.FIELD:
+                    await this.signalRepository.associateSignalToField({
+                        signalId: signalAssociation.signalId,
+                        fieldId: signalAssociation.targetId,
+                        validFrom: signalAssociation.validFrom ?? Date.now() / 1000,
+                    });
+                    break;
+                case SignalTargetType.SECTOR:
+                    await this.signalRepository.associateSignalToSector({
+                        signalId: signalAssociation.signalId,
+                        sectorId: signalAssociation.targetId,
+                        validFrom: signalAssociation.validFrom ?? Date.now() / 1000,
+                    });
+                    break;
+                case SignalTargetType.THESIS:
+                    await this.signalRepository.associateSignalToThesis({
+                        signalId: signalAssociation.signalId,
+                        thesisId: signalAssociation.targetId,
+                        validFrom: signalAssociation.validFrom ?? Date.now() / 1000,
+                    });
+                break;
+            }
+        }catch(error){
+            console.error(`Error associating signal: ${error.message}`);
+            throw error; 
         }
     }
 }

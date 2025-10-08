@@ -35,3 +35,26 @@ export class Device {
         this.signals = signals.map(sig => new Signal(sig));
     }
 }
+
+
+export class SignalAssociation {
+    /**
+     * 
+     * @param {number} signalId - SignalId
+     * @param {SignalTargetType} targetType - Type of the target of the signal association
+     * @param {number} targetId - Id of the association target
+     * @param {validFrom} - Start of the validy period of the association
+     */
+    constructor({ signalId, targetType, targetId, validFrom }) {
+    this.signalId = signalId;
+    this.targetType = targetType; 
+    this.targetId = targetId;
+    this.validFrom = validFrom;
+  }
+}
+
+export const SignalTargetType = {
+  FIELD: "field",
+  SECTOR: "sector",
+  THESIS: "thesis"
+};

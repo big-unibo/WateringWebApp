@@ -12,6 +12,9 @@ import initSector from './Sector.js';
 import initThesisInSector from './ThesisInsector.js';
 import initDevice from './Device.js';
 import initSignal from './Signal.js';
+import initSignalInField from './SignalInField.js';
+import initSignalInSector from './SignalInSector.js';
+import initSignalInThesis from './SignalInThesis.js';
 
 
 export default function initModels(sequelize) {
@@ -26,6 +29,9 @@ export default function initModels(sequelize) {
     ThesisInSector: initThesisInSector(sequelize),
     Device: initDevice(sequelize),
     Signal : initSignal(sequelize),
+    SignalInField : initSignalInField(sequelize),
+    SignalInSector : initSignalInSector(sequelize),
+    SignalInThesis : initSignalInThesis(sequelize),
     MatrixProfile: initMatrixProfile(sequelize),
     MatrixField: initMatrixField(sequelize),
     TranscodingField: initTranscodingField(sequelize),
@@ -55,6 +61,23 @@ export default function initModels(sequelize) {
 
   models.Device.hasMany(models.Signal, {foreignKey: "device_id", as: "signals"});
   models.Signal.belongsTo(models.Device, {foreignKey: "device_id", as: "device"});
+
+  models.Field.hasMany(models.SignalInField, {foreignKey: "field_id", as: "signals"});
+  models.SignalInField.belongsTo(models.Field, {foreignKey: "field_id", as: "field"});
+  models.Signal.hasMany(models.SignalInField, {foreignKey: "signal_id", as: "signalsInFields"});
+  models.SignalInField.belongsTo(models.Signal, {foreignKey: "signal_id", as: "signal"});
+
+  models.Sector.hasMany(models.SignalInSector, {foreignKey: "sector_id", as: "signals"});
+  models.SignalInSector.belongsTo(models.Sector, {foreignKey: "sector_id", as: "sector"});
+  models.Signal.hasMany(models.SignalInSector, {foreignKey: "signal_id", as: "signalsInSectors"});
+  models.SignalInSector.belongsTo(models.Signal, {foreignKey: "signal_id", as: "signal"});
+
+  models.Thesis.hasMany(models.SignalInThesis, {foreignKey: "thesis_id", as: "signals"});
+  models.SignalInThesis.belongsTo(models.Thesis, {foreignKey: "thesis_id", as: "thesis"});
+  models.Signal.hasMany(models.SignalInThesis, {foreignKey: "signal_id", as: "signalsInTheses"});
+  models.SignalInThesis.belongsTo(models.Signal, {foreignKey: "signal_id", as: "signal"});
+
+
 
   //[TO DO]: il resto....
   return models;

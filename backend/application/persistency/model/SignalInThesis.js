@@ -1,9 +1,9 @@
 import { Model, DataTypes } from 'sequelize';
 
-class FieldSignal extends Model {}
+class SignalInThesis extends Model {}
 
-function initFieldSignal(sequelize) {
-    FieldSignal.init({
+function initSignalInThesis(sequelize) {
+    SignalInThesis.init({
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -15,9 +15,9 @@ function initFieldSignal(sequelize) {
             field: "field_id",
             allowNull: false
         },
-        signalId: {
+        thesisId: {
             type: DataTypes.INTEGER,
-            field: "signal_id",
+            field: "thesis_id",
             allowNull: false
         },
         validFrom: {
@@ -31,13 +31,13 @@ function initFieldSignal(sequelize) {
             field: "valid_to"
         },
     }, {
-        tableName : 'fields_signals',
-        modelName : 'FieldSignal',
+        tableName : 'theses_signals',
+        modelName : 'SignalInThesis',
         timestamps : false,
         sequelize
     });
 
-    return FieldSignal;
+    return SignalInThesis;
 }
 
-export default initFieldSignal;
+export default initSignalInThesis;
