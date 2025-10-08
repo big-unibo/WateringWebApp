@@ -107,4 +107,59 @@ components:
           description: ID of the sector to assign the thesis to
         validFrom: 
           type: number
-          description: Optional timestamp of thesis validity start
+          description: Optional timestamp of thesis validity start (Seconds elapsed since 01/01/1970 - 00:00 )
+
+    CreateSignal:
+      type: object
+      required:
+        - typeId
+        - x
+        - y
+        - z
+      properties:
+        typeId:
+          type: integer
+          description: Signal type ID
+        description:
+          type: string
+          description: Optional signal description
+        x:
+          type: number
+          description: Signal x coordinate
+        y:
+          type: number
+          description: Signal y coordinate
+        z:
+          type: number
+          description: Signal z coordinate
+        virtual:
+          type: boolean
+          descriptio: True if it's virtual
+        unit:
+          type: string
+          description: Measurement unit of the signal 
+
+    CreateDevice:
+      type: object
+      required:
+        - type
+        - providerId
+        - location
+        - signals
+      properties:
+        type:
+          type: string
+          description: Type of the device
+        providerId:
+          type: integer
+          description: ID of the provider
+        description:
+          type: string
+          description: Optional description of the device
+        location:
+          $ref: '#/components/schemas/GeoPoint'
+        signals:
+          type: array
+          description: Array of signals associated with the device
+          items:
+            $ref: '#/components/schemas/CreateSignal'

@@ -1,4 +1,4 @@
-export class CreateSignal {
+export class Signal {
     /**
      * @param {number} typeId - ID of the signal type (required)
      * @param {string} description - Optional description
@@ -19,19 +19,19 @@ export class CreateSignal {
     }
 }
 
-export class CreateDevice {
+export class Device {
     /**
      * @param {string} type - Device type
      * @param {number} providerId - Provider ID
      * @param {string} description - Optional description
      * @param {Object} location - GeoJSON Point
-     * @param {Array<CreateSignal>} signals - Array of signals
+     * @param {Array<Signal>} signals - Array of signals
      */
     constructor( {type, providerId, description, location, signals = [] }) {
         this.type = type;
         this.providerId = providerId;
         this.description = description;
         this.location = location;
-        this.signals = signals.map(sig => new CreateSignal(sig));
+        this.signals = signals.map(sig => new Signal(sig));
     }
 }
