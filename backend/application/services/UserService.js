@@ -68,22 +68,22 @@ class UserService {
     //     }
     // }
 
-    async findUserPermissions(userId){
+    async findUserPermits(userId){
         try{
             const user = (await this.findUser(userId)).dataValues;
-            const results = await this.userRepository.findUserPermissions(user.id);
+            const results = await this.userRepository.findUserPermits(user.id);
 
             if (results) {
-                return await this.computeUserPermissions(user, results)
+                return await this.computeUserPermits(user, results)
             } else {
                 throw new Error("Invalid result")
             }
         }catch{
-            console.error(`Errore while searching for user ${grant.source} permssions: `,error);
+            console.error(`Errore while searching for user ${grant.source} permits: `,error);
         }
     }
 
-    async computeUserPermissions(user, results) {
+    async computeUserPermtis(user, results) {
         try {
             const map = new Map();
 
@@ -111,7 +111,7 @@ class UserService {
 
             return new UserPermitsDto(user.id, user.role,permits)
         } catch (error) {
-            console.error('Error computing user permissions:', error);
+            console.error('Error computing user permits:', error);
             throw error;
         }
     }

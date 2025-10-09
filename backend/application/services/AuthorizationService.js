@@ -37,11 +37,11 @@ class AuthorizationService {
 	// }
 
 	async isUserAuthorized(userId, permit, table) {
-		const userPermissions = await this.userService.findUserPermissions(userId);
-		if (!userPermissions || !Array.isArray(userPermissions.permits)) return false;
-		if (userPermissions.role === 'admin') return true;
+		const userPermits = await this.userService.findUserPermits(userId);
+		if (!userPermits || !Array.isArray(userPermits.permits)) return false;
+		if (userPermits.role === 'admin') return true;
 
-		return userPermissions.permits.some(p =>
+		return userPermits.permits.some(p =>
 			p.permit === permit &&
 			p.table === table
 		);
@@ -50,11 +50,11 @@ class AuthorizationService {
 
 
 	async isUserAuthorizedById(userId, permit, table, idKey) {
-		const userPermissions = await this.userService.findUserPermissions(userId);
-		if (!userPermissions || !Array.isArray(userPermissions.permits)) return false;
-		if (userPermissions.role === 'admin') return true;
+		const userPermits = await this.userService.findUserPermits(userId);
+		if (!userPermits || !Array.isArray(userPermits.permits)) return false;
+		if (userPermits.role === 'admin') return true;
 
-		return userPermissions.permits.some(p =>
+		return userPermits.permits.some(p =>
 			p.permit === permit &&
 			p.table === table &&
 			p.idKeys.includes(idKey)

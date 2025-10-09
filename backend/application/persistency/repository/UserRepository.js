@@ -17,7 +17,7 @@ class UserRepository {
         return await this.User.findOne({ where: { email: email } });
     }
 
-    async findUserPermissions(userId) {
+    async findUserPermits(userId) {
         try {
             const user = await this.User.findByPk(userId, {
                 include: {
@@ -33,7 +33,7 @@ class UserRepository {
 
             return user.permits.map(p => p.dataValues); 
         } catch (error) {
-            console.error('Error searching for permissions: ', error);
+            console.error('Error searching for permits: ', error);
         }
     }
 
