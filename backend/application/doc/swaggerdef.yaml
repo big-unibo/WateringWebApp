@@ -88,10 +88,9 @@ components:
           type: number
           format: double
           description: Optional sprinkler capacity 
-        dripperScalingFactor:
-          type: number
-          format: double
-          description: Optional dripper scaling factor
+        doubleWing:
+          type: boolean
+          description: Optional double wing flag
 
     CreateThesis:
       type: object
@@ -138,6 +137,9 @@ components:
         unit:
           type: string
           description: Measurement unit of the signal 
+        idOnProvider:
+          type: string
+          description: Id on provider
 
     CreateDevice:
       type: object

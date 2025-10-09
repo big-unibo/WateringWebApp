@@ -58,10 +58,10 @@ function initSector(sequelize) {
             field : "sprinkler_capacity"
         },
 
-        dripperScalingFactor: {
-            type: DataTypes.DOUBLE,
+        doubleWing: {
+            type: DataTypes.BOOLEAN,
             allowNull: true,
-            field : "dripper_scaling_factor"
+            field : "double_wing"
         }
 
     }, {

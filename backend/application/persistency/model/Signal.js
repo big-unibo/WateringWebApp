@@ -58,6 +58,12 @@ function initSignal(sequelize) {
             allowNull: true,
             field: "unit"
         }, 
+
+        idOnProvider: {
+            type: DataTypes.TEXT,
+            allowNull: true,
+            field: "id_on_provider"
+        }, 
     }, {
         tableName : 'signals',
         modelName : 'Signal',

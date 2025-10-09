@@ -7,8 +7,9 @@ export class Signal {
      * @param {number} z - Z coordinate (required)
      * @param {boolean} virtual - Indicates if the signal is virtual
      * @param {string} unit - Measurement unit
+     * @param {string} idOnProvider 
      */
-    constructor({typeId, description, x, y, z, virtual, unit }) {
+    constructor({typeId, description, x, y, z, virtual, unit, idOnProvider }) {
         this.typeId = typeId;
         this.description = description;
         this.x = x;
@@ -16,6 +17,7 @@ export class Signal {
         this.z = z;
         this.virtual = virtual;
         this.unit = unit;
+        this.idOnProvider = idOnProvider;
     }
 }
 

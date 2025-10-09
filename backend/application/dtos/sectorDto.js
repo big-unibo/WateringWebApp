@@ -9,7 +9,7 @@ export class Sector {
    * @param {boolean} [advice] - Optional advice flag
    * @param {number} [dripperCapacity] - Optional dripper capacity
    * @param {number} [sprinklerCapacity] - Optional sprinkler capacity
-   * @param {number} [dripperScalingFactor] - Optional dripper scaling factor
+   * @param {boolean} [doubleWing] - Optional double wing flag
    */
   constructor(
     sectorName,
@@ -21,7 +21,7 @@ export class Sector {
     advice = null,
     dripperCapacity = null,
     sprinklerCapacity = null,
-    dripperScalingFactor = null
+    doubleWing = null
   ) {
     this.sectorName = sectorName;
     this.fieldId = fieldId;
@@ -32,6 +32,6 @@ export class Sector {
     this.advice = advice;
     this.dripperCapacity = dripperCapacity;
     this.sprinklerCapacity = sprinklerCapacity;
-    this.dripperScalingFactor = dripperScalingFactor;
+    this.doubleWing = doubleWing;
   }
 }

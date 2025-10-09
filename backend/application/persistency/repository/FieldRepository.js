@@ -56,7 +56,7 @@ class FieldRepository {
     advice = null,
     dripperCapacity = null,
     sprinklerCapacity = null,
-    dripperScalingFactor = null
+    doubleWing = null
     }) {
         try {
             const field = await this.Field.findByPk(fieldId);
@@ -73,7 +73,7 @@ class FieldRepository {
                 advice,
                 dripperCapacity,    
                 sprinklerCapacity,  
-                dripperScalingFactor 
+                doubleWing 
             });
 
             return sectorCreated;

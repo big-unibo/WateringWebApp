@@ -61,7 +61,7 @@ class FieldService {
                 advice: sector.advice,
                 dripperCapacity: sector.dripperCapacity,
                 sprinklerCapacity: sector.sprinklerCapacity,
-                dripperScalingFactor: sector.dripperScalingFactor
+                doubleWing: sector.doubleWing
             });
 
             return result;

@@ -205,7 +205,7 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
               advice,
               dripperCapacity,
               sprinklerCapacity,
-              dripperScalingFactor
+              doubleWing
           } = req.body;
 
           const sector = new Sector(
@@ -218,7 +218,7 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
               advice,
               dripperCapacity,
               sprinklerCapacity,
-              dripperScalingFactor
+              doubleWing
           );
 
           const result = await fieldService.createSector(sector);

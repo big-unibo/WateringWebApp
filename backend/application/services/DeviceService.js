@@ -27,6 +27,7 @@ class DeviceService {
                 z: sig.z,
                 virtual: sig.virtual,
                 unit: sig.unit,
+                idOnProvider: sig.idOnProvider,
                 deviceId: createdDeviceId
             }));
 
