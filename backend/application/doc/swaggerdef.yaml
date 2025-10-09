@@ -163,58 +163,30 @@ components:
           description: Array of signals associated with the device
           items:
             $ref: '#/components/schemas/CreateSignal'
-
-    SignalFieldAssociation:
-      type: object
-      required:
-        - signalId
-        - fieldId
-      properties:
-        signalId:
-          type: integer
-          description: Id of the signal
-        fieldId:
-          type: integer
-          description: Id of the field
-        validFrom: 
-          type: number
-          description: Optional timestamp of association validity start (Seconds elapsed since 01/01/1970 - 00:00 )
     
-    SignalSectorAssociation:
+    SignalTargetType:
+      type: string
+      enum:
+        - field
+        - sector
+        - thesis
+
+    SignalAssignment:
       type: object
       required:
-        - signalId
-        - sectorId
+        - deviceId
+        - targetId
+        - targetType
       properties:
-        signalId:
+        deviceId:
           type: integer
-          description: Id of the signal
-        sectorId:
+          description: Device id of the signals getting assigned
+        targetId:
           type: integer
-          description: Id of the sector
+          description: Id of the signal target 
+        targetType:
+          $ref: '#/components/schemas/SignalTargetType'
+          description: Type of the target entity
         validFrom: 
           type: number
           description: Optional timestamp of association validity start (Seconds elapsed since 01/01/1970 - 00:00 )
-
-    SignalThesisAssociation:
-      type: object
-      required:
-        - signalId
-        - thesisId
-      properties:
-        signalId:
-          type: integer
-          description: Id of the signal
-        thesisId:
-          type: integer
-          description: Id of the thesis
-        validFrom: 
-          type: number
-          description: Optional timestamp of association validity start (Seconds elapsed since 01/01/1970 - 00:00 )
-
-    SignalAssociation:
-      oneOf:
-        - $ref: '#/components/schemas/SignalFieldAssociation'
-        - $ref: '#/components/schemas/SignalSectorAssociation'
-        - $ref: '#/components/schemas/SignalThesisAssociation'
-      description: Can be an association of a signal with a field, sector, or thesis

@@ -47,6 +47,16 @@ class DeviceRepository {
             throw new Error(`Error creating signals caused by: ${error.message}`);
         }
     }
+
+
+    async getSignals(deviceId) {
+        result = await this.Signal.findAll({
+            where : {
+                deviceId : deviceId
+            }
+        });
+        return result.map(r => r.get({ plain: true }));
+    }
 }
 
 export default DeviceRepository;

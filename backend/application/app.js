@@ -24,6 +24,7 @@ import fieldsRouter from './routes/fieldsRouter.js';
 import devicesRouter from './routes/devicesRouter.js';
 import DeviceService from './services/DeviceService.js';
 import DeviceRepository from './persistency/repository/DeviceRepository.js';
+import SignalRepository from './persistency/repository/SignalRepository.js';
 
 dotenv.config();
 
@@ -64,6 +65,7 @@ const organizationRepository = new OrganizationRepository(models,sequelize);
 const companyRepository = new CompanyRepository(models,sequelize);
 const fieldRepository = new FieldRepository(models,sequelize);
 const deviceRepository = new DeviceRepository(models,sequelize);
+const signalRepository = new SignalRepository(models,sequelize)
 
 const organizationService = new OrganizationService(organizationRepository);
 const userService = new UserService(userRepository);
@@ -71,7 +73,7 @@ const authenticationService = new AuthenticationService(userService);
 const companyService = new CompanyService(companyRepository);
 const fieldService = new FieldService(fieldRepository,companyRepository);
 const authorizationService = new AuthorizationService(userService, fieldService);
-const deviceService = new DeviceService(deviceRepository);
+const deviceService = new DeviceService(deviceRepository,signalRepository);
 
 app.use(express.json());
 app.use(cors());

@@ -102,7 +102,7 @@ const devicesRouter = ({authenticationService, authorizationService, deviceServi
         }
     });
 
-    router.post('/associateSignal', async (req, res) => {
+    router.post('/assign', async (req, res) => {
         let requestUserData;
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -115,42 +115,24 @@ const devicesRouter = ({authenticationService, authorizationService, deviceServi
 
             if (!req.body || req.body === '')
                 throw new Error('Body is empty');
+            
+            if (!Object.values(SignalTargetType).includes(body.targetType))
+                return res.status(400).json({ message: "Invalid targetType" });
 
+            //[TO DO]: Authorization
             const body = req.body;
-            let signalAssociation;
-
-            if ('fieldId' in body) {
-                //[TO DO] Autorizzare..
-                signalAssociation = new SignalAssociation({
-                    signalId: body.signalId,
-                    targetType: SignalTargetType.FIELD,
-                    targetId: body.fieldId,
+            const signalAssociation = new SignalAssociation({
+                    deviceId: body.deviceId,
+                    targetType: body.targetType,
+                    targetId: body.targetId,
                     validFrom: body.validFrom
                 });
-            } else if ('sectorId' in body) {
-                //[TO DO] Autorizzare..
-                signalAssociation = new SignalAssociation({
-                    signalId: body.signalId,
-                    targetType: SignalTargetType.SECTOR,
-                    targetId: body.sectorId,
-                    validFrom: body.validFrom
-                });
-            } else if ('thesisId' in body) {
-                signalAssociation = new SignalAssociation({
-                    signalId: body.signalId,
-                    targetType: SignalTargetType.THESIS,
-                    targetId: body.fieldId,
-                    validFrom: body.validFrom
-                });
-            } else {
-                return res.status(400).json({ message: 'Invalid association object' });
-            }
 
             await deviceService.associateSignal(signalAssociation);
             return res.status(200).json({ message: 'Signal successfully associated' });
         } catch (error) {
-            console.log(`Failed associating signal caused by: ${error.message}`);
-            return res.status(500).json({ message: "Error associating signal" });
+            console.log(`Failed assigning signal caused by: ${error.message}`);
+            return res.status(500).json({ message: "Error assigning signal" });
         }
     });
 

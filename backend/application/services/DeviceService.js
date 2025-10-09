@@ -1,3 +1,5 @@
+import { SignalTargetType } from "../dtos/deviceDto.js";
+
 class DeviceService {
     constructor(deviceRepository, signalRepository){
         this.deviceRepository = deviceRepository;
@@ -38,33 +40,49 @@ class DeviceService {
         }
     }
 
-    async associateSignal(signalAssociation){
-        try{
-            switch(signalAssociation.targetType) {
+    async assignSignal(signalAssociation) {
+        try {
+
+            if (!signalAssociation.deviceId) {
+                throw new Error("deviceId is required");
+            }
+            if (!signalAssociation.targetId) {
+                throw new Error("targetId is required");
+            }
+            if (!Object.values(SignalTargetType).includes(signalAssociation.targetType)) {
+                throw new Error(`Invalid targetType: ${signalAssociation.targetType}`);
+            }
+
+            const validFrom = signalAssociation.validFrom ?? Date.now();
+            const signals = await this.deviceRepository.getSignals(signalAssociation.targetId);
+
+        
+            for (const signal of signals) {
+                switch (signalAssociation.targetType) {
                 case SignalTargetType.FIELD:
-                    await this.signalRepository.associateSignalToField({
-                        signalId: signalAssociation.signalId,
+                    return await this.signalRepository.assignSignalToField({
+                        signalId: signal.id,
                         fieldId: signalAssociation.targetId,
-                        validFrom: signalAssociation.validFrom ?? Date.now() / 1000,
+                        validFrom
                     });
-                    break;
                 case SignalTargetType.SECTOR:
-                    await this.signalRepository.associateSignalToSector({
-                        signalId: signalAssociation.signalId,
+                    return await this.signalRepository.assignSignalToSector({
+                        signalId: signal.id,
                         sectorId: signalAssociation.targetId,
-                        validFrom: signalAssociation.validFrom ?? Date.now() / 1000,
+                        validFrom
                     });
-                    break;
                 case SignalTargetType.THESIS:
-                    await this.signalRepository.associateSignalToThesis({
-                        signalId: signalAssociation.signalId,
+                    return await this.signalRepository.assignSignalToThesis({
+                        signalId: signal.id,
                         thesisId: signalAssociation.targetId,
-                        validFrom: signalAssociation.validFrom ?? Date.now() / 1000,
+                        validFrom
                     });
-                break;
+                default:
+                    throw new Error("Unknown targetType");
+                }
             }
         }catch(error){
-            console.error(`Error associating signal: ${error.message}`);
+            console.error(`Error assigning signal: ${error.message}`);
             throw error; 
         }
     }
