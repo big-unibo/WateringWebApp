@@ -8,7 +8,7 @@ const devicesRouter = ({authenticationService, authorizationService, deviceServi
 
     /**
      * @swagger
-     * /devices/createDevice:
+     * /devices/create:
      *   post:
      *     security:
      *       - bearerAuth: []
@@ -70,7 +70,7 @@ const devicesRouter = ({authenticationService, authorizationService, deviceServi
      *                   type: string
      *
      */
-    router.post('/createDevice', async (req, res) => {
+    router.post('/create', async (req, res) => {
         let requestUserData;
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -102,6 +102,69 @@ const devicesRouter = ({authenticationService, authorizationService, deviceServi
         }
     });
 
+    /**
+ * @swagger
+ * /devices/assign:
+ *   post:
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Assigns all the signals of a device to a given field, sector, or thesis
+ *     description: Receives a signal association object and assigns the devices's signals to the specified target. Requires authentication and proper authorization.
+ *     tags:
+ *       - Devices
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/SignalAssociation'
+ *     responses:
+ *       200:
+ *         description: Signal successfully associated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Bad request – missing required fields or invalid targetType
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized – user is authenticated but not permitted to assign signals
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       403:
+ *         description: Forbidden – authentication failed due to invalid or missing JWT
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Internal server error – unexpected error while assigning sginals
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
     router.post('/assign', async (req, res) => {
         let requestUserData;
         try {

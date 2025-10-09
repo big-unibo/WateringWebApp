@@ -171,7 +171,7 @@ components:
         - sector
         - thesis
 
-    SignalAssignment:
+    SignalAssociation:
       type: object
       required:
         - deviceId
@@ -180,7 +180,7 @@ components:
       properties:
         deviceId:
           type: integer
-          description: Device id of the signals getting assigned
+          description: Device id of the signals getting associated
         targetId:
           type: integer
           description: Id of the signal target 

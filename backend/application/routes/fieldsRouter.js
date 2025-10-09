@@ -78,7 +78,7 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
      *                   example: "Error on creating field"
      *
     */
-    router.post('/createField', async (req, res) => {
+    router.post('/create', async (req, res) => {
         let requestUserData
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);

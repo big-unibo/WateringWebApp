@@ -6,7 +6,7 @@ const companiesRouter = ({ companyService, userService, authenticationService, a
 
     /**
      * @swagger
-     * /companies/createCompany:
+     * /companies/create:
      *   post:
      *     security:
      *       - bearerAuth: []
@@ -81,7 +81,7 @@ const companiesRouter = ({ companyService, userService, authenticationService, a
      */
 
 
-    router.post('/createCompany', async (req, res) => {
+    router.post('/create', async (req, res) => {
         let requestUserData;
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);

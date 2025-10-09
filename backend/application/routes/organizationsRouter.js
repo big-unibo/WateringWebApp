@@ -76,7 +76,7 @@ const organizationsRouter = ({organizationService, authenticationService, userSe
      *     $ref: '#/components/schemas/securityScheme'
      */
 
-    router.post('/createOrganization', async (req, res) => {
+    router.post('/create', async (req, res) => {
         let requestUserData;
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
