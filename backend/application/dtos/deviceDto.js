@@ -68,8 +68,32 @@ export class SignalUpdate{
      * @param {string} idOnProvider 
      */
     constructor({id,description, idOnProvider}){
-        this.id = id,
+        this.id = id;
         this.description = description;
         this.idOnProvider = idOnProvider;
+    }
+}
+
+export class Measurement{
+    /**
+     * @param {number} timestamp 
+     * @param {boolean} computed
+     * @param {number} value
+     */
+    constructor({timestamp, computed, value}){
+        this.timestamp = timestamp;
+        this.computed = computed;
+        this.value = value;
+    }
+}
+
+export class CreateMeasurmentDto{
+    /**
+     * @param {number} id - Id of the signal the measurements ar leated to
+     * @param {Array<Measurement>} measurements - Array of measurements 
+     */
+    constructor({id, measurements}){
+        this.id = id;
+        this.measurements = measurements;
     }
 }

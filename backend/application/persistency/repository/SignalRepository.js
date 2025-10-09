@@ -52,6 +52,16 @@ class SignalRepository {
            throw new Error(`Error while updating signal caused by: ${error.message}`);
         }
     }
+
+    async createMeasurments(signalId,measurements){
+        try{
+            const signal = await this.Signal.findByPk(signalId);
+            if(!signal) throw new Error("Signal not found");
+            await this.Measurement.bulkCreate(measurements);
+        }catch (error){
+           throw new Error(`Error while creating measuremnts: ${error.message}`);
+        }
+    }
 }
 
 export default SignalRepository;

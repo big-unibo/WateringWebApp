@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import { SignalUpdate } from '../dtos/deviceDto.js';
+import { CreateMeasurment, CreateMeasurmentDto, SignalUpdate } from '../dtos/deviceDto.js';
 
 
 const signalsRouter = ({authenticationService, authorizationService, signalService}) => {
@@ -83,11 +83,11 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
 
     router.put('/:signalId/update', async(req, res) => {
         let requestUserData;
-        // try{
-        //     requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-        // } catch (error) {
-        //     return res.status(403).json({message: 'Authentication failed'});
-        // }
+        try{
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(403).json({message: 'Authentication failed'});
+        }
 
         const signalId = req.params.signalId;
         if(!signalId)
@@ -112,6 +112,49 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
             return res.status(500).json({error: "Error on updating signal"})
         }
     });
+
+
+    router.post('/:signalId/addMeasurements', async(req, res) => {
+        let requestUserData;
+        // try{
+        //     requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        // } catch (error) {
+        //     return res.status(403).json({message: 'Authentication failed'});
+        // }
+
+        const signalId = req.params.signalId;
+        if(!signalId)
+            return res.status(400).json({message: 'Bad request, signalId not specified'});
+
+        const measurements = req.body;
+        const measurementsList = Array.isArray(measurements) ? measurements : [measurements];
+
+        if (!measurementsList.length) {
+            return res.status(400).json({ message: 'No measurements provided' });
+        }
+
+
+        try{
+            //[TO DO]: Authorization
+            const measurementsData = new CreateMeasurmentDto({
+                id : signalId,
+                measurements : measurementsList,
+            })
+
+            await signalService.addMeasurements(measurementsData);
+            return res.status(200).json({  
+                message: `Added ${measurementList.length} measurement(s) to signal ${signalId}`  
+            });
+        }
+        catch (error) {
+            console.error(`Fail adding measurements: ${error.message}`);
+            return res.status(500).json({ error: "Error while adding measurements" });
+        }
+    });
+
+
+    
+
     return router;
 }
 

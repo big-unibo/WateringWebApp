@@ -15,6 +15,8 @@ import initSignal from './Signal.js';
 import initSignalInField from './SignalInField.js';
 import initSignalInSector from './SignalInSector.js';
 import initSignalInThesis from './SignalInThesis.js';
+import { Measurement } from '../../dtos/deviceDto.js';
+import initMeasurement from './Measurement.js';
 
 
 export default function initModels(sequelize) {
@@ -32,6 +34,7 @@ export default function initModels(sequelize) {
     SignalInField : initSignalInField(sequelize),
     SignalInSector : initSignalInSector(sequelize),
     SignalInThesis : initSignalInThesis(sequelize),
+    Measurement : initMeasurement(sequelize),
     MatrixProfile: initMatrixProfile(sequelize),
     MatrixField: initMatrixField(sequelize),
     TranscodingField: initTranscodingField(sequelize),
@@ -76,6 +79,9 @@ export default function initModels(sequelize) {
   models.SignalInThesis.belongsTo(models.Thesis, {foreignKey: "thesis_id", as: "thesis"});
   models.Signal.hasMany(models.SignalInThesis, {foreignKey: "signal_id", as: "signalsInTheses"});
   models.SignalInThesis.belongsTo(models.Signal, {foreignKey: "signal_id", as: "signal"});
+
+  models.Signal.hasMany(models.Measurement, {foreignKey: "signal_id", as: "measurements"});
+  models.Measurement.belongsTo(models.Signal, {foreignKey: "signal_id", as: "signal"});
 
 
 
