@@ -45,8 +45,8 @@ export class SignalAssociation {
      * @param {number} targetId - Id of the association target
      * @param {validFrom} - Start of the validy period of the association
      */
-    constructor({ signalId, targetType, targetId, validFrom }) {
-    this.signalId = signalId;
+    constructor({ deviceId, targetType, targetId, validFrom }) {
+    this.deviceId = deviceId;
     this.targetType = targetType; 
     this.targetId = targetId;
     this.validFrom = validFrom;

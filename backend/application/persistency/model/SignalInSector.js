@@ -10,14 +10,14 @@ function initSignalInSector(sequelize) {
             autoIncrement: true,
             field: "id"
         },
-        fieldId: {
-            type: DataTypes.INTEGER,
-            field: "field_id",
-            allowNull: false
-        },
         signalId: {
             type: DataTypes.INTEGER,
             field: "signal_id",
+            allowNull: false
+        },
+        sectorId: {
+            type: DataTypes.INTEGER,
+            field: "sector_id",
             allowNull: false
         },
         validFrom: {

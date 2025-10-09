@@ -6,7 +6,7 @@ class SignalRepository {
         this.sequelize = sequelize;
     }
     
-    async associateSignalToField(associationData) {
+    async assignSignalToField(associationData) {
         try {
             await this.SignalInField.create({
                 signalId: associationData.signalId,
@@ -18,9 +18,9 @@ class SignalRepository {
         }
     }
 
-    async associateSignalToSector(associationData) {
+    async assignSignalToSector(associationData) {
         try {
-            await this.SignalInField.create({
+            await this.SignalInSector.create({
                 signalId: associationData.signalId,
                 sectorId: associationData.sectorId,
                 validFrom: associationData.validFrom
@@ -30,9 +30,9 @@ class SignalRepository {
         }
     }
 
-    async associateSignalToThesis(associationData) {
+    async assignSignalToThesis(associationData) {
         try {
-            await this.SignalInField.create({
+            await this.SignalInThesis.create({
                 signalId: associationData.signalId,
                 thesisId: associationData.thesisId,
                 validFrom: associationData.validFrom

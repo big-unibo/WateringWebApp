@@ -70,7 +70,11 @@ class UserService {
 
     async findUserPermits(userId){
         try{
-            const user = (await this.findUser(userId)).dataValues;
+            const user = (await this.findUser(userId));
+            if(!user){
+                throw new Error("User does not exist");
+            }
+
             const results = await this.userRepository.findUserPermits(user.id);
 
             if (results) {
@@ -78,12 +82,12 @@ class UserService {
             } else {
                 throw new Error("Invalid result")
             }
-        }catch{
-            console.error(`Errore while searching for user ${grant.source} permits: `,error);
+        }catch(error){
+            console.error(`Errore while searching for user permits: `,error);
         }
     }
 
-    async computeUserPermtis(user, results) {
+    async computeUserPermits(user, results) {
         try {
             const map = new Map();
 

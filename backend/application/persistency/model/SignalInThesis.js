@@ -10,9 +10,9 @@ function initSignalInThesis(sequelize) {
             autoIncrement: true,
             field: "id"
         },
-        fieldId: {
+        signalId: {
             type: DataTypes.INTEGER,
-            field: "field_id",
+            field: "signal_id",
             allowNull: false
         },
         thesisId: {

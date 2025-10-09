@@ -23,8 +23,6 @@ class DeviceRepository {
                 location: deviceData.location
             });
 
-            console.log(device);
-
             return device.id;
         } catch (error) {
             throw new Error(`Error creating new device caused by: ${error.message}`);
@@ -50,7 +48,7 @@ class DeviceRepository {
 
 
     async getSignals(deviceId) {
-        result = await this.Signal.findAll({
+        const result = await this.Signal.findAll({
             where : {
                 deviceId : deviceId
             }

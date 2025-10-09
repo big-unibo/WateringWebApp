@@ -54,7 +54,7 @@ class DeviceService {
             }
 
             const validFrom = signalAssociation.validFrom ?? Date.now();
-            const signals = await this.deviceRepository.getSignals(signalAssociation.targetId);
+            const signals = await this.deviceRepository.getSignals(signalAssociation.deviceId);
 
         
             for (const signal of signals) {

@@ -71,14 +71,14 @@ const devicesRouter = ({authenticationService, authorizationService, deviceServi
      *
      */
     router.post('/create', async (req, res) => {
-        // let requestUserData;
-        // try {
-        //     requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-        // } catch (error) {
-        //     return res.status(403).json({ message: 'Authentication failed' });
-        // }
+        let requestUserData;
         try {
-            // const user = await userService.findUser(requestUserData.userid);
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(403).json({ message: 'Authentication failed' });
+        }
+        try {
+            const user = await userService.findUser(requestUserData.userid);
             if (!(await authorizationService.isUserAuthorized(1, 'create', 'devices')))
                 return res.status(401).json({ message: 'Unauthorized request' });
 
@@ -167,23 +167,22 @@ const devicesRouter = ({authenticationService, authorizationService, deviceServi
  */
     router.post('/assign', async (req, res) => {
         let requestUserData;
-        try {
-            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-        } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
-        }
+        // try {
+        //     requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        // } catch (error) {
+        //     return res.status(403).json({ message: 'Authentication failed' });
+        // }
 
         try {
-            const user = await userService.findUser(requestUserData.userid);
+            // const user = await userService.findUser(requestUserData.userid);
 
             if (!req.body || req.body === '')
                 throw new Error('Body is empty');
             
-            if (!Object.values(SignalTargetType).includes(body.targetType))
-                return res.status(400).json({ message: "Invalid targetType" });
-
             //[TO DO]: Authorization
             const body = req.body;
+            if (!Object.values(SignalTargetType).includes(body.targetType))
+                return res.status(400).json({ message: "Invalid targetType" });
             const signalAssociation = new SignalAssociation({
                     deviceId: body.deviceId,
                     targetType: body.targetType,
@@ -191,7 +190,9 @@ const devicesRouter = ({authenticationService, authorizationService, deviceServi
                     validFrom: body.validFrom
                 });
 
-            await deviceService.associateSignal(signalAssociation);
+            console.log(signalAssociation);
+
+            await deviceService.assignSignal(signalAssociation);
             return res.status(200).json({ message: 'Signal successfully associated' });
         } catch (error) {
             console.log(`Failed assigning signal caused by: ${error.message}`);
