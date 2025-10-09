@@ -25,6 +25,8 @@ import devicesRouter from './routes/devicesRouter.js';
 import DeviceService from './services/DeviceService.js';
 import DeviceRepository from './persistency/repository/DeviceRepository.js';
 import SignalRepository from './persistency/repository/SignalRepository.js';
+import signalsRouter from './routes/signalsRouter.js';
+import SignalService from './services/SignalService.js';
 
 dotenv.config();
 
@@ -65,7 +67,7 @@ const organizationRepository = new OrganizationRepository(models,sequelize);
 const companyRepository = new CompanyRepository(models,sequelize);
 const fieldRepository = new FieldRepository(models,sequelize);
 const deviceRepository = new DeviceRepository(models,sequelize);
-const signalRepository = new SignalRepository(models,sequelize)
+const signalRepository = new SignalRepository(models,sequelize);
 
 const organizationService = new OrganizationService(organizationRepository);
 const userService = new UserService(userRepository);
@@ -74,7 +76,7 @@ const companyService = new CompanyService(companyRepository);
 const fieldService = new FieldService(fieldRepository,companyRepository);
 const authorizationService = new AuthorizationService(userService, fieldService);
 const deviceService = new DeviceService(deviceRepository,signalRepository);
-
+const signalService = new SignalService(signalRepository)
 app.use(express.json());
 app.use(cors());
 app.use(
@@ -102,7 +104,12 @@ app.use(
 	devicesRouter({authenticationService,authorizationService,deviceService})
 )
 
+app.use(
+  '/signals',
+  signalsRouter({authenticationService,authorizationService,signalService})
+)
+
 app.use('/api-docs', serve, setup(swaggerSpec));
-// app.use('/fieldCharts', fieldChartRouter);
+//app.use('/fieldCharts', fieldChartRouter);
 // app.use('/wateringSchedule', wateringScheduleRouter);
 // app.use('/logs', logsRouter)

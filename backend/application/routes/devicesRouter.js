@@ -189,7 +189,7 @@ const devicesRouter = ({authenticationService, authorizationService, deviceServi
                     validFrom: body.validFrom
                 });
 
-            await deviceService.assignSignal(signalAssociation);
+            await deviceService.assignSignals(signalAssociation);
             return res.status(200).json({ message: 'Signal successfully associated' });
         } catch (error) {
             console.log(`Failed assigning signal caused by: ${error.message}`);

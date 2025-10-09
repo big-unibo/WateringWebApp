@@ -1,5 +1,6 @@
 class SignalRepository {
     constructor(models, sequelize){
+        this.Signal = models.Signal;
         this.SignalInField = models.SignalInField;
         this.SignalInSector = models.SignalInSector;
         this.SignalInThesis = models.SignalInThesis;
@@ -39,6 +40,16 @@ class SignalRepository {
             });
         } catch (error) {
             throw new Error(`Error creating association between signal and thesis: ${error.message}`);
+        }
+    }
+
+    async updateSignal(signalId, updates) {
+        try{
+            const signal = await this.Signal.findByPk(signalId);
+            if(!signal) throw new Error("Signal not found");
+            await signal.update(updates);
+        }catch (error){
+           throw new Error(`Error while updating signal caused by: ${error.message}`);
         }
     }
 }

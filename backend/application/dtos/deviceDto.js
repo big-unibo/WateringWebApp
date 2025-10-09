@@ -60,3 +60,16 @@ export const SignalTargetType = {
   SECTOR: "sector",
   THESIS: "thesis"
 };
+
+export class SignalUpdate{
+    /**
+     * @param {number} id
+     * @param {string} description 
+     * @param {string} idOnProvider 
+     */
+    constructor({id,description, idOnProvider}){
+        this.id = id,
+        this.description = description;
+        this.idOnProvider = idOnProvider;
+    }
+}

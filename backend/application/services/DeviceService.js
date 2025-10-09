@@ -3,7 +3,7 @@ import { SignalTargetType } from "../dtos/deviceDto.js";
 class DeviceService {
     constructor(deviceRepository, signalRepository){
         this.deviceRepository = deviceRepository;
-        this.signalRepository = signalRepository
+        this.signalRepository = signalRepository;
     }
 
     async createDevice(device){
@@ -41,7 +41,7 @@ class DeviceService {
         }
     }
 
-    async assignSignal(signalAssociation) {
+    async assignSignals(signalAssociation) {
         try {
 
             if (!signalAssociation.deviceId) {

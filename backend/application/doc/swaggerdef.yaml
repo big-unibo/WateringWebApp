@@ -141,6 +141,16 @@ components:
           type: string
           description: Id on provider
 
+    UpdateSignal:
+      type: object
+      properties:
+        description:
+          type: string
+          description: Signal description
+        idOnProvider:
+          type: string
+          description: Signal id for the provider
+
     CreateDevice:
       type: object
       required:
