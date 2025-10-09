@@ -167,15 +167,14 @@ const devicesRouter = ({authenticationService, authorizationService, deviceServi
  */
     router.post('/assign', async (req, res) => {
         let requestUserData;
-        // try {
-        //     requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-        // } catch (error) {
-        //     return res.status(403).json({ message: 'Authentication failed' });
-        // }
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(403).json({ message: 'Authentication failed' });
+        }
 
         try {
             // const user = await userService.findUser(requestUserData.userid);
-
             if (!req.body || req.body === '')
                 throw new Error('Body is empty');
             
@@ -189,8 +188,6 @@ const devicesRouter = ({authenticationService, authorizationService, deviceServi
                     targetId: body.targetId,
                     validFrom: body.validFrom
                 });
-
-            console.log(signalAssociation);
 
             await deviceService.assignSignal(signalAssociation);
             return res.status(200).json({ message: 'Signal successfully associated' });
