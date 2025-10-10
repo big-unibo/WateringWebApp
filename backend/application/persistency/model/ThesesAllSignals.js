@@ -54,6 +54,10 @@ function initThesesAllSignals(sequelize) {
             type: DataTypes.TEXT,
             field: "signal_description"
         },
+        signalType: {
+            type: DataTypes.Text,
+            field: "signal_type"
+        },
         deviceId: {
             type: DataTypes.INTEGER,
             field: "device_id"

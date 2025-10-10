@@ -28,6 +28,7 @@ import SignalRepository from './persistency/repository/SignalRepository.js';
 import signalsRouter from './routes/signalsRouter.js';
 import SignalService from './services/SignalService.js';
 import sectorsRouter from './routes/sectorsRouter.js';
+import fieldChartRouter from './routes/fieldChartsRouter.js';
 
 dotenv.config();
 
@@ -113,6 +114,11 @@ app.use(
 app.use(
   '/signals',
   signalsRouter({authenticationService,authorizationService,signalService})
+)
+
+app.use(
+  '/fieldCharts',
+  fieldChartRouter({authenticationService,authorizationService,fieldService})
 )
 
 app.use('/api-docs', serve, setup(swaggerSpec));

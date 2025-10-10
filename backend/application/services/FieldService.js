@@ -97,6 +97,11 @@ class FieldService {
         return dtoConverter.convertCompany(result.company);
     }
 
+    async getHumidityEventsByTheses(thesisId, signalTypes, timeFilterFrom, timeFilterTo) {
+        const result = await this.thesesAllSignalsRepository.findHumidityEventsByTheses(thesisId,signalTypes, timeFilterFrom, timeFilterTo, MINUTE_TO_SECONDS);
+        return dtoConverter.convertThesesAllSignalsWrapper(result);
+    }
+
     async getInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {
         const result = await this.dataInterpolatedRepository.findInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo);
         return [dtoConverter.convertDataInterpolatedMeanWrapper(refStructureName, companyName, fieldName, sectorName, thesisName, result)];
