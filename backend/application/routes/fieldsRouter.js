@@ -112,7 +112,7 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
 
     /**
      * @swagger
-     * /fields/createSector:
+     * /fields/{fieldId}/createSector:
      *   post:
      *     security:
      *       - bearerAuth: []
@@ -120,6 +120,13 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
      *     description: Creates a new sector associated with a field. Requires authentication and proper authorization.
      *     tags:
      *       - Fields
+     *     parameters:
+     *       - in: path
+     *         name: fieldId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of the field to associate the sector with
      *     requestBody:
      *       required: true
      *       content:
@@ -174,7 +181,7 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
      *                   type: string
      *
     */
-    router.post('/createSector', async( req, res) => {
+    router.post('/:fieldId/createSector', async( req, res) => {
         let requestUserData
         try {
           requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -186,7 +193,7 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
           if(!req.body || req.body === '')
               throw new Error('Body is empty');
           
-          const fieldRaw = await req.body.fieldId;
+          const fieldRaw = await req.params.fieldId;;
           if (!fieldRaw || isNaN(parseInt(fieldRaw ))) {
               return res.status(400).json({ message: 'fieldId is required and must be a number' });
           }
@@ -228,135 +235,6 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
           return res.status(500).json({message: "Error on creating sector"})
       }
     })
-
-
-    /**
-     * @swagger
-     * /fields/createThesis:
-     *   post:
-     *     security:
-     *      - bearerAuth: []
-     *     summary: Create a thesis and associate it with a sector
-     *     tags: [Fields]
-     *     description: Endpoint to create a new thesis and link it to a sector.
-     *     requestBody:
-     *       required: true
-     *       content:
-     *         application/json:
-     *           schema:
-     *             $ref: '#/components/schemas/CreateThesis'
-     *     responses:
-     *       200:
-     *         description: Thesis created with success
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       400:
-     *         description: Bad request (missing or invalid sectorId or thesisName)
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       401:
-     *         description: Unauthorized request – user not permitted to create a thesis for the given sector
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       403:
-     *         description: Authentication failed – invalid or missing JWT
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       500:
-     *         description: Internal server error – unexpected error while creating the thesis
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-    */
-    router.post('/createThesis', async (req,res) => {
-      let requestUserData;
-      try {
-        requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-      } catch (error) {
-        return res.status(403).json({message: 'Authentication failed'});
-      }
-
-      if(!req.body || req.body === '')
-        return res.status(400).json({message: 'Invalid request'});
-
-      const { sectorId, thesisName, validFrom } = req.body;
-      if (!sectorId || isNaN(parseInt(sectorId))) {
-        return res.status(400).json({ message: 'sectorId is required and must be a number' });
-      }
-      const sectorIdParsed = parseInt(sectorId);
-      const thesis = new Thesis(thesisName, sectorIdParsed, validFrom);
-
-      try {
-        const user = await userService.findUser(requestUserData.userid);
-        if (!(await authorizationService.isUserAuthorizedInSector(user.id, 'update', sectorIdParsed)))
-          return res.status(401).json({message: 'Unauthorized request'});
-
-        await fieldService.createThesis(thesis);
-        return res.status(200).json({message: 'Thesis created with success'});
-      } catch (error) {
-        console.log(`Fail creating thesis caused by: ${error.message}`);
-        return res.status(500).json({error: "Error on creating thesis"});
-      }
-    });
-
-    // router.post('/createMonitoringThesis', async (req, res) => {
-    //     let requestUserData
-    //     try {
-    //       requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-    //     } catch (error) {
-    //       return res.status(403).json({message: 'Authentication failed'});
-    //     }
-      
-    //     if(!req.body || req.body === '')
-    //         return res.status(400).json({message: 'Invalid request'});
-
-    //     const source = req.body.source;
-    //     const refStructureName = req.body.refStructureName;
-    //     const companyName = req.body.companyName;
-    //     const fieldName = req.body.fieldName;
-    //     const sectorName = req.body.sectorName;
-    //     const thesisName = req.body.thesisName;
-    //     const dripperPosition = req.body.dripperPosition;
-
-    //     const thesis = new Thesis(source, refStructureName, companyName, fieldName, sectorName, thesisName, dripperPosition) 
-        
-    //     try {
-    //         if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create')))
-    //             return res.status(401).json({message: 'Unauthorized request'});
-
-    //         await fieldService.createMonitoringThesis(thesis, req.body.timestampFrom)
-        
-    //         return res.status(200).json({message: 'Monitoring thesis created with success'})
-    //     } catch (error) {
-    //       console.log(`Fail creating monitoring thesis caused by: ${error.message}`)
-    //       return res.status(500).json({error: "Error on creating monitoring thesis"})
-    //     }
-      
-    //   });
 
     /**
      * @swagger

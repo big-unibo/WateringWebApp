@@ -27,6 +27,7 @@ import DeviceRepository from './persistency/repository/DeviceRepository.js';
 import SignalRepository from './persistency/repository/SignalRepository.js';
 import signalsRouter from './routes/signalsRouter.js';
 import SignalService from './services/SignalService.js';
+import sectorsRouter from './routes/sectorsRouter.js';
 
 dotenv.config();
 
@@ -87,6 +88,11 @@ app.use(
 app.use(
   '/fields',
   fieldsRouter({ userService, authenticationService, authorizationService, fieldService })
+);
+
+app.use(
+  '/sectors',
+  sectorsRouter({ userService, authenticationService, authorizationService, fieldService })
 );
 
 app.use(

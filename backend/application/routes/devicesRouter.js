@@ -104,7 +104,7 @@ const devicesRouter = ({authenticationService, authorizationService, deviceServi
 
     /**
  * @swagger
- * /devices/assign:
+ * /devices/{deviceId}/assign:
  *   post:
  *     security:
  *       - bearerAuth: []
@@ -112,6 +112,13 @@ const devicesRouter = ({authenticationService, authorizationService, deviceServi
  *     description: Receives a signal association object and assigns the devices's signals to the specified target. Requires authentication and proper authorization.
  *     tags:
  *       - Devices
+ *     parameters:
+ *       - in: path
+ *         name: deviceId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the device
  *     requestBody:
  *       required: true
  *       content:
@@ -165,7 +172,7 @@ const devicesRouter = ({authenticationService, authorizationService, deviceServi
  *                 message:
  *                   type: string
  */
-    router.post('/assign', async (req, res) => {
+    router.post('/:deviceId/assign', async (req, res) => {
         let requestUserData;
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -179,21 +186,28 @@ const devicesRouter = ({authenticationService, authorizationService, deviceServi
                 throw new Error('Body is empty');
             
             //[TO DO]: Authorization
+
+            const deviceIdRaw = req.params.deviceId;
+            if (!deviceId || isNaN(parseInt(deviceId ))) {
+                return res.status(400).json({ message: 'deviceId is required and must be a number' });
+            }
+            const deviceidParsed = parseInt(deviceIdRaw);
+
             const body = req.body;
             if (!Object.values(SignalTargetType).includes(body.targetType))
                 return res.status(400).json({ message: "Invalid targetType" });
             const signalAssociation = new SignalAssociation({
-                    deviceId: body.deviceId,
+                    deviceId: deviceidParsed,
                     targetType: body.targetType,
                     targetId: body.targetId,
                     validFrom: body.validFrom
                 });
 
             await deviceService.assignSignals(signalAssociation);
-            return res.status(200).json({ message: 'Signal successfully associated' });
+            return res.status(200).json({ message: 'Signals successfully associated' });
         } catch (error) {
-            console.log(`Failed assigning signal caused by: ${error.message}`);
-            return res.status(500).json({ message: "Error assigning signal" });
+            console.log(`Failed assigning signals caused by: ${error.message}`);
+            return res.status(500).json({ message: "Error assigning signals" });
         }
     });
 

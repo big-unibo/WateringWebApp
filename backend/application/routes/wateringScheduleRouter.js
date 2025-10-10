@@ -15,7 +15,7 @@ const authenticationService = new AuthenticationService(sequelize);
 const authorizationService = new AuthorizationService(sequelize)
 
 /**
- * @swagger
+ * 
  * /wateringSchedule/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/calendar:
  *   get:
  *     security:
@@ -106,7 +106,7 @@ wateringScheduleRouter.get("/:refStructureName/:companyName/:fieldName/:sectorNa
 })
 
 /**
- * @swagger
+ * 
  * /wateringSchedule/updateWateringEvent:
  *   put:
  *     security:
@@ -156,7 +156,7 @@ wateringScheduleRouter.put("/updateWateringEvent", async (req, res) => {
 })
 
 /**
- * @swagger
+ * 
  * /wateringSchedule/createWateringEvent:
  *   post:
  *     security:
@@ -206,7 +206,7 @@ wateringScheduleRouter.post("/createWateringEvent", async (req, res) => {
 })
 
 /**
- * @swagger
+ * 
  * /wateringSchedule/{refStructureName}/{companyName}/{fieldName}/{sectorName}/createCalendar:
  *   post:
  *     security:
@@ -299,7 +299,7 @@ wateringScheduleRouter.post("/:refStructureName/:companyName/:fieldName/:sectorN
 })
 
 /**
- * @swagger
+ * 
  * /wateringSchedule/{refStructureName}/{companyName}/{fieldName}/{sectorName}/endIrrigationSeason:
  *   post:
  *     security:

@@ -56,15 +56,11 @@ components:
       type: object
       required:
         - sectorName
-        - fieldId
         - culture
       properties:
         sectorName:
           type: string
           description: Name of the sector
-        fieldId:
-          type: integer
-          description: ID of the field to associate the sector with
         culture:
           type: string
           description: Main culture of the sector
@@ -96,14 +92,10 @@ components:
       type: object
       required:
         - thesisName
-        - sectorId
       properties:
         thesisName:
           type: string
           description: Name of the thesis
-        sectorId:
-          type: integer
-          description: ID of the sector to assign the thesis to
         validFrom: 
           type: number
           description: Optional timestamp of thesis validity start (Seconds elapsed since 01/01/1970 - 00:00 )
@@ -186,13 +178,9 @@ components:
     SignalAssociation:
       type: object
       required:
-        - deviceId
         - targetId
         - targetType
       properties:
-        deviceId:
-          type: integer
-          description: Device id of the signals getting associated
         targetId:
           type: integer
           description: Id of the signal target 
@@ -221,9 +209,7 @@ components:
           description: Value measured, could be either a number or a string 
     
     addMeasurements:
-      oneOf:
-        - $ref: "#/components/schemas/Measurement"
-        - type: array
-          items:
-            $ref: "#/components/schemas/Measurement"
+      type: array
+      items:
+        $ref: "#/components/schemas/Measurement"
 

@@ -5,7 +5,7 @@ const organizationsRouter = ({organizationService, authenticationService, userSe
 
     /**
      * @swagger
-     * /organizations/createOrganization:
+     * /organizations/create:
      *   post:
      *     security:
      *       - bearerAuth: []

@@ -196,7 +196,7 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
             return res.status(400).json({message: 'Bad request, signalId not specified'});
 
         const measurements = req.body;
-        const measurementsList = Array.isArray(measurements) ? measurements : [measurements];
+        const measurementsList = Array.isArray(measurements) ? measurements : [];
 
         if (!measurementsList.length) {
             return res.status(400).json({ message: 'No measurements provided' });

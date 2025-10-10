@@ -31,7 +31,7 @@ class SignalService{
                     time: dateObj.toISOString().slice(11, 19), 
                     computed: m.computed,
                     value: (typeof value === 'number' && !isNaN(value)) ? value : null,
-                    rawValue: (typeof value === 'number' && !isNaN(value)) ? null : value
+                    rawValue: (typeof value === 'number' && !isNaN(value)) ? value.toString() : value
                 }
             })
 
