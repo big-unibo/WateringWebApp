@@ -7,12 +7,14 @@ function initMeasurement(sequelize){
         signalId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            field: "signal_id"
+            field: "signal_id",
+            primaryKey: true
         },     
         timestamp: {
             type: DataTypes.DOUBLE,
             allowNull: false,
-            field: "timestamp"
+            field: "timestamp",
+            primaryKey: true
         },
         computed: {
             type: DataTypes.BOOLEAN,
@@ -20,7 +22,7 @@ function initMeasurement(sequelize){
             field: "computed"
         },
         date: {
-            type: DataTypes.DATE,
+            type: DataTypes.DATEONLY,
             allowNull: true,
             field: "date"
         },
@@ -35,10 +37,15 @@ function initMeasurement(sequelize){
             field: "value"
         },
         rawValue: {
-            type: DataTypes.JSON,
+            type: DataTypes.TEXT,
             allowNull: true,
             field: "raw_value"
         },
+    }, {
+        modelName: 'Measurement',
+        tableName: 'measurements',
+        timestamps: false,
+        sequelize
     })
 
     return Measurement;

@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import { CreateMeasurment, CreateMeasurmentDto, SignalUpdate } from '../dtos/deviceDto.js';
+import { AddMeasurementsDto,SignalUpdate } from '../dtos/deviceDto.js';
 
 
 const signalsRouter = ({authenticationService, authorizationService, signalService}) => {
@@ -38,7 +38,6 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      *               properties:
      *                 message:
      *                   type: string
-     *                   example: Signal successfully updated
      *       400:
      *         description: Bad request – missing or invalid fields
      *         content:
@@ -48,7 +47,6 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      *               properties:
      *                 message:
      *                   type: string
-     *                   example: Bad request, signalId not specified
      *       401:
      *         description: Unauthorized – user is authenticated but not allowed to update signals
      *         content:
@@ -58,7 +56,6 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      *               properties:
      *                 message:
      *                   type: string
-     *                   example: Unauthorized
      *       403:
      *         description: Forbidden – authentication failed due to invalid or missing JWT
      *         content:
@@ -68,7 +65,6 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      *               properties:
      *                 message:
      *                   type: string
-     *                   example: Authentication failed
      *       500:
      *         description: Internal server error – unexpected error while updating the signal
      *         content:
@@ -78,7 +74,6 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      *               properties:
      *                 error:
      *                   type: string
-     *                   example: Error on updating signal
      */
 
     router.put('/:signalId/update', async(req, res) => {
@@ -114,6 +109,80 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
     });
 
 
+    /**
+     * @swagger
+     * /signals/{signalId}/addMeasurements:
+     *   post:
+     *     security:
+     *       - bearerAuth: []
+     *     summary: Adds one or more measurments for a given Signal
+     *     description: Adds one or more measurments for an existing signal.
+     *     tags:
+     *       - Signals
+     *     parameters:
+     *       - in: path
+     *         name: signalId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of the signal the signals are associated to
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *              $ref: '#/components/schemas/addMeasurements'
+     *     responses:
+     *       200:
+     *         description: Measurements updated successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       400:
+     *         description: Bad request – missing or invalid fields
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Bad request, signalId not specified
+     *       401:
+     *         description: Unauthorized – user is authenticated but not allowed to create measurements for the given signal
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Unauthorized
+     *       403:
+     *         description: Forbidden – authentication failed due to invalid or missing JWT
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Authentication failed
+     *       500:
+     *         description: Internal server error – unexpected error while creating measurments
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     *                   example: Error creating measurements
+     */
     router.post('/:signalId/addMeasurements', async(req, res) => {
         let requestUserData;
         // try{
@@ -136,14 +205,14 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
 
         try{
             //[TO DO]: Authorization
-            const measurementsData = new CreateMeasurmentDto({
+            const measurementsData = new AddMeasurementsDto({
                 id : signalId,
                 measurements : measurementsList,
             })
 
             await signalService.addMeasurements(measurementsData);
             return res.status(200).json({  
-                message: `Added ${measurementList.length} measurement(s) to signal ${signalId}`  
+                message: `Added ${measurementsList.length} measurement(s) to signal ${signalId}`  
             });
         }
         catch (error) {
@@ -151,10 +220,6 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
             return res.status(500).json({ error: "Error while adding measurements" });
         }
     });
-
-
-    
-
     return router;
 }
 

@@ -4,6 +4,7 @@ class SignalRepository {
         this.SignalInField = models.SignalInField;
         this.SignalInSector = models.SignalInSector;
         this.SignalInThesis = models.SignalInThesis;
+        this.Measurement = models.Measurement;
         this.sequelize = sequelize;
     }
     
@@ -53,13 +54,13 @@ class SignalRepository {
         }
     }
 
-    async createMeasurments(signalId,measurements){
+    async addMeasurements(signalId,measurements){
         try{
             const signal = await this.Signal.findByPk(signalId);
             if(!signal) throw new Error("Signal not found");
             await this.Measurement.bulkCreate(measurements);
         }catch (error){
-           throw new Error(`Error while creating measuremnts: ${error.message}`);
+           throw new Error(`Error while creating measurements: ${error.message}`);
         }
     }
 }

@@ -202,3 +202,28 @@ components:
         validFrom: 
           type: number
           description: Optional timestamp of association validity start (Seconds elapsed since 01/01/1970 - 00:00 )
+
+    Measurement:
+      type: object
+      required: 
+        - timestamp
+      properties:
+        timestamp: 
+          type: number
+          description: Measurment timestamp (Seconds elapsed since 01/01/1970 - 00:00 )
+        computed:
+          type: boolean
+          description: True if measurments is computed
+        value:
+          oneOf:
+            - type: number
+            - type: string
+          description: Value measured, could be either a number or a string 
+    
+    addMeasurements:
+      oneOf:
+        - $ref: "#/components/schemas/Measurement"
+        - type: array
+          items:
+            $ref: "#/components/schemas/Measurement"
+

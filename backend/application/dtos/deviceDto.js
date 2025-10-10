@@ -87,7 +87,7 @@ export class Measurement{
     }
 }
 
-export class CreateMeasurmentDto{
+export class AddMeasurementsDto{
     /**
      * @param {number} id - Id of the signal the measurements ar leated to
      * @param {Array<Measurement>} measurements - Array of measurements 
