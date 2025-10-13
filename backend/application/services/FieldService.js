@@ -35,9 +35,10 @@ class FieldService {
     //     this.fieldRepository = new FieldRepository(initField(sequelize), initCompany(sequelize), initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), initWateringThesis(sequelize), initWateringSector(sequelize), initWateringAlgorithmParams(sequelize), sequelize);
     // }
 
-    constructor(fieldRepository, companyRepository){
+    constructor(fieldRepository, companyRepository, thesesAllSignalsRepository){
         this.fieldRepository = fieldRepository;
         this.companyRepository = companyRepository;
+        this.thesesAllSignalsRepository = thesesAllSignalsRepository;
     }
 
     async createField(field){ 
@@ -97,8 +98,8 @@ class FieldService {
         return dtoConverter.convertCompany(result.company);
     }
 
-    async getHumidityEventsByTheses(thesisId, signalTypes, timeFilterFrom, timeFilterTo) {
-        const result = await this.thesesAllSignalsRepository.findHumidityEventsByTheses(thesisId,signalTypes, timeFilterFrom, timeFilterTo, MINUTE_TO_SECONDS);
+    async getHumidityEventsByThesis(thesisId, signalTypes, timeFilterFrom, timeFilterTo) {
+        const result = await this.thesesAllSignalsRepository.findHumidityEventsByThesis(thesisId,signalTypes, timeFilterFrom, timeFilterTo, MINUTE_TO_SECONDS);
         return dtoConverter.convertThesesAllSignalsWrapper(result);
     }
 

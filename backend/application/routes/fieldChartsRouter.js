@@ -21,12 +21,12 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
      *           type: integer
      *         description: Id of the Thesis
      *       - in: query
-     *         name: signalTypes:
+     *         name: signalTypes
      *         required: true
      *         schema:
      *           type: array
      *           items:
-     *             type: text
+     *             type: string
      *           collectionFormat: multi
      *         description: Array of Signal Types 
      *       - in: query
@@ -34,14 +34,82 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
      *         required: true
      *         schema:
      *           type: number
-     *         description: Time filter start (ISO string or timestamp)
+     *         description: Time filter start (timestamp in seconds)
      *       - in: query
      *         name: timeFilterTo
      *         required: true
      *         schema:
      *           type: number
-     *         description: Time filter end (ISO string or timestamp)
+     *         description: Time filter end (timestamp in seconds)
+     *     responses:
+     *       200:
+     *         description: Successfully retrieved signal data
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 values:
+     *                   type: array
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       thesisName:
+     *                         type: string
+     *                       signalType:
+     *                         type: string
+     *                       signals:
+     *                         type: array
+     *                         items:
+     *                           type: object
+     *                           properties:
+     *                             signalId:
+     *                               type: integer
+     *                             deviceId:
+     *                               type: integer
+     *                             signalDescription:
+     *                               type: string
+     *                             x:
+     *                               type: number
+     *                             y:
+     *                               type: number
+     *                             z:
+     *                               type: number
+     *                             virtual:
+     *                               type: boolean
+     *                             unit:
+     *                               type: string
+     *                             measurements:
+     *                               type: array
+     *                               items:
+     *                                 type: object
+     *                                 properties:
+     *                                   timestamp:
+     *                                     type: integer
+     *                                   value:
+     *                                     type: string
+     *                                   computed:
+     *                                     type: boolean
+     *       400:
+     *         description: Invalid or missing query parameters
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      */
+
 
     router.get('/:thesisId/signals', async (req, res) => {
         const thesisId = parseInt(req.params.thesisId);
@@ -49,14 +117,20 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
         // signalTypes come in query string: ?signalTypes=1&signalTypes=2
         let signalTypes = req.query.signalTypes || [];
         if (!Array.isArray(signalTypes)) signalTypes = [signalTypes];
+        //signalTypes = signalTypes.map(s => `'${s}'`);
 
-        const timeFilterFrom = req.query.timeFilterFrom ? new Date(Number(req.query.timeFilterFrom) * 1000) : null;
-        const timeFilterTo = req.query.timeFilterTo ? new Date(Number(req.query.timeFilterTo) * 1000) : null;
+        const timeFilterFrom = req.query.timeFilterFrom
+            ? Number(req.query.timeFilterFrom)
+            : null;
+
+        const timeFilterTo = req.query.timeFilterTo
+            ? Number(req.query.timeFilterTo)
+            : null;
         
-        if (!timeFilterFrom || isNaN(timeFilterFrom)) {
+        if (timeFilterFrom === null || isNaN(timeFilterFrom)) {
             return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid date' });
         }
-        if (!timeFilterTo || isNaN(timeFilterTo)) {
+        if (!timeFilterTo === null || isNaN(timeFilterTo)) {
             return res.status(400).json({ message: 'timeFilterTo is required and must be a valid date' });
         }
 
@@ -72,7 +146,6 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
             return res.status(500).json({ message: error.message });
         }
     });
-
     return router;
 }
 

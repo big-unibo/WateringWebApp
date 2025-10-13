@@ -1,7 +1,7 @@
 import { InterpolatedDataResponse, InterpolatedDataValue, InterpolatedMeanMeasureData, InterpolatedMeasureData } from "../dtos/interpolatedDataDto.js";
 import { ColtureDto } from "../dtos/coltureDto.js";
 import { Company } from "../dtos/companyDto.js";
-import { DataResponse, DataValue, MeasureData, HumidityBinMeasureData } from '../dtos/dataDto.js';
+import { DataResponse, SignalData, MeasureData ,SignalTypeData} from '../dtos/dataDto.js';
 import { WateringScheduleResponse, WateringEventDto } from "../dtos/wateringScheduleDto.js";
 import { MatrixData, MatrixDistanceData, OptStateDto } from "../dtos/optStateDto.js";
 import { WateringAdviceDto } from "../dtos/wateringAdviceDto.js";
@@ -53,6 +53,66 @@ class DtoConverter {
     convertWaterAggregateWrapper(wrappers){
         return this.#convertGenericReferenceData(wrappers);
     }
+
+    convertThesesAllSignalsWrapper(wrappers) {
+        const grouped = wrappers.reduce((acc, curr) => {
+            const typeKey = `${curr.thesisName}_${curr.signalType}`;
+            if (!acc[typeKey]) {
+                acc[typeKey] = {
+                    thesisName: curr.thesisName,
+                    signalType: curr.signalType,
+                    signals: {}
+                };
+            }
+
+            const signalKey = `${curr.signalId}_${curr.signalDescription}`;
+            if (!acc[typeKey].signals[signalKey]) {
+                acc[typeKey].signals[signalKey] = {
+                    signalId: curr.signalId,
+                    deviceId: curr.deviceId,
+                    signalDescription: curr.signalDescription,
+                    x: curr.x,
+                    y: curr.y,
+                    z: curr.z,
+                    virtual: curr.virtual,
+                    unit: curr.unit,
+                    values: []
+                };
+            }
+
+            acc[typeKey].signals[signalKey].values.push(curr);
+
+            return acc;
+            }, {});
+
+            const signalTypeDataArray = Object.values(grouped).map(typeGroup => {
+                const signals = Object.values(typeGroup.signals).map(signalGroup => {
+                    const measurements = signalGroup.values.map(v => new MeasureData(v.timestamp, v.value, v.computed));
+                    return new SignalData(
+                        signalGroup.signalId,
+                        signalGroup.deviceId,
+                        signalGroup.signalDescription,
+                        signalGroup.x,
+                        signalGroup.y,
+                        signalGroup.z,
+                        signalGroup.virtual,
+                        signalGroup.unit,
+                        measurements
+                    );
+                });
+
+            return new SignalTypeData(
+                typeGroup.thesisName,
+                typeGroup.signalType,
+                signals
+            );
+            });
+
+            console.log(signalTypeDataArray)
+
+            return new DataResponse(signalTypeDataArray);
+    }
+
 
     convertViewDataOriginalWrapper(wrappers) {
         const map = wrappers.reduce((accumulator, currentValue) => {

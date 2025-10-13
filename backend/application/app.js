@@ -7,6 +7,7 @@ import cors from 'cors';
 import dotenv from 'dotenv'
 import initModels from './persistency/model/initModels.js';
 import sequelize from './configs/dbConfig.js';
+import ThesesAllSignalsRepository from './persistency/repository/ThesesAllSignalsRepository.js';
 import OrganizationRepository from './persistency/repository/OrganizationRepository.js';
 import OrganizationService from './services/OrganizationService.js';
 import UserRepository from './persistency/repository/UserRepository.js';
@@ -70,12 +71,13 @@ const companyRepository = new CompanyRepository(models,sequelize);
 const fieldRepository = new FieldRepository(models,sequelize);
 const deviceRepository = new DeviceRepository(models,sequelize);
 const signalRepository = new SignalRepository(models,sequelize);
+const thesesAllSignalsRepository = new ThesesAllSignalsRepository(models,sequelize);
 
 const organizationService = new OrganizationService(organizationRepository);
 const userService = new UserService(userRepository);
 const authenticationService = new AuthenticationService(userService);
 const companyService = new CompanyService(companyRepository);
-const fieldService = new FieldService(fieldRepository,companyRepository);
+const fieldService = new FieldService(fieldRepository,companyRepository, thesesAllSignalsRepository);
 const authorizationService = new AuthorizationService(userService, fieldService);
 const deviceService = new DeviceService(deviceRepository,signalRepository);
 const signalService = new SignalService(signalRepository)

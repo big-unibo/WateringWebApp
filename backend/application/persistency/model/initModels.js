@@ -17,6 +17,7 @@ import initSignalInSector from './SignalInSector.js';
 import initSignalInThesis from './SignalInThesis.js';
 import { Measurement } from '../../dtos/deviceDto.js';
 import initMeasurement from './Measurement.js';
+import initThesesAllSignals from './ThesesAllSignals.js';
 
 
 export default function initModels(sequelize) {
@@ -39,6 +40,7 @@ export default function initModels(sequelize) {
     MatrixField: initMatrixField(sequelize),
     TranscodingField: initTranscodingField(sequelize),
     WateringAlgorithmParams: initWateringAlgorithmParams(sequelize),
+    ThesesAllSignals: initThesesAllSignals(sequelize)
   };
 
   models.Company.belongsTo(models.Organization, { foreignKey: "organization_id" });

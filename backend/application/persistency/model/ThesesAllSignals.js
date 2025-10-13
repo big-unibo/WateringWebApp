@@ -55,8 +55,12 @@ function initThesesAllSignals(sequelize) {
             field: "signal_description"
         },
         signalType: {
-            type: DataTypes.Text,
+            type: DataTypes.TEXT,
             field: "signal_type"
+        },
+        signalTypeDescription: {
+            type: DataTypes.TEXT,
+            field: "signal_type_description"
         },
         deviceId: {
             type: DataTypes.INTEGER,
@@ -65,6 +69,26 @@ function initThesesAllSignals(sequelize) {
         deviceDescription: {
             type: DataTypes.TEXT,
             field: "device_description"
+        },
+        x: {
+            type: DataTypes.DOUBLE,
+            field: "x"
+        },
+        y: {
+            type: DataTypes.DOUBLE,
+            field: "z"
+        },
+        z: {
+            type: DataTypes.DOUBLE,
+            field: "z"
+        },
+        virtual: {
+            type: DataTypes.BOOLEAN,
+            field: "virtual"
+        },
+        unit: {
+            type: DataTypes.TEXT,
+            field: "unit"
         },
         validFrom: {
             type: DataTypes.DOUBLE,
