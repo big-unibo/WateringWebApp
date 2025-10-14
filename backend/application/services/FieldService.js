@@ -35,10 +35,11 @@ class FieldService {
     //     this.fieldRepository = new FieldRepository(initField(sequelize), initCompany(sequelize), initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), initWateringThesis(sequelize), initWateringSector(sequelize), initWateringAlgorithmParams(sequelize), sequelize);
     // }
 
-    constructor(fieldRepository, companyRepository, thesesAllSignalsRepository){
+    constructor(fieldRepository, companyRepository, thesesAllSignalsRepository, interpolatedProfileRepository){
         this.fieldRepository = fieldRepository;
         this.companyRepository = companyRepository;
         this.thesesAllSignalsRepository = thesesAllSignalsRepository;
+        this.interpolatedProfileRepository = interpolatedProfileRepository
     }
 
     async createField(field){ 
@@ -111,7 +112,7 @@ class FieldService {
             period
         );
 
-        return dtoConverter.convertThesesAllSignalsWrapper(result);
+        return dtoConverter.convertMeasurementsDataWrapper(result);
     }
 
     getDefaultAggregationPeriod(timeFilterFrom, timeFilterTo) {
@@ -127,6 +128,17 @@ class FieldService {
 
         return rule?.period ?? MINUTE_TO_SECONDS; // default: 1 minute
     }
+
+    async getHeatmapByThesis(thesisId, timeFilterFrom, timeFilterTo){
+        const gridId = await this.thesesAllSignalsRepository.getGridDeviceByThesis(thesisId, timeFilterFrom, timeFilterTo);
+        if(!gridId){
+            throw Error("No GRID type device found assigned to the given thesis");
+        }
+
+        const result = await this.interpolatedProfileRepository.getInterpolatedProfiles(gridId, timeFilterFrom, timeFilterTo);
+        return dtoConverter.converHeatmapDataWrapper(result);
+    }
+
     async getInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {
         const result = await this.dataInterpolatedRepository.findInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo);
         return [dtoConverter.convertDataInterpolatedMeanWrapper(refStructureName, companyName, fieldName, sectorName, thesisName, result)];

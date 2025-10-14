@@ -70,6 +70,10 @@ function initThesesAllSignals(sequelize) {
             type: DataTypes.TEXT,
             field: "device_description"
         },
+        deviceType: {
+            type: DataTypes.TEXT,
+            field: "device_type"
+        },
         x: {
             type: DataTypes.DOUBLE,
             field: "x"

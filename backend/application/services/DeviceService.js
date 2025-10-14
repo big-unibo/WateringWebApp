@@ -54,7 +54,7 @@ class DeviceService {
                 throw new Error(`Invalid targetType: ${signalAssociation.targetType}`);
             }
 
-            const validFrom = signalAssociation.validFrom ?? Date.now();
+            const validFrom = signalAssociation.validFrom ?? Date.now() / 1000;
             const signals = await this.deviceRepository.getSignals(signalAssociation.deviceId);
 
         

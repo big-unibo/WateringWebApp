@@ -54,7 +54,7 @@ class DtoConverter {
         return this.#convertGenericReferenceData(wrappers);
     }
 
-    convertThesesAllSignalsWrapper(wrappers) {
+    convertMeasurementsDataWrapper(wrappers) {
         const grouped = wrappers.reduce((acc, curr) => {
             const typeKey = `${curr.thesisName}_${curr.signalType}`;
             if (!acc[typeKey]) {

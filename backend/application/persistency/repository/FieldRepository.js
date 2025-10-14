@@ -47,16 +47,16 @@ class FieldRepository {
     }
 
     async createSector({
-    sectorName,
-    fieldId,
-    culture,
-    cultureType = null,
-    location = null,
-    prescriptive = null,
-    advice = null,
-    dripperCapacity = null,
-    sprinklerCapacity = null,
-    doubleWing = null
+        sectorName,
+        fieldId,
+        culture,
+        cultureType = null,
+        location = null,
+        prescriptive = null,
+        advice = null,
+        dripperCapacity = null,
+        sprinklerCapacity = null,
+        doubleWing = null
     }) {
         try {
             const field = await this.Field.findByPk(fieldId);

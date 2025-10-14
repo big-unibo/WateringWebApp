@@ -1,5 +1,5 @@
 
-import { QueryTypes } from 'sequelize';
+import { Op, QueryTypes } from 'sequelize';
 
 class ThesesAllSignalsRepository {
     constructor(models, sequelize) {
@@ -120,73 +120,31 @@ class ThesesAllSignalsRepository {
             type: QueryTypes.SELECT
         });
         
-
-        console.log(results);
         return results;
     }
 
-    // async getResultsAgrregate(calculationType, thesisId, signalTypes, timeFilterFrom, timeFilterTo, aggregationPeriod) {
-    //     const query = `
-    //         SELECT DISTINCT
-    //             tas."thesis_name",
-    //             tas."device_id",
-    //             tas."signal_id",
-    //             tas."signal_description",
-    //             tas."signal_type",
-    //             s."x",
-    //             s."y",
-    //             s."z",
-    //             s."virtual",
-    //             s."unit",
-    //             tas."valid_from",
-    //             tas."valid_to",
-    //             COALESCE(
-    //                 ${calculationType}::TEXT,
-    //                 (
-    //                     SELECT STRING_AGG(m2.raw_value, ',' ORDER BY m2.timestamp)
-    //                     FROM (
-    //                         SELECT DISTINCT raw_value, timestamp
-    //                         FROM measurements m2
-    //                         WHERE m2.signal_id = m.signal_id
-    //                     ) m2
-    //                 )
-    //             ) AS value,
-    //             round(m."timestamp"::numeric / ${aggregationPeriod}) * ${aggregationPeriod} AS timestamp,
-    //             m."computed"
-    //         FROM theses_all_signals tas
-    //         JOIN measurements m
-    //             ON m."signal_id" = tas."signal_id"
-    //             AND m."timestamp" >= tas."valid_from"
-    //             AND (tas."valid_to" IS NULL OR m."timestamp" <= tas."valid_to")
-    //         JOIN signals s
-    //             ON s.id = tas.signal_id
-    //         WHERE tas."signal_type" = ANY(ARRAY[${signalTypes.join(',')}])
-    //         AND m."timestamp" >= ${timeFilterFrom}
-    //         AND m."timestamp" <= ${timeFilterTo}
-    //         AND tas."thesis_id" = ${thesisId}
-    //         GROUP BY 
-    //             tas."thesis_name",
-    //             tas."device_id",
-    //             tas."signal_id",
-    //             tas."signal_description",
-    //             tas."signal_type",
-    //             s."x",
-    //             s."y",
-    //             s."z",
-    //             s."virtual",
-    //             s."unit",
-    //             tas."valid_from",
-    //             tas."valid_to",
-    //             round(m."timestamp"::numeric / ${aggregationPeriod}) * ${aggregationPeriod}
-    //         ORDER BY timestamp ASC;
-    //     `;
 
-    //     const results = await this.sequelize.query(query, {
-    //         type: QueryTypes.SELECT
-    //     });
 
-    //     return results;
-    // }
+    async getGridDeviceByThesis(thesisId, timeFilterFrom, timeFilterTo) {
+        const result = await this.ThesesAllSignals.findOne({
+            attributes: ['deviceId'], 
+            where: {
+                thesisId,
+                deviceType: 'GRID',
+                [Op.and]: [
+                    { validFrom: { [Op.lte]: timeFilterTo } },
+                    {
+                        [Op.or]: [
+                            { validTo: { [Op.gte]: timeFilterFrom } },
+                            { validTo: null }
+                        ]
+                    }
+                ]
+            },
+            raw: true 
+        });
+        return result ? result.deviceId : null;
+    }
 }
 
 export default ThesesAllSignalsRepository;
