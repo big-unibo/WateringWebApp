@@ -98,11 +98,35 @@ class FieldService {
         return dtoConverter.convertCompany(result.company);
     }
 
-    async getHumidityEventsByThesis(thesisId, signalTypes, timeFilterFrom, timeFilterTo) {
-        const result = await this.thesesAllSignalsRepository.findHumidityEventsByThesis(thesisId,signalTypes, timeFilterFrom, timeFilterTo, MINUTE_TO_SECONDS);
+    async getMeasurementsByThesis(thesisId, signalTypes, timeFilterFrom, timeFilterTo, aggregationType, aggregationPeriod = null) {
+
+        const period = aggregationPeriod ?? this.getDefaultAggregationPeriod(timeFilterFrom, timeFilterTo);
+
+        const result = await this.thesesAllSignalsRepository.getMeasurementsByThesis(
+            thesisId,
+            signalTypes,
+            timeFilterFrom,
+            timeFilterTo,
+            aggregationType,
+            period
+        );
+
         return dtoConverter.convertThesesAllSignalsWrapper(result);
     }
 
+    getDefaultAggregationPeriod(timeFilterFrom, timeFilterTo) {
+        const requestPeriod = timeFilterTo - timeFilterFrom;
+
+        const rules = [
+            { limit: 3 * MONTH_TO_SECONDS, period: 24 * 60 * MINUTE_TO_SECONDS },  //Over 3 months -> 1 day
+            { limit: 1.5 * MONTH_TO_SECONDS, period: 12 * 60 * MINUTE_TO_SECONDS }, //Over 1.5 months -> 12 hours
+            { limit: 14 * 24 * 60 * MINUTE_TO_SECONDS, period: 3 * 60 * MINUTE_TO_SECONDS }, // Over 2 weeks-> 3 hours
+            { limit: 3 * 24 * 60 * MINUTE_TO_SECONDS, period: 60 * MINUTE_TO_SECONDS } // Over 3 days -> 1 hour
+        ];
+        const rule = rules.find(r => requestPeriod > r.limit);
+
+        return rule?.period ?? MINUTE_TO_SECONDS; // default: 1 minute
+    }
     async getInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {
         const result = await this.dataInterpolatedRepository.findInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo);
         return [dtoConverter.convertDataInterpolatedMeanWrapper(refStructureName, companyName, fieldName, sectorName, thesisName, result)];

@@ -9,13 +9,46 @@ class ThesesAllSignalsRepository {
         this.Signal = models.Signal;
     }
 
-    async findHumidityEventsByThesis(thesisId, signalTypes, timeFilterFrom, timeFilterTo, aggregationPeriod ) {
-        const signalsData = [];
-        signalsData.push(...(await this.getResults( thesisId, signalTypes, timeFilterFrom, timeFilterTo, aggregationPeriod, 'SUM(\"value\")')));
-        return signalsData;
+    async getMeasurementsByThesis(
+        thesisId,
+        signalTypes,
+        timeFilterFrom,
+        timeFilterTo,
+        aggregationType = 'SUM',
+        aggregationPeriod
+    ) {
+
+
+        // Determina la stringa SQL da passare a getResults in base al tipo di aggregazione
+        let sqlAggregation;
+        switch (aggregationType.toUpperCase()) {
+            case 'SUM':
+                sqlAggregation = 'SUM(\"value\")';
+                break;
+            case 'AVG':
+                sqlAggregation = 'AVG(\"value\")';
+                break;
+            case 'MIN':
+                sqlAggregation = 'MIN(\"value\")';
+                break;
+            case 'MAX':
+                sqlAggregation = 'MAX(\"value\")';
+                break;
+            case 'MED':
+                sqlAggregation = 'percentile_cont(0.5) WITHIN GROUP (ORDER BY \"value\")';
+                break;
+            default:
+                sqlAggregation = 'SUM(\"value\")';
+                break;
+        }
+
+        const results = await this.getResults(thesisId, signalTypes, timeFilterFrom, timeFilterTo, sqlAggregation, aggregationPeriod);
+
+        return Array.isArray(results) ? results : [];
     }
 
-    async getResults(thesisId, signalTypes, timeFilterFrom, timeFilterTo, aggregationPeriod, calculationType) {
+
+    async getResults(thesisId, signalTypes, timeFilterFrom, timeFilterTo, sqlAggregation, aggregationPeriod) {
         const query = `
         WITH aggregated AS (
             SELECT
@@ -30,11 +63,9 @@ class ThesesAllSignalsRepository {
                 tas."z" as z,
                 tas."virtual" as virtual,
                 tas."unit" as unit,
-                tas."valid_from" AS "validFrom",
-                tas."valid_to" AS "validTo",
                 m."computed" AS computed,
-                ${calculationType} AS value,
-                ARRAY_AGG(m."raw_value" ORDER BY m."timestamp") AS rawValue,
+                ${sqlAggregation} AS value,
+                ARRAY_AGG(m."raw_value") AS rawValue,
                 ROUND(m."timestamp"::NUMERIC / :aggregationPeriod) * :aggregationPeriod AS timestamp
             FROM theses_all_signals tas
             JOIN measurements m
@@ -56,10 +87,8 @@ class ThesesAllSignalsRepository {
                 tas."z",
                 tas."virtual", 
                 tas."unit", 
-                tas."valid_from", 
-                tas."valid_to",
-                m."computed", 
-                "timestamp"
+                m."computed",
+                ROUND(m."timestamp"::NUMERIC / :aggregationPeriod) * :aggregationPeriod
         )
         SELECT
             "thesisName",
@@ -73,8 +102,6 @@ class ThesesAllSignalsRepository {
             z,
             virtual,
             unit,
-            "validFrom",
-            "validTo",
             computed,
             timestamp,
             COALESCE(to_jsonb(value), to_jsonb(rawValue)) AS value

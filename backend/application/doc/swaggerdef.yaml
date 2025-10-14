@@ -212,4 +212,89 @@ components:
       type: array
       items:
         $ref: "#/components/schemas/Measurement"
+    
+    AggregationType:
+      type: string
+      enum:
+        - SUM
+        - AVG
+        - MIN
+        - MAX
+        - MED
+
+    SignalsDataResponse:
+      type: array
+      items:
+        $ref: "#/components/schemas/SignalTypeData"
+
+    SignalTypeData:
+      type: object
+      properties: 
+        thesisName:
+          type: string
+          description: Thesis name
+        signalType:
+          type: string
+          description: Signal Type
+        signalTypeDescription:
+          type: string
+          description: Signal Type description
+        signals:
+          type: array
+          items:
+            $ref: "#/components/schemas/SignalData"
+    
+    SignalData:
+      type: object
+      properties: 
+        signalId:
+          type: number
+          description: Signal id
+        deviceId:
+          type: number
+          description: Device id
+        signalDescription:
+          type: string
+          description: Signal description
+        x:
+          type: integer
+          description: x coordinate
+        y:
+          type: integer
+          description: y coordinate
+        z:
+          type: integer
+          description: z coordinate
+        virtual:
+          type: boolean
+          description: True if the sensor is virtual
+        unit:
+          type: string
+          description: Scale unit
+        measurements:
+          type: array
+          items:
+            $ref: "#/components/schemas/MeasurementData"
+
+    MeasurementData:
+      type: object
+      properties:
+        timestamp: 
+          type: number
+          description: Measurment timestamp (Seconds elapsed since 01/01/1970 - 00:00 )
+        computed:
+          type: boolean
+          description: true if the measurement is computed.
+        value:
+          description: Either a numeric value rappresenting de aggregation of hte measurements values or ana awway of raw_values as strings
+          oneOf:
+            - type: number
+              format: double
+            - type: array
+              items:
+                type: string
+                        
+
+
+
 

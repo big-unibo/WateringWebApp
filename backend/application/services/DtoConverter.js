@@ -1,7 +1,7 @@
 import { InterpolatedDataResponse, InterpolatedDataValue, InterpolatedMeanMeasureData, InterpolatedMeasureData } from "../dtos/interpolatedDataDto.js";
 import { ColtureDto } from "../dtos/coltureDto.js";
 import { Company } from "../dtos/companyDto.js";
-import { DataResponse, SignalData, MeasureData ,SignalTypeData} from '../dtos/dataDto.js';
+import { SignalData, MeasureData ,SignalTypeData} from '../dtos/dataDto.js';
 import { WateringScheduleResponse, WateringEventDto } from "../dtos/wateringScheduleDto.js";
 import { MatrixData, MatrixDistanceData, OptStateDto } from "../dtos/optStateDto.js";
 import { WateringAdviceDto } from "../dtos/wateringAdviceDto.js";
@@ -110,9 +110,7 @@ class DtoConverter {
             );
             });
 
-            console.log(signalTypeDataArray)
-
-            return new DataResponse(signalTypeDataArray);
+        return signalTypeDataArray;
     }
 
 

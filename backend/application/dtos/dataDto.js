@@ -1,25 +1,3 @@
-export class DataResponse {
-
-    constructor(values) {
-        this.values = values;
-    }
-
-}
-
-// export class DataValue {
-
-//     constructor(refStructureName, companyName, fieldName, sectorName, thesisName, colture, measures) {
-//         this.refStructureName = refStructureName;
-//         this.companyName = companyName;
-//         this.fieldName = fieldName;
-//         this.sectorName = sectorName;
-//         this.thesisName = thesisName;
-//         this.colture = colture;
-//         this.measures = measures;
-//     }
-// }
-
-
 export class SignalTypeData {
     constructor(
         thesisName,
