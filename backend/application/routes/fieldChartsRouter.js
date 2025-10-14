@@ -58,6 +58,8 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
      *                         type: string
      *                       signalType:
      *                         type: string
+     *                       signalTypeDescription:
+     *                         type: string
      *                       signals:
      *                         type: array
      *                         items:

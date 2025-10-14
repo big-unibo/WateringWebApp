@@ -24,6 +24,7 @@ class ThesesAllSignalsRepository {
                 tas."signal_id" AS "signalId",
                 tas."signal_description" AS "signalDescription",
                 tas."signal_type" AS "signalType",
+                tas."signal_type_description" AS "signalTypeDescription",
                 tas."x" as x,
                 tas."y" as y,
                 tas."z" as z,
@@ -44,10 +45,21 @@ class ThesesAllSignalsRepository {
             AND m."timestamp" BETWEEN :timeFilterFrom AND :timeFilterTo
             AND tas."thesis_id" = :thesisId
             GROUP BY
-                tas."thesis_name", tas."device_id", tas."signal_id",
-                tas."signal_description", tas."signal_type", tas."x", tas."y", tas."z",
-                tas."virtual", tas."unit", tas."valid_from", tas."valid_to",
-                m."computed", "timestamp"
+                tas."thesis_name",
+                tas."device_id",
+                tas."signal_id",
+                tas."signal_description",
+                tas."signal_type",
+                tas."signal_type_description", 
+                tas."x", 
+                tas."y", 
+                tas."z",
+                tas."virtual", 
+                tas."unit", 
+                tas."valid_from", 
+                tas."valid_to",
+                m."computed", 
+                "timestamp"
         )
         SELECT
             "thesisName",
@@ -55,6 +67,7 @@ class ThesesAllSignalsRepository {
             "signalId",
             "signalDescription",
             "signalType",
+            "signalTypeDescription",
             x,
             y,
             z,

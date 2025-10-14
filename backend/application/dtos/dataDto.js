@@ -24,10 +24,12 @@ export class SignalTypeData {
     constructor(
         thesisName,
         signalType,
+        signalTypeDescription,
         signals,
     ){
         this.thesisName = thesisName,
         this.signalType = signalType,
+        this.signalTypeDescription = signalTypeDescription,
         this.signals = signals
     }
 }

@@ -61,6 +61,7 @@ class DtoConverter {
                 acc[typeKey] = {
                     thesisName: curr.thesisName,
                     signalType: curr.signalType,
+                    signalTypeDescription: curr.signalTypeDescription,
                     signals: {}
                 };
             }
@@ -104,6 +105,7 @@ class DtoConverter {
             return new SignalTypeData(
                 typeGroup.thesisName,
                 typeGroup.signalType,
+                typeGroup.signalTypeDescription,
                 signals
             );
             });
