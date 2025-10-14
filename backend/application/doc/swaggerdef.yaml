@@ -281,12 +281,12 @@ components:
       properties:
         timestamp: 
           type: number
-          description: Measurment timestamp (Seconds elapsed since 01/01/1970 - 00:00 )
+          description: Measurement timestamp (Seconds elapsed since 01/01/1970 - 00:00 )
         computed:
           type: boolean
           description: true if the measurement is computed.
         value:
-          description: Either a numeric value rappresenting de aggregation of hte measurements values or ana awway of raw_values as strings
+          description: Either a numeric value rappresenting the aggregation of the measurements values or an array of raw_values as strings
           oneOf:
             - type: number
               format: double
