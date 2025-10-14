@@ -11,7 +11,7 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
      *   get:
      *     security:
      *       - bearerAuth: []
-     *     summary: Retrieves data for one or more given types of signals, optionally filtered by time
+     *     summary: Retrieves data for one or more given types of signals for a given thesis, optionally filtered by time
      *     tags: [Field Chart Data]
      *     parameters:
      *       - in: path
