@@ -11,46 +11,77 @@ class ThesesAllSignalsRepository {
 
     async findHumidityEventsByThesis(thesisId, signalTypes, timeFilterFrom, timeFilterTo, aggregationPeriod ) {
         const signalsData = [];
-        signalsData.push(...(await this.getResults( thesisId, signalTypes, timeFilterFrom, timeFilterTo, aggregationPeriod)));
+        signalsData.push(...(await this.getResults( thesisId, signalTypes, timeFilterFrom, timeFilterTo, aggregationPeriod, 'SUM(\"value\")')));
         return signalsData;
     }
 
-    async getResults(thesisId, signalTypes, timeFilterFrom, timeFilterTo, aggregationPeriod) {
+    async getResults(thesisId, signalTypes, timeFilterFrom, timeFilterTo, aggregationPeriod, calculationType) {
         const query = `
-            SELECT DISTINCT
-                tas."thesis_name" as "thesisName",
-                tas."device_id" as "deviceid",
-                tas."signal_id" as "signalId",
-                tas."signal_description" as "signalDescription",
-                tas."signal_type" as "signalType",
-                tas."x",
-                tas."y",
-                tas."z",
-                tas."virtual",
-                tas."unit",
-                tas."valid_from" as "validFrom",
-                tas."valid_to" as "validTo",
-                COALESCE(m.value::text, m.raw_value) AS value,
-                m."timestamp",
-                m."computed"
+        WITH aggregated AS (
+            SELECT
+                tas."thesis_name" AS "thesisName",
+                tas."device_id" AS "deviceId",
+                tas."signal_id" AS "signalId",
+                tas."signal_description" AS "signalDescription",
+                tas."signal_type" AS "signalType",
+                tas."x" as x,
+                tas."y" as y,
+                tas."z" as z,
+                tas."virtual" as virtual,
+                tas."unit" as unit,
+                tas."valid_from" AS "validFrom",
+                tas."valid_to" AS "validTo",
+                m."computed" AS computed,
+                ${calculationType} AS value,
+                ARRAY_AGG(m."raw_value" ORDER BY m."timestamp") AS rawValue,
+                ROUND(m."timestamp"::NUMERIC / :aggregationPeriod) * :aggregationPeriod AS timestamp
             FROM theses_all_signals tas
             JOIN measurements m
                 ON m."signal_id" = tas."signal_id"
                 AND m."timestamp" >= tas."valid_from"
                 AND (tas."valid_to" IS NULL OR m."timestamp" <= tas."valid_to")
-            WHERE tas."signal_type" = ANY ('{ ${signalTypes.map(value => `${value}`).join(', ')} }')
-            AND m."timestamp" >= ${timeFilterFrom}
-            AND m."timestamp" <= ${timeFilterTo}
-            AND tas."thesis_id" = ${thesisId}
-            ORDER BY m."timestamp" ASC;
-        `;
+            WHERE tas."signal_type" = ANY(ARRAY[:signalTypes])
+            AND m."timestamp" BETWEEN :timeFilterFrom AND :timeFilterTo
+            AND tas."thesis_id" = :thesisId
+            GROUP BY
+                tas."thesis_name", tas."device_id", tas."signal_id",
+                tas."signal_description", tas."signal_type", tas."x", tas."y", tas."z",
+                tas."virtual", tas."unit", tas."valid_from", tas."valid_to",
+                m."computed", "timestamp"
+        )
+        SELECT
+            "thesisName",
+            "deviceId",
+            "signalId",
+            "signalDescription",
+            "signalType",
+            x,
+            y,
+            z,
+            virtual,
+            unit,
+            "validFrom",
+            "validTo",
+            computed,
+            timestamp,
+            COALESCE(to_jsonb(value), to_jsonb(rawValue)) AS value
+        FROM aggregated
+        ORDER BY "timestamp" ASC;
+            `;
 
         const results = await this.sequelize.query(query, {
+        replacements: {
+            aggregationPeriod,
+            signalTypes,
+            timeFilterFrom,
+            timeFilterTo,
+            thesisId
+        },
             type: QueryTypes.SELECT
         });
+        
 
-        //console.log(results);
-
+        console.log(results);
         return results;
     }
 

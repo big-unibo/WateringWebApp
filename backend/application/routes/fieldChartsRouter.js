@@ -87,11 +87,30 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
      *                                   timestamp:
      *                                     type: integer
      *                                   value:
-     *                                     type: string
+     *                                     type: object
+     *                                     description: Can be a single value or an array
      *                                   computed:
      *                                     type: boolean
      *       400:
      *         description: Invalid or missing query parameters
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       401:
+     *         description: Unauthorized (user not allowed to view signals)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Authentication failed (invalid or missing JWT)
      *         content:
      *           application/json:
      *             schema:
