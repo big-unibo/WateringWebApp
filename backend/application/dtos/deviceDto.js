@@ -7,9 +7,10 @@ export class Signal {
      * @param {number} z - Z coordinate (required)
      * @param {boolean} virtual - Indicates if the signal is virtual
      * @param {string} unit - Measurement unit
-     * @param {string} idOnProvider 
+     * @param {string} idOnProvider  - Signal id for the provider
+     * @param {string} sensorTechnology - Sensor technology
      */
-    constructor({typeId, description, x, y, z, virtual, unit, idOnProvider }) {
+    constructor({typeId, description, x, y, z, virtual, unit, idOnProvider, sensorTechnology }) {
         this.typeId = typeId;
         this.description = description;
         this.x = x;
@@ -18,6 +19,7 @@ export class Signal {
         this.virtual = virtual;
         this.unit = unit;
         this.idOnProvider = idOnProvider;
+        this.sensorTechnology = sensorTechnology;
     }
 }
 
@@ -66,11 +68,13 @@ export class SignalUpdate{
      * @param {number} id
      * @param {string} description 
      * @param {string} idOnProvider 
+     * @param {string} sensorTechnology 
      */
-    constructor({id,description, idOnProvider}){
+    constructor({id,description, idOnProvider, sensorTechnology}){
         this.id = id;
         this.description = description;
         this.idOnProvider = idOnProvider;
+        this.sensorTechnology = sensorTechnology
     }
 }
 

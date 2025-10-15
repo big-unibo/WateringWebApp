@@ -28,6 +28,7 @@ class DeviceService {
                 virtual: sig.virtual,
                 unit: sig.unit,
                 idOnProvider: sig.idOnProvider,
+                sensorTechnology: sensorTechnology,
                 deviceId: createdDeviceId
             }));
 

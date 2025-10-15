@@ -12,7 +12,7 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      *     security:
      *       - bearerAuth: []
      *     summary: Update a signal
-     *     description: Updates one or more fields of an existing signal (description, idOnProvider).
+     *     description: Updates one or more fields of an existing signal (description, idOnProvider, sensorTechnology).
      *     tags:
      *       - Signals
      *     parameters:
@@ -90,13 +90,15 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
 
         const description = req.body.description;
         const idOnProvider = req.body.idOnProvider;
+        const sensorTechnology = req.body.sensorTechnology;
 
         try{
             //[TO DO]: Authorization
             const signalUpdateData = new SignalUpdate({
                 id : signalId,
                 description : description,
-                idOnProvider : idOnProvider
+                idOnProvider : idOnProvider,
+                sensorTechnology : sensorTechnology
             })
 
             await signalService.updateSignal(signalUpdateData);

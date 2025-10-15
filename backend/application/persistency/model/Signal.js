@@ -64,6 +64,12 @@ function initSignal(sequelize) {
             allowNull: true,
             field: "id_on_provider"
         }, 
+
+        sensorTechnology: {
+            type: DataTypes.TEXT,
+            allowNull: true,
+            field: "sensor_technology"
+        }, 
     }, {
         tableName : 'signals',
         modelName : 'Signal',

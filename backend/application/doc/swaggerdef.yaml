@@ -132,6 +132,9 @@ components:
         idOnProvider:
           type: string
           description: Id on provider
+        sensorTechnology:
+          type: string
+          description: Sensor technology
 
     UpdateSignal:
       type: object
@@ -142,6 +145,9 @@ components:
         idOnProvider:
           type: string
           description: Signal id for the provider
+        sensorTechnology:
+          type: string
+          description: Sensor technology
 
     CreateDevice:
       type: object
