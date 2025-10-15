@@ -1,7 +1,4 @@
 import { Router } from 'express';
-
-import { InterpolatedDataResponse } from '../dtos/interpolatedDataDto.js';
-
 const fieldChartRouter = ({authenticationService, authorizationService, fieldService}) => {
     const router = Router();
 
@@ -186,7 +183,7 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: "#/components/schemas/HeatmapDataResponse"
+     *               $ref: "#/components/schemas/InterpolatedDataResponse"
      *       400:
      *         description: Invalid or missing query parameters
      *         content:
@@ -251,7 +248,6 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
         } catch (error) {
             return res.status(500).json({ message: error.message });
         }
-
     })
 
 // /**

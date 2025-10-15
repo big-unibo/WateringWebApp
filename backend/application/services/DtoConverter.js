@@ -1,4 +1,4 @@
-import { InterpolatedDataResponse, InterpolatedDataValue, InterpolatedMeanMeasureData, InterpolatedMeasureData } from "../dtos/interpolatedDataDto.js";
+import { InterpolatedDataResponse, InterpolatedImageData, InterpolatedMeasureData } from "../dtos/interpolatedDataDto.js";
 import { ColtureDto } from "../dtos/coltureDto.js";
 import { Company } from "../dtos/companyDto.js";
 import { SignalData, MeasureData ,SignalTypeData} from '../dtos/dataDto.js';
@@ -56,7 +56,7 @@ class DtoConverter {
 
     convertMeasurementsDataWrapper(wrappers) {
         const grouped = wrappers.reduce((acc, curr) => {
-            const typeKey = `${curr.thesisName}_${curr.signalType}`;
+            const typeKey = `${curr.thesisName}_${curr.signalType}_${curr.signalTypeDescription}`;
             if (!acc[typeKey]) {
                 acc[typeKey] = {
                     thesisName: curr.thesisName,
@@ -84,23 +84,23 @@ class DtoConverter {
             acc[typeKey].signals[signalKey].values.push(curr);
 
             return acc;
-            }, {});
+        }, {});
 
-            const signalTypeDataArray = Object.values(grouped).map(typeGroup => {
-                const signals = Object.values(typeGroup.signals).map(signalGroup => {
-                    const measurements = signalGroup.values.map(v => new MeasureData(v.timestamp, v.value, v.computed));
-                    return new SignalData(
-                        signalGroup.signalId,
-                        signalGroup.deviceId,
-                        signalGroup.signalDescription,
-                        signalGroup.x,
-                        signalGroup.y,
-                        signalGroup.z,
-                        signalGroup.virtual,
-                        signalGroup.unit,
-                        measurements
-                    );
-                });
+        const signalTypeDataArray = Object.values(grouped).map(typeGroup => {
+            const signals = Object.values(typeGroup.signals).map(signalGroup => {
+                const measurements = signalGroup.values.map(v => new MeasureData(v.timestamp, v.value, v.computed));
+                return new SignalData(
+                    signalGroup.signalId,
+                    signalGroup.deviceId,
+                    signalGroup.signalDescription,
+                    signalGroup.x,
+                    signalGroup.y,
+                    signalGroup.z,
+                    signalGroup.virtual,
+                    signalGroup.unit,
+                    measurements
+                );
+            });
 
             return new SignalTypeData(
                 typeGroup.thesisName,
@@ -108,9 +108,38 @@ class DtoConverter {
                 typeGroup.signalTypeDescription,
                 signals
             );
-            });
+        });
 
         return signalTypeDataArray;
+    }
+
+    convertHeatmapDataWrapper(wrappers) {
+        if (!wrappers || wrappers.length === 0) {
+            return null; 
+        }
+        const { thesisName, deviceId } = wrappers[0];
+
+        const imagesMap = wrappers.reduce((acc, curr) => {
+            const key = curr.timestamp;
+
+            if (!acc[key]) {
+                acc[key] = {
+                    timestamp: curr.timestamp,
+                    measures: []
+                };
+            }
+
+            acc[key].measures.push(
+                new InterpolatedMeasureData(curr.x, curr.y, curr.z, curr.value)
+            );
+
+            return acc;
+        }, {});
+
+        const images = Object.values(imagesMap).map(
+            img => new InterpolatedImageData(img.timestamp, img.measures)
+        );
+        return new InterpolatedDataResponse(thesisName, deviceId, images);
     }
 
 

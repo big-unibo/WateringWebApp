@@ -293,7 +293,47 @@ components:
             - type: array
               items:
                 type: string
-                        
+    
+    InterpolatedDataResponse:
+      type: object
+      properties:
+        thesisName:
+          type: string
+          description: Thesis name
+        deviceId:
+          type: number
+          description: Id of the GRID type device assigned to the thesis
+        images:
+          type: array
+          items:
+            $ref: "#/components/schemas/InterpolatedImageData"
+
+    InterpolatedImageData:
+      type: object
+      properties:
+        timestamp:
+          type: number
+          description: Measurement timestamp (Seconds elapsed since 01/01/1970 - 00:00 )
+        image:
+          type: array
+          items:
+            $ref: "#/components/schemas/InterpolatedMeasurementData"
+
+    InterpolatedMeasurementData:
+      type: object
+      properties:
+        x: 
+          type: number
+          description: x coordinate of the meaasurement.
+        y: 
+          type: number
+          description: y coordinate of the meaasurement.
+        z: 
+          type: number
+          description: x coordinate of the meaasurement.
+        value: 
+          type: number
+          description: cell value.
 
 
 

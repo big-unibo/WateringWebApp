@@ -1,4 +1,3 @@
-import DataInterpolatedRepository from '../persistency/repository/DataInterpolatedRepository.js';
 import DeltaRepository from '../persistency/repository/DeltaRepository.js';
 import HumidityBinsRepository from '../persistency/repository/HumidityBinsRepository.js';
 import ViewDataOriginalRepository from '../persistency/repository/ViewDataOriginalRepository.js';
@@ -136,7 +135,7 @@ class FieldService {
         }
 
         const result = await this.interpolatedProfileRepository.getInterpolatedProfiles(gridId, timeFilterFrom, timeFilterTo);
-        return dtoConverter.converHeatmapDataWrapper(result);
+        return dtoConverter.convertHeatmapDataWrapper(result);
     }
 
     async getInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {

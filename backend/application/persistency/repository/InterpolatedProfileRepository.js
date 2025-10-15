@@ -16,11 +16,6 @@ class InterpolatedProfileRepository {
             SELECT
                 tas."thesis_name" AS "thesisName",
                 tas."device_id" AS "deviceId",
-                tas."x" as x,
-                tas."y" as y,
-                tas."z" as z,
-                tas."virtual" as virtual,
-                tas."unit" as unit,
                 ip."x" as x,
                 ip."y" as y,
                 ip."z" as z,
@@ -42,10 +37,7 @@ class InterpolatedProfileRepository {
             deviceId
         },
             type: QueryTypes.SELECT
-        });
-
-        console.log(results);
-        
+        });      
         return results;
     }
 

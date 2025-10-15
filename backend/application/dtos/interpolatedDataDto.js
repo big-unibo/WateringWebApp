@@ -1,43 +1,38 @@
 export class InterpolatedDataResponse {
 
-    constructor(values) {
-        this.values = values;
-    }
-
-}
-
-export class InterpolatedDataValue {
-
-    constructor(refStructureName, companyName, fieldName, sectorName, thesisName, measures) {
-        this.refStructureName = refStructureName;
-        this.companyName = companyName;
-        this.fieldName = fieldName;
-        this.sectorName = sectorName;
+    constructor(thesisName, deviceId, images) {
         this.thesisName = thesisName;
-        this.measures = measures;
+        this.deviceId = deviceId;
+        this.images = images;
     }
 
 }
+
+export class InterpolatedImageData {
+    constructor(timestamp, image) {
+        this.timestamp = timestamp;
+        this.image = image;
+    }
+}
+
 
 export class InterpolatedMeasureData {
-
-    constructor(zz, yy, xx, value) {
-        this.zz = zz;
-        this.yy = yy;
-        this.xx = xx;
+    constructor(z, y, x, value) {
+        this.z = z;
+        this.y = y;
+        this.x = x;
         this.value = value;
     }
-
 }
 
-export class InterpolatedMeanMeasureData {
+// export class InterpolatedMeanMeasureData {
 
-    constructor(zz, yy, xx, std, mean) {
-        this.zz = zz;
-        this.yy = yy;
-        this.xx = xx;
-        this.std = std;
-        this.mean = mean;
-    }
+//     constructor(zz, yy, xx, std, mean) {
+//         this.zz = zz;
+//         this.yy = yy;
+//         this.xx = xx;
+//         this.std = std;
+//         this.mean = mean;
+//     }
 
-}
+// }
