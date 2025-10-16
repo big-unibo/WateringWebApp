@@ -16,30 +16,31 @@ class InterpolatedProfileRepository {
         const query = `
             WITH validity_table AS (
                 SELECT DISTINCT
-                    tas."thesis_name",
-                    tas."device_id",
-                    tas."valid_from",
-                    tas."valid_to"
+                    tas.thesis_name,
+                    tas.device_id,
+                    tas.valid_from,
+                    tas.valid_to
                 FROM theses_all_signals tas
-                WHERE tas."device_type" = 'GRID'
-                AND tas."thesis_id" = : thesisId
+                WHERE tas.device_type = 'GRID'
+                AND tas.thesis_id = :thesisId
             )
             SELECT DISTINCT
-                v."thesis_name" as "thesisName",
-                v."device_id" as "deviceId",
-                ip."timestamp" as "timestamp",
-                ip."x" as "x", 
-                ip."y" as "y",
-                ip."z" as "z",
-                ip."value" as "value"
+                v.thesis_name AS "thesisName",
+                v.device_id AS "deviceId",
+                ip.timestamp AS "timestamp",
+                ip.x AS "x",
+                ip.y AS "y",
+                ip.z AS "z",
+                ip.value AS "value"
             FROM validity_table v
             JOIN interpolated_profiles ip 
                 ON ip.profile_id = v.device_id
-                AND ip.timestamp >= v.valid_from
-                AND (v.valid_to IS NULL OR ip.timestamp <= v.valid_to)
-                AND ip.timestamp BETWEEN :timeFilterFrom AND :timeFilterTo
-                AND ip.value BETWEEN -10000000 AND 0
-            `;
+                AND ip.timestamp BETWEEN 
+                    GREATEST(v.valid_from, :timeFilterFrom)
+                    AND LEAST(COALESCE(v.valid_to, 'infinity'), :timeFilterTo)
+            ORDER BY ip.timestamp ASC;
+        `;
+
 
         const results = await this.sequelize.query(query, {
             replacements: {

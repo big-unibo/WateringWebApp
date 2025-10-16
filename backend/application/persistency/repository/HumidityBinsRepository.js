@@ -11,57 +11,60 @@ class HumidityBinsRepository {
         const query = `
             WITH validity_table AS (
                 SELECT DISTINCT
-                    tas."thesis_name",
-                    tas."device_id",
-                    tas."valid_from",
-                    tas."valid_to"
+                    tas.thesis_name,
+                    tas.device_id,
+                    tas.valid_from,
+                    tas.valid_to
                 FROM theses_all_signals tas
-                WHERE tas."device_type" = 'GRID'
-                AND tas."thesis_id" = :thesisId
+                WHERE tas.device_type = 'GRID'
+                    AND tas.thesis_id = :thesisId
             ),
             valid_interpolated_profiles_table AS (
                 SELECT DISTINCT
-                    v."thesis_name",
-                    v."device_id",
-                    ip."timestamp",
-                    ip."x",
-                    ip."y",
-                    ip."z",
-                    ip."value"
+                    v.thesis_name,
+                    v.device_id,
+                    ip.timestamp,
+                    ip.x,
+                    ip.y,
+                    ip.z,
+                    ip.value
                 FROM validity_table v
                 JOIN interpolated_profiles ip 
                     ON ip.profile_id = v.device_id
-                    AND ip.timestamp >= v.valid_from
-                    AND (v.valid_to IS NULL OR ip.timestamp <= v.valid_to)
-                    AND ip.timestamp BETWEEN :timeFilterFrom AND :timeFilterTo
-                    AND ip.value BETWEEN -10000000 AND 0
-            ) 
+                    AND ip.timestamp BETWEEN 
+                        GREATEST(v.valid_from, :timeFilterFrom)
+                        AND LEAST(COALESCE(v.valid_to, 'infinity'), :timeFilterTo)
+                AND ip.value BETWEEN -10000000 AND 0
+            )
             SELECT
-                vip."thesis_name" AS "thesisName",
-                vip."device_id" AS "deviceId",
-                vip."timestamp" AS timestamp,
+                vip.thesis_name AS "thesisName",
+                vip.device_id AS "deviceId",
+                vip.timestamp AS "timestamp",
                 CASE
-                    WHEN pb.bound_0 IS NULL THEN '(-∞, 0]' 
-                    WHEN vip."value" <= pb.bound_0 THEN '(-∞, ' || pb.bound_0 || ']'
-                    WHEN pb.bound_1 IS NOT NULL AND vip."value" <= pb.bound_1 THEN '(' || pb.bound_0 || ', ' || pb.bound_1 || ']'
-                    WHEN pb.bound_2 IS NOT NULL AND vip."value" <= pb.bound_2 THEN '(' || pb.bound_1 || ', ' || pb.bound_2 || ']'
-                    WHEN pb.bound_3 IS NOT NULL AND vip."value" <= pb.bound_3 THEN '(' || pb.bound_2 || ', ' || pb.bound_3 || ']'
-                    WHEN pb.bound_4 IS NOT NULL AND vip."value" <= pb.bound_4 THEN '(' || pb.bound_3 || ', ' || pb.bound_4 || ']'
-                    WHEN pb.bound_5 IS NOT NULL AND vip."value" <= pb.bound_5 THEN '(' || pb.bound_4 || ', ' || pb.bound_5 || ']'
-                    WHEN pb.bound_6 IS NOT NULL AND vip."value" <= pb.bound_6 THEN '(' || pb.bound_5 || ', ' || pb.bound_6 || ']'
+                    WHEN pb.bound_0 IS NULL THEN '(-∞, 0]'
+                    WHEN vip.value <= pb.bound_0 THEN '(-∞, ' || pb.bound_0 || ']'
+                    WHEN pb.bound_1 IS NOT NULL AND vip.value <= pb.bound_1 THEN '(' || pb.bound_0 || ', ' || pb.bound_1 || ']'
+                    WHEN pb.bound_2 IS NOT NULL AND vip.value <= pb.bound_2 THEN '(' || pb.bound_1 || ', ' || pb.bound_2 || ']'
+                    WHEN pb.bound_3 IS NOT NULL AND vip.value <= pb.bound_3 THEN '(' || pb.bound_2 || ', ' || pb.bound_3 || ']'
+                    WHEN pb.bound_4 IS NOT NULL AND vip.value <= pb.bound_4 THEN '(' || pb.bound_3 || ', ' || pb.bound_4 || ']'
+                    WHEN pb.bound_5 IS NOT NULL AND vip.value <= pb.bound_5 THEN '(' || pb.bound_4 || ', ' || pb.bound_5 || ']'
+                    WHEN pb.bound_6 IS NOT NULL AND vip.value <= pb.bound_6 THEN '(' || pb.bound_5 || ', ' || pb.bound_6 || ']'
                     ELSE '(' || COALESCE(pb.bound_6, pb.bound_5, pb.bound_4, pb.bound_3, pb.bound_2, pb.bound_1, pb.bound_0) || ', 0]'
                 END AS "humidityBin",
-                COUNT(vip."value") AS count
+                COUNT(vip.value) AS "count"
             FROM valid_interpolated_profiles_table vip
             JOIN devices d
-                ON d.id = vip."device_id"
-            JOIN profiles_bins pb ON pb.id = d.binning_id
+                ON d.id = vip.device_id
+            JOIN profiles_bins pb 
+                ON pb.id = d.binning_id
             GROUP BY
                 vip.thesis_name,
                 vip.device_id,
                 vip.timestamp,
                 "humidityBin"
-            `;
+            ORDER BY vip.timestamp ASC;
+        `;
+
 
         const results = await this.sequelize.query(query, {
             replacements: {
