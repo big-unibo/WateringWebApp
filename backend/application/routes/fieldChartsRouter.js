@@ -284,7 +284,7 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: "#/components/schemas/InterpolatedDataResponse"
+     *               $ref: "#/components/schemas/HumidtyBinsDataResponse"
      *       400:
      *         description: Invalid or missing query parameters
      *         content:

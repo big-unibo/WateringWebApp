@@ -340,6 +340,33 @@ components:
         value: 
           type: number
           description: cell value.
+    
+    HumidtyBinsDataResponse:
+      type: object
+      properties:
+        thesisName:
+          type: string
+          description: Thesis name
+        deviceId:
+          type: number
+          description: Id of the GRID type device assigned to the thesis
+        measures:
+          type: array
+          items:
+            $ref: "#/components/schemas/HumidtyBinMeasureData"
+      
+    HumidtyBinMeasureData:
+      type: object
+      properties:
+        humidityBin:
+          type: string
+          description: String describing the humidty bin
+        timestamp:
+          type: number
+          description: Timestamp of the humidty bin measures
+        count:
+          type: number
+          description: Count of the measurements taken resulting for the bin
 
 
 
