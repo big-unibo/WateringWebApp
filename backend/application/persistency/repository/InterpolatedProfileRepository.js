@@ -15,18 +15,14 @@ class InterpolatedProfileRepository {
 
         const query = `
             WITH validity_table AS (
-                SELECT
+                SELECT DISTINCT
                     tas."thesis_name",
                     tas."device_id",
                     tas."valid_from",
                     tas."valid_to"
                 FROM theses_all_signals tas
                 WHERE tas."device_type" = 'GRID'
-                GROUP BY 
-                    tas."thesis_name",
-                    tas."device_id",
-                    tas."valid_from",
-                    tas."valid_to"
+                AND tas."thesis_id" = : thesisId
             )
             SELECT DISTINCT
                 v."thesis_name" as "thesisName",
