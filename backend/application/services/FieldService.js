@@ -130,12 +130,12 @@ class FieldService {
     }
 
     async getHeatmapByThesis(thesisId, timeFilterFrom, timeFilterTo){
-        const gridId = await this.thesesAllSignalsRepository.getGridDeviceByThesis(thesisId, timeFilterFrom, timeFilterTo);
-        if(!gridId){
-            throw Error("No GRID type device found assigned to the given thesis");
-        }
+        // const gridId = await this.thesesAllSignalsRepository.getGridDeviceByThesis(thesisId, timeFilterFrom, timeFilterTo);
+        // if(!gridId){
+        //     throw Error("No GRID type device found assigned to the given thesis");
+        // }
 
-        const result = await this.interpolatedProfileRepository.getInterpolatedProfiles(thesisId, gridId, timeFilterFrom, timeFilterTo);
+        const result = await this.interpolatedProfileRepository.getInterpolatedProfiles(thesisId, timeFilterFrom, timeFilterTo);
         return dtoConverter.convertHeatmapDataWrapper(result);
     }
 

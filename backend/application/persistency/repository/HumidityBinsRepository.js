@@ -67,8 +67,6 @@ class HumidityBinsRepository {
                 "humidityBin"
             `;
 
-
-
         const results = await this.sequelize.query(query, {
             replacements: {
                 timeFilterFrom,
