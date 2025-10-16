@@ -31,6 +31,7 @@ import SignalService from './services/SignalService.js';
 import sectorsRouter from './routes/sectorsRouter.js';
 import fieldChartRouter from './routes/fieldChartsRouter.js';
 import InterpolatedProfileRepository from './persistency/repository/InterpolatedProfileRepository.js';
+import HumidityBinsRepository from './persistency/repository/HumidityBinsRepository.js';
 
 dotenv.config();
 
@@ -74,12 +75,13 @@ const deviceRepository = new DeviceRepository(models,sequelize);
 const signalRepository = new SignalRepository(models,sequelize);
 const thesesAllSignalsRepository = new ThesesAllSignalsRepository(models,sequelize);
 const interpolatedProfilerepository = new InterpolatedProfileRepository(models,sequelize);
+const humidityBinsRepository = new HumidityBinsRepository(models,sequelize)
 
 const organizationService = new OrganizationService(organizationRepository);
 const userService = new UserService(userRepository);
 const authenticationService = new AuthenticationService(userService);
 const companyService = new CompanyService(companyRepository);
-const fieldService = new FieldService(fieldRepository,companyRepository, thesesAllSignalsRepository, interpolatedProfilerepository);
+const fieldService = new FieldService(fieldRepository,companyRepository, thesesAllSignalsRepository, interpolatedProfilerepository, humidityBinsRepository);
 const authorizationService = new AuthorizationService(userService, fieldService);
 const deviceService = new DeviceService(deviceRepository,signalRepository);
 const signalService = new SignalService(signalRepository)

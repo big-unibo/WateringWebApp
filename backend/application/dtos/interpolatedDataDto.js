@@ -25,6 +25,23 @@ export class InterpolatedMeasureData {
     }
 }
 
+export class HumidityBinsDataResponse {
+    constructor(thesisName, deviceId, measures) {
+        this.thesisName = thesisName;
+        this.deviceId = deviceId;
+        this.measures = measures;
+    }
+}
+
+
+export class HumidityBinMeasureData {
+    constructor(humidityBin, timestamp, count) {
+        this.humidtyBin = humidityBin;
+        this.timestamp = timestamp;
+        this.count = count;
+    }
+}
+
 // export class InterpolatedMeanMeasureData {
 
 //     constructor(zz, yy, xx, std, mean) {

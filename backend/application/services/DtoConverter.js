@@ -1,4 +1,4 @@
-import { InterpolatedDataResponse, InterpolatedImageData, InterpolatedMeasureData } from "../dtos/interpolatedDataDto.js";
+import { HumidityBinMeasureData, HumidityBinsDataResponse, InterpolatedDataResponse, InterpolatedImageData, InterpolatedMeasureData } from "../dtos/interpolatedDataDto.js";
 import { ColtureDto } from "../dtos/coltureDto.js";
 import { Company } from "../dtos/companyDto.js";
 import { SignalData, MeasureData ,SignalTypeData} from '../dtos/dataDto.js';
@@ -141,6 +141,21 @@ class DtoConverter {
         );
         return new InterpolatedDataResponse(thesisName, deviceId, images);
     }
+
+
+    convertHumidtyBinsDataWrapper(wrappers) {
+        if (!wrappers || wrappers.length === 0) {
+            return null;
+        }
+
+        const { thesisName, deviceId } = wrappers[0];
+
+        const measures = wrappers.map(curr =>
+            new HumidityBinMeasureData(curr.humidityBin, curr.timestamp, curr.count)
+        );
+
+        return new HumidityBinsDataResponse(thesisName, deviceId, measures);
+    };
 
 
     convertViewDataOriginalWrapper(wrappers) {

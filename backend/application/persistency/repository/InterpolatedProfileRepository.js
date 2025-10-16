@@ -11,7 +11,7 @@ class InterpolatedProfileRepository {
         this.sequelize = sequelize;
     }
 
-    async getInterpolatedProfiles(deviceId, timeFilterFrom, timeFilterTo) {
+    async getInterpolatedProfiles(thesisId, deviceId, timeFilterFrom, timeFilterTo) {
         const query = `
             SELECT
                 tas."thesis_name" AS "thesisName",
@@ -28,13 +28,15 @@ class InterpolatedProfileRepository {
                 AND (tas."valid_to" IS NULL OR ip."timestamp" <= tas."valid_to")
             WHERE ip."timestamp" BETWEEN :timeFilterFrom AND :timeFilterTo
                 AND tas."device_id" = :deviceId
+                AND tas."thesis_id" = :thesisId
         `;
 
         const results = await this.sequelize.query(query, {
         replacements: {
             timeFilterFrom,
             timeFilterTo,
-            deviceId
+            deviceId,
+            thesisId
         },
             type: QueryTypes.SELECT
         });      
