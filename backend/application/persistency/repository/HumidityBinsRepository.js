@@ -8,41 +8,6 @@ class HumidityBinsRepository {
 
     async getHumidityBins(thesisId, timeFilterFrom, timeFilterTo) {
 
-        // const query = `
-        //     SELECT
-        //         tas."thesis_name" AS "thesisName",
-        //         tas."device_id" AS "deviceId",
-        //         ip."timestamp" AS timestamp,
-        //         CASE
-        //             WHEN pb.bound_0 IS NULL THEN '(-∞, 0]' 
-        //             WHEN ip.value <= pb.bound_0 THEN '(-∞, ' || pb.bound_0 || ']'
-        //             WHEN pb.bound_1 IS NOT NULL AND ip.value <= pb.bound_1 THEN '(' || pb.bound_0 || ', ' || pb.bound_1 || ']'
-        //             WHEN pb.bound_2 IS NOT NULL AND ip.value <= pb.bound_2 THEN '(' || pb.bound_1 || ', ' || pb.bound_2 || ']'
-        //             WHEN pb.bound_3 IS NOT NULL AND ip.value <= pb.bound_3 THEN '(' || pb.bound_2 || ', ' || pb.bound_3 || ']'
-        //             WHEN pb.bound_4 IS NOT NULL AND ip.value <= pb.bound_4 THEN '(' || pb.bound_3 || ', ' || pb.bound_4 || ']'
-        //             WHEN pb.bound_5 IS NOT NULL AND ip.value <= pb.bound_5 THEN '(' || pb.bound_4 || ', ' || pb.bound_5 || ']'
-        //             WHEN pb.bound_6 IS NOT NULL AND ip.value <= pb.bound_6 THEN '(' || pb.bound_5 || ', ' || pb.bound_6 || ']'
-        //             ELSE '(' || COALESCE(pb.bound_6, pb.bound_5, pb.bound_4, pb.bound_3, pb.bound_2, pb.bound_1, pb.bound_0) || ', 0]'
-        //         END AS humidityBin,
-        //         COUNT(ip.value) AS count
-        //     FROM devices d
-        //     JOIN profiles_bins pb ON pb.id = d.binning_id
-        //     JOIN theses_all_signals tas ON tas.device_id = d.id
-        //     LEFT JOIN interpolated_profiles ip
-        //         ON ip.profile_id = tas.device_id
-        //         AND ip.timestamp >= tas.valid_from
-        //         AND (tas.valid_to IS NULL OR ip.timestamp <= tas.valid_to)
-        //         AND ip.timestamp BETWEEN :timeFilterFrom AND :timeFilterTo
-        //         AND ip.value BETWEEN -10000000 AND 0
-        //     WHERE 
-        //         d.id = :deviceId
-        //     GROUP BY
-        //         tas.thesis_name,
-        //         tas.device_id,
-        //         ip.timestamp,
-        //         humidityBin
-        // `;
-
         const query = `
             WITH validity_table AS (
                 SELECT
