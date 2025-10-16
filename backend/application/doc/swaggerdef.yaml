@@ -359,8 +359,11 @@ components:
       type: object
       properties:
         humidityBin:
+          type: number
+          description: Humidty bin number
+        humidityBinDescription:
           type: string
-          description: String describing the humidty bin
+          description: String describing the humidty bin range
         timestamp:
           type: number
           description: Timestamp of the humidty bin measures

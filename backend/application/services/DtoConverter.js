@@ -151,7 +151,7 @@ class DtoConverter {
         const { thesisName, deviceId } = wrappers[0];
 
         const measures = wrappers.map(curr =>
-            new HumidityBinMeasureData(curr.humidityBin, curr.timestamp, curr.count)
+            new HumidityBinMeasureData(curr.humidityBin, curr.humidityBinDescription, curr.timestamp, curr.count)
         );
 
         return new HumidityBinsDataResponse(thesisName, deviceId, measures);

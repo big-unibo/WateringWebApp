@@ -35,8 +35,9 @@ export class HumidityBinsDataResponse {
 
 
 export class HumidityBinMeasureData {
-    constructor(humidityBin, timestamp, count) {
+    constructor(humidityBin, humidityBinDescription, timestamp, count) {
         this.humidtyBin = humidityBin;
+        this.humidtyBinDescription = humidityBinDescription;
         this.timestamp = timestamp;
         this.count = count;
     }
