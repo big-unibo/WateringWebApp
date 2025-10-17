@@ -50,6 +50,7 @@ class AuthorizationService {
 
 
 	async isUserAuthorizedById(userId, permit, table, idKey) {
+		
 		const userPermits = await this.userService.findUserPermits(userId);
 		if (!userPermits || !Array.isArray(userPermits.permits)) return false;
 		if (userPermits.role === 'admin') return true;

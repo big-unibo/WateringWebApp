@@ -1,13 +1,15 @@
-import { QueryTypes, Op } from 'sequelize'
+import { Op } from 'sequelize';
 
 class FieldRepository {
 
     constructor(models, sequelize){
+        this.Organization = models.Organization
         this.Company = models.Company;
         this.Field = models.Field;
         this.Sector = models.Sector;
         this.Thesis = models.Thesis;
         this.ThesisInSector = models.ThesisInSector;
+        this.Permit = models.Permit;
         this.sequelize = sequelize;
     }
 
@@ -84,22 +86,44 @@ class FieldRepository {
 
     async getSectorDetails(sectorId){
         const sector = await this.Sector.findByPk(sectorId, {
+            attributes: ['id', 'sectorName', 'culture', 'cultureType', 'fieldId', 'location', 'prescriptive' , 'advice', 'dripperCapacity', 'sprinklerCapacity', 'doubleWing'],
             include: [
-            {
-                model: this.Field,
-                as: 'field',  
-                include: [
                 {
+                model: this.Field,
+                as: 'field',
+                attributes: ['fieldName', 'location', 'companyId'],
+                include: [
+                    {
                     model: this.Company,
-                    as: 'company'  
-                }
+                    as: 'company',
+                    attributes: ['companyName', 'organizationId'],
+                    include: [
+                        {
+                        model: this.Organization,
+                        as: 'organization',
+                        attributes: ['organizationName'],
+                        }
+                    ]
+                    }
                 ]
-            }
+                },
+                {
+                model: this.ThesisInSector,
+                atributes:['thesisId'],
+                as: 'thesisInSector',
+                include: [
+                    {
+                    model: this.Thesis,
+                    as: 'thesis',
+                    attributes: [ 'thesisName']
+                    }
+                ]
+                }
             ]
         });
 
         if (!sector) throw new Error(`Sector with id ${sectorId} not found`);
-        return sector;
+        return sector.toJSON();
     }
 
     async getFieldDetails(fieldId){
@@ -127,12 +151,32 @@ class FieldRepository {
     }
 
     async assignThesisToSector(thesisId, sectorId, weight, validFrom) {
-        return  await this.ThesisInSector.create({
+        return await this.ThesisInSector.create({
             thesisId,
             sectorId,
             weight,
             validFrom,
         });
+    }
+
+    async getSectors(userId, timeFilterFrom, timeFilterTo) {
+        const query = `
+            SELECT DISTINCT p.id_key AS "idKey"
+            FROM permits p
+            JOIN theses_in_sectors ts
+            ON p.id_key = ts.sector_id
+            WHERE p.user_id = :userId
+                AND p.table = 'sectors'
+                AND ts.valid_from <= :timeFilterTo
+                AND (ts.valid_to IS NULL OR ts.valid_to >= :timeFilterFrom)
+        `;
+
+        const results = await this.sequelize.query(query, {
+            replacements: { userId, timeFilterFrom, timeFilterTo },
+            type: this.sequelize.QueryTypes.SELECT
+        });
+
+        return results;
     }
 
     // async updateWateringSectorDetails(sectorDetails, timestampFrom){

@@ -35,3 +35,45 @@ export class Sector {
     this.doubleWing = doubleWing;
   }
 }
+
+export class SectorDataDto {
+  constructor({
+    sectorId,
+    sectorName,
+    culture,
+    cultureType,
+    location,
+    prescriptive,
+    advice,
+    dripperCapacity,
+    sprinklerCapacity,
+    doubleWing,
+    fieldId,
+    fieldName,
+    fieldLocation,
+    companyId,
+    companyName,
+    organizationId,
+    organizationName,
+    theses
+  }) {
+    this.sectorId = sectorId;
+    this.sectorName = sectorName;
+    this.culture = culture;
+    this.cultureType = cultureType;
+    this.location = location;
+    this.prescriptive = prescriptive;
+    this.advice = advice;
+    this.dripperCapacity = dripperCapacity;
+    this.sprinklerCapacity = sprinklerCapacity;
+    this.doubleWing = doubleWing;
+    this.fieldId = fieldId;
+    this.fieldName = fieldName;
+    this.fieldLocation = fieldLocation;
+    this.companyId = companyId;
+    this.companyName = companyName;
+    this.organizationId = organizationId;
+    this.organizationName = organizationName;
+    this.theses = theses;
+  }
+}

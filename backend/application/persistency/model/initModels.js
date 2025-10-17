@@ -43,8 +43,8 @@ export default function initModels(sequelize) {
     ThesesAllSignals: initThesesAllSignals(sequelize)
   };
 
-  models.Company.belongsTo(models.Organization, { foreignKey: "organization_id" });
-  models.Organization.hasMany(models.Company, { foreignKey: "organization_id" });
+  models.Company.belongsTo(models.Organization, { foreignKey: "organization_id", as: "organization" });
+  models.Organization.hasMany(models.Company, { foreignKey: "organization_id" , as:  "companies"});
 
   models.Field.belongsTo(models.Company, { foreignKey: "company_id" , as: "company"});
   models.Company.hasMany(models.Field, { foreignKey: "company_id" , as: "fields"});
@@ -58,11 +58,11 @@ export default function initModels(sequelize) {
   models.Field.hasMany(models.Sector, {foreignKey: "field_id", as: "sectors"});
   models.Sector.belongsTo(models.Field, {foreignKey: "field_id", as: 'field'});
 
-  models.Thesis.hasMany(models.ThesisInSector, { foreignKey: "thesis_id" });
-  models.ThesisInSector.belongsTo(models.Thesis, { foreignKey: "thesis_id" });
+  models.Thesis.hasMany(models.ThesisInSector, { foreignKey: "thesis_id",  as: "thesisInSector"});
+  models.ThesisInSector.belongsTo(models.Thesis, { foreignKey: "thesis_id", as: "thesis" });
 
-  models.Sector.hasMany(models.ThesisInSector, { foreignKey: "sector_id" });
-  models.ThesisInSector.belongsTo(models.Sector, { foreignKey: "sector_id" });
+  models.Sector.hasMany(models.ThesisInSector, { foreignKey: "sector_id", as: "thesisInSector" });
+  models.ThesisInSector.belongsTo(models.Sector, { foreignKey: "sector_id", as: "sector" });
 
   models.Device.hasMany(models.Signal, {foreignKey: "device_id", as: "signals"});
   models.Signal.belongsTo(models.Device, {foreignKey: "device_id", as: "device"});

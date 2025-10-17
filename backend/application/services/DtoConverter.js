@@ -5,6 +5,7 @@ import { SignalData, MeasureData ,SignalTypeData} from '../dtos/dataDto.js';
 import { WateringScheduleResponse, WateringEventDto } from "../dtos/wateringScheduleDto.js";
 import { MatrixData, MatrixDistanceData, OptStateDto } from "../dtos/optStateDto.js";
 import { WateringAdviceDto } from "../dtos/wateringAdviceDto.js";
+import { SectorDataDto } from "../dtos/sectorDto.js";
 
 class DtoConverter {
 
@@ -14,6 +15,38 @@ class DtoConverter {
             company.organizationId,
             company.id
         );
+    }
+
+    convertSectorDataWrapper(sectorData){
+
+        const theses = sectorData.thesisInSector?.map(t => ({
+            id: t.thesisId || t.thesis?.id,
+            name: t.thesis?.thesisName || t.thesis?.name
+        })) || [];
+
+        // Deduplica le tesi per id
+        const uniqueTheses = Array.from(new Map(theses.map(t => [t.id, t])).values());
+
+        return new SectorDataDto({
+            organizationId: sectorData.field?.company?.organization?.id || sectorData.field?.company?.organizationId || null,
+            organizationName: sectorData.field?.company?.organization?.organizationName || null,
+            companyId: sectorData.field?.company?.id || sectorData.field?.companyId || null,
+            companyName: sectorData.field?.company?.companyName || null,
+            fieldId: sectorData.fieldId,
+            fieldName: sectorData.field?.fieldName || null,
+            fieldLocation: sectorData.field?.location || null,
+            sectorId: sectorData.id,
+            sectorName: sectorData.sectorName,
+            culture: sectorData.culture,
+            cultureType: sectorData.cultureType,
+            location: sectorData.location,
+            prescriptive: sectorData.prescriptive,
+            advice: sectorData.advice,
+            dripperCapacity: sectorData.dripperCapacity,
+            sprinklerCapacity: sectorData.sprinklerCapacity,
+            doubleWing: sectorData.doubleWing,
+            theses: uniqueTheses
+        });
     }
 
     convertDataInterpolatedMeanWrapper(refStructureName, companyName, fieldName, sectorName, thesisName, wrappers) {

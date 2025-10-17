@@ -149,6 +149,16 @@ class FieldService {
         return dtoConverter.convertHumidtyBinsDataWrapper(result);
     }
 
+    async getSectors(userId, timeFilterFrom, timeFilterTo){
+        const result = await this.fieldRepository.getSector(userId, timeFilterFrom, timeFilterTo);
+        return result.map(r => ({ sectorId: r.idKey }));
+    }
+
+    async getSectorById(userId, sectorId){
+        const result = await this.fieldRepository.getSectorDetails(userId, sectorId);
+        return dtoConverter.convertSectorDataWrapper(result);
+    }
+
     // async getInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {
     //     const result = await this.dataInterpolatedRepository.findInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo);
     //     return [dtoConverter.convertDataInterpolatedMeanWrapper(refStructureName, companyName, fieldName, sectorName, thesisName, result)];

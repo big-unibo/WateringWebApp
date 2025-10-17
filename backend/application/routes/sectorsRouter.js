@@ -5,6 +5,242 @@ import { Thesis } from '../dtos/thesisDto.js';
 const sectorsRouter = ({ userService, authenticationService, authorizationService, fieldService }) => {
     const router = Router();
 
+
+	/**
+	 * @swagger
+	 * /sectors:
+	 *   get:
+	 *     security:
+	 *       - bearerAuth: []
+	 *     summary: Returns all sectors the user has permission over with an active thesis within a time filter range.
+	 *     tags: [Sectors]
+	 *     description: Retrieve all sectors the user has permits over, filtered by a time range of active theses.
+	 *     parameters:
+	 *       - in: query
+	 *         name: timeFilterFrom
+	 *         required: true
+	 *         schema:
+	 *           type: number
+	 *         description: Time filter start (timestamp in seconds)
+	 *       - in: query
+	 *         name: timeFilterTo
+	 *         required: true
+	 *         schema:
+	 *           type: number
+	 *         description: Time filter end (timestamp in seconds)
+	 *     responses:
+	 *       200:
+	 *         description: List of sectors the user has permits over
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: array
+	 *               items:
+	 *                 type: object
+	 *                 properties:
+	 *                   sectorId:
+	 *                     type: number
+	 *       400:
+	 *         description: Bad request – missing or invalid query parameters
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 message:
+	 *                   type: string
+	 *       401:
+	 *         description: Unauthorized – user not permitted to view sectors
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 message:
+	 *                   type: string
+	 *       403:
+	 *         description: Authentication failed – invalid or missing JWT
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 message:
+	 *                   type: string
+	 *       404:
+	 *         description: No sectors found for the current user and time filter
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 error:
+	 *                   type: string
+	 *       500:
+	 *         description: Internal server error – unexpected error while retrieving sectors
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 error:
+	 *                   type: string
+	 */
+    router.get('/', async (req, res) => {
+		let requestUserData;
+		try {
+			requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+		} catch (error) {
+			return res.status(403).json({ message: 'Authentication failed' });
+		}
+
+		const timeFilterFrom = req.query.timeFilterFrom ? Number(req.query.timeFilterFrom) : null;
+		const timeFilterTo = req.query.timeFilterTo ? Number(req.query.timeFilterTo) : null;
+		const userId = requestUserData.userid;
+
+
+		if (!timeFilterFrom || isNaN(timeFilterFrom)) {
+			return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid date' });
+		}
+		if (!timeFilterTo || isNaN(timeFilterTo)) {
+			return res.status(400).json({ message: 'timeFilterTo is required and must be a valid date' });
+		}
+		if (!userId || isNaN(parseInt(userId))) {
+			return res.status(400).json({ message: "Invalid or missing userId" });
+		}
+
+		const userIdParsed = parseInt(userId);
+
+		try {
+			const sectors = await fieldService.getSectors(userIdParsed, timeFilterFrom, timeFilterTo);
+
+			if (!sectors || sectors.length === 0) {
+				return res.status(404).json({ 
+					error: "User has no permission to view any sectors" 
+				});
+			}
+
+			return res.status(200).json(sectors);
+		} catch (error) {
+			console.log(`Fail retrieving sectors caused by: ${error.message}`);
+			return res.status(500).json({ error: "Error while retrieving sectors" });
+		}
+	});
+
+
+	/**
+	 * @swagger
+	 * /sectors/{sectorId}:
+	 *   get:
+	 *     security:
+	 *       - bearerAuth: []
+	 *     summary: Returns all sector information given its id, requires user having monitoring permits for the given sector id.
+	 *     tags: [Sectors]
+	 *     description: Returns all sector information given its id, requires user having monitoring permits for the given sector id.
+     *     parameters:
+     *       - in: path
+     *         name: sectorId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of the sector to retrieve the information of
+	 *     responses:
+	 *       200:
+	 *         description: List of sectors the user has permits over
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               
+	 *       400:
+	 *         description: Bad request – missing or invalid query parameters
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 message:
+	 *                   type: string
+	 *       401:
+	 *         description: Unauthorized – user not permitted to view sectors
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 message:
+	 *                   type: string
+	 *       403:
+	 *         description: Authentication failed – invalid or missing JWT
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 message:
+	 *                   type: string
+	 *       404:
+	 *         description: No sectors found for the current user and time filter
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 error:
+	 *                   type: string
+	 *       500:
+	 *         description: Internal server error – unexpected error while retrieving sectors
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 error:
+	 *                   type: string
+	 */
+
+    router.get('/:sectorId', async (req, res) => {
+		let requestUserData;
+		// try {
+		// 	requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+		// } catch (error) {
+		// 	return res.status(403).json({ message: 'Authentication failed' });
+		// }
+		//const userId = requestUserData.userid;
+		const userId = 1;
+
+		const sectorId = await req.params.sectorId;
+		if (!sectorId || isNaN(parseInt(sectorId ))) {
+			return res.status(400).json({ message: 'SectorId is required and must be a number' });
+		}
+		const sectorIdParsed = parseInt(sectorId);
+
+		if (!userId || isNaN(parseInt(userId))) {
+			return res.status(400).json({ message: "Invalid or missing userId" });
+		}
+		const userIdParsed = parseInt(userId);
+
+		if(!authorizationService.isUserAuthorizedById(userIdParsed, 'monitoring', 'sectors', sectorIdParsed))
+			return res.status(401).json({message: 'Unauthorized request'});
+
+		try {
+			const sectorData = await fieldService.getSectorById(userIdParsed, sectorIdParsed);
+
+			if (!sectorData) {
+				return res.status(404).json({ 
+					error: "No sector found with the given Id to retrieve informations from" 
+				});
+			}
+
+			return res.status(200).json(sectorData);
+		} catch (error) {
+			console.log(`Fail retrieving sectors caused by: ${error.message}`);
+			return res.status(500).json({ error: "Error while retrieving sectors" });
+		}
+	});
+
+
+
+
     /**
      * @swagger
      * /sectors/{sectorId}/createThesis:
@@ -85,7 +321,9 @@ const sectorsRouter = ({ userService, authenticationService, authorizationServic
       if(!req.body || req.body === '')
         return res.status(400).json({message: 'Invalid request'});
 
-      const { sectorId, thesisName, validFrom } = req.params.sectorId;
+      const { sectorId } = req.params;
+      const { thesisName, validFrom } = req.body;
+
       if (!sectorId || isNaN(parseInt(sectorId))) {
         return res.status(400).json({ message: 'sectorId is required and must be a number' });
       }
