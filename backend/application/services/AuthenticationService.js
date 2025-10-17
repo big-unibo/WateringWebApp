@@ -11,22 +11,22 @@ class AuthenticationService {
 
     async generateJwt(request) {
         try {
-            const user = await this.userService.findUserByEmail(request.username);
+            const user = await this.userService.findUserByEmail(request.email);
 
             if (!user)
                 throw new Error('The mail does not exist');
 
-            if(user.auth_type === 'token') {
-                const match = (user.dataValues.affiliation === request.affiliation)
-                if (!match)
-                    throw new Error('Affiliation is invalid');
-            } else {
-                const match = (user.dataValues.pwd === request.password);
-                if (!match)
-                    throw new Error('Password is invalid');
-            }
+            // if(user.auth_type === 'token') {
+            //     const match = (user.dataValues.affiliation === request.affiliation)
+            //     if (!match)
+            //         throw new Error('Affiliation is invalid');
+            // } else {
+            
+            const match = (user.dataValues.password === request.password);
+            if (!match)
+                throw new Error('Password is invalid');
 
-            const payload = { userid: user.dataValues.userid, affiliation: user.dataValues.affiliation, auth_type: user.dataValues.auth_type }
+            const payload = { userId: user.dataValues.id, name: user.dataValues.name, role: user.dataValues.role }
             return sign(payload, jwtSecret, { expiresIn: "10h" });
         } catch (error) {
             throw new Error(`Error on generating jwt caused by: ${error}`);
@@ -41,8 +41,8 @@ class AuthenticationService {
                     if (err) {
                         reject(new Error('Authentication failed: token verify error'));
                     } else {
-                        if (decoded.userid !== undefined && decoded.affiliation !== undefined && decoded.auth_type !== undefined)
-                            resolve({ userid: decoded.userid, affiliation: decoded.affiliation, auth_type: decoded.auth_type });
+                        if (decoded.userId !== undefined && decoded.name !== undefined && decoded.role !== undefined)
+                            resolve({ userid: decoded.userId, affiliation: decoded.name, auth_type: decoded.role });
                         else reject(new Error('Authentication failed: token verify error'));
                     }
                 });
@@ -51,8 +51,6 @@ class AuthenticationService {
             throw new Error('Authentication failed: bearer header not found.');
         }
     }
-
-
 }
 
 export default AuthenticationService;

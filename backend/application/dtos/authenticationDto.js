@@ -1,10 +1,8 @@
 export class UserTokenRequest {
 
-    constructor(username, password, affiliation, auth_type) {
-        this.username = username;
+    constructor(email, password) {
+        this.email = email;
         this.password = password;
-        this.affiliation = affiliation;
-        this.auth_type = auth_type;
     }
 
 }

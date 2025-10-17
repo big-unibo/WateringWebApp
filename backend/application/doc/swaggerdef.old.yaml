@@ -98,24 +98,6 @@ components:
         timestampFrom:
           type: number
 
-    UserTokenRequest:
-      type: object
-      properties:
-        username:
-          type: string
-        password:
-          type: string
-        affiliation:
-          type: string
-        auth_type:
-          type: string
-
-    UserTokenResponse:
-      type: object
-      properties:
-        token:
-          type: string
-
     RegisterUsersDto:
       type: object
       properties:

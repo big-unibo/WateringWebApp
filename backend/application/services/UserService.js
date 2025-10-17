@@ -5,8 +5,6 @@ class UserService {
 
     constructor(userRepository) {
         this.userRepository = userRepository;
-        //this.userRepository = new UserRepository(initUser(sequelize), initFieldsPermit(sequelize), initTranscodingField(sequelize), sequelize);
-        //this.fieldRepository = new FieldRepository(initField(sequelize), initCompany(sequelize),initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), undefined, undefined, undefined, sequelize)
     }
 
     async findUser(userId) {

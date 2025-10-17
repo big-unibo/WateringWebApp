@@ -70,10 +70,6 @@ const organizationsRouter = ({organizationService, authenticationService, userSe
      *               properties:
      *                 message:
      *                   type: string
-     *
-     * components:
-     *   securitySchemes:
-     *     $ref: '#/components/schemas/securityScheme'
      */
 
     router.post('/create', async (req, res) => {

@@ -74,10 +74,6 @@ const companiesRouter = ({ companyService, userService, authenticationService, a
      *               properties:
      *                 message:
      *                   type: string
-     *
-     * components:
-     *   securitySchemes:
-     *     $ref: '#/components/schemas/securityScheme'
      */
 
 

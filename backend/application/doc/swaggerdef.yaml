@@ -4,7 +4,22 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+      
   schemas:
+    UserTokenRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    UserTokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+
     CreateCompany:
       type: object
       required:
