@@ -199,15 +199,14 @@ const sectorsRouter = ({ userService, authenticationService, authorizationServic
 	 */
 
     router.get('/:sectorId', async (req, res) => {
-		// let requestUserData;
-		// try {
-		// 	requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-		// } catch (error) {
-		// 	return res.status(403).json({ message: 'Authentication failed' });
-		// }
+		let requestUserData;
+		try {
+			requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+		} catch (error) {
+			return res.status(403).json({ message: 'Authentication failed' });
+		}
 
-		// const userId = requestUserData.userid;
-		const userId = 1;
+		const userId = requestUserData.userid;
 		const sectorId = await req.params.sectorId;
 
 		if (!sectorId || isNaN(parseInt(sectorId ))) {
