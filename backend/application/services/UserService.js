@@ -20,13 +20,13 @@ class UserService {
             const results = await Promise.all(
                 request.users.map(user =>
                     this.userRepository.createUser(
-                    user.email,
-                    user.password,
-                    user.name,
-                    user.role 
+                        user.email,
+                        user.password,
+                        user.name,
+                        user.role 
                     ).catch(error => {
-                    console.error(`Error creating user ${user.name}: ${error.message}`);
-                    throw error; 
+                        console.error(`Error creating user ${user.name}: ${error.message}`);
+                        throw error; 
                     })
                 )
             );

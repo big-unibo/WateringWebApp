@@ -1,4 +1,4 @@
-export class RegisterUsersDto {
+export class RegisterUsers{
 
   constructor(users) {
     this.users = users;
@@ -6,14 +6,13 @@ export class RegisterUsersDto {
 
 }
 
-export class RegisterUserDto {
+export class RegisterUser {
 
-  constructor(username, name, affiliation, password, authType) {
-    this.username = username
-    this.name = name
-    this.affiliation = affiliation
+  constructor(email, password, name, role) {
+    this.email = email
     this.password = password
-    this.authType = authType
+    this.name = name
+    this.role = role
   }
 
 }

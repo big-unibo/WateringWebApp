@@ -20,6 +20,26 @@ components:
         token:
           type: string
 
+    RegisterUsersDto:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/RegisterUserDto'
+
+    RegisterUserDto:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+
     CreateCompany:
       type: object
       required:
