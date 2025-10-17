@@ -370,6 +370,87 @@ components:
         count:
           type: number
           description: Count of the measurements taken resulting for the bin
+    
+    SectorDataDto:
+      type: object
+      properties:
+        sectorId:
+          type: number
+          description: Id of the sector
+        sectorName:
+          type: string
+          description: Name of the sector
+        culture:
+          type: string
+          description: Culture type in the sector
+        cultureType:
+          type: string
+          description: Type of culture
+        location:
+          type: string
+          description: Sector location
+          nullable: true
+        prescriptive:
+          type: string
+          description: Prescriptive notes
+          nullable: true
+        advice:
+          type: string
+          description: Advice related to the sector
+          nullable: true
+        dripperCapacity:
+          type: number
+          description: Dripper capacity
+          nullable: true
+        sprinklerCapacity:
+          type: number
+          description: Sprinkler capacity
+          nullable: true
+        doubleWing:
+          type: boolean
+          description: Indicates if double wing is used
+          nullable: true
+        fieldId:
+          type: number
+          description: Id of the field the sector belongs to
+        fieldName:
+          type: string
+          description: Name of the field
+          nullable: true
+        fieldLocation:
+          type: string
+          description: Location of the field
+          nullable: true
+        companyId:
+          type: number
+          description: Id of the company owning the field
+        companyName:
+          type: string
+          description: Name of the company
+          nullable: true
+        organizationId:
+          type: number
+          description: Id of the organization the company belongs to
+        organizationName:
+          type: string
+          description: Name of the organization
+          nullable: true
+        theses:
+          type: array
+          description: List of theses associated to the sector
+          items:
+            $ref: "#/components/schemas/ThesisRefDto"
+
+    ThesisRefDto:
+      type: object
+      properties:
+        id:
+          type: number
+          description: Id of the thesis
+        name:
+          type: string
+          description: Name of the thesis
+
 
 
 

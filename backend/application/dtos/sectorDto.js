@@ -77,3 +77,10 @@ export class SectorDataDto {
     this.theses = theses;
   }
 }
+
+export class ThesisRefDto {
+  constructor({ id, name }) {
+    this.id = id;
+    this.name = name;
+  }
+}

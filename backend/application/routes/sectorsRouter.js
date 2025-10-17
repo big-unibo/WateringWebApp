@@ -134,25 +134,25 @@ const sectorsRouter = ({ userService, authenticationService, authorizationServic
 	 *   get:
 	 *     security:
 	 *       - bearerAuth: []
-	 *     summary: Returns all sector information given its id, requires user having monitoring permits for the given sector id.
+	 *     summary: Returns detailed information for a sector by its ID
 	 *     tags: [Sectors]
-	 *     description: Returns all sector information given its id, requires user having monitoring permits for the given sector id.
-     *     parameters:
-     *       - in: path
-     *         name: sectorId
-     *         required: true
-     *         schema:
-     *           type: integer
-     *         description: ID of the sector to retrieve the information of
+	 *     description: Returns all sector information given its ID. User must have monitoring permits for the requested sector.
+	 *     parameters:
+	 *       - in: path
+	 *         name: sectorId
+	 *         required: true
+	 *         schema:
+	 *           type: integer
+	 *         description: ID of the sector to retrieve information for
 	 *     responses:
 	 *       200:
-	 *         description: List of sectors the user has permits over
+	 *         description: Detailed sector information
 	 *         content:
 	 *           application/json:
 	 *             schema:
-	 *               
+	 *               $ref: '#/components/schemas/SectorDataDto'
 	 *       400:
-	 *         description: Bad request – missing or invalid query parameters
+	 *         description: Bad request – missing or invalid sectorId or userId
 	 *         content:
 	 *           application/json:
 	 *             schema:
@@ -161,7 +161,7 @@ const sectorsRouter = ({ userService, authenticationService, authorizationServic
 	 *                 message:
 	 *                   type: string
 	 *       401:
-	 *         description: Unauthorized – user not permitted to view sectors
+	 *         description: Unauthorized – user not permitted to view the sector
 	 *         content:
 	 *           application/json:
 	 *             schema:
@@ -179,7 +179,7 @@ const sectorsRouter = ({ userService, authenticationService, authorizationServic
 	 *                 message:
 	 *                   type: string
 	 *       404:
-	 *         description: No sectors found for the current user and time filter
+	 *         description: No sector found for the given ID
 	 *         content:
 	 *           application/json:
 	 *             schema:
@@ -188,7 +188,7 @@ const sectorsRouter = ({ userService, authenticationService, authorizationServic
 	 *                 error:
 	 *                   type: string
 	 *       500:
-	 *         description: Internal server error – unexpected error while retrieving sectors
+	 *         description: Internal server error – unexpected error while retrieving the sector
 	 *         content:
 	 *           application/json:
 	 *             schema:
@@ -199,16 +199,17 @@ const sectorsRouter = ({ userService, authenticationService, authorizationServic
 	 */
 
     router.get('/:sectorId', async (req, res) => {
-		let requestUserData;
+		// let requestUserData;
 		// try {
 		// 	requestUserData = await authenticationService.validateJwt(req.headers.authorization);
 		// } catch (error) {
 		// 	return res.status(403).json({ message: 'Authentication failed' });
 		// }
-		//const userId = requestUserData.userid;
-		const userId = 1;
 
+		// const userId = requestUserData.userid;
+		const userId = 1;
 		const sectorId = await req.params.sectorId;
+
 		if (!sectorId || isNaN(parseInt(sectorId ))) {
 			return res.status(400).json({ message: 'SectorId is required and must be a number' });
 		}
@@ -237,8 +238,6 @@ const sectorsRouter = ({ userService, authenticationService, authorizationServic
 			return res.status(500).json({ error: "Error while retrieving sectors" });
 		}
 	});
-
-
 
 
     /**

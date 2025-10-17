@@ -5,7 +5,7 @@ import { SignalData, MeasureData ,SignalTypeData} from '../dtos/dataDto.js';
 import { WateringScheduleResponse, WateringEventDto } from "../dtos/wateringScheduleDto.js";
 import { MatrixData, MatrixDistanceData, OptStateDto } from "../dtos/optStateDto.js";
 import { WateringAdviceDto } from "../dtos/wateringAdviceDto.js";
-import { SectorDataDto } from "../dtos/sectorDto.js";
+import { SectorDataDto, ThesisRefDto } from "../dtos/sectorDto.js";
 
 class DtoConverter {
 
@@ -20,12 +20,12 @@ class DtoConverter {
     convertSectorDataWrapper(sectorData){
 
         const theses = sectorData.thesisInSector?.map(t => ({
-            id: t.thesisId || t.thesis?.id,
-            name: t.thesis?.thesisName || t.thesis?.name
+            id: t.thesisId,
+            name: t.thesis?.thesisName
         })) || [];
 
-        // Deduplica le tesi per id
         const uniqueTheses = Array.from(new Map(theses.map(t => [t.id, t])).values());
+        const thesisDtos = uniqueTheses.map(t => new ThesisRefDto(t));
 
         return new SectorDataDto({
             organizationId: sectorData.field?.company?.organization?.id || sectorData.field?.company?.organizationId || null,
@@ -45,7 +45,7 @@ class DtoConverter {
             dripperCapacity: sectorData.dripperCapacity,
             sprinklerCapacity: sectorData.sprinklerCapacity,
             doubleWing: sectorData.doubleWing,
-            theses: uniqueTheses
+            theses: thesisDtos
         });
     }
 
