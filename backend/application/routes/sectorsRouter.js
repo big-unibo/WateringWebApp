@@ -34,12 +34,7 @@ const sectorsRouter = ({ userService, authenticationService, authorizationServic
 	 *         content:
 	 *           application/json:
 	 *             schema:
-	 *               type: array
-	 *               items:
-	 *                 type: object
-	 *                 properties:
-	 *                   sectorId:
-	 *                     type: number
+	 *               $ref: '#/components/schemas/SectorsCompactDto'
 	 *       400:
 	 *         description: Bad request – missing or invalid query parameters
 	 *         content:
@@ -113,7 +108,6 @@ const sectorsRouter = ({ userService, authenticationService, authorizationServic
 
 		try {
 			const sectors = await fieldService.getSectors(userIdParsed, timeFilterFrom, timeFilterTo);
-
 			if (!sectors || sectors.length === 0) {
 				return res.status(404).json({ 
 					error: "User has no permission to view any sectors" 

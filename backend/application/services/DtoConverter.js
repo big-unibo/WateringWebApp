@@ -5,7 +5,7 @@ import { SignalData, MeasureData ,SignalTypeData} from '../dtos/dataDto.js';
 import { WateringScheduleResponse, WateringEventDto } from "../dtos/wateringScheduleDto.js";
 import { MatrixData, MatrixDistanceData, OptStateDto } from "../dtos/optStateDto.js";
 import { WateringAdviceDto } from "../dtos/wateringAdviceDto.js";
-import { SectorDataDto, ThesisRefDto } from "../dtos/sectorDto.js";
+import { SectorCompactDto, SectorDataDto, ThesisRefDto } from "../dtos/sectorDto.js";
 
 class DtoConverter {
 
@@ -17,24 +17,58 @@ class DtoConverter {
         );
     }
 
-    convertSectorDataWrapper(sectorData){
+    convertSectorsDataWrapper(sectorsData) {
+        if (!Array.isArray(sectorsData)) return [];
 
+        return sectorsData.map(s => new SectorCompactDto({
+            sectorId: s.sectorId,
+            sectorName: s.sectorName,
+            culture: s.culture,
+            cultureType: s.cultureType,
+            location: s.location,
+            field: {
+                id: s.fieldId,
+                name: s.fieldName
+            },
+            company: {
+                id: s.companyId,
+                name: s.companyName
+            },
+            organization: {
+                id: s.organizationId,
+                name: s.organizationName
+            }
+        }));
+    }
+
+
+    convertSectorDataWrapper(sectorData) {
         const theses = sectorData.thesisInSector?.map(t => ({
             id: t.thesisId,
-            name: t.thesis?.thesisName
+            name: t.thesis?.thesisName 
         })) || [];
 
         const uniqueTheses = Array.from(new Map(theses.map(t => [t.id, t])).values());
         const thesisDtos = uniqueTheses.map(t => new ThesisRefDto(t));
 
+        const organization = {
+            id: sectorData.field.company.organization.id,
+            name: sectorData.field.company.organization.organizationName
+        };
+
+        const company = {
+            id: sectorData.field.company.id,
+            name: sectorData.field.company.companyName
+        };
+
+        const field = {
+            id: sectorData.fieldId,
+            name: sectorData.field.fieldName,
+            location: sectorData.field.location
+        };
+
+
         return new SectorDataDto({
-            organizationId: sectorData.field?.company?.organization?.id || sectorData.field?.company?.organizationId || null,
-            organizationName: sectorData.field?.company?.organization?.organizationName || null,
-            companyId: sectorData.field?.company?.id || sectorData.field?.companyId || null,
-            companyName: sectorData.field?.company?.companyName || null,
-            fieldId: sectorData.fieldId,
-            fieldName: sectorData.field?.fieldName || null,
-            fieldLocation: sectorData.field?.location || null,
             sectorId: sectorData.id,
             sectorName: sectorData.sectorName,
             culture: sectorData.culture,
@@ -45,9 +79,13 @@ class DtoConverter {
             dripperCapacity: sectorData.dripperCapacity,
             sprinklerCapacity: sectorData.sprinklerCapacity,
             doubleWing: sectorData.doubleWing,
+            field,
+            company,
+            organization,
             theses: thesisDtos
         });
     }
+
 
     convertDataInterpolatedMeanWrapper(refStructureName, companyName, fieldName, sectorName, thesisName, wrappers) {
         const measures = wrappers.map(wrapper => new InterpolatedMeanMeasureData(wrapper.zz, wrapper.yy, wrapper.xx, wrapper.std, wrapper.mean));

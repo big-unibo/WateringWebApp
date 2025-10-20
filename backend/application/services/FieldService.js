@@ -151,7 +151,7 @@ class FieldService {
 
     async getSectors(userId, timeFilterFrom, timeFilterTo){
         const result = await this.fieldRepository.getSectors(userId, timeFilterFrom, timeFilterTo);
-        return result.map(r => ({ sectorId: r.idKey }));
+         return dtoConverter.convertSectorsDataWrapper(result);
     }
 
     async getSectorById(userId, sectorId){

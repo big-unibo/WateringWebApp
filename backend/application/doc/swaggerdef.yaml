@@ -486,6 +486,64 @@ components:
           type: string
           description: Name of the thesis
 
+    SectorCompactDto:
+      type: object
+      properties:
+        id:
+          type: number
+          description: Id of the sector
+        name:
+          type: string
+          description: Name of the sector
+        culture:
+          type: string
+          description: Culture in the sector
+        cultureType:
+          type: string
+          description: Type of culture
+        location:
+          type: string
+          nullable: true
+          description: Sector location
+        field:
+          type: object
+          description: Field the sector belongs to
+          properties:
+            id:
+              type: number
+              description: Id of the field
+            name:
+              type: string
+              description: Name of the field
+        company:
+          type: object
+          description: Company owning the field
+          properties:
+            id:
+              type: number
+              description: Id of the company
+            name:
+              type: string
+              description: Name of the company
+        organization:
+          type: object
+          description: Organization the company belongs to
+          properties:
+            id:
+              type: number
+              description: Id of the organization
+            name:
+              type: string
+              description: Name of the organization
+      
+    SectorsCompactDto:
+        type: array
+        items:
+          $ref: "#/components/schemas/SectorCompactDto"
+    
+
+
+
 
 
 

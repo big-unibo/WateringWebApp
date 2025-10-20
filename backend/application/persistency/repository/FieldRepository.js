@@ -161,14 +161,33 @@ class FieldRepository {
 
     async getSectors(userId, timeFilterFrom, timeFilterTo) {
         const query = `
-            SELECT DISTINCT p.id_key AS "idKey"
+            SELECT DISTINCT
+                o.id AS "organizationId",
+                o.organization_name AS "organizationName",
+                c.id AS "companyId",
+                c.company_name AS "companyName",
+                f.id AS "fieldId",
+                f.field_name AS "fieldName",
+                s.id AS "sectorId",
+                s.sector_name AS "sectorName",
+                s.culture AS "culture",
+                s.culture_type AS "cultureType",
+                s.location AS "location"
             FROM permits p
+            JOIN sectors s
+                ON p.id_key = s.id
             JOIN theses_in_sectors ts
-            ON p.id_key = ts.sector_id
+                ON ts.sector_id = s.id
+            JOIN fields f
+                ON f.id = s.field_id
+            JOIN companies c
+                ON c.id = f.company_id
+            JOIN organizations o
+                ON o.id = c.organization_id
             WHERE p.user_id = :userId
-                AND p.table = 'sectors'
-                AND ts.valid_from <= :timeFilterTo
-                AND (ts.valid_to IS NULL OR ts.valid_to >= :timeFilterFrom)
+            AND p.table = 'sectors'
+            AND ts.valid_from <= :timeFilterTo
+            AND (ts.valid_to IS NULL OR ts.valid_to >= :timeFilterFrom);
         `;
 
         const results = await this.sequelize.query(query, {

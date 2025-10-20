@@ -36,46 +36,53 @@ export class Sector {
   }
 }
 
-export class SectorDataDto {
-  constructor({
-    sectorId,
-    sectorName,
-    culture,
-    cultureType,
-    location,
-    prescriptive,
-    advice,
-    dripperCapacity,
-    sprinklerCapacity,
-    doubleWing,
-    fieldId,
-    fieldName,
-    fieldLocation,
-    companyId,
-    companyName,
-    organizationId,
-    organizationName,
-    theses
-  }) {
-    this.sectorId = sectorId;
-    this.sectorName = sectorName;
+
+export class SectorCompactDto{
+  constructor({ sectorId, sectorName, culture, cultureType, location, field, company, organization }) {
+    this.id = sectorId;
+    this.name = sectorName;
     this.culture = culture;
     this.cultureType = cultureType;
     this.location = location;
-    this.prescriptive = prescriptive;
-    this.advice = advice;
-    this.dripperCapacity = dripperCapacity;
-    this.sprinklerCapacity = sprinklerCapacity;
-    this.doubleWing = doubleWing;
-    this.fieldId = fieldId;
-    this.fieldName = fieldName;
-    this.fieldLocation = fieldLocation;
-    this.companyId = companyId;
-    this.companyName = companyName;
-    this.organizationId = organizationId;
-    this.organizationName = organizationName;
-    this.theses = theses;
+    this.field = field;
+    this.company = company;
+    this.organization = organization;
   }
+}
+
+
+export class SectorDataDto {
+    constructor({
+        sectorId,
+        sectorName,
+        culture,
+        cultureType,
+        location,
+        prescriptive,
+        advice,
+        dripperCapacity,
+        sprinklerCapacity,
+        doubleWing,
+        field,
+        company,
+        organization,
+        theses
+    }) {
+        this.sectorId = sectorId;
+        this.sectorName = sectorName;
+        this.culture = culture;
+        this.cultureType = cultureType;
+        this.location = location;
+        this.prescriptive = prescriptive;
+        this.advice = advice;
+        this.dripperCapacity = dripperCapacity;
+        this.sprinklerCapacity = sprinklerCapacity;
+        this.doubleWing = doubleWing;
+        this.field = field;
+        this.company = company;
+        this.organization = organization;
+        this.theses = theses;
+    }
 }
 
 export class ThesisRefDto {
