@@ -351,6 +351,108 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
         }
     })
 
+
+    /**
+     * @swagger
+     * /fieldCharts/{thesisId}/waterAggregate:
+     *   get:
+     *     security:
+     *       - bearerAuth: []
+     *     summary: Retrieves daily aggregates of a thesis' signals, expected water and advice data. (Requires propera authorizaion and authentication).
+     *     tags: [Field Chart Data]
+     *     description: Retrieves daily aggregates of a thesis' signals, expected water and advice data. (Requires propera authorizaion and authentication).
+     *     parameters:
+     *       - in: path
+     *         name: thesisId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: Id of the Thesis
+     *       - in: query
+     *         name: timeFilterFrom
+     *         required: true
+     *         schema:
+     *           type: number
+     *         description: Time filter start (timestamp in seconds)
+     *       - in: query
+     *         name: timeFilterTo
+     *         required: true
+     *         schema:
+     *           type: number
+     *         description: Time filter end (timestamp in seconds)
+     *     responses:
+     *       200:
+     *         description: Successfully retrieved heatmap data
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: "#/components/schemas/SignalsDataResponse"
+     *       400:
+     *         description: Invalid or missing query parameters
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       401:
+     *         description: Unauthorized (user not allowed to view heatmaps)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.get('/:thesisId/waterAggregate', async(req,res) => {
+        const thesisId = parseInt(req.params.thesisId);
+        const timeFilterFrom = req.query.timeFilterFrom
+            ? Number(req.query.timeFilterFrom)
+            : null;
+
+        const timeFilterTo = req.query.timeFilterTo
+            ? Number(req.query.timeFilterTo)
+            : null;
+        
+        if (timeFilterFrom === null || isNaN(timeFilterFrom)) {
+            return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid date' });
+        }
+        if (!timeFilterTo === null || isNaN(timeFilterTo)) {
+            return res.status(400).json({ message: 'timeFilterTo is required and must be a valid date' });
+        }
+
+        try {
+            const results = await fieldService.getWaterAggregateByThesis(
+                thesisId,
+                timeFilterFrom,
+                timeFilterTo,
+            );
+            return res.status(200).json(results);
+        } catch (error) {
+            return res.status(500).json({ message: error.message });
+        }
+    })
+
 // /**
 //  * @swagger
 //  * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/groundWaterPotential:

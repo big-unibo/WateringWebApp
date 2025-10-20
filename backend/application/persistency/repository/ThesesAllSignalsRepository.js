@@ -68,7 +68,7 @@ class ThesesAllSignalsRepository {
                     m.raw_value,
                     m.timestamp
                 FROM theses_all_signals tas
-                JOIN measurements m
+                LEFT JOIN measurements m
                     ON m.signal_id = tas.signal_id
                 AND m.timestamp BETWEEN 
                     GREATEST(tas.valid_from, :timeFilterFrom)
@@ -161,6 +161,93 @@ class ThesesAllSignalsRepository {
             raw: true 
         });
         return result ? result.deviceId : null;
+    }
+
+
+    async getAdvicesAndExpectedWaterByThesis(        
+        thesisId,
+        timeFilterFrom,
+        timeFilterTo,
+        aggregationPeriod
+    ){
+
+        const query = `
+            WITH valid_advices_table AS (
+                SELECT DISTINCT
+                    tas.thesis_id,
+                    tas.thesis_name,
+                    a.watering_start,
+                    a.advice
+                FROM theses_all_signals tas
+                JOIN advices a
+                    ON a.thesis_id = tas.thesis_id
+                    AND a.watering_start BETWEEN 
+                        GREATEST(tas.valid_from, :timeFilterFrom)
+                        AND LEAST(COALESCE(tas.valid_to, 'infinity'), :timeFilterTo)
+                WHERE tas.thesis_id = :thesisId
+            ),
+            valid_expected_water_table AS (
+                SELECT DISTINCT
+                    tas.thesis_id,
+                    tas.thesis_name,
+                    tas.sector_id,
+                    we.id,
+                    we.watering_start,
+                    we.expected_water
+                FROM theses_all_signals tas
+                JOIN watering_events we
+                    ON we.sector_id = tas.sector_id
+                    AND we.watering_start BETWEEN 
+                        GREATEST(tas.valid_from, :timeFilterFrom)
+                        AND LEAST(COALESCE(tas.valid_to, 'infinity'), :timeFilterTo)
+                WHERE tas.thesis_id = :thesisId
+                AND we.latest = true
+            )
+
+            SELECT *
+            FROM (
+                SELECT
+                    va.thesis_name AS "thesisName",
+                    'Advice for the thesis' AS "signalDescription",
+                    'ADV' AS "signalType",
+                    'Advice' AS "signalTypeDescription",
+                    'L' AS unit,
+                    ROUND(va.watering_start::NUMERIC / :aggregationPeriod) * :aggregationPeriod AS timestamp,
+                    COALESCE(SUM(va.advice), 0) AS value
+                FROM valid_advices_table va
+                GROUP BY
+                    va.thesis_name,
+                    ROUND(va.watering_start::NUMERIC / :aggregationPeriod) * :aggregationPeriod
+
+                UNION
+
+                SELECT
+                    vew.thesis_name AS "thesisName",
+                    'Expected water' AS "signalDescription",
+                    'EXP' AS "signalType",
+                    'Expected Water' AS "signalTypeDescription",
+                    'L' AS unit,
+                    ROUND(vew.watering_start::NUMERIC / :aggregationPeriod) * :aggregationPeriod AS timestamp,
+                    COALESCE(SUM(vew.expected_water), 0) AS value
+                FROM valid_expected_water_table vew
+                GROUP BY
+                    vew.thesis_name,
+                    ROUND(vew.watering_start::NUMERIC / :aggregationPeriod) * :aggregationPeriod
+            ) AS merged_results
+            ORDER BY timestamp ASC;
+        `;
+
+        const results = await this.sequelize.query(query, {
+        replacements: {
+            thesisId,
+            timeFilterFrom,
+            timeFilterTo,
+            aggregationPeriod
+        },
+            type: QueryTypes.SELECT
+        });
+
+        return results;
     }
 }
 

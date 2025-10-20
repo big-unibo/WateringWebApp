@@ -445,31 +445,40 @@ components:
           type: boolean
           description: Indicates if double wing is used
           nullable: true
-        fieldId:
-          type: number
-          description: Id of the field the sector belongs to
-        fieldName:
-          type: string
-          description: Name of the field
-          nullable: true
-        fieldLocation:
-          type: string
-          description: Location of the field
-          nullable: true
-        companyId:
-          type: number
-          description: Id of the company owning the field
-        companyName:
-          type: string
-          description: Name of the company
-          nullable: true
-        organizationId:
-          type: number
-          description: Id of the organization the company belongs to
-        organizationName:
-          type: string
-          description: Name of the organization
-          nullable: true
+        field:
+          type: object
+          description: Field the sector belongs to
+          properties:
+            id:
+              type: number
+              description: Id of the field
+            name:
+              type: string
+              description: Name of the field
+            location:
+              type: string
+              description: Location of the field
+              nullable: true
+        company:
+          type: object
+          description: Company owning the field
+          properties:
+            id:
+              type: number
+              description: Id of the company
+            name:
+              type: string
+              description: Name of the company
+        organization:
+          type: object
+          description: Organization the company belongs to
+          properties:
+            id:
+              type: number
+              description: Id of the organization
+            name:
+              type: string
+              description: Name of the organization
         theses:
           type: array
           description: List of theses associated to the sector
@@ -484,7 +493,7 @@ components:
           description: Id of the thesis
         name:
           type: string
-          description: Name of the thesis
+      description: Name of the thesis
 
     SectorCompactDto:
       type: object

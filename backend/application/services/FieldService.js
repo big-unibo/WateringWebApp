@@ -149,6 +149,23 @@ class FieldService {
         return dtoConverter.convertHumidtyBinsDataWrapper(result);
     }
 
+    async getWaterAggregateByThesis(thesisId, timeFilterFrom, timeFilterTo){
+        const advicesAndExpectedWater = await this.thesesAllSignalsRepository.getAdvicesAndExpectedWaterByThesis(thesisId, timeFilterFrom, timeFilterTo,  24 * 60 * MINUTE_TO_SECONDS );
+        const measurements = await this.thesesAllSignalsRepository.getMeasurementsByThesis(
+            thesisId,
+            ['DRIPPER','SPRINKER','ET0','PLUV_CURR'],
+            timeFilterFrom,
+            timeFilterTo,
+            'SUM',
+            24 * 60 * MINUTE_TO_SECONDS
+        );
+
+        console.log(result2);
+
+        return dtoConverter.convertMeasurementsDataWrapper([... advicesAndExpectedWater,...measurements]);
+    }
+
+
     async getSectors(userId, timeFilterFrom, timeFilterTo){
         const result = await this.fieldRepository.getSectors(userId, timeFilterFrom, timeFilterTo);
          return dtoConverter.convertSectorsDataWrapper(result);

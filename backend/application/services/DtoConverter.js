@@ -52,12 +52,12 @@ class DtoConverter {
         const thesisDtos = uniqueTheses.map(t => new ThesisRefDto(t));
 
         const organization = {
-            id: sectorData.field.company.organization.id,
+            id: sectorData.field.company.organizationId,
             name: sectorData.field.company.organization.organizationName
         };
 
         const company = {
-            id: sectorData.field.company.id,
+            id: sectorData.field.companyId,
             name: sectorData.field.company.companyName
         };
 
