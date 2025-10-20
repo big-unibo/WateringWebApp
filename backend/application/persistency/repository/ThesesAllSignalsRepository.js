@@ -179,7 +179,7 @@ class ThesesAllSignalsRepository {
                     a.watering_start,
                     a.advice
                 FROM theses_all_signals tas
-                JOIN advices a
+                LEFT JOIN advices a
                     ON a.thesis_id = tas.thesis_id
                     AND a.watering_start BETWEEN 
                         GREATEST(tas.valid_from, :timeFilterFrom)
@@ -195,7 +195,7 @@ class ThesesAllSignalsRepository {
                     we.watering_start,
                     we.expected_water
                 FROM theses_all_signals tas
-                JOIN watering_events we
+                LEFT JOIN watering_events we
                     ON we.sector_id = tas.sector_id
                     AND we.watering_start BETWEEN 
                         GREATEST(tas.valid_from, :timeFilterFrom)

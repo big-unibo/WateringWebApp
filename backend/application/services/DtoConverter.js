@@ -159,7 +159,9 @@ class DtoConverter {
 
         const signalTypeDataArray = Object.values(grouped).map(typeGroup => {
             const signals = Object.values(typeGroup.signals).map(signalGroup => {
-                const measurements = signalGroup.values.map(v => new MeasureData(v.timestamp, v.value, v.computed));
+                const measurements = (signalGroup.values ?? [])
+                    .filter(v => v != null && v.timestamp != null && v.value != null)
+                    .map(v => new MeasureData(v.timestamp, v.value, v.computed));
                 return new SignalData(
                     signalGroup.signalId,
                     signalGroup.deviceId,
