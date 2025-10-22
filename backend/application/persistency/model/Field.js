@@ -23,7 +23,7 @@ function initField(sequelize) {
         },
         location: {
             type: DataTypes.GEOMETRY,
-            allowNull: false
+            allowNull: true
         }
     }, {
         modelName : 'fields',
