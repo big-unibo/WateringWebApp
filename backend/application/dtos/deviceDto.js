@@ -29,13 +29,15 @@ export class Device {
      * @param {number} providerId - Provider ID
      * @param {string} description - Optional description
      * @param {Object} location - GeoJSON Point
+     * @param {number} binningId  - Id of the binning profile
      * @param {Array<Signal>} signals - Array of signals
      */
-    constructor( {type, providerId, description, location, signals = [] }) {
+    constructor( {type, providerId, description, location, binningId, signals = [] }) {
         this.type = type;
         this.providerId = providerId;
         this.description = description;
         this.location = location;
+        this.binningId = binningId;
         this.signals = signals.map(sig => new Signal(sig));
     }
 }

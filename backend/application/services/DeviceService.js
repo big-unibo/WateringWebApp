@@ -12,7 +12,8 @@ class DeviceService {
                 type: device.type,
                 providerId: device.providerId,
                 description: device.description,
-                location: device.location
+                location: device.location,
+                binningId: device.binningId
             });
 
             if(!createdDeviceId){

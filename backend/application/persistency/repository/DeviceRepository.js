@@ -5,22 +5,14 @@ class DeviceRepository {
         this.sequelize = sequelize;
     }
     
-    /**
-     * Create a new Device
-     * @param {Object} deviceData - Data for the device
-     * @param {string} deviceData.type - Type of the device
-     * @param {number} deviceData.providerId - Provider ID
-     * @param {string} [deviceData.description] - Optional description
-     * @param {Object} deviceData.location - GeoJSON location
-     * @returns {number} Id of the created device instance
-     */
     async createDevice(deviceData) {
         try {
             const device = await this.Device.create({
                 type: deviceData.type,
                 providerId: deviceData.providerId,
                 description: deviceData.description,
-                location: deviceData.location
+                location: deviceData.location,
+                binningId: deviceData.binningId,
             });
 
             return device.id;

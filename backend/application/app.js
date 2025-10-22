@@ -114,7 +114,7 @@ app.use(
 
 app.use(
 	'/devices',
-	devicesRouter({authenticationService,authorizationService,deviceService})
+	devicesRouter({authenticationService,authorizationService, userService, deviceService})
 )
 
 app.use(

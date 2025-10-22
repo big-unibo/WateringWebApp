@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { Device, Signal, SignalAssociation, SignalTargetType } from '../dtos/deviceDto.js'; 
 
 
-const devicesRouter = ({authenticationService, authorizationService, deviceService}) => {
+const devicesRouter = ({authenticationService, authorizationService, userService, deviceService}) => {
     const router = Router();
 
     /**
@@ -79,7 +79,7 @@ const devicesRouter = ({authenticationService, authorizationService, deviceServi
         }
         try {
             const user = await userService.findUser(requestUserData.userid);
-            if (!(await authorizationService.isUserAuthorized(1, 'create', 'devices')))
+            if (!(await authorizationService.isUserAuthorized(user.id, 'create', 'devices')))
                 return res.status(401).json({ message: 'Unauthorized request' });
 
             if (!req.body || req.body === '')
@@ -90,6 +90,7 @@ const devicesRouter = ({authenticationService, authorizationService, deviceServi
                 providerId: req.body.providerId,
                 description: req.body.description,
                 location: req.body.location,
+                binningId: req.body.binningId,
                 signals: (req.body.signals || []).map(sig => new Signal(sig))
             });
 

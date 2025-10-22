@@ -203,6 +203,9 @@ components:
           description: Optional description of the device
         location:
           $ref: '#/components/schemas/GeoPoint'
+        binningId:
+          type: integer
+          description: ID for the device's binning profile (Optional)
         signals:
           type: array
           description: Array of signals associated with the device

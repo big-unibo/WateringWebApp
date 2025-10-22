@@ -32,6 +32,11 @@ function initDevice(sequelize) {
             allowNull: false,
             field: "location"
         },
+        binningId: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            field: "binning_id"
+        }
     }, {
         tableName : 'devices',
         modelName : 'Device',
