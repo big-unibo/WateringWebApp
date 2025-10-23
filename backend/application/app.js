@@ -32,6 +32,7 @@ import sectorsRouter from './routes/sectorsRouter.js';
 import fieldChartRouter from './routes/fieldChartsRouter.js';
 import InterpolatedProfileRepository from './persistency/repository/InterpolatedProfileRepository.js';
 import HumidityBinsRepository from './persistency/repository/HumidityBinsRepository.js';
+import thesesRouter from './routes/thesesRouter.js';
 
 dotenv.config();
 
@@ -100,6 +101,11 @@ app.use(
 app.use(
   '/sectors',
   sectorsRouter({ userService, authenticationService, authorizationService, fieldService })
+);
+
+app.use(
+  '/theses',
+  thesesRouter({ userService, authenticationService, authorizationService, fieldService })
 );
 
 app.use(

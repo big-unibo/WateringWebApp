@@ -249,6 +249,35 @@ class ThesesAllSignalsRepository {
 
         return results;
     }
+
+    async getDevicesByThesis(thesisId) {
+        const query = `
+            SELECT DISTINCT 
+                device_id as "deviceId",
+                device_type as "deviceType",
+                device_description as "deviceDescription",
+                signal_id as "signalId",
+                signal_description as "signalDescription",
+                signal_type as "signalType",
+                signal_type_description as "signalTypeDescription",
+                virtual,
+                unit,
+                x, y, z
+            FROM theses_all_signals
+            WHERE thesis_id = :thesisId
+        `;
+
+        try {
+            const results = await this.sequelize.query(query, {
+                replacements: { thesisId },
+                type: this.sequelize.QueryTypes.SELECT
+            });
+            return results;
+        } catch (error) {
+            console.error(`Fail retrieving devices data: ${error.message}`);
+            throw error;
+        }
+    }
 }
 
 export default ThesesAllSignalsRepository;

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { Device, Signal, SignalAssociation, SignalTargetType } from '../dtos/deviceDto.js'; 
+import { CreateSignal, SignalAssociation, SignalTargetType, CreateDevice } from '../dtos/deviceDto.js'; 
 
 
 const devicesRouter = ({authenticationService, authorizationService, userService, deviceService}) => {
@@ -85,13 +85,13 @@ const devicesRouter = ({authenticationService, authorizationService, userService
             if (!req.body || req.body === '')
                 throw new Error('Body is empty');
 
-            const device = new Device({
+            const device = new CreateDevice({
                 type: req.body.type,
                 providerId: req.body.providerId,
                 description: req.body.description,
                 location: req.body.location,
                 binningId: req.body.binningId,
-                signals: (req.body.signals || []).map(sig => new Signal(sig))
+                signals: (req.body.signals || []).map(sig => new CreateSignal(sig))
             });
 
             await deviceService.createDevice(device);

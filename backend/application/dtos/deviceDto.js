@@ -1,4 +1,4 @@
-export class Signal {
+export class CreateSignal {
     /**
      * @param {number} typeId - ID of the signal type (required)
      * @param {string} description - Optional description
@@ -24,6 +24,29 @@ export class Signal {
 }
 
 export class Device {
+    constructor({deviceId, deviceType, deviceDescription, signals}){
+        this.deviceId = deviceId;
+        this.deviceType = deviceType;
+        this.deviceDescription = deviceDescription;
+        this.signals = signals
+    }
+}
+
+export class Signal {
+    constructor({signalId, signalDescription, signalType, signalTypeDescription, x, y, z, virtual, unit}) {
+        this.signalId = signalId;
+        this.signalDescription = signalDescription;
+        this.signalType = signalType;
+        this.signalTypeDescription = signalTypeDescription;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.virtual = virtual;
+        this.unit = unit;
+    }
+}
+
+export class CreateDevice {
     /**
      * @param {string} type - Device type
      * @param {number} providerId - Provider ID

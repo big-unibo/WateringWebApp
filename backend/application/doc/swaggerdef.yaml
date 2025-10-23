@@ -552,6 +552,58 @@ components:
         type: array
         items:
           $ref: "#/components/schemas/SectorCompactDto"
+
+    Signal:
+      type: object
+      properties:
+        signalId:
+          type: integer
+        signalDescription:
+          type: string
+        signalType:
+          type: string
+        signalTypeDescription:
+          type: string
+        x:
+          type: number
+          format: float
+        y:
+          type: number
+          format: float
+        z:
+          type: number
+          format: float
+        virtual:
+          type: boolean
+        unit:
+          type: string
+      required:
+        - signalId
+        - signalType
+        - signalTypeDescription
+        - x
+        - y
+        - z
+
+    Device:
+      type: object
+      properties:
+        deviceId:
+          type: integer
+        deviceType:
+          type: string
+        deviceDescription:
+          type: string
+          nullable: true
+        signals:
+          type: array
+          items:
+            $ref: "#/components/schemas/Signal"
+      required:
+        - deviceId
+        - deviceType
+        - signals
+
     
 
 

@@ -6,6 +6,7 @@ import { WateringScheduleResponse, WateringEventDto } from "../dtos/wateringSche
 import { MatrixData, MatrixDistanceData, OptStateDto } from "../dtos/optStateDto.js";
 import { WateringAdviceDto } from "../dtos/wateringAdviceDto.js";
 import { SectorCompactDto, SectorDataDto, ThesisRefDto } from "../dtos/sectorDto.js";
+import { Signal, Device } from "../dtos/deviceDto.js";
 
 class DtoConverter {
 
@@ -87,27 +88,27 @@ class DtoConverter {
     }
 
 
-    convertDataInterpolatedMeanWrapper(refStructureName, companyName, fieldName, sectorName, thesisName, wrappers) {
-        const measures = wrappers.map(wrapper => new InterpolatedMeanMeasureData(wrapper.zz, wrapper.yy, wrapper.xx, wrapper.std, wrapper.mean));
-        return new InterpolatedDataValue(refStructureName, companyName, fieldName, sectorName, thesisName, measures);
-    }
+    // convertDataInterpolatedMeanWrapper(refStructureName, companyName, fieldName, sectorName, thesisName, wrappers) {
+    //     const measures = wrappers.map(wrapper => new InterpolatedMeanMeasureData(wrapper.zz, wrapper.yy, wrapper.xx, wrapper.std, wrapper.mean));
+    //     return new InterpolatedDataValue(refStructureName, companyName, fieldName, sectorName, thesisName, measures);
+    // }
 
-    convertDataInterpolatedWrapper(wrappers){
-        const map = this.#buildGenericReferenceMap(wrappers);
+    // convertDataInterpolatedWrapper(wrappers){
+    //     const map = this.#buildGenericReferenceMap(wrappers);
 
-        const interpolatedValues = Array.from(map, ([key, values]) => {
-            const keyObject = JSON.parse(key);
-            const measures = Array.from(values.reduce((accumulator, currentValue) => {
-                if (!accumulator.has(currentValue.timestamp))
-                    accumulator.set(currentValue.timestamp, []);
-                accumulator.get(currentValue.timestamp).push(new InterpolatedMeasureData(currentValue.zz, currentValue.yy, currentValue.xx, currentValue.value));
-                return accumulator
-            }, new Map()), ([key, values]) => { return { timestamp: key, image: values } })
-            return new InterpolatedDataValue(keyObject.refStructureName, keyObject.companyName, keyObject.fieldName, keyObject.sectorName, keyObject.thesisName, measures);
-        });
+    //     const interpolatedValues = Array.from(map, ([key, values]) => {
+    //         const keyObject = JSON.parse(key);
+    //         const measures = Array.from(values.reduce((accumulator, currentValue) => {
+    //             if (!accumulator.has(currentValue.timestamp))
+    //                 accumulator.set(currentValue.timestamp, []);
+    //             accumulator.get(currentValue.timestamp).push(new InterpolatedMeasureData(currentValue.zz, currentValue.yy, currentValue.xx, currentValue.value));
+    //             return accumulator
+    //         }, new Map()), ([key, values]) => { return { timestamp: key, image: values } })
+    //         return new InterpolatedDataValue(keyObject.refStructureName, keyObject.companyName, keyObject.fieldName, keyObject.sectorName, keyObject.thesisName, measures);
+    //     });
 
-        return new InterpolatedDataResponse(interpolatedValues);
-    }
+    //     return new InterpolatedDataResponse(interpolatedValues);
+    // }
 
     convertHumidityBinWrapper(wrappers) {
         const map = this.#buildGenericReferenceMap(wrappers);
@@ -230,6 +231,61 @@ class DtoConverter {
         return new HumidityBinsDataResponse(thesisName, deviceId, measures);
     };
 
+    convertDevicesDataWrapper(devicesData) {
+        const grouped = devicesData.reduce((acc, curr) => {
+            const deviceKey = `${curr.deviceId}`;
+            if (!acc[deviceKey]) {
+                acc[deviceKey] = {
+                    deviceId: curr.deviceId,
+                    deviceType: curr.deviceType,
+                    deviceDescription: curr.deviceDescription,
+                    signals: {}
+                };
+            }
+
+            const signalKey = `${curr.signalId}`;
+            if (!acc[deviceKey].signals[signalKey]) {
+                acc[deviceKey].signals[signalKey] = {
+                    signalId: curr.signalId,
+                    deviceId: curr.deviceId,
+                    signalDescription: curr.signalDescription,
+                    signalType: curr.signalType,
+                    signalTypeDescription: curr.signalTypeDescription,
+                    x: curr.x,
+                    y: curr.y,
+                    z: curr.z,
+                    virtual: curr.virtual,
+                    unit: curr.unit
+                };
+            }
+            return acc;
+        }, {});
+
+         const devicesArray = Object.values(grouped).map(deviceGroup => {
+            const signalsArray = Object.values(deviceGroup.signals).map(signalGroup => {
+                return new Signal({ 
+                    signalId: signalGroup.signalId,
+                    signalDescription: signalGroup.signalDescription,
+                    signalType: signalGroup.signalType,
+                    signalTypeDescription: signalGroup.signalTypeDescription,
+                    x: signalGroup.x,
+                    y: signalGroup.y,
+                    z: signalGroup.z,
+                    virtual: signalGroup.virtual,
+                    unit: signalGroup.unit
+                });
+            });
+
+            return new Device({ 
+                deviceId: deviceGroup.deviceId,
+                deviceType: deviceGroup.deviceType,
+                deviceDescription: deviceGroup.deviceDescription,
+                signals: signalsArray
+            });
+        });
+
+        return devicesArray;
+    }   
 
     convertViewDataOriginalWrapper(wrappers) {
         const map = wrappers.reduce((accumulator, currentValue) => {
