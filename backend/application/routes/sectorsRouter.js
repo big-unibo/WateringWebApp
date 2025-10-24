@@ -265,6 +265,9 @@ const sectorsRouter = ({ userService, authenticationService, authorizationServic
      *               properties:
      *                 message:
      *                   type: string
+     *                 id:
+     *                   type: number
+     *                   description: Id of the thesis       
      *       400:
      *         description: Bad request (missing or invalid sectorId or thesisName)
      *         content:
@@ -302,39 +305,39 @@ const sectorsRouter = ({ userService, authenticationService, authorizationServic
      *                 message:
      *                   type: string
     */
-    router.post('/createThesis', async (req,res) => {
-      let requestUserData;
-      try {
-        requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-      } catch (error) {
-        return res.status(403).json({message: 'Authentication failed'});
-      }
+    router.post('/:sectorId/createThesis', async (req,res) => {
+		let requestUserData;
+		try {
+			requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+		} catch (error) {
+			return res.status(403).json({message: 'Authentication failed'});
+		}
 
-      if(!req.body || req.body === '')
-        return res.status(400).json({message: 'Invalid request'});
+		if(!req.body || req.body === '')
+			return res.status(400).json({message: 'Invalid request'});
 
-      const { sectorId } = req.params;
-      const { thesisName, validFrom } = req.body;
+		const { sectorId } = req.params;
+		const { thesisName, validFrom } = req.body;
 
-      if (!sectorId || isNaN(parseInt(sectorId))) {
-        return res.status(400).json({ message: 'sectorId is required and must be a number' });
-      }
-      const sectorIdParsed = parseInt(sectorId);
-      const thesis = new Thesis(thesisName, sectorIdParsed, validFrom);
+		if (!sectorId || isNaN(parseInt(sectorId))) {
+			return res.status(400).json({ message: 'sectorId is required and must be a number' });
+		}
 
-      try {
-        const user = await userService.findUser(requestUserData.userid);
-        if (!(await authorizationService.isUserAuthorizedInSector(user.id, 'update', sectorIdParsed)))
-          return res.status(401).json({message: 'Unauthorized request'});
+		const sectorIdParsed = parseInt(sectorId);
+		const thesis = new Thesis(thesisName, sectorIdParsed, validFrom);
 
-        await fieldService.createThesis(thesis);
-        return res.status(200).json({message: 'Thesis created with success'});
-      } catch (error) {
-        console.log(`Fail creating thesis caused by: ${error.message}`);
-        return res.status(500).json({error: "Error on creating thesis"});
-      }
+		try {
+			const user = await userService.findUser(requestUserData.userid);
+			if (!(await authorizationService.isUserAuthorizedInSector(user.id, 'update', sectorIdParsed)))
+				return res.status(401).json({message: 'Unauthorized request'});
+
+			const thesisId = await fieldService.createThesis(thesis);
+			return res.status(200).json({message: 'Thesis created with success', id: thesisId});
+		} catch (error) {
+			console.log(`Fail creating thesis caused by: ${error.message}`);
+			return res.status(500).json({error: "Error on creating thesis"});
+		}
     });
-
   
     return router;
 }

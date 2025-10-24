@@ -90,6 +90,7 @@ class FieldService {
             throw Error("Impossible to create thesis")
         }
         await this.fieldRepository.assignThesisToSector(newThesisId, thesis.sectorId, thesis.weight , thesis.validFrom || Math.floor(Date.now()/1000));
+        return newThesisId;
     }
 
     async getFieldOwner(fieldId){
