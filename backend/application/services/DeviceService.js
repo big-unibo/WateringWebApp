@@ -19,7 +19,6 @@ class DeviceService {
             if(!createdDeviceId){
                 throw new Error("Device creation failed");
             }
-
             const signalsToCreate = (device.signals || []).map(sig => ({
                 typeId: sig.typeId,
                 description: sig.description,
@@ -29,7 +28,7 @@ class DeviceService {
                 virtual: sig.virtual,
                 unit: sig.unit,
                 idOnProvider: sig.idOnProvider,
-                sensorTechnology: sensorTechnology,
+                sensorTechnology: sig.sensorTechnology,
                 deviceId: createdDeviceId
             }));
 

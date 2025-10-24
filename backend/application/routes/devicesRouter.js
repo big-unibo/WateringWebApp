@@ -206,16 +206,16 @@ const devicesRouter = ({authenticationService, authorizationService, userService
             //[TO DO]: Authorization
 
             const deviceIdRaw = req.params.deviceId;
-            if (!deviceId || isNaN(parseInt(deviceId ))) {
+            if (!deviceIdRaw|| isNaN(parseInt(deviceIdRaw ))) {
                 return res.status(400).json({ message: 'deviceId is required and must be a number' });
             }
-            const deviceidParsed = parseInt(deviceIdRaw);
+            const deviceIdParsed = parseInt(deviceIdRaw);
 
             const body = req.body;
             if (!Object.values(SignalTargetType).includes(body.targetType))
                 return res.status(400).json({ message: "Invalid targetType" });
             const signalAssociation = new SignalAssociation({
-                    deviceId: deviceidParsed,
+                    deviceId: deviceIdParsed,
                     targetType: body.targetType,
                     targetId: body.targetId,
                     validFrom: body.validFrom

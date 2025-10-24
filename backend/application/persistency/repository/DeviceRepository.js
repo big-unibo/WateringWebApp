@@ -30,8 +30,6 @@ class DeviceRepository {
             if (!Array.isArray(signalsData) || signalsData.length === 0) {
                 return []; 
             }
-
-            console.log(signalsData);
             await this.Signal.bulkCreate(signalsData);
         } catch (error) {
             throw new Error(`Error creating signals caused by: ${error.message}`);

@@ -61,7 +61,7 @@ export class CreateDevice {
         this.description = description;
         this.location = location;
         this.binningId = binningId;
-        this.signals = signals.map(sig => new Signal(sig));
+        this.signals = signals.map(sig => new CreateSignal(sig));
     }
 }
 
