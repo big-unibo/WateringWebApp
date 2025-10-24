@@ -34,6 +34,9 @@ const organizationsRouter = ({organizationService, authenticationService, userSe
      *               properties:
      *                 message:
      *                   type: string
+     *                 id:
+     *                   type: number
+     *                   description: Id of the new Organization                      
      *       400:
      *         description: Bad request (missing or invalid organizationName)
      *         content:
@@ -89,8 +92,8 @@ const organizationsRouter = ({organizationService, authenticationService, userSe
             if (!req.body || !req.body.organizationName) {
                 throw new Error('Body is empty or missing organizationName');
             }
-            await organizationService.createOrganization(req.body.organizationName);
-            return res.status(200).json({ message: 'Organization created successfully' });
+            const organizationId = await organizationService.createOrganization(req.body.organizationName);
+            return res.status(200).json({ message: 'Organization created successfully' , id: organizationId});
         } catch (error) {
             console.error(`Failed creating organization caused by: ${error.message}`);
             return res.status(500).json({ message: 'Error on creating organization' });

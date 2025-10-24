@@ -5,7 +5,8 @@ class OrganizationService {
 
     async createOrganization(organizationName){ 
         try {
-            await this.organizationRepository.createOrganization(organizationName);
+            const organizationCreated = await this.organizationRepository.createOrganization(organizationName);
+            return organizationCreated.id;
         } catch (error) {
             console.error(`Error creating organization ${organizationName}: ${error.message}`);
             throw error;
