@@ -29,6 +29,9 @@ const companiesRouter = ({ companyService, userService, authenticationService, a
      *               properties:
      *                 message:
      *                   type: string
+     *                 id:
+     *                   type: number
+     *                   description: Id of the new Company           
      *       '400':
      *         description: Bad Request – missing or invalid request data
      *         content:
@@ -102,8 +105,8 @@ const companiesRouter = ({ companyService, userService, authenticationService, a
             const companyName = req.body.companyName;
             const company = new Company(companyName,organizationId);
 
-            await companyService.createCompany(company);
-            return res.status(200).json({ message: `Company created with success` });
+            const companyId = await companyService.createCompany(company);
+            return res.status(200).json({ message: `Company created with success`, id: companyId });
         } catch (error) {
             console.log(`Failed creating company caused by: ${error.message}`);
             return res.status(500).json({ message: "Error on creating company" });
