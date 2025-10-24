@@ -140,6 +140,9 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
      *               properties:
      *                 message:
      *                   type: string
+     *                 id:
+     *                   type: number
+     *                   description: Id of the new Sector          
      *       400:
      *         description: Bad request (missing or invalid fieldId, sectorName, or culture)
      *         content:
@@ -225,8 +228,8 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
               doubleWing
           );
 
-          const result = await fieldService.createSector(sector);
-          return res.status(200).json({message: `Sector created with success`})
+          const sectorId = await fieldService.createSector(sector);
+          return res.status(200).json({message: `Sector created with success`, id: sectorId})
       } catch (error) {
           console.log(`Failed creating sector caused by: ${error.message}`)
           return res.status(500).json({message: "Error on creating sector"})

@@ -37,9 +37,9 @@ class FieldRepository {
             }
 
             const fieldCreated = await this.Field.create({
-            fieldName,
-            companyId,
-            location
+                fieldName,
+                companyId,
+                location
             });
 
             return fieldCreated;

@@ -54,7 +54,7 @@ class FieldService {
 
     async createSector(sector) {
         try {
-            const result = await this.fieldRepository.createSector({
+            const sectorCreated = await this.fieldRepository.createSector({
                 sectorName: sector.sectorName,
                 fieldId: sector.fieldId,
                 culture: sector.culture,
@@ -67,7 +67,7 @@ class FieldService {
                 doubleWing: sector.doubleWing
             });
 
-            return result;
+            return sectorCreated.id;
         } catch (error) {
             console.error(`Error creating sector ${sector.sectorName}: ${error.message}`);
             throw error;
