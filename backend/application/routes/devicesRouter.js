@@ -88,13 +88,17 @@ const devicesRouter = ({authenticationService, authorizationService, userService
             if (!req.body || req.body === '')
                 throw new Error('Body is empty');
 
+            const signalsArray = Array.isArray(req.body.signals) 
+                ? req.body.signals 
+                : JSON.parse(req.body.signals || "[]");
+
             const device = new CreateDevice({
                 type: req.body.type,
                 providerId: req.body.providerId,
                 description: req.body.description,
                 location: req.body.location,
                 binningId: req.body.binningId,
-                signals: (req.body.signals || []).map(sig => new CreateSignal(sig))
+                signals: (signalsArray|| []).map(sig => new CreateSignal(sig))
             });
 
             const deviceId = await deviceService.createDevice(device);

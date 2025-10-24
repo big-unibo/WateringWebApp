@@ -29,7 +29,7 @@ function initDevice(sequelize) {
         },
         location: {
             type: DataTypes.GEOMETRY,
-            allowNull: false,
+            allowNull: true,
             field: "location"
         },
         binningId: {
