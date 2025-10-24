@@ -35,7 +35,9 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
      *               properties:
      *                 message:
      *                   type: string
-     *                   example: "Field created with success"
+     *                 id:
+     *                   type: number
+     *                   description: Id of the new Field           
      *       400:
      *         description: Bad Request (missing or invalid companyId)
      *         content:
@@ -45,7 +47,6 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
      *               properties:
      *                 message:
      *                   type: string
-     *                   example: "companyId is required and must be a number"
      *       401:
      *         description: Unauthorized (user not allowed to create field)
      *         content:
@@ -55,7 +56,6 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
      *               properties:
      *                 message:
      *                   type: string
-     *                   example: "Unauthorized request"
      *       403:
      *         description: Authentication failed
      *         content:
@@ -65,7 +65,6 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
      *               properties:
      *                 message:
      *                   type: string
-     *                   example: "Authentication failed"
      *       500:
      *         description: Internal server error
      *         content:
@@ -75,7 +74,6 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
      *               properties:
      *                 message:
      *                   type: string
-     *                   example: "Error on creating field"
      *
     */
     router.post('/create', async (req, res) => {
@@ -101,8 +99,8 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
                 return res.status(401).json({message: 'Unauthorized request'});
 
             const field = new Field(req.body.fieldName, companyId, req.body.location);
-            const result = await fieldService.createField(field);
-            return res.status(200).json({message: `Field created with success`})
+            const fieldId = await fieldService.createField(field);
+            return res.status(200).json({message: `Field created with success`, id:fieldId})
         } catch (error) {
             console.log(`Failed creating field caused by: ${error.message}`)
             return res.status(500).json({message: "Error on creating field"})

@@ -44,7 +44,8 @@ class FieldService {
 
     async createField(field){ 
         try {
-            await this.fieldRepository.createField(field.fieldName, field.companyId, field.location);
+            const fieldCreated = await this.fieldRepository.createField(field.fieldName, field.companyId, field.location);
+            return fieldCreated.id;
         } catch (error) {
             console.error(`Error creating field ${field.fieldName}: ${error.message}`);
             throw error;
