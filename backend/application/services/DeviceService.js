@@ -58,28 +58,30 @@ class DeviceService {
 
             const validFrom = signalAssociation.validFrom ?? Date.now() / 1000;
             const signals = await this.deviceRepository.getSignals(signalAssociation.deviceId);
-
         
             for (const signal of signals) {
                 switch (signalAssociation.targetType) {
                 case SignalTargetType.FIELD:
-                    return await this.signalRepository.assignSignalToField({
+                    await this.signalRepository.assignSignalToField({
                         signalId: signal.id,
                         fieldId: signalAssociation.targetId,
                         validFrom
                     });
+                    break;
                 case SignalTargetType.SECTOR:
-                    return await this.signalRepository.assignSignalToSector({
+                    await this.signalRepository.assignSignalToSector({
                         signalId: signal.id,
                         sectorId: signalAssociation.targetId,
                         validFrom
                     });
+                    break;
                 case SignalTargetType.THESIS:
-                    return await this.signalRepository.assignSignalToThesis({
+                    await this.signalRepository.assignSignalToThesis({
                         signalId: signal.id,
                         thesisId: signalAssociation.targetId,
                         validFrom
                     });
+                    break;
                 default:
                     throw new Error("Unknown targetType");
                 }
