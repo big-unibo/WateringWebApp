@@ -32,6 +32,9 @@ const devicesRouter = ({authenticationService, authorizationService, userService
      *               properties:
      *                 message:
      *                   type: string
+     *                 id:
+     *                   type: number
+     *                   description: The created device id
      *       400:
      *         description: Bad request – missing or invalid fields in the body
      *         content:
@@ -94,9 +97,8 @@ const devicesRouter = ({authenticationService, authorizationService, userService
                 signals: (req.body.signals || []).map(sig => new CreateSignal(sig))
             });
 
-            await deviceService.createDevice(device);
-           
-            return res.status(200).json({ message: `Device created with success` });
+            const deviceId = await deviceService.createDevice(device);
+            return res.status(200).json({ message: `Device created with success`, id:  deviceId});
         } catch (error) {
             console.log(`Failed creating Device caused by: ${error.message}`);
             return res.status(500).json({ message: "Error on creating device" });

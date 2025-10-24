@@ -37,6 +37,7 @@ class DeviceService {
                 await this.deviceRepository.createSignals(signalsToCreate);
             }
 
+            return createdDeviceId;
         }catch(error){
             console.error(`Error creating Device with signals: ${error.message}`);
             throw error;
