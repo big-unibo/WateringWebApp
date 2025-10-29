@@ -51,16 +51,16 @@ class HumidityBinsRepository {
                     || ', '
                     || COALESCE(MIN(CASE WHEN b.bound_value >= vip.value THEN b.bound_value END)::text, '+∞')
                     || ']' AS humidity_bin_description,
-                COUNT(CASE WHEN b.bound_value < vip.value THEN 1 END) AS humidity_bin
+                MIN(CASE WHEN b.bound_value >= vip.value THEN b.ordinal END) AS humidity_bin
             FROM valid_interpolated_profiles_table vip
             JOIN devices d
                 ON d.id = vip.device_id
             JOIN profiles_bins pb 
                 ON pb.id = d.binning_id
             CROSS JOIN LATERAL (
-                VALUES (pb.bound_0), (pb.bound_1), (pb.bound_2), (pb.bound_3),
-                    (pb.bound_4), (pb.bound_5), (pb.bound_6)
-            ) AS b(bound_value)
+                VALUES (pb.bound_0, 0), (pb.bound_1, 1), (pb.bound_2, 2), (pb.bound_3, 3),
+                    (pb.bound_4, 4), (pb.bound_5, 5), (pb.bound_6, 6)
+            ) AS b(bound_value, ordinal)
             GROUP BY
                 vip.thesis_name,
                 vip.device_id,
