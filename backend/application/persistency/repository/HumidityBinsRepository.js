@@ -1,5 +1,7 @@
 import { QueryTypes } from 'sequelize';
 
+const HUMIDITY_DEVICE_TYPE = 'SOIL_MOISTURE_GRID'
+
 class HumidityBinsRepository {
 
     constructor(models,sequelize) {
@@ -16,7 +18,7 @@ class HumidityBinsRepository {
                     tas.valid_from,
                     tas.valid_to
                 FROM theses_all_signals tas
-                WHERE tas.device_type = 'GRID'
+                WHERE tas.device_type = :HUMIDITY_DEVICE_TYPE
                     AND tas.thesis_id = :thesisId
             ),
             valid_interpolated_profiles_table AS (
@@ -96,7 +98,8 @@ class HumidityBinsRepository {
             replacements: {
                 timeFilterFrom,
                 timeFilterTo,
-                thesisId
+                thesisId,
+                HUMIDITY_DEVICE_TYPE
             },
             type: QueryTypes.SELECT
         });  
