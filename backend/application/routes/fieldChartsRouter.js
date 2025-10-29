@@ -322,7 +322,7 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
      *                 message:
      *                   type: string
      */
-    router.get('/:thesisId/humidtiyBins', async(req,res) => {
+    router.get('/:thesisId/humidityBins', async(req,res) => {
         const thesisId = parseInt(req.params.thesisId);
         const timeFilterFrom = req.query.timeFilterFrom
             ? Number(req.query.timeFilterFrom)
@@ -340,7 +340,7 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
         }
 
         try {
-            const results = await fieldService.getHumidtiyBinsByThesis(
+            const results = await fieldService.getHumidityBinsByThesis(
                 thesisId,
                 timeFilterFrom,
                 timeFilterTo,

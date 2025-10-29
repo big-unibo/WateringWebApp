@@ -379,7 +379,7 @@ components:
           type: number
           description: cell value.
     
-    HumidtyBinsDataResponse:
+    HumidityBinsDataResponse:
       type: object
       properties:
         thesisName:
@@ -391,20 +391,20 @@ components:
         measures:
           type: array
           items:
-            $ref: "#/components/schemas/HumidtyBinMeasureData"
+            $ref: "#/components/schemas/HumidityBinMeasureData"
       
-    HumidtyBinMeasureData:
+    HumidityBinMeasureData:
       type: object
       properties:
         humidityBin:
           type: number
-          description: Humidty bin number
+          description: Humidity bin number
         humidityBinDescription:
           type: string
-          description: String describing the humidty bin range
+          description: String describing the humidity bin range
         timestamp:
           type: number
-          description: Timestamp of the humidty bin measures
+          description: Timestamp of the humidity bin measures
         count:
           type: number
           description: Count of the measurements taken resulting for the bin
