@@ -217,7 +217,7 @@ class DtoConverter {
     }
 
 
-    convertHumidtyBinsDataWrapper(wrappers) {
+    convertHumidityBinsDataWrapper(wrappers) {
         if (!wrappers || wrappers.length === 0) {
             return null;
         }

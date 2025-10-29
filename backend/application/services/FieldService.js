@@ -141,14 +141,14 @@ class FieldService {
         return dtoConverter.convertHeatmapDataWrapper(result);
     }
 
-    async getHumidtyBinsByThesis(thesisId, timeFilterFrom, timeFilterTo){
+    async getHumidityBinsByThesis(thesisId, timeFilterFrom, timeFilterTo){
         // const gridId = await this.thesesAllSignalsRepository.getGridDeviceByThesis(thesisId, timeFilterFrom, timeFilterTo);
         // if(!gridId){
         //     throw Error("No GRID type device found assigned to the given thesis");
         // }
 
         const result = await this.humidityBinsRepository.getHumidityBins(thesisId, timeFilterFrom, timeFilterTo);
-        return dtoConverter.convertHumidtyBinsDataWrapper(result);
+        return dtoConverter.convertHumidityBinsDataWrapper(result);
     }
 
     async getWaterAggregateByThesis(thesisId, timeFilterFrom, timeFilterTo){

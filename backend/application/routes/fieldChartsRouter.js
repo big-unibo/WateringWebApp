@@ -252,7 +252,7 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
 
     /**
      * @swagger
-     * /fieldCharts/{thesisId}/humidtyBins:
+     * /fieldCharts/{thesisId}/humidityBins:
      *   get:
      *     security:
      *       - bearerAuth: []
@@ -280,11 +280,11 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
      *         description: Time filter end (timestamp in seconds)
      *     responses:
      *       200:
-     *         description: Successfully retrieved humidty bins data
+     *         description: Successfully retrieved humidity bins data
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: "#/components/schemas/HumidtyBinsDataResponse"
+     *               $ref: "#/components/schemas/HumidityBinsDataResponse"
      *       400:
      *         description: Invalid or missing query parameters
      *         content:
@@ -295,7 +295,7 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
      *                 message:
      *                   type: string
      *       401:
-     *         description: Unauthorized (user not allowed to see humidty bins data)
+     *         description: Unauthorized (user not allowed to see humidity bins data)
      *         content:
      *           application/json:
      *             schema:
@@ -322,7 +322,7 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
      *                 message:
      *                   type: string
      */
-    router.get('/:thesisId/humidtyBins', async(req,res) => {
+    router.get('/:thesisId/humidtiyBins', async(req,res) => {
         const thesisId = parseInt(req.params.thesisId);
         const timeFilterFrom = req.query.timeFilterFrom
             ? Number(req.query.timeFilterFrom)
@@ -340,7 +340,7 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
         }
 
         try {
-            const results = await fieldService.getHumidtyBinsByThesis(
+            const results = await fieldService.getHumidtiyBinsByThesis(
                 thesisId,
                 timeFilterFrom,
                 timeFilterTo,

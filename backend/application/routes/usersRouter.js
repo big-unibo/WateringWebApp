@@ -38,7 +38,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
             if(!req.body && req.body === '')
                 throw new Error('Body is empty');
 
-            const request = new UserTokenRequest(req.body.email, req.body.password,);
+            const request = new UserTokenRequest(req.body.email, req.body.password);
 
             const token = await authenticationService.generateJwt(request);
 
