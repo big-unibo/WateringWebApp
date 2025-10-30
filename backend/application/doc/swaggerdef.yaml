@@ -347,6 +347,9 @@ components:
         deviceId:
           type: number
           description: Id of the GRID type device assigned to the thesis
+        binningId:
+          type: number
+          description: Id of the binning profile assigned to the thesis
         images:
           type: array
           items:

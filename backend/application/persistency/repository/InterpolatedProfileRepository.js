@@ -20,6 +20,7 @@ class InterpolatedProfileRepository {
                 SELECT DISTINCT
                     tas.thesis_name,
                     tas.device_id,
+                    tas.device_binning_id,
                     tas.valid_from,
                     tas.valid_to
                 FROM theses_all_signals tas
@@ -29,6 +30,7 @@ class InterpolatedProfileRepository {
             SELECT DISTINCT
                 v.thesis_name AS "thesisName",
                 v.device_id AS "deviceId",
+                v.device_binning_id AS "binningId",
                 ip.timestamp AS "timestamp",
                 ip.x AS "x",
                 ip.y AS "y",

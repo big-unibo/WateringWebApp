@@ -191,7 +191,7 @@ class DtoConverter {
         if (!wrappers || wrappers.length === 0) {
             return null; 
         }
-        const { thesisName, deviceId } = wrappers[0];
+        const { thesisName, deviceId, binningId } = wrappers[0];
 
         const imagesMap = wrappers.reduce((acc, curr) => {
             const key = curr.timestamp;
@@ -213,7 +213,7 @@ class DtoConverter {
         const images = Object.values(imagesMap).map(
             img => new InterpolatedImageData(img.timestamp, img.measures)
         );
-        return new InterpolatedDataResponse(thesisName, deviceId, images);
+        return new InterpolatedDataResponse(thesisName, deviceId, binningId, images);
     }
 
 

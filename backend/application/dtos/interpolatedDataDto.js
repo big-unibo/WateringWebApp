@@ -1,8 +1,9 @@
 export class InterpolatedDataResponse {
 
-    constructor(thesisName, deviceId, images) {
+    constructor(thesisName, deviceId, binningId, images) {
         this.thesisName = thesisName;
         this.deviceId = deviceId;
+        this.binningId = binningId;
         this.images = images;
     }
 
