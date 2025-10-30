@@ -18,10 +18,10 @@ export class InterpolatedImageData {
 
 
 export class InterpolatedMeasureData {
-    constructor(z, y, x, value) {
-        this.z = z;
-        this.y = y;
+    constructor(x, y, z, value) {
         this.x = x;
+        this.y = y;
+        this.z = z;
         this.value = value;
     }
 }
