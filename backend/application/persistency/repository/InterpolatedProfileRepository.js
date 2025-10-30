@@ -36,7 +36,7 @@ class InterpolatedProfileRepository {
                 ip.value AS "value"
             FROM validity_table v
             JOIN interpolated_profiles ip 
-                ON ip.profile_id = v.device_id
+                ON ip.grid_id = v.device_id
                 AND ip.timestamp BETWEEN 
                     GREATEST(v.valid_from, :timeFilterFrom)
                     AND LEAST(COALESCE(v.valid_to, 'infinity'), :timeFilterTo)
