@@ -607,6 +607,16 @@ components:
         - deviceType
         - signals
 
+    BinInfoData:
+      type: object
+      properties:
+        humidityBin:
+          type: integer
+        upperBound:
+          type: integer
+        lowerBound:
+          type: integer
+
     
 
 

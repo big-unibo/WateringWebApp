@@ -33,6 +33,7 @@ import fieldChartRouter from './routes/fieldChartsRouter.js';
 import InterpolatedProfileRepository from './persistency/repository/InterpolatedProfileRepository.js';
 import HumidityBinsRepository from './persistency/repository/HumidityBinsRepository.js';
 import thesesRouter from './routes/thesesRouter.js';
+import profileBinsRouter from './routes/profileBinsRouter.js';
 
 dotenv.config();
 
@@ -133,7 +134,13 @@ app.use(
   fieldChartRouter({authenticationService,authorizationService,fieldService})
 )
 
+app.use(
+  '/profileBins',
+  profileBinsRouter({authenticationService,authorizationService,fieldService})
+)
+
+
 app.use('/api-docs', serve, setup(swaggerSpec));
-//app.use('/fieldCharts', fieldChartRouter);
+
 // app.use('/wateringSchedule', wateringScheduleRouter);
 // app.use('/logs', logsRouter)

@@ -106,6 +106,47 @@ class HumidityBinsRepository {
 
         return(results);
     }
+
+    async getBinningInfo(binningId) {
+        const query = `
+            SELECT
+                ordinal as "humidityBin",
+                lower_bound as "lowerBound",
+                upper_bound as "upperBound"
+            FROM (
+                SELECT 
+                    b.ordinal,
+                    b.bound_value AS lower_bound,
+                    LEAD(b.bound_value) OVER (ORDER BY b.ordinal) AS upper_bound
+                FROM public.profiles_bins pb
+                CROSS JOIN LATERAL (
+                    VALUES 
+                        (pb.bound_0, 1),
+                        (pb.bound_1, 2),
+                        (pb.bound_2, 3),
+                        (pb.bound_3, 4),
+                        (pb.bound_4, 5),
+                        (pb.bound_5, 6),
+                        (pb.bound_6, 7)
+                ) AS b(bound_value, ordinal)
+                WHERE pb.id = :binningId
+                AND bound_value IS NOT NULL
+            ) sub
+            WHERE upper_bound IS NOT NULL
+            ORDER BY ordinal;
+
+        `;
+
+        const results = await this.sequelize.query(query, {
+            replacements: {
+                binningId
+            },
+            type: QueryTypes.SELECT
+        });  
+        
+        return(results);
+
+    }
 }
 
 //     async findHumidityBins(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName) {

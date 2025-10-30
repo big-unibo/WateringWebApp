@@ -108,6 +108,8 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
      *                   type: string
      */
     router.get('/:thesisId/signals', async (req, res) => {
+
+        // [TO DO]: Authorization/Authentication
         const thesisId = parseInt(req.params.thesisId);
 
         // signalTypes come in query string: ?signalTypes=1&signalTypes=2
@@ -323,6 +325,8 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
      *                   type: string
      */
     router.get('/:thesisId/humidityBins', async(req,res) => {
+
+        // [TO DO]: Authorization/Authentication
         const thesisId = parseInt(req.params.thesisId);
         const timeFilterFrom = req.query.timeFilterFrom
             ? Number(req.query.timeFilterFrom)
@@ -425,6 +429,8 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
      *                   type: string
      */
     router.get('/:thesisId/waterAggregate', async(req,res) => {
+
+        // [TO DO]: Authorization/Authentication
         const thesisId = parseInt(req.params.thesisId);
         const timeFilterFrom = req.query.timeFilterFrom
             ? Number(req.query.timeFilterFrom)

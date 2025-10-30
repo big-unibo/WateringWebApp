@@ -183,6 +183,10 @@ class FieldService {
         return dtoConverter.convertDevicesDataWrapper(result);
     }
 
+    async getBinningInfo(binningId){
+        return this.humidityBinsRepository.getBinningInfo(binningId);
+    }
+
     // async getInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {
     //     const result = await this.dataInterpolatedRepository.findInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo);
     //     return [dtoConverter.convertDataInterpolatedMeanWrapper(refStructureName, companyName, fieldName, sectorName, thesisName, result)];
