@@ -4,7 +4,7 @@ const HUMIDITY_DEVICE_TYPE = 'SOIL_MOISTURE_GRID'
 
 class HumidityBinsRepository {
 
-    constructor(models,sequelize) {
+    constructor(models, sequelize) {
         this.sequelize = sequelize;
     }
 
@@ -102,9 +102,9 @@ class HumidityBinsRepository {
                 HUMIDITY_DEVICE_TYPE
             },
             type: QueryTypes.SELECT
-        });  
+        });
 
-        return(results);
+        return (results);
     }
 
     async getBinningInfo(binningId) {
@@ -112,7 +112,11 @@ class HumidityBinsRepository {
             SELECT
                 ordinal as "humidityBin",
                 lower_bound as "lowerBound",
-                upper_bound as "upperBound"
+                upper_bound as "upperBound",
+                '(' || lower_bound
+                    || ', '
+                    || upper_bound
+                    || ']' AS "humidityBinDescription"
             FROM (
                 SELECT 
                     b.ordinal,
@@ -142,9 +146,9 @@ class HumidityBinsRepository {
                 binningId
             },
             type: QueryTypes.SELECT
-        });  
-        
-        return(results);
+        });
+
+        return (results);
 
     }
 }

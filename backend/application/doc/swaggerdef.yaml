@@ -612,6 +612,8 @@ components:
       properties:
         humidityBin:
           type: integer
+        humidityBinDescription:
+          type: string
         upperBound:
           type: integer
         lowerBound:
