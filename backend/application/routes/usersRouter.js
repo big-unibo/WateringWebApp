@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { UserTokenRequest, UserTokenResponse } from '../dtos/authenticationDto.js';
-import { RegisterUser, RegisterUsers } from '../dtos/registerUsersDto.js';
+import { User, Users } from '../dtos/userDto.js';
 
 const usersRouter = ({ userService, authenticationService, authorizationService }) => {
         const router = Router();
@@ -65,7 +65,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      *       content:
      *         application/json:
      *           schema:
-     *             $ref: '#/components/schemas/RegisterUsersDto'
+     *             $ref: '#/components/schemas/RegisterUsersRequest'
      *     responses:
      *       '200':
      *         description: Users successfully created.
@@ -131,10 +131,10 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
             if (!req.body || !req.body.users || req.body.users.length === 0)
             return res.status(400).json({ message: 'Request body is missing or invalid' });
 
-            const request = new RegisterUsers(
+            const request = new Users(
             req.body.users.map(
                 user =>
-                new RegisterUser(
+                new User(
                     user.email,
                     user.password,
                     user.name,

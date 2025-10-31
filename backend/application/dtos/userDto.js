@@ -1,4 +1,4 @@
-export class RegisterUsers{
+export class Users{
 
   constructor(users) {
     this.users = users;
@@ -6,7 +6,7 @@ export class RegisterUsers{
 
 }
 
-export class RegisterUser {
+export class User {
 
   constructor(email, password, name, role) {
     this.email = email
