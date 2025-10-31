@@ -9,9 +9,9 @@
      *   get:
      *     security:
      *       - bearerAuth: []
-     *     summary: Retrieves binning info for a given binning profile
+     *     summary: Retrieves binning information for a given binning profile
      *     tags: [Profile bins]
-     *     description: etrieves binning info for a given binning profile
+     *     description: retrieves binning information for a given binning profile
      *     parameters:
      *       - in: path
      *         name: profileId
@@ -25,10 +25,12 @@
      *         content:
      *           application/json:
      *             schema:
-     *              bins:
-     *                type: array
-     *                items:
-     *                  $ref: "#/components/schemas/BinInfoData"
+     *              type: object
+     *              properties:
+     *                bins:
+     *                  type: array
+     *                  items:
+     *                    $ref: "#/components/schemas/BinInfoData"
      *       400:
      *         description: Invalid or missing query parameters
      *         content:

@@ -14,7 +14,7 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
      * /fields/create:
      *   post:
      *     summary: Create a new field
-     *     description: Creates a new field associated with a company. Requires authentication and proper authorization.
+     *     description: Creates a new field within a company. Requires authentication and proper authorization.
      *     tags:
      *       - Fields
      *     security:
@@ -114,7 +114,7 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
      *     security:
      *       - bearerAuth: []
      *     summary: Create a new sector
-     *     description: Creates a new sector associated with a field. Requires authentication and proper authorization.
+     *     description: Creates a new sector within a field. Requires authentication and proper authorization.
      *     tags:
      *       - Fields
      *     parameters:
@@ -123,7 +123,7 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
      *         required: true
      *         schema:
      *           type: integer
-     *         description: ID of the field to associate the sector with
+     *         description: ID of the field the sector belongs to
      *     requestBody:
      *       required: true
      *       content:
@@ -759,96 +759,6 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
     // //   }
     // // });
 
-    // /**
-    //  * @swagger
-    //  * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/wateringAdvice:
-    //  *   get:
-    //  *     security:
-    //  *       - bearerAuth: []
-    //  *     summary: Get watering advice for a field
-    //  *     description: Get watering advice for a field
-    //  *     parameters:
-    //  *      - in: path
-    //  *        name: refStructureName
-    //  *        required: true
-    //  *        schema:
-    //  *          type: string
-    //  *        description: The reference structure name
-    //  *      - in: path
-    //  *        name: companyName
-    //  *        required: true
-    //  *        schema:
-    //  *          type: string
-    //  *        description: The company name
-    //  *      - in: path
-    //  *        name: fieldName
-    //  *        required: true
-    //  *        schema:
-    //  *          type: string
-    //  *        description: The field name
-    //  *      - in: path
-    //  *        name: sectorName
-    //  *        required: true
-    //  *        schema:
-    //  *          type: string
-    //  *        description: The sector name
-    //  *      - in: path
-    //  *        name: thesisName
-    //  *        required: true
-    //  *        schema:
-    //  *          type: string
-    //  *        description: The thesisName
-    //  *      - in: query
-    //  *        name: expectedWater
-    //  *        type: number
-    //  *      - in: query
-    //  *        name: timestamp
-    //  *        type: number
-    //  *     tags: [Field Operations]
-    //  *     responses:
-    //  *       '200':
-    //  *         description: Advice returned successfully.
-    //  *         content:
-    //  *           application/json:
-    //  *             schema:
-    //  *                $ref: '#/components/schemas/WateringAdviceDto'
-    //  *       '400':
-    //  *         description: Invalid request.
-    //  *       '401':
-    //  *         description: Unauthorized request.
-    //  *       '403':
-    //  *         description: Authentication failed.
-    //  *       '500':
-    //  *         description: Error on computing advice.
-    //  */
-    // // router.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/wateringAdvice', async (req, res) => {
-    // //   let requestUserData
-    // //   try {
-    // //     requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-    // //   } catch (error) {
-    // //     return res.status(403).json({message: 'Authentication failed'});
-    // //   }
-
-    // //   const refStructureName = req.params.refStructureName;
-    // //   const companyName = req.params.companyName;
-    // //   const fieldName = req.params.fieldName;
-    // //   const sectorName = req.params.sectorName;
-    // //   const thesisName = req.params.thesisName;
-    // //   const expectedWater = req.query.expectedWater ? req.query.expectedWater : 0;
-    // //   const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
-
-    // //   try {
-    // //     if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
-    // //       return res.status(401).json({message: 'Unauthorized request'});
-
-    // //     const result = await wateringAdviceService.getWateringAdvice(refStructureName, companyName, fieldName, sectorName, thesisName, expectedWater, timestamp)
-
-    // //     return res.status(200).json(result)
-    // //   } catch (error) {
-    // //     console.log(`Fail compute watering advice caused by: ${error.message}`)
-    // //     return res.status(500).json({error: "Error computing watering advice"})
-    // //   }
-    // // });
 
     // /**
     //  * @swagger

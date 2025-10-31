@@ -15,11 +15,11 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
      *       optionally filtered by time.
      *       
      *       **Query parameters:**
-     *       - **signalTypes** (array of string, required): Types of signals to retrieve.
-     *       - **timeFilterFrom** (number, required): Start timestamp (seconds since 01/01/1970) to filter measurements.
-     *       - **timeFilterTo** (number, required): End timestamp (seconds since 01/01/1970) to filter measurements.
-     *       - **aggregationPeriod** (number, required): Granularity period for aggregating the requested measurements (in seconds).
-     *       - **aggregationType** (string, required): Aggregation method to use within each aggregation period. Possible values:
+     *       - **signalTypes** (*array of string*): Types of signals to retrieve.
+     *       - **timeFilterFrom** (*number*): Start timestamp (seconds since 01/01/1970) to filter measurements.
+     *       - **timeFilterTo** (*number*): End timestamp (seconds since 01/01/1970) to filter measurements.
+     *       - **aggregationPeriod** (*number*, optional): Granularity period (seconds) for aggregating the requested measurements, default will be set based on time filter window.
+     *       - **aggregationType** (*string*, optional): Aggregation method to use within each aggregation period, default will be `AVG`. Possible values:
      *         - `SUM`: Sum of the measurements
      *         - `AVG`: Average of the measurements
      *         - `MIN`: Minimum value
@@ -362,9 +362,9 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
      *   get:
      *     security:
      *       - bearerAuth: []
-     *     summary: Retrieves daily aggregates of a thesis' signals, expected water and advice data. (Requires propera authorizaion and authentication).
+     *     summary: Retrieves daily aggregates of a thesis' signals, expected water and advice data. (Requires proper authorization and authentication).
      *     tags: [Field Chart Data]
-     *     description: Retrieves daily aggregates of a thesis' signals, expected water and advice data. (Requires propera authorizaion and authentication).
+     *     description: Retrieves daily aggregates of a thesis' signals, expected water and advice data. (Requires proper authorization and authentication).
      *     parameters:
      *       - in: path
      *         name: thesisId

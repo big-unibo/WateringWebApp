@@ -120,12 +120,12 @@ const devicesRouter = ({authenticationService, authorizationService, userService
      *       Assigns all the signals of a device to a given field, sector, or thesis.
      *       
      *       **Required request parameters:**
-     *       - **targetId** (`integer`): ID of the target entity (e.g., field, sector, or thesis)
-     *       - **targetType** (`string`): One of the following values:
+     *       - **targetId** (*integer*): ID of the target entity
+     *       - **targetType** (*string*): One of the following values:
      *         - `field`
      *         - `sector`
      *         - `thesis`
-     *       - **validFrom** (`number`, optional): Timestamp (in seconds since 01/01/1970) indicating when the association becomes valid
+     *       - **validFrom** (*number*, optional): Timestamp (in seconds since 01/01/1970) indicating when the association becomes valid
      *       
      *       Requires authentication and appropriate authorization.
      *     tags:

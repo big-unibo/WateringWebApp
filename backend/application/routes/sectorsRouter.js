@@ -12,9 +12,9 @@ const sectorsRouter = ({ userService, authenticationService, authorizationServic
 	 *   get:
 	 *     security:
 	 *       - bearerAuth: []
-	 *     summary: Returns all sectors the user has permission over with an active thesis within a time filter range.
+	 *     summary: Retrieve all sectors available for the user
 	 *     tags: [Sectors]
-	 *     description: Retrieve all sectors the user has permits over, filtered by a time range of active theses.
+	 *     description: Retrieve all sectors available for the user, filtered by a time range of active theses.
 	 *     parameters:
 	 *       - in: query
 	 *         name: timeFilterFrom
@@ -30,22 +30,13 @@ const sectorsRouter = ({ userService, authenticationService, authorizationServic
 	 *         description: Time filter end (timestamp in seconds)
 	 *     responses:
 	 *       200:
-	 *         description: List of sectors the user has permits over
+	 *         description: List of sectors for the user
 	 *         content:
 	 *           application/json:
 	 *             schema:
 	 *               $ref: '#/components/schemas/SectorsCompactDto'
 	 *       400:
 	 *         description: Bad request – missing or invalid query parameters
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 message:
-	 *                   type: string
-	 *       401:
-	 *         description: Unauthorized – user not permitted to view sectors
 	 *         content:
 	 *           application/json:
 	 *             schema:

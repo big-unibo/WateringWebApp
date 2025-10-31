@@ -38,7 +38,7 @@ class ThesesAllSignalsRepository {
                 sqlAggregation = 'percentile_cont(0.5) WITHIN GROUP (ORDER BY vm.\"value\")';
                 break;
             default:
-                sqlAggregation = 'SUM(vm.value)';
+                sqlAggregation = 'AVG(vm.value)';
                 break;
         }
 

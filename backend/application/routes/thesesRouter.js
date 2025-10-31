@@ -125,17 +125,16 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *             type: string
      *         style: form
      *         explode: true
-     *         description: Optional filter — one or more signal types to include.
+     *         description: Filte signal types to include.
      *       - in: query
      *         name: timestamp
-     *         required: true
      *         schema:
      *           type: number
      *           example: 1715529600
-     *         description: Unix timestamp (in seconds) representing the time to retrieve signals data for.
+     *         description: Unix timestamp (in seconds) in which find available signal for the thesis
      *     responses:
      *       200:
-     *         description: Successfully retrieved signals data for the specified thesis.
+     *         description: Successfully retrieved signals data for the specified thesis
      *         content:
      *           application/json:
      *             schema:
@@ -220,6 +219,71 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         }
 
     })
+
+    
+    /**
+     * @swagger
+     * /theses/{thesisId}/wateringAdvice:
+     *   get:
+     *     security:
+     *       - bearerAuth: []
+     *     summary: Get watering advice for a thesis
+     *     description: Get watering advice for a thesis
+     *     parameters:
+     *      - in: path
+     *        name: thesisId
+     *        required: true
+     *        schema:
+     *           type: integer
+     *        description: The thesis identifier
+     *      - in: query
+     *        name: expectedWater
+     *        type: number
+     *      - in: query
+     *        name: timestamp
+     *        type: number
+     *     tags: [Theses]
+     *     responses:
+     *       '200':
+     *         description: Advice returned successfully.
+     *         content:
+     *           application/json:
+     *             schema:
+     *                $ref: '#/components/schemas/WateringAdviceResponse'
+     *       '400':
+     *         description: Invalid request.
+     *       '401':
+     *         description: Unauthorized request.
+     *       '403':
+     *         description: Authentication failed.
+     *       '500':
+     *         description: Error on computing advice.
+     */
+    router.get('/theses/:thesisId/wateringAdvice', async (req, res) => {
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(403).json({message: 'Authentication failed'});
+        }
+
+        const thesisId = req.params.thesisId;
+        const expectedWater = req.query.expectedWater ? req.query.expectedWater : 0;
+        const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
+
+
+        try {
+            if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
+                return res.status(401).json({message: 'Unauthorized request'});
+
+            const result = await wateringAdviceService.getWateringAdvice(refStructureName, companyName, fieldName, sectorName, thesisName, expectedWater, timestamp)
+
+            return res.status(200).json(result)
+        } catch (error) {
+            console.log(`Fail compute watering advice caused by: ${error.message}`)
+            return res.status(500).json({error: "Error computing watering advice"})
+        }
+    });
 
     return router;
 }

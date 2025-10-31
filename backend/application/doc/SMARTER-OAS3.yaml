@@ -66,7 +66,7 @@ components:
           type: integer
           description: ID of the company to associate the field with
         location:
-          $ref: './GeoJSON-OAS3.yaml#/components/schemas/GeometryElement'
+          $ref: '#/components/schemas/GeometryElement'
 
     CreateSector:
       type: object
@@ -84,7 +84,7 @@ components:
           type: string
           description: Type of the culture
         location:
-          $ref: './GeoJSON-OAS3.yaml#/components/schemas/GeometryElement'
+          $ref: '#/components/schemas/GeometryElement'
         prescriptive:
           type: boolean
           description: Indicate if the watering advice is sent to valves
@@ -114,7 +114,7 @@ components:
           description: Name of the thesis
         validFrom: 
           type: number
-          description: Optional timestamp of thesis validity start (Seconds elapsed since 01/01/1970 - 00:00 )
+          description: The timestamp to set as the start of validity for the thesis in the sector (Seconds elapsed since 01/01/1970 - 00:00 )
 
     CreateSignal:
       type: object
@@ -183,7 +183,7 @@ components:
           type: string
           description: Description of the device
         location:
-          $ref: './GeoJSON-OAS3.yaml#/components/schemas/Point'
+          $ref: '#/components/schemas/Point'
         binningId:
           type: integer
           description: ID for the device's binning profile
@@ -404,34 +404,30 @@ components:
     
     SectorDataDto:
       type: object
-      properties:
-        allOf: 
-          - $ref: "#/components/schemas/CreateSector" 
-          - type: object
-            properties:
-              sectorId:
-                type: number
-                description: Id of the sector
-              field:
-                type: object
-                description: Field the sector belongs to
-                properties:
-                  $ref: "#/components/schemas/Field"
-              company:
-                type: object
-                description: Company owning the field
-                properties:
-                  $ref: "#/components/schemas/Company"
-              organization:
-                type: object
-                description: Organization the company belongs to
-                properties:
-                  $ref: "#/components/schemas/Organization"
-        theses:
-          type: array
-          description: List of theses associated to the sector
-          items:
-            $ref: "#/components/schemas/Thesis"
+      allOf: 
+        - $ref: "#/components/schemas/CreateSector" 
+        - type: object
+          properties:
+            sectorId:
+              type: number
+              description: Id of the sector
+            field:
+              allOf:
+              - $ref: "#/components/schemas/Field"
+              - description: Field the sector belongs to
+            company:
+              allOf:
+              - $ref: "#/components/schemas/Company"
+              - description: Company owning the field
+            organization:
+              allOf:
+              - $ref: "#/components/schemas/Organization"
+              - description: Organization the company belongs to
+            theses:
+              type: array
+              description: List of theses associated to the sector
+              items:
+                $ref: "#/components/schemas/Thesis"
 
     Thesis:
       type: object
@@ -453,8 +449,7 @@ components:
           type: string
           description: Name of the field
         location:
-          type:
-            $ref: './GeoJSON-OAS3.yaml#/components/schemas/GeometryElement'
+          $ref: '#/components/schemas/GeometryElement'
           description: Location of the field
           nullable: true
     
@@ -495,24 +490,20 @@ components:
           type: string
           description: Type of culture
         location:
-          type: string
-          nullable: true
-          description: Sector location
+          $ref: '#/components/schemas/GeometryElement'
+          description: Location of the field
         field:
-          type: object
-          description: Field the sector belongs to
-          properties:
-            $ref: "#/components/schemas/Field"
+          allOf:
+          - $ref: "#/components/schemas/Field"
+          - description: Field the sector belongs to
         company:
-          type: object
-          description: Company owning the field
-          properties:
-            $ref: "#/components/schemas/Company"
+          allOf:
+          - $ref: "#/components/schemas/Company"
+          - description: Company owning the field
         organization:
-          type: object
-          description: Organization the company belongs to
-          properties:
-            $ref: "#/components/schemas/Organization"
+          allOf:
+          - $ref: "#/components/schemas/Organization"
+          - description: Organization the company belongs to
       
     SectorsCompactDto:
         type: array
