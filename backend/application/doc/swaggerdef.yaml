@@ -266,15 +266,16 @@ components:
         - MAX
         - MED
 
+    SignalsDataBaseResponse:
+      type: array
+      items:
+        $ref: "#/components/schemas/SignalTypeDataBase"
+
     SignalsDataResponse:
       type: array
       items:
         $ref: "#/components/schemas/SignalTypeData"
 
-    SignalsDataBaseResponse:
-      type: array
-      items:
-        $ref: "#/components/schemas/SignalTypeDataBase"
 
     SignalTypeData:
       allOf:
@@ -283,7 +284,10 @@ components:
           properties:
             thesisName:
               type: string
-              description: Thesis name
+            signals:
+              type: array
+              items:
+                $ref: "#/components/schemas/SignalData"
 
     SignalTypeDataBase:
       type: object

@@ -177,10 +177,10 @@ class DtoConverter {
             });
 
             return new SignalTypeData(
-                typeGroup.thesisName,
                 typeGroup.signalType,
                 typeGroup.signalTypeDescription,
-                signals
+                signals,
+                typeGroup.thesisName
             );
         });
 
@@ -323,7 +323,7 @@ class DtoConverter {
                 signals
             );
         });
-        
+
         return signalTypeDataArray;
     }
 
