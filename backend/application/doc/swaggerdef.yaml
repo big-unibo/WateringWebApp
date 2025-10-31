@@ -20,15 +20,15 @@ components:
         token:
           type: string
 
-    RegisterUsersDto:
+    RegisterUsersRequest:
       type: object
       properties:
         users:
           type: array
           items:
-            $ref: '#/components/schemas/RegisterUserDto'
+            $ref: '#/components/schemas/RegisterUserRequest'
 
-    RegisterUserDto:
+    RegisterUserRequest:
       type: object
       properties:
         email:
@@ -53,25 +53,6 @@ components:
           type: integer
           description: ID of the organization to associate
 
-    GeoPoint:
-      type: object
-      description: Geographical location in GeoJSON Point format
-      required:
-        - type
-        - coordinates
-      properties:
-        type:
-          type: string
-          enum: [Point]
-          description: Must be "Point" for GeoJSON
-        coordinates:
-          type: array
-          description: [longitude, latitude]
-          items:
-            type: number
-          minItems: 2
-          maxItems: 2
-
     CreateField:
       type: object
       required:
@@ -85,7 +66,7 @@ components:
           type: integer
           description: ID of the company to associate the field with
         location:
-          $ref: '#/components/schemas/GeoPoint'
+          $ref: './GeoJSON-OAS3.yaml#/components/schemas/GeometryElement'
 
     CreateSector:
       type: object
@@ -98,30 +79,30 @@ components:
           description: Name of the sector
         culture:
           type: string
-          description: Main culture of the sector
+          description: Culture of the sector
         cultureType:
           type: string
-          description: Optional type of the culture
+          description: Type of the culture
         location:
-          $ref: '#/components/schemas/GeoPoint'
+          $ref: './GeoJSON-OAS3.yaml#/components/schemas/GeometryElement'
         prescriptive:
           type: boolean
-          description: Optional prescriptive flag
+          description: Indicate if the watering advice is sent to valves
         advice:
           type: boolean
-          description: Optional advice flag
+          description: Indicate if in this sector is enabled watering advice
         dripperCapacity:
           type: number
           format: double
-          description: Optional dripper capacity 
+          description: Capacity of a dripper in a row expressed in L/h
           example: 1.5
         sprinklerCapacity:
           type: number
           format: double
-          description: Optional sprinkler capacity 
+          description: Capacity of a sprinkler expressed in L/h
         doubleWing:
           type: boolean
-          description: Optional double wing flag
+          description: True if in the sector is present a double wing irrigation system
 
     CreateThesis:
       type: object
@@ -200,24 +181,17 @@ components:
           description: ID of the provider
         description:
           type: string
-          description: Optional description of the device
+          description: Description of the device
         location:
-          $ref: '#/components/schemas/GeoPoint'
+          $ref: './GeoJSON-OAS3.yaml#/components/schemas/Point'
         binningId:
           type: integer
-          description: ID for the device's binning profile (Optional)
+          description: ID for the device's binning profile
         signals:
           type: array
           description: Array of signals associated with the device
           items:
             $ref: '#/components/schemas/CreateSignal'
-    
-    SignalTargetType:
-      type: string
-      enum:
-        - field
-        - sector
-        - thesis
 
     SignalAssociation:
       type: object
@@ -229,11 +203,15 @@ components:
           type: integer
           description: Id of the signal target 
         targetType:
-          $ref: '#/components/schemas/SignalTargetType'
+          type: string
+          enum:
+            - field
+            - sector
+            - thesis
           description: Type of the target entity
         validFrom: 
           type: number
-          description: Optional timestamp of association validity start (Seconds elapsed since 01/01/1970 - 00:00 )
+          description: Timestamp of association validity start (Seconds elapsed since 01/01/1970 - 00:00 )
 
     Measurement:
       type: object
@@ -251,11 +229,6 @@ components:
             - type: number
             - type: string
           description: Value measured, could be either a number or a string 
-    
-    addMeasurements:
-      type: array
-      items:
-        $ref: "#/components/schemas/Measurement"
     
     AggregationType:
       type: string
@@ -335,7 +308,7 @@ components:
           description: True if the sensor is virtual
         unit:
           type: string
-          description: Scale unit
+          description: Unit of measurement
 
     MeasurementData:
       type: object
@@ -345,7 +318,7 @@ components:
           description: Measurement timestamp (Seconds elapsed since 01/01/1970 - 00:00 )
         computed:
           type: boolean
-          description: true if the measurement is computed.
+          description: true if the measurement is computed
         value:
           description: Either a numeric value rappresenting the aggregation of the measurements values or an array of raw_values as strings
           oneOf:
@@ -363,10 +336,10 @@ components:
           description: Thesis name
         deviceId:
           type: number
-          description: Id of the GRID type device assigned to the thesis
+          description: Id of the device on which interpolation is computed
         binningId:
           type: number
-          description: Id of the binning profile assigned to the thesis
+          description: Id of the binning ranges assigned to the device
         images:
           type: array
           items:
@@ -388,16 +361,16 @@ components:
       properties:
         x: 
           type: number
-          description: x coordinate of the meaasurement.
+          description: x coordinate
         y: 
           type: number
-          description: y coordinate of the meaasurement.
+          description: y coordinate
         z: 
           type: number
-          description: x coordinate of the meaasurement.
+          description: x coordinate
         value: 
           type: number
-          description: cell value.
+          description: Cell value
     
     HumidityBinsDataResponse:
       type: object
@@ -407,7 +380,7 @@ components:
           description: Thesis name
         deviceId:
           type: number
-          description: Id of the GRID type device assigned to the thesis
+          description: Id of the device on which interpolation is computed
         measures:
           type: array
           items:
@@ -427,88 +400,40 @@ components:
           description: Timestamp of the humidity bin measures
         count:
           type: number
-          description: Count of the measurements taken resulting for the bin
+          description: Count of the measurements included in the bin
     
     SectorDataDto:
       type: object
       properties:
-        sectorId:
-          type: number
-          description: Id of the sector
-        sectorName:
-          type: string
-          description: Name of the sector
-        culture:
-          type: string
-          description: Culture type in the sector
-        cultureType:
-          type: string
-          description: Type of culture
-        location:
-          type: string
-          description: Sector location
-          nullable: true
-        prescriptive:
-          type: string
-          description: Prescriptive notes
-          nullable: true
-        advice:
-          type: string
-          description: Advice related to the sector
-          nullable: true
-        dripperCapacity:
-          type: number
-          description: Dripper capacity
-          nullable: true
-        sprinklerCapacity:
-          type: number
-          description: Sprinkler capacity
-          nullable: true
-        doubleWing:
-          type: boolean
-          description: Indicates if double wing is used
-          nullable: true
-        field:
-          type: object
-          description: Field the sector belongs to
-          properties:
-            id:
-              type: number
-              description: Id of the field
-            name:
-              type: string
-              description: Name of the field
-            location:
-              type: string
-              description: Location of the field
-              nullable: true
-        company:
-          type: object
-          description: Company owning the field
-          properties:
-            id:
-              type: number
-              description: Id of the company
-            name:
-              type: string
-              description: Name of the company
-        organization:
-          type: object
-          description: Organization the company belongs to
-          properties:
-            id:
-              type: number
-              description: Id of the organization
-            name:
-              type: string
-              description: Name of the organization
+        allOf: 
+          - $ref: "#/components/schemas/CreateSector" 
+          - type: object
+            properties:
+              sectorId:
+                type: number
+                description: Id of the sector
+              field:
+                type: object
+                description: Field the sector belongs to
+                properties:
+                  $ref: "#/components/schemas/Field"
+              company:
+                type: object
+                description: Company owning the field
+                properties:
+                  $ref: "#/components/schemas/Company"
+              organization:
+                type: object
+                description: Organization the company belongs to
+                properties:
+                  $ref: "#/components/schemas/Organization"
         theses:
           type: array
           description: List of theses associated to the sector
           items:
-            $ref: "#/components/schemas/ThesisRefDto"
+            $ref: "#/components/schemas/Thesis"
 
-    ThesisRefDto:
+    Thesis:
       type: object
       properties:
         id:
@@ -517,6 +442,42 @@ components:
         name:
           type: string
       description: Name of the thesis
+    
+    Field:
+      type: object
+      properties:
+        id:
+          type: number
+          description: Id of the field
+        name:
+          type: string
+          description: Name of the field
+        location:
+          type:
+            $ref: './GeoJSON-OAS3.yaml#/components/schemas/GeometryElement'
+          description: Location of the field
+          nullable: true
+    
+    Company:
+      type: object
+      properties:
+        id:
+          type: number
+          description: Id of the company
+        name:
+          type: string
+          description: Name of the company
+
+    Organization:
+      type: object
+      properties:
+        id:
+          type: number
+          description: Id of the organization
+        name:
+          type: string
+          description: Name of the organization
+
 
     SectorCompactDto:
       type: object
@@ -541,32 +502,17 @@ components:
           type: object
           description: Field the sector belongs to
           properties:
-            id:
-              type: number
-              description: Id of the field
-            name:
-              type: string
-              description: Name of the field
+            $ref: "#/components/schemas/Field"
         company:
           type: object
           description: Company owning the field
           properties:
-            id:
-              type: number
-              description: Id of the company
-            name:
-              type: string
-              description: Name of the company
+            $ref: "#/components/schemas/Company"
         organization:
           type: object
           description: Organization the company belongs to
           properties:
-            id:
-              type: number
-              description: Id of the organization
-            name:
-              type: string
-              description: Name of the organization
+            $ref: "#/components/schemas/Organization"
       
     SectorsCompactDto:
         type: array
@@ -636,7 +582,23 @@ components:
         lowerBound:
           type: integer
 
-    
+    WateringAdviceResponse:
+      type: object
+      properties:
+        advice:
+          type: number
+        profileImage:
+          type: number
+        duration:
+          type: number
+        wateringStart:
+          type: number
+        wateringEnd:
+          type: number
+        r: 
+          type: number
+        lastIrrigation:
+          type: number
 
 
 

@@ -133,7 +133,9 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      *       content:
      *         application/json:
      *           schema:
-     *              $ref: '#/components/schemas/addMeasurements'
+     *              type: array
+     *              items:
+     *                   $ref: "#/components/schemas/Measurement"
      *     responses:
      *       200:
      *         description: Measurements updated successfully
