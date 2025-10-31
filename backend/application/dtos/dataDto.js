@@ -1,40 +1,26 @@
 export class SignalTypeData {
-    constructor(
-        thesisName,
-        signalType,
-        signalTypeDescription,
-        signals,
-    ){
-        this.thesisName = thesisName,
-        this.signalType = signalType,
-        this.signalTypeDescription = signalTypeDescription,
-        this.signals = signals
-    }
+  constructor(signalType, signalTypeDescription, signals, thesisName = null) {
+    this.signalType = signalType;
+    this.signalTypeDescription = signalTypeDescription;
+    this.signals = signals;
+    if (thesisName !== null) this.thesisName = thesisName;
+  }
 }
 
 export class SignalData {
-    constructor(
-        signalId,
-        deviceId,
-        signalDescription,
-        x,
-        y,
-        z,
-        virtual,
-        unit,
-        measurements
-    ){
-        this.signalId = signalId;
-        this.deviceId = deviceId;
-        this.signalDescription = signalDescription;
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.virtual = virtual;
-        this.unit = unit
-        this.measurements = measurements;
-    }
+  constructor(signalId, deviceId, signalDescription, x, y, z, virtual, unit, measurements = null) {
+    this.signalId = signalId;
+    this.deviceId = deviceId;
+    this.signalDescription = signalDescription;
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.virtual = virtual;
+    this.unit = unit;
+    if (measurements !== null) this.measurements = measurements;
+  }
 }
+
 
 export class MeasureData {
 

@@ -1,7 +1,7 @@
 import { HumidityBinMeasureData, HumidityBinsDataResponse, InterpolatedDataResponse, InterpolatedImageData, InterpolatedMeasureData } from "../dtos/interpolatedDataDto.js";
 import { ColtureDto } from "../dtos/coltureDto.js";
 import { Company } from "../dtos/companyDto.js";
-import { SignalData, MeasureData ,SignalTypeData} from '../dtos/dataDto.js';
+import { SignalData, MeasureData, SignalTypeData } from '../dtos/dataDto.js';
 import { WateringScheduleResponse, WateringEventDto } from "../dtos/wateringScheduleDto.js";
 import { MatrixData, MatrixDistanceData, OptStateDto } from "../dtos/optStateDto.js";
 import { WateringAdviceDto } from "../dtos/wateringAdviceDto.js";
@@ -10,7 +10,7 @@ import { Signal, Device } from "../dtos/deviceDto.js";
 
 class DtoConverter {
 
-    convertCompany(company){
+    convertCompany(company) {
         return new Company(
             company.companyName,
             company.organizationId,
@@ -46,7 +46,7 @@ class DtoConverter {
     convertSectorDataWrapper(sectorData) {
         const theses = sectorData.thesisInSector?.map(t => ({
             id: t.thesisId,
-            name: t.thesis?.thesisName 
+            name: t.thesis?.thesisName
         })) || [];
 
         const uniqueTheses = Array.from(new Map(theses.map(t => [t.id, t])).values());
@@ -122,7 +122,7 @@ class DtoConverter {
         return new DataResponse(dataValues);
     }
 
-    convertWaterAggregateWrapper(wrappers){
+    convertWaterAggregateWrapper(wrappers) {
         return this.#convertGenericReferenceData(wrappers);
     }
 
@@ -189,7 +189,7 @@ class DtoConverter {
 
     convertHeatmapDataWrapper(wrappers) {
         if (!wrappers || wrappers.length === 0) {
-            return null; 
+            return null;
         }
         const { thesisName, deviceId, binningId } = wrappers[0];
 
@@ -261,9 +261,9 @@ class DtoConverter {
             return acc;
         }, {});
 
-         const devicesArray = Object.values(grouped).map(deviceGroup => {
+        const devicesArray = Object.values(grouped).map(deviceGroup => {
             const signalsArray = Object.values(deviceGroup.signals).map(signalGroup => {
-                return new Signal({ 
+                return new Signal({
                     signalId: signalGroup.signalId,
                     signalDescription: signalGroup.signalDescription,
                     signalType: signalGroup.signalType,
@@ -276,7 +276,7 @@ class DtoConverter {
                 });
             });
 
-            return new Device({ 
+            return new Device({
                 deviceId: deviceGroup.deviceId,
                 deviceType: deviceGroup.deviceType,
                 deviceDescription: deviceGroup.deviceDescription,
@@ -285,7 +285,47 @@ class DtoConverter {
         });
 
         return devicesArray;
-    }   
+    }
+
+    convertSignalsDataWrapper(wrappers) {
+        const grouped = wrappers.reduce((acc, curr) => {
+            const typeKey = `${curr.signalType}_${curr.signalTypeDescription}`;
+            if (!acc[typeKey]) {
+                acc[typeKey] = {
+                    signalType: curr.signalType,
+                    signalTypeDescription: curr.signalTypeDescription,
+                    signals: []
+                };
+            }
+
+            acc[typeKey].signals.push(curr);
+
+            return acc;
+        }, {});
+
+
+        const signalTypeDataArray = Object.values(grouped).map(typeGroup => {
+            const signals = (typeGroup.signals ?? [])
+                .map(s => new SignalData(
+                    s.signalId,
+                    s.deviceId,
+                    s.signalDescription,
+                    s.x,
+                    s.y,
+                    s.z,
+                    s.virtual,
+                    s.unit,
+                ));
+
+            return new SignalTypeData(
+                typeGroup.signalType,
+                typeGroup.signalTypeDescription,
+                signals
+            );
+        });
+        
+        return signalTypeDataArray;
+    }
 
     convertViewDataOriginalWrapper(wrappers) {
         const map = wrappers.reduce((accumulator, currentValue) => {
@@ -298,7 +338,7 @@ class DtoConverter {
                 colture: currentValue.colture,
                 coltureType: currentValue.coltureType
             };
-            if(accumulator.has(JSON.stringify(key)))
+            if (accumulator.has(JSON.stringify(key)))
                 accumulator.get(JSON.stringify(key)).push(currentValue);
             else {
                 accumulator.set(JSON.stringify(key), []);
@@ -357,23 +397,23 @@ class DtoConverter {
         }
     }
 
-    convertOptimalStateWrapper(wrappers){
+    convertOptimalStateWrapper(wrappers) {
         const [[jsonKey, values]] = this.#buildGenericReferenceMap(wrappers).entries();
         const key = JSON.parse(jsonKey)
         const exampleData = values[0]
         const optimalState = values.map(v => new MatrixData(v.xx, v.yy, v.zz, v.optValue, v.weight))
 
-        return new OptStateDto(key.refStructureName, key.companyName, key.fieldName, key.sectorName, key.thesisName, 
+        return new OptStateDto(key.refStructureName, key.companyName, key.fieldName, key.sectorName, key.thesisName,
             exampleData.validFrom, exampleData.validTo, exampleData.matrixId, optimalState)
     }
 
-    convertWateringAdviceWrapper(wrappers){
+    convertWateringAdviceWrapper(wrappers) {
         const res = wrappers[0]
         return new WateringAdviceDto(res.refStructureName, res.companyName, res.fieldName, res.sectorName, res.thesisName,
             res.advice, res.profile_timestamp, res.duration, res.watering_start, res.watering_end, res.r, res.ki, res.kp, res.lastIrrigation);
     }
 
-    convertPunctualDistanceWrapper(wrappers){
+    convertPunctualDistanceWrapper(wrappers) {
         const [[jsonKey, values]] = this.#buildGenericReferenceMap(wrappers).entries();
         const key = JSON.parse(jsonKey)
         const distances = values.map(v => new MatrixDistanceData(v.xx, v.yy, 0, v.distance, v.weight))
@@ -390,7 +430,7 @@ class DtoConverter {
                 sectorName: currentValue.sectorName,
                 thesisName: currentValue.thesisName
             };
-            if(accumulator.has(JSON.stringify(key)))
+            if (accumulator.has(JSON.stringify(key)))
                 accumulator.get(JSON.stringify(key)).push(currentValue);
             else {
                 accumulator.set(JSON.stringify(key), []);

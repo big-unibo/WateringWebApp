@@ -271,12 +271,23 @@ components:
       items:
         $ref: "#/components/schemas/SignalTypeData"
 
+    SignalsDataBaseResponse:
+      type: array
+      items:
+        $ref: "#/components/schemas/SignalTypeDataBase"
+
     SignalTypeData:
+      allOf:
+        - $ref: "#/components/schemas/SignalTypeDataBase"
+        - type: object
+          properties:
+            thesisName:
+              type: string
+              description: Thesis name
+
+    SignalTypeDataBase:
       type: object
       properties: 
-        thesisName:
-          type: string
-          description: Thesis name
         signalType:
           type: string
           description: Signal Type
@@ -286,9 +297,19 @@ components:
         signals:
           type: array
           items:
-            $ref: "#/components/schemas/SignalData"
-    
+            $ref: "#/components/schemas/SignalDataBase"
+
     SignalData:
+      allOf:
+        - $ref: "#/components/schemas/SignalDataBase"
+        - type: object
+          properties:
+            measurements:
+              type: array
+              items:
+                $ref: "#/components/schemas/MeasurementData"
+
+    SignalDataBase:
       type: object
       properties: 
         signalId:
@@ -315,10 +336,6 @@ components:
         unit:
           type: string
           description: Scale unit
-        measurements:
-          type: array
-          items:
-            $ref: "#/components/schemas/MeasurementData"
 
     MeasurementData:
       type: object

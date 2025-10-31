@@ -278,6 +278,39 @@ class ThesesAllSignalsRepository {
             throw error;
         }
     }
+
+    async getSignalsByThesis(thesisId, signalTypes, timestamp) {
+        const query = `
+            SELECT DISTINCT
+                tas.device_id as "deviceId",
+                tas.signal_id as "signalId",
+                tas.signal_description as "signalDescription",
+                tas.signal_type as "signalType",
+                tas.signal_type_description as "signalTypeDescription",
+                tas.x as "x",
+                tas.y as "y",
+                tas.z as "z",
+                tas.virtual as "virtual",
+                tas.unit as "unit"
+            FROM theses_all_signals tas
+            WHERE :timestamp BETWEEN 
+                tas.valid_from AND COALESCE(tas.valid_to, 'infinity')
+            AND tas.signal_type = ANY(ARRAY[:signalTypes])
+            AND tas.thesis_id = :thesisId
+        `;
+
+        const results = await this.sequelize.query(query, {
+        replacements: {
+            thesisId,
+            signalTypes,
+            timestamp
+        },
+            type: QueryTypes.SELECT
+        });
+        
+        return results;
+    }
+
 }
 
 export default ThesesAllSignalsRepository;
