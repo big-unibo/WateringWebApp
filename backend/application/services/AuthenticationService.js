@@ -15,18 +15,12 @@ class AuthenticationService {
 
             if (!user)
                 throw new Error('The mail does not exist');
-
-            // if(user.auth_type === 'token') {
-            //     const match = (user.dataValues.affiliation === request.affiliation)
-            //     if (!match)
-            //         throw new Error('Affiliation is invalid');
-            // } else {
             
             const match = (user.dataValues.password === request.password);
             if (!match)
                 throw new Error('Password is invalid');
 
-            const payload = { userId: user.dataValues.id, name: user.dataValues.name, role: user.dataValues.role }
+            const payload = { userid: user.dataValues.id, name: user.dataValues.name, role: user.dataValues.role }
             return sign(payload, jwtSecret, { expiresIn: "10h" });
         } catch (error) {
             throw new Error(`Error on generating jwt caused by: ${error}`);
@@ -41,8 +35,8 @@ class AuthenticationService {
                     if (err) {
                         reject(new Error('Authentication failed: token verify error'));
                     } else {
-                        if (decoded.userId !== undefined && decoded.name !== undefined && decoded.role !== undefined)
-                            resolve({ userid: decoded.userId, affiliation: decoded.name, auth_type: decoded.role });
+                        if (decoded.userid !== undefined && decoded.name !== undefined && decoded.role !== undefined)
+                            resolve({ userid: decoded.userid, name: decoded.name, role: decoded.role });
                         else reject(new Error('Authentication failed: token verify error'));
                     }
                 });
