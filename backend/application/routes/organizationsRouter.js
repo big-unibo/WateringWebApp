@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-const organizationsRouter = ({organizationService, authenticationService, userService, authorizationService}) => {
+const organizationsRouter = ({ organizationService, authenticationService, userService, authorizationService }) => {
     const router = Router();
 
     /**
@@ -82,18 +82,17 @@ const organizationsRouter = ({organizationService, authenticationService, userSe
         } catch (error) {
             return res.status(403).json({ message: 'Authentication failed' });
         }
-        
-        try {
-            const user = await userService.findUser(requestUserData.userid);
 
-            if (!(await authorizationService.isUserAuthorized(user.id, 'create', 'organizations'))) 
+        try {
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'organizations')))
                 return res.status(401).json({ message: 'Unauthorized request' });
 
             if (!req.body || !req.body.organizationName) {
                 throw new Error('Body is empty or missing organizationName');
             }
+
             const organizationId = await organizationService.createOrganization(req.body.organizationName);
-            return res.status(200).json({ message: 'Organization created successfully' , id: organizationId});
+            return res.status(200).json({ message: 'Organization created successfully', id: organizationId });
         } catch (error) {
             console.error(`Failed creating organization caused by: ${error.message}`);
             return res.status(500).json({ message: 'Error on creating organization' });
