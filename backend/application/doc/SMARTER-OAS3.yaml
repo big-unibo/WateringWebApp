@@ -582,15 +582,15 @@ components:
     WateringAdviceResponse:
       type: object
       properties:
+        thesisName:
+          type: string
         advice:
           type: number
-        profileImage:
+        profileTimestamp:
           type: number
         duration:
           type: number
         wateringStart:
-          type: number
-        wateringEnd:
           type: number
         r: 
           type: number

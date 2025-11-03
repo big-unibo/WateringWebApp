@@ -1,8 +1,6 @@
 import { Router } from 'express';
 
-import { Thesis } from '../dtos/thesisDto.js';
-
-const thesesRouter = ({ userService, authenticationService, authorizationService, fieldService }) => {
+const thesesRouter = ({ userService, authenticationService, authorizationService, fieldService, wateringAdviceService }) => {
     const router = Router();
 
     /**
@@ -220,7 +218,110 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
 
     })
 
-    
+    /**
+     * @swagger
+     * /theses/{thesisId}/lastWateringAdvice:
+     *   get:
+     *     security:
+     *       - bearerAuth: []
+     *     summary: Get last watering advice for a thesis
+     *     description: Get last watering advice for a thesis
+     *     parameters:
+     *      - in: path
+     *        name: thesisId
+     *        required: true
+     *        schema:
+     *          type: integer
+     *        description: ID of the thesis.
+     *      - in: query
+     *        name: timestamp
+     *        type: number
+     *     tags: [Theses]
+     *     responses:
+     *       '200':
+     *         description: Last advice returned successfully.
+     *         content:
+     *           application/json:
+     *             schema:
+     *                $ref: '#/components/schemas/WateringAdviceDto'
+     *       400:
+     *         description: Bad request — missing or invalid parameters (thesisId or timestamp).
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       401:
+     *         description: Unauthorized request — user not permitted to access signals for the thesis.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Authentication failed — invalid or missing JWT token.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       404:
+     *         description: Advice not found for specified thesis and timestamp.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error — unexpected error while retrieving signals data.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+    */
+    router.get('/:thesisId/lastWateringAdvice', async (req, res) => {
+      let requestUserData
+      try {
+        requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+      } catch (error) {
+        return res.status(403).json({message: 'Authentication failed'});
+      }
+
+        const thesisId = Number(req.params.thesisId)
+        if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
+            return res.status(400).json({ message: 'thesis ID is required and must be a number' });
+        }
+
+      const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
+
+      try {
+        // TODO Authorization  
+        // if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
+        //     return res.status(401).json({message: 'Unauthorized request'});
+
+        const result = await wateringAdviceService.getThesisLastWateringAdvice(thesisId, timestamp)
+        if(result){
+            return res.status(200).json(result)
+        } else {
+            return res.status(404).json({ message: 'No advice found for specified thesis' });
+        }
+      } catch (error) {
+        console.log(`Failed getting watering advice caused by: ${error.message}`)
+        return res.status(500).json({error: "Error getting watering advice"})
+      }
+    });
+
     /**
      * @swagger
      * /theses/{thesisId}/wateringAdvice:
@@ -259,7 +360,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *       '500':
      *         description: Error on computing advice.
      */
-    router.get('/theses/:thesisId/wateringAdvice', async (req, res) => {
+    router.get('/:thesisId/wateringAdvice', async (req, res) => {
         let requestUserData
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -267,14 +368,19 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
             return res.status(403).json({message: 'Authentication failed'});
         }
 
-        const thesisId = req.params.thesisId;
+        const thesisId = Number(req.params.thesisId)
+        if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
+            return res.status(400).json({ message: 'thesis ID is required and must be a number' });
+        }
+
         const expectedWater = req.query.expectedWater ? req.query.expectedWater : 0;
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
 
 
         try {
-            if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
-                return res.status(401).json({message: 'Unauthorized request'});
+            // TODO authorization 
+            //if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
+            //     return res.status(401).json({message: 'Unauthorized request'});
 
             const result = await wateringAdviceService.getWateringAdvice(refStructureName, companyName, fieldName, sectorName, thesisName, expectedWater, timestamp)
 

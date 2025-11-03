@@ -34,11 +34,13 @@ import InterpolatedProfileRepository from './persistency/repository/Interpolated
 import HumidityBinsRepository from './persistency/repository/HumidityBinsRepository.js';
 import thesesRouter from './routes/thesesRouter.js';
 import profileBinsRouter from './routes/profileBinsRouter.js';
+import WateringAdviceService from './services/WateringAdviceService.js';
+import WateringAdviceRepository from './persistency/repository/WateringAdviceRepository.js';
 
-dotenv.config();
+dotenv.config()
 
-const app = express();
-const port = 8081;
+const app = express()
+const port = 8081
 
 const swaggerOptions = {
   definition: {
@@ -61,32 +63,35 @@ const swaggerOptions = {
   apis: ['./doc/*.yaml','./routes/*.js'], // path to your route files
 };
 
-const swaggerSpec = swaggerJsdoc(swaggerOptions);
+const swaggerSpec = swaggerJsdoc(swaggerOptions)
 
 app.listen(port, () => {
-  console.log(`Server is running at ${process.env.BACKEND_ADDRESS}`);
+  console.log(`Server is running at ${process.env.BACKEND_ADDRESS}`)
 });
 
-const models = initModels(sequelize);
+const models = initModels(sequelize)
 
-const userRepository = new UserRepository(models,sequelize);
-const organizationRepository = new OrganizationRepository(models,sequelize);
-const companyRepository = new CompanyRepository(models,sequelize);
-const fieldRepository = new FieldRepository(models,sequelize);
-const deviceRepository = new DeviceRepository(models,sequelize);
-const signalRepository = new SignalRepository(models,sequelize);
-const thesesAllSignalsRepository = new ThesesAllSignalsRepository(models,sequelize);
-const interpolatedProfilerepository = new InterpolatedProfileRepository(models,sequelize);
+const userRepository = new UserRepository(models,sequelize)
+const organizationRepository = new OrganizationRepository(models,sequelize)
+const companyRepository = new CompanyRepository(models,sequelize)
+const fieldRepository = new FieldRepository(models,sequelize)
+const deviceRepository = new DeviceRepository(models,sequelize)
+const signalRepository = new SignalRepository(models,sequelize)
+const thesesAllSignalsRepository = new ThesesAllSignalsRepository(models,sequelize)
+const interpolatedProfileRepository = new InterpolatedProfileRepository(models,sequelize)
 const humidityBinsRepository = new HumidityBinsRepository(models,sequelize)
+const wateringAdviceRepository = new WateringAdviceRepository(models, sequelize)
 
-const organizationService = new OrganizationService(organizationRepository);
-const userService = new UserService(userRepository);
-const authenticationService = new AuthenticationService(userService);
-const companyService = new CompanyService(companyRepository);
-const fieldService = new FieldService(fieldRepository,companyRepository, thesesAllSignalsRepository, interpolatedProfilerepository, humidityBinsRepository);
-const authorizationService = new AuthorizationService(userService, fieldService);
-const deviceService = new DeviceService(deviceRepository,signalRepository);
+const organizationService = new OrganizationService(organizationRepository)
+const userService = new UserService(userRepository)
+const authenticationService = new AuthenticationService(userService)
+const companyService = new CompanyService(companyRepository)
+const fieldService = new FieldService(fieldRepository,companyRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository)
+const authorizationService = new AuthorizationService(userService, fieldService)
+const deviceService = new DeviceService(deviceRepository,signalRepository)
 const signalService = new SignalService(signalRepository)
+const wateringAdviceService = new WateringAdviceService(wateringAdviceRepository, interpolatedProfileRepository)
+
 app.use(express.json());
 app.use(cors());
 app.use(
@@ -106,7 +111,7 @@ app.use(
 
 app.use(
   '/theses',
-  thesesRouter({ userService, authenticationService, authorizationService, fieldService })
+  thesesRouter({ userService, authenticationService, authorizationService, fieldService, wateringAdviceService })
 );
 
 app.use(

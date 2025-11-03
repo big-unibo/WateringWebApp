@@ -1,18 +1,6 @@
-import DataInterpolatedRepository from '../persistency/repository/DataInterpolatedRepository.js';
-import DeltaRepository from '../persistency/repository/DeltaRepository.js';
-import HumidityBinsRepository from '../persistency/repository/HumidityBinsRepository.js';
-import ViewDataOriginalRepository from '../persistency/repository/ViewDataOriginalRepository.js';
-import WateringAggregateRepository from '../persistency/repository/WateringAggregateRepository.js';
-import WateringAdviceRepository from '../persistency/repository/WateringAdviceRepository.js';
-import FieldRepository from '../persistency/repository/FieldRepository.js';
 import { WateringAdviceDto } from '../dtos/wateringAdviceDto.js';
 
-import initMatrixProfile from '../persistency/model/MatrixProfile.js';
-import initMatrixField from '../persistency/model/MatrixField.js';
-import initTranscodingField from '../persistency/model/TranscodingField.js';
-import initWateringThesis from '../persistency/model/WateringThesis.js';
-import initWateringAlgorithmParams from '../persistency/model/WateringAlgorithmParams.js';
-import initWateringSector from '../persistency/model/WateringSector.js';
+
 import DtoConverter from './DtoConverter.js';
 
 const dtoConverter = new DtoConverter();
@@ -71,23 +59,26 @@ const computeIrrigation = (advice, sectorDetails, maxIrrigation, humidityBins, e
 
 export class WateringAdviceService {
 
-    constructor(sequelize) {
-        this.dataInterpolatedRepository = new DataInterpolatedRepository(sequelize);
-        this.deltaRepository = new DeltaRepository(sequelize);
-        this.humidityBinsRepository = new HumidityBinsRepository(sequelize);
-        this.viewDataOriginalRepository = new ViewDataOriginalRepository(sequelize);
-        this.wateringAggregateRepository = new WateringAggregateRepository(sequelize);
-        this.wateringAdviceRepository = new WateringAdviceRepository(sequelize);
-        this.fieldRepository = new FieldRepository(initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), initWateringThesis(sequelize), initWateringSector(sequelize), initWateringAlgorithmParams(sequelize), sequelize);
-    
+    constructor(wateringAdviceRepository, interpolatedProfileRepository){
+        this.wateringAdviceRepository = wateringAdviceRepository
+        this.interpolatedProfileRepository = interpolatedProfileRepository
     }
 
-    async getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp) {
-        const result = await this.wateringAdviceRepository.getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp)
-        if (result.length > 0){
+    // constructor(sequelize) {
+    //     this.dataInterpolatedRepository = new DataInterpolatedRepository(sequelize);
+    //     this.deltaRepository = new DeltaRepository(sequelize);
+    //     this.humidityBinsRepository = new HumidityBinsRepository(sequelize);
+    //     this.viewDataOriginalRepository = new ViewDataOriginalRepository(sequelize);
+    //     this.wateringAggregateRepository = new WateringAggregateRepository(sequelize);
+    //     this.wateringAdviceRepository = new WateringAdviceRepository(sequelize);
+    //     this.fieldRepository = new FieldRepository(initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), initWateringThesis(sequelize), initWateringSector(sequelize), initWateringAlgorithmParams(sequelize), sequelize);
+    // }
+
+    async getThesisLastWateringAdvice(thesisId, timestamp) {
+        const result = await this.wateringAdviceRepository.getThesisLastWateringAdvice(thesisId, timestamp)
+        if (result){
             return dtoConverter.convertWateringAdviceWrapper(result)
         }
-        return new WateringAdviceDto(refStructureName, companyName, fieldName, sectorName, thesisName)
     }
 
     async getWateringAdvice(refStructureName, companyName, fieldName, sectorName, thesisName, expectedWater, timestamp) {

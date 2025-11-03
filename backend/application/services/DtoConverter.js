@@ -407,10 +407,9 @@ class DtoConverter {
             exampleData.validFrom, exampleData.validTo, exampleData.matrixId, optimalState)
     }
 
-    convertWateringAdviceWrapper(wrappers) {
-        const res = wrappers[0]
-        return new WateringAdviceDto(res.refStructureName, res.companyName, res.fieldName, res.sectorName, res.thesisName,
-            res.advice, res.profile_timestamp, res.duration, res.watering_start, res.watering_end, res.r, res.ki, res.kp, res.lastIrrigation);
+    convertWateringAdviceWrapper(adviceWrapper) {
+        return new WateringAdviceDto(adviceWrapper.thesis.thesisName, adviceWrapper.advice, adviceWrapper.duration, adviceWrapper.imageTimestamp,
+            adviceWrapper.wateringStart, adviceWrapper.r, adviceWrapper.lastWatering);
     }
 
     convertPunctualDistanceWrapper(wrappers) {

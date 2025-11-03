@@ -17,6 +17,7 @@ import initSignalInSector from './SignalInSector.js';
 import initSignalInThesis from './SignalInThesis.js';
 import initMeasurement from './Measurement.js';
 import initThesesAllSignals from './ThesesAllSignals.js';
+import initAdvice from './Advice.js';
 
 
 export default function initModels(sequelize) {
@@ -39,7 +40,8 @@ export default function initModels(sequelize) {
     MatrixField: initMatrixField(sequelize),
     TranscodingField: initTranscodingField(sequelize),
     WateringAlgorithmParams: initWateringAlgorithmParams(sequelize),
-    ThesesAllSignals: initThesesAllSignals(sequelize)
+    ThesesAllSignals: initThesesAllSignals(sequelize),
+    Advice: initAdvice(sequelize)
   };
 
   models.Company.belongsTo(models.Organization, { foreignKey: "organization_id", as: "organization" });
@@ -84,6 +86,8 @@ export default function initModels(sequelize) {
   models.Signal.hasMany(models.Measurement, {foreignKey: "signal_id", as: "measurements"});
   models.Measurement.belongsTo(models.Signal, {foreignKey: "signal_id", as: "signal"});
 
+  models.Thesis.hasMany(models.Advice, {foreignKey: "thesis_id", as: "advices"})
+  models.Advice.belongsTo(models.Thesis, {foreignKey: "thesis_id", as: "thesis"})
 
 
   //[TO DO]: il resto....
