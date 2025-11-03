@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { Company } from '../dtos/companyDto.js';
 
-const companiesRouter = ({ companyService, userService, authenticationService, authorizationService }) => {
+const companiesRouter = ({ companyService, authenticationService, authorizationService }) => {
     const router = Router();
 
     /**
@@ -89,21 +89,20 @@ const companiesRouter = ({ companyService, userService, authenticationService, a
         }
 
         try {
-            const user = await userService.findUser(requestUserData.userid);
-            if (!(await authorizationService.isUserAuthorized(user.id, 'create', 'companies')))
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'companies')))
                 return res.status(401).json({ message: 'Unauthorized request' });
 
             if (!req.body || req.body === '')
                 throw new Error('Body is empty');
 
-            const organizationRaw = req.body.organizationId;
-            if (!organizationRaw || isNaN(parseInt(organizationRaw))) {
-                return res.status(400).json({ message: 'organizationId is required and must be a number' });
+            const organizationId = Number(req.body.organizationId)
+
+            if (isNaN(organizationId) || !Number.isInteger(organizationId)) {
+                return res.status(400).json({ message: 'organization ID is required and must be a number' });
             }
 
-            const organizationId = parseInt(organizationRaw);
             const companyName = req.body.companyName;
-            const company = new Company(companyName,organizationId);
+            const company = new Company(companyName, organizationId);
 
             const companyId = await companyService.createCompany(company);
             return res.status(200).json({ message: `Company created with success`, id: companyId });

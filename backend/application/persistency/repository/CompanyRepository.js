@@ -13,8 +13,8 @@ class CompanyRepository {
             }
 
             const companyCreated = await this.Company.create({
-            companyName,
-            organizationId
+                companyName,
+                organizationId
             });
 
             return companyCreated;

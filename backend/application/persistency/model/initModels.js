@@ -15,7 +15,6 @@ import initSignal from './Signal.js';
 import initSignalInField from './SignalInField.js';
 import initSignalInSector from './SignalInSector.js';
 import initSignalInThesis from './SignalInThesis.js';
-import { Measurement } from '../../dtos/deviceDto.js';
 import initMeasurement from './Measurement.js';
 import initThesesAllSignals from './ThesesAllSignals.js';
 
