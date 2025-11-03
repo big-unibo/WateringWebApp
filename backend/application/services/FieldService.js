@@ -162,8 +162,6 @@ class FieldService {
             24 * 60 * MINUTE_TO_SECONDS
         );
 
-        console.log(result2);
-
         return dtoConverter.convertMeasurementsDataWrapper([... advicesAndExpectedWater,...measurements]);
     }
 
