@@ -251,6 +251,7 @@ components:
 
 
     SignalTypeData:
+      type: object
       allOf:
         - $ref: "#/components/schemas/SignalTypeDataBase"
         - type: object
@@ -277,6 +278,7 @@ components:
             $ref: "#/components/schemas/SignalDataBase"
 
     SignalData:
+      type: object
       allOf:
         - $ref: "#/components/schemas/SignalDataBase"
         - type: object
