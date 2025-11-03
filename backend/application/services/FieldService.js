@@ -153,16 +153,29 @@ class FieldService {
 
     async getWaterAggregateByThesis(thesisId, timeFilterFrom, timeFilterTo){
         const advicesAndExpectedWater = await this.thesesAllSignalsRepository.getAdvicesAndExpectedWaterByThesis(thesisId, timeFilterFrom, timeFilterTo,  24 * 60 * MINUTE_TO_SECONDS );
-        const measurements = await this.thesesAllSignalsRepository.getMeasurementsByThesis(
+        const measurementsEt0 = await this.thesesAllSignalsRepository.getMeasurementsByThesis(
             thesisId,
-            ['DRIPPER','SPRINKER','ET0','PLUV_CURR'],
+            ['ET0'],
             timeFilterFrom,
             timeFilterTo,
             'SUM',
             24 * 60 * MINUTE_TO_SECONDS
         );
 
-        return dtoConverter.convertMeasurementsDataWrapper([... advicesAndExpectedWater,...measurements]);
+        measurementsEt0.forEach(m => {
+            m.value = -Math.abs(Number(m.value));
+        });
+
+        const measurements = await this.thesesAllSignalsRepository.getMeasurementsByThesis(
+            thesisId,
+            ['DRIPPER','SPRINKER','PLUV_CURR'],
+            timeFilterFrom,
+            timeFilterTo,
+            'SUM',
+            24 * 60 * MINUTE_TO_SECONDS
+        );
+
+        return dtoConverter.convertMeasurementsDataWrapper([... advicesAndExpectedWater,...measurements, ...measurementsEt0]);
     }
 
 
