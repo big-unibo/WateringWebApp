@@ -443,7 +443,19 @@ components:
           description: Id of the thesis
         name:
           type: string
-      description: Name of the thesis
+          description: Name of the thesis
+
+    ThesisData:
+      type: object
+      properties:
+        thesisName:
+          type: string
+          description: Name of the thesis
+        sectorId:
+          type: integer
+          description: Id of the sector the thesis belongs to
+        weight:
+          type: number
     
     Field:
       type: object

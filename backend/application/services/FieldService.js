@@ -184,9 +184,16 @@ class FieldService {
          return dtoConverter.convertSectorsDataWrapper(result);
     }
 
-    async getSectorById(userId, sectorId){
-        const result = await this.fieldRepository.getSectorDetails(userId, sectorId);
+    async getSectorDetails(sectorId){
+        const result = await this.fieldRepository.getSectorDetails(sectorId);
         return dtoConverter.convertSectorDataWrapper(result);
+    }
+
+    async getThesisDetails(thesisId, timestamp){
+        const result = await this.fieldRepository.getThesisDetails(thesisId, timestamp || Date.now()/1000)
+        if(result){
+            return dtoConverter.convertThesisDetailsWrapper(result)
+        }        
     }
 
     async getDevicesByThesis(thesisId){

@@ -5,6 +5,115 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
 
     /**
      * @swagger
+     * /theses/{thesisId}:
+     *   get:
+     *     security:
+     *      - bearerAuth: []
+     *     summary: Return detailed information for a thesis by its ID
+     *     tags: [Theses]
+     *     description: Return thesis information given its ID
+     *     parameters:
+     *       - in: path
+     *         name: thesisId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of the thesis
+     *       - in: query
+     *         name: timestamp
+     *         required: false
+     *         schema:
+     *           type: number
+     *         description: Timestamp in which find the information
+     *     responses:
+	 *       200:
+	 *         description: Deteiled thesis information
+	 *         content:
+	 *           application/json:
+	 *             schema:
+     *               type: object
+	 *               $ref: '#/components/schemas/ThesisData'
+     *       400:
+     *         description: Bad request (missing or invalid thesisId)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       401:
+     *         description: Unauthorized request – user not allowed to get devices info for the thesis
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Authentication failed – invalid or missing JWT
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       404:
+     *         description: Thesis not found for specified id and timestamp.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while retrieving devices info
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+    */
+    router.get('/:thesisId', async (req,res) => {
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(403).json({message: 'Authentication failed'});
+        }
+
+        const thesisId = Number(req.params.thesisId)
+
+        if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
+            return res.status(400).json({ message: 'thesis ID is required and must be a number' });
+        }
+
+        const timestamp = req.query.timestamp || Date.now()/1000
+
+        try {
+            // if (!(await authorizationService.isUserAuthorizedInSector(requestUserData.userid, 'update', thesisIdParsed)))
+            //     return res.status(401).json({message: 'Unauthorized request'});
+
+            const result = await fieldService.getThesisDetails(thesisId, timestamp);
+            if (result){
+                return res.status(200).json(result)
+            } else {
+                return res.status(404).json({message: "Thesis not found at given timestamp"})
+            }
+
+        } catch (error) {
+            console.log(`Fail retrieving thesis data: ${error.message}`);
+            return res.status(500).json({error: "Error while retrieving devices data"});
+        }
+    });
+
+    /**
+     * @swagger
      * /theses/{thesisId}/devices:
      *   get:
      *     security:
@@ -38,7 +147,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *                 message:
      *                   type: string
      *       401:
-     *         description: Unauthorized request – user not permitted to get devices info for the thesis
+     *         description: Unauthorized request – user not allowed to get devices info for the thesis
      *         content:
      *           application/json:
      *             schema:
@@ -147,7 +256,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *                 message:
      *                   type: string
      *       401:
-     *         description: Unauthorized request — user not permitted to access signals for the thesis.
+     *         description: Unauthorized request — user not allowed to access signals for the thesis.
      *         content:
      *           application/json:
      *             schema:
@@ -235,7 +344,9 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *        description: ID of the thesis.
      *      - in: query
      *        name: timestamp
-     *        type: number
+     *        schema:
+     *          type: number
+     *        description: Timestamp in which find the information   
      *     tags: [Theses]
      *     responses:
      *       '200':
@@ -243,7 +354,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *         content:
      *           application/json:
      *             schema:
-     *                $ref: '#/components/schemas/WateringAdviceDto'
+     *                $ref: '#/components/schemas/WateringAdviceResponse'
      *       400:
      *         description: Bad request — missing or invalid parameters (thesisId or timestamp).
      *         content:
@@ -254,7 +365,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *                 message:
      *                   type: string
      *       401:
-     *         description: Unauthorized request — user not permitted to access signals for the thesis.
+     *         description: Unauthorized request — user not allowed to access signals for the thesis.
      *         content:
      *           application/json:
      *             schema:

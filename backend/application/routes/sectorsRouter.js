@@ -315,7 +315,7 @@ const sectorsRouter = ({ userService, authenticationService, authorizationServic
 		}
 
 		const sectorIdParsed = parseInt(sectorId);
-		const thesis = new Thesis(thesisName, sectorIdParsed, validFrom);
+		const thesis = new Thesis(thesisName, sectorIdParsed, undefined, validFrom);
 
 		try {
 			const user = await userService.findUser(requestUserData.userid);

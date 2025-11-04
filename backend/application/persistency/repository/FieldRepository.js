@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 
 class FieldRepository {
 
@@ -157,6 +157,34 @@ class FieldRepository {
             weight,
             validFrom,
         });
+    }
+
+    async getThesisDetails(thesisId, timestamp){
+        return await this.ThesisInSector.findOne({
+            where: {
+                thesisId: thesisId,
+                validFrom: {
+                    [Op.lt] : timestamp
+                },
+                validTo: {
+                    [Op.or]: {
+                        [Op.is]: null,
+                        [Op.gt]: timestamp
+                    },
+                }
+            },
+            include: [{
+               model: this.Thesis,
+               as: "thesis",
+               attributes: []
+            }],
+            attributes: {
+                include: [
+                    [Sequelize.col("thesis.thesis_name"), "thesisName"]
+                ]
+            },
+            raw: true
+        })
     }
 
     async getSectors(userId, timeFilterFrom, timeFilterTo) {

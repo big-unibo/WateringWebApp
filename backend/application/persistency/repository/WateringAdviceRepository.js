@@ -1,4 +1,4 @@
-import { Model, Op } from 'sequelize';
+import { Model, Op, Sequelize } from 'sequelize';
 
 class WateringAdviceRepository {
 
@@ -18,8 +18,15 @@ class WateringAdviceRepository {
             },
             include: [{
                model: this.Thesis,
-               as: "thesis" 
+               as: "thesis",
+               attributes: []
             }],
+            attributes: {
+                include: [
+                    [Sequelize.col("thesis.thesis_name"), "thesisName"]
+                ]
+            },
+            raw: true,
             order: [["wateringStart", 'DESC']]            
         })
     }
