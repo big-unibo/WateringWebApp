@@ -7,6 +7,7 @@ import { MatrixData, MatrixDistanceData, OptStateDto } from "../dtos/optStateDto
 import { WateringAdviceDto } from "../dtos/wateringAdviceDto.js";
 import { SectorCompactDto, SectorDataDto, ThesisRefDto } from "../dtos/sectorDto.js";
 import { Signal, Device } from "../dtos/deviceDto.js";
+import { Thesis } from "../dtos/thesisDto.js";
 
 class DtoConverter {
 
@@ -85,6 +86,10 @@ class DtoConverter {
             organization,
             theses: thesisDtos
         });
+    }
+
+    convertThesisDetailsWrapper(result){
+        return new Thesis(result.thesisName, result.sectorId, result.weight)
     }
 
 
@@ -408,7 +413,7 @@ class DtoConverter {
     }
 
     convertWateringAdviceWrapper(adviceWrapper) {
-        return new WateringAdviceDto(adviceWrapper.thesis.thesisName, adviceWrapper.advice, adviceWrapper.duration, adviceWrapper.imageTimestamp,
+        return new WateringAdviceDto(adviceWrapper.thesisName, adviceWrapper.advice, adviceWrapper.duration, adviceWrapper.imageTimestamp,
             adviceWrapper.wateringStart, adviceWrapper.r, adviceWrapper.lastWatering);
     }
 
