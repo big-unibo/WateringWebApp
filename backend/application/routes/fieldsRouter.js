@@ -153,7 +153,7 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
      *                 message:
      *                   type: string
      *       401:
-     *         description: Unauthorized request – user not permitted to create a sector
+     *         description: Unauthorized request – user not allowed to create a sector
      *         content:
      *           application/json:
      *             schema:
@@ -671,94 +671,6 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
     // //   }
 
     // // });
-
-    // /**
-    //  * @swagger
-    //  * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/lastWateringAdvice:
-    //  *   get:
-    //  *     security:
-    //  *       - bearerAuth: []
-    //  *     summary: Get last watering advice for a field
-    //  *     description: Get last watering advice for a field
-    //   *     parameters:
-    // *      - in: path
-    // *        name: refStructureName
-    // *        required: true
-    // *        schema:
-    // *          type: string
-    // *        description: The reference structure name
-    // *      - in: path
-    // *        name: companyName
-    // *        required: true
-    // *        schema:
-    // *          type: string
-    // *        description: The company name
-    // *      - in: path
-    // *        name: fieldName
-    // *        required: true
-    // *        schema:
-    // *          type: string
-    // *        description: The field name
-    // *      - in: path
-    // *        name: sectorName
-    // *        required: true
-    // *        schema:
-    // *          type: string
-    // *        description: The sector name
-    // *      - in: path
-    // *        name: thesisName
-    // *        required: true
-    // *        schema:
-    // *          type: string
-    // *        description: The thesisName
-    // *      - in: query
-    // *        name: timestamp
-    // *        type: number
-    // *     tags: [Field Operations]
-    // *     responses:
-    // *       '200':
-    // *         description: Last advice returned successfully.
-    // *         content:
-    // *           application/json:
-    // *             schema:
-    // *                $ref: '#/components/schemas/WateringAdviceDto'
-    // *       '400':
-    // *         description: Invalid request.
-    // *       '401':
-    // *         description: Unauthorized request.
-    // *       '403':
-    // *         description: Authentication failed.
-    // *       '500':
-    // *         description: Error on retrieving advice.
-    // */
-    // // router.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/lastWateringAdvice', async (req, res) => {
-    // //   let requestUserData
-    // //   try {
-    // //     requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-    // //   } catch (error) {
-    // //     return res.status(403).json({message: 'Authentication failed'});
-    // //   }
-
-    // //   const refStructureName = req.params.refStructureName;
-    // //   const companyName = req.params.companyName;
-    // //   const fieldName = req.params.fieldName;
-    // //   const sectorName = req.params.sectorName;
-    // //   const thesisName = req.params.thesisName;
-    // //   const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
-
-    // //   try {
-    // //       if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
-    // //         return res.status(401).json({message: 'Unauthorized request'});
-
-    // //     const result = await wateringAdviceService.getLastWateringAdvice(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp)
-
-    // //     return res.status(200).json(result)
-    // //   } catch (error) {
-    // //     console.log(`Fail get watering advice caused by: ${error.message}`)
-    // //     return res.status(500).json({error: "Error get watering advice"})
-    // //   }
-    // // });
-
 
     // /**
     //  * @swagger

@@ -146,7 +146,7 @@ const sectorsRouter = ({ userService, authenticationService, authorizationServic
 	 *                 message:
 	 *                   type: string
 	 *       401:
-	 *         description: Unauthorized – user not permitted to view the sector
+	 *         description: Unauthorized – user not allowed to view the sector
 	 *         content:
 	 *           application/json:
 	 *             schema:
@@ -208,7 +208,7 @@ const sectorsRouter = ({ userService, authenticationService, authorizationServic
 			return res.status(401).json({message: 'Unauthorized request'});
 
 		try {
-			const sectorData = await fieldService.getSectorById(userIdParsed, sectorIdParsed);
+			const sectorData = await fieldService.getSectorDetails(sectorIdParsed);
 
 			if (!sectorData) {
 				return res.status(404).json({ 
@@ -269,7 +269,7 @@ const sectorsRouter = ({ userService, authenticationService, authorizationServic
      *                 message:
      *                   type: string
      *       401:
-     *         description: Unauthorized request – user not permitted to create a thesis for the given sector
+     *         description: Unauthorized request – user not allowed to create a thesis for the given sector
      *         content:
      *           application/json:
      *             schema:

@@ -58,6 +58,15 @@
      *               properties:
      *                 message:
      *                   type: string
+     *       404:
+     *         description: Binning profile information not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error
      *         content:

@@ -163,7 +163,7 @@ const devicesRouter = ({authenticationService, authorizationService, userService
      *                 message:
      *                   type: string
      *       401:
-     *         description: Unauthorized – user is authenticated but not permitted to assign signals
+     *         description: Unauthorized – user is authenticated but not allowed to assign signals
      *         content:
      *           application/json:
      *             schema:
