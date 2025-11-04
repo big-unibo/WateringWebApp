@@ -82,6 +82,7 @@ class UserService {
             }
         }catch(error){
             console.error(`Errore while searching for user permits: `,error);
+            throw error;
         }
     }
 

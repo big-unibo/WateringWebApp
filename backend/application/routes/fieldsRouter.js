@@ -81,29 +81,30 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({message: 'Authentication failed'});
+            return res.status(403).json({ message: 'Authentication failed' });
         }
 
         try {
-            if(!req.body || req.body === '')
+            if (!req.body || req.body === '')
                 throw new Error('Body is empty');
-            
-            const companyRaw = await req.body.companyId;
-            if (!companyRaw || isNaN(parseInt(companyRaw ))) {
+
+            const companyId = Number(req.body.companyId)
+
+            if (isNaN(companyId) || !Number.isInteger(companyId)) {
                 return res.status(400).json({ message: 'companyId is required and must be a number' });
             }
-            const companyId = parseInt(companyRaw)
 
-            const user = await userService.findUser(requestUserData.userid);
-            if (!(await authorizationService.isUserAuthorizedById(user.id, 'update', 'companies', companyId)))
-                return res.status(401).json({message: 'Unauthorized request'});
+            if (!(await authorizationService.isUserAuthorizedById(requestUserData.userid, 'update', 'companies', companyId)))
+                return res.status(401).json({ message: 'Unauthorized request' });
 
-            const field = new Field(req.body.fieldName, companyId, req.body.location);
+            const fieldLocation = req.body.location
+            const field = new Field(req.body.fieldName, companyId, fieldLocation);
             const fieldId = await fieldService.createField(field);
-            return res.status(200).json({message: `Field created with success`, id:fieldId})
+
+            return res.status(200).json({ message: `Field created with success`, id: fieldId })
         } catch (error) {
             console.log(`Failed creating field caused by: ${error.message}`)
-            return res.status(500).json({message: "Error on creating field"})
+            return res.status(500).json({ message: "Error on creating field" })
         }
     })
 
@@ -181,141 +182,139 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
      *                   type: string
      *
     */
-    router.post('/:fieldId/createSector', async( req, res) => {
+    router.post('/:fieldId/createSector', async (req, res) => {
         let requestUserData
         try {
-          requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({message: 'Authentication failed'});
+            return res.status(403).json({ message: 'Authentication failed' });
         }
+        try {
+            if (!req.body || req.body === '')
+                throw new Error('Body is empty');
 
-      try {
-          if(!req.body || req.body === '')
-              throw new Error('Body is empty');
-          
-          const fieldRaw = await req.params.fieldId;;
-          if (!fieldRaw || isNaN(parseInt(fieldRaw ))) {
-              return res.status(400).json({ message: 'fieldId is required and must be a number' });
-          }
-          const fieldIdParsed = parseInt(fieldRaw)
+            const fieldId = Number(req.params.fieldId)
 
-          const user = await userService.findUser(requestUserData.userid);
-			    if (!(await authorizationService.isUserAuthorizedInField(user.id, 'update', fieldIdParsed)))
-              return res.status(401).json({message: 'Unauthorized request'});
+            if (isNaN(fieldId) || !Number.isInteger(fieldId)) {
+                return res.status(400).json({ message: 'field ID is required and must be a number' });
+            }
 
-          const {
-              sectorName,
-              culture,
-              cultureType,
-              location,
-              prescriptive,
-              advice,
-              dripperCapacity,
-              sprinklerCapacity,
-              doubleWing
-          } = req.body;
+            if (!(await authorizationService.isUserAuthorizedInField(requestUserData.userid, 'update', fieldId)))
+                return res.status(401).json({ message: 'Unauthorized request' });
 
-          const sector = new Sector(
-              sectorName,
-              fieldIdParsed,
-              culture,
-              cultureType,
-              location,
-              prescriptive,
-              advice,
-              dripperCapacity,
-              sprinklerCapacity,
-              doubleWing
-          );
+            const {
+                sectorName,
+                culture,
+                cultureType,
+                location,
+                prescriptive,
+                advice,
+                dripperCapacity,
+                sprinklerCapacity,
+                doubleWing
+            } = req.body;
 
-          const sectorId = await fieldService.createSector(sector);
-          return res.status(200).json({message: `Sector created with success`, id: sectorId})
-      } catch (error) {
-          console.log(`Failed creating sector caused by: ${error.message}`)
-          return res.status(500).json({message: "Error on creating sector"})
-      }
+            const sector = new Sector(
+                sectorName,
+                fieldId,
+                culture,
+                cultureType,
+                location,
+                prescriptive,
+                advice,
+                dripperCapacity,
+                sprinklerCapacity,
+                doubleWing
+            );
+
+            const sectorId = await fieldService.createSector(sector);
+            return res.status(200).json({ message: `Sector created with success`, id: sectorId })
+        } catch (error) {
+            console.log(`Failed creating sector caused by: ${error.message}`)
+            return res.status(500).json({ message: "Error on creating sector" })
+        }
     })
 
-    /**
-     * @swagger
-     * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/disableMonitoring:
-     *   post:
-     *     security:
-     *       - bearerAuth: []
-     *     summary: Set the end of validity for a monitoring thesis
-     *     description: Set the end of validity for a monitoring thesis
-     *     tags: [Field Operations]
-     *     parameters:
-     *       - in: path
-     *         name: refStructureName
-     *         required: true
-     *         schema:
-     *           type: string
-     *         description: The reference structure name
-     *       - in: path
-     *         name: companyName
-     *         required: true
-     *         schema:
-     *           type: string
-     *         description: The company name
-     *       - in: path
-     *         name: fieldName
-     *         required: true
-     *         schema:
-     *           type: string
-     *         description: The field name
-     *       - in: path
-     *         name: sectorName
-     *         required: true
-     *         schema:
-     *           type: string
-     *         description: The sector name
-     *       - in: path
-     *         name: thesisName
-     *         required: true
-     *         schema:
-     *           type: string
-     *         description: The thesisName
-     *       - in: query
-     *         name: timestamp
-     *         schema:
-     *           type: number
-     *         description: The timestamp to set as the end of validity for the thesis
-     *     responses:
-     *       '200':
-     *         description: Monitoring thesis disabled successfully.
-     *       '401':
-     *         description: Unauthorized request.
-     *       '403':
-     *         description: Authentication failed.
-     *       '500':
-     *         description: Error on disabling monitoring thesis.
-     */
-    router.post('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/disableMonitoring', async (req, res) => {
-      let requestUserData
-      try {
-        requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-      } catch (error) {
-        return res.status(403).json({message: 'Authentication failed'});
-      }
+    // /**
+    //  * @swagger
+    //  * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/disableMonitoring:
+    //  *   post:
+    //  *     security:
+    //  *       - bearerAuth: []
+    //  *     summary: Set the end of validity for a monitoring thesis
+    //  *     description: Set the end of validity for a monitoring thesis
+    //  *     tags: [Field Operations]
+    //  *     parameters:
+    //  *       - in: path
+    //  *         name: refStructureName
+    //  *         required: true
+    //  *         schema:
+    //  *           type: string
+    //  *         description: The reference structure name
+    //  *       - in: path
+    //  *         name: companyName
+    //  *         required: true
+    //  *         schema:
+    //  *           type: string
+    //  *         description: The company name
+    //  *       - in: path
+    //  *         name: fieldName
+    //  *         required: true
+    //  *         schema:
+    //  *           type: string
+    //  *         description: The field name
+    //  *       - in: path
+    //  *         name: sectorName
+    //  *         required: true
+    //  *         schema:
+    //  *           type: string
+    //  *         description: The sector name
+    //  *       - in: path
+    //  *         name: thesisName
+    //  *         required: true
+    //  *         schema:
+    //  *           type: string
+    //  *         description: The thesisName
+    //  *       - in: query
+    //  *         name: timestamp
+    //  *         schema:
+    //  *           type: number
+    //  *         description: The timestamp to set as the end of validity for the thesis
+    //  *     responses:
+    //  *       '200':
+    //  *         description: Monitoring thesis disabled successfully.
+    //  *       '401':
+    //  *         description: Unauthorized request.
+    //  *       '403':
+    //  *         description: Authentication failed.
+    //  *       '500':
+    //  *         description: Error on disabling monitoring thesis.
+    //  */
+    // router.post('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/disableMonitoring', async (req, res) => {
+    //     let requestUserData
+    //     try {
+    //         requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+    //     } catch (error) {
+    //         return res.status(403).json({ message: 'Authentication failed' });
+    //     }
 
-      const { refStructureName, companyName, fieldName, sectorName, thesisName } = req.params;
+    //     const { refStructureName, companyName, fieldName, sectorName, thesisName } = req.params;
 
-      try {
-        if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, '*')))
-          return res.status(401).json({message: 'Unauthorized request'});
+    //     try {
+    //         if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, '*')))
+    //             return res.status(401).json({ message: 'Unauthorized request' });
 
-        const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
+    //         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
 
-        await fieldService.disableMonitoringThesis(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp)
-        //TODO disable all nodes related to this thesis
+    //         await fieldService.disableMonitoringThesis(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp)
+    //         //TODO disable all nodes related to this thesis
 
-        return res.status(200).json({message: `Monitoring thesis disabled successfully`})
-      } catch (error) {
-        console.log(`Fail disabling monitoring thesis caused by: ${error.message}`)
-        return res.status(500).json({error: "Error on disabling monitoring thesis"})
-      }
-    });
+    //         return res.status(200).json({ message: `Monitoring thesis disabled successfully` })
+    //     } catch (error) {
+    //         console.log(`Fail disabling monitoring thesis caused by: ${error.message}`)
+    //         return res.status(500).json({ error: "Error on disabling monitoring thesis" })
+    //     }
+    // });
 
     //   /**
     //  * @swagger
@@ -376,12 +375,12 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
     // //     } catch (error) {
     // //       return res.status(403).json({message: 'Authentication failed'});
     // //     }
-    
+
     // //     const refStructureName = req.params.refStructureName;
     // //     const companyName = req.params.companyName;
     // //     const fieldName = req.params.fieldName;
     // //     const sectorName = req.params.sectorName;
-        
+
     // //     try {
     // //         if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, null, '*')))
     // //             return res.status(401).json({message: 'Unauthorized request'});
@@ -409,7 +408,7 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
     // //       console.log(`Fail creating monitoring thesis caused by: ${error.message}`)
     // //       return res.status(500).json({error: "Error on creating monitoring thesis"})
     // //     }
-      
+
     // //   });
 
     // /**
@@ -529,7 +528,7 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
     //   const fieldName = req.body.fieldName;
     //   const sectorName = req.body.sectorName;
     //   const thesisName = req.body.thesisName;
-      
+
     //   try {
     //     if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA')))
     //       return res.status(401).json({message: 'Unauthorized request'});
@@ -630,7 +629,7 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
     // //   } catch (error) {
     // //     return res.status(403).json({message: 'Authentication failed'});
     // //   }
-      
+
     // //   const dst_refStructureName = req.params.refStructureName;
     // //   const dst_companyName = req.params.companyName;
     // //   const dst_fieldName = req.params.fieldName;
@@ -1042,6 +1041,6 @@ const fieldsRouter = ({ userService, authenticationService, authorizationService
     // //     return res.status(500).json({error: "Error on disabling node"})
     // //   }
     // // });
-	return router;
+    return router;
 }
 export default fieldsRouter;
