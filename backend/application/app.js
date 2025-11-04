@@ -36,6 +36,9 @@ import thesesRouter from './routes/thesesRouter.js';
 import profileBinsRouter from './routes/profileBinsRouter.js';
 import WateringAdviceService from './services/WateringAdviceService.js';
 import WateringAdviceRepository from './persistency/repository/WateringAdviceRepository.js';
+import WateringScheduleRepository2 from './persistency/repository/WateringScheduleRepository.js';
+import WateringScheduleService from './services/WateringScheduleService.js';
+import wateringScheduleRouter from './routes/wateringScheduleRouter.js';
 
 dotenv.config()
 
@@ -81,6 +84,7 @@ const thesesAllSignalsRepository = new ThesesAllSignalsRepository(models,sequeli
 const interpolatedProfileRepository = new InterpolatedProfileRepository(models,sequelize)
 const humidityBinsRepository = new HumidityBinsRepository(models,sequelize)
 const wateringAdviceRepository = new WateringAdviceRepository(models, sequelize)
+const wateringScheduleRepository = new WateringScheduleRepository2(models, sequelize)
 
 const organizationService = new OrganizationService(organizationRepository)
 const userService = new UserService(userRepository)
@@ -91,6 +95,7 @@ const authorizationService = new AuthorizationService(userService, fieldService)
 const deviceService = new DeviceService(deviceRepository,signalRepository)
 const signalService = new SignalService(signalRepository)
 const wateringAdviceService = new WateringAdviceService(wateringAdviceRepository, interpolatedProfileRepository)
+const wateringScheduleService = new WateringScheduleService(wateringScheduleRepository)
 
 app.use(express.json());
 app.use(cors());
@@ -143,6 +148,12 @@ app.use(
   '/profileBins',
   profileBinsRouter({authenticationService,authorizationService,fieldService})
 )
+
+app.use(
+  '/wateringSchedule',
+  wateringScheduleRouter({authenticationService,authorizationService, wateringScheduleService})
+)
+
 
 
 app.use('/api-docs', serve, setup(swaggerSpec));

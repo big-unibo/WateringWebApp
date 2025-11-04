@@ -40,6 +40,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
 
             const request = new UserTokenRequest(req.body.email, req.body.password);
 
+            //[TO DO]: Improve log if no user is found
             const token = await authenticationService.generateJwt(request);
 
             const responseDto = new UserTokenResponse(token);
