@@ -5,11 +5,6 @@ const HUMIDITY_DEVICE_TYPE = 'SOIL_MOISTURE_GRID'
 class InterpolatedProfileRepository {
 
     constructor(models, sequelize){
-        this.Company = models.Company;
-        this.Field = models.Field;
-        this.Sector = models.Sector;
-        this.Thesis = models.Thesis;
-        this.ThesisInSector = models.ThesisInSector;
         this.sequelize = sequelize;
     }
 
@@ -57,6 +52,31 @@ class InterpolatedProfileRepository {
         });  
 
         return results;
+    }
+
+    async findLastInterpolationTimestamp(thesisId, timestampFrom, timestampTo)
+    {
+        const query = `
+            SELECT MAX("timestamp") AS "lastTimestamp"
+            FROM interpolated_timestamp
+            WHERE ip.grid_id IN (SELECT device_id FROM theses_all_signals
+                                    WHERE device_type = :HUMIDITY_DEVICE_TYPE 
+                                        AND thesis_id = :thesisId
+                                        AND valid_from < :timestampTo AND (valid_to > :timestampFrom OR valid_to IS NULL))
+                AND timestamp BETWEEN :timestampFrom AND :timestampTo
+            `;
+
+        const result = await this.sequelize.query(query, {
+            type: QueryTypes.SELECT,
+            replacements: {
+                HUMIDITY_DEVICE_TYPE,
+                thesisId,
+                timestampFrom,
+                timestampTo
+            }
+        });
+
+        return result.length > 0 ? result[0].lastTimestamp : null;
     }
 }
 
