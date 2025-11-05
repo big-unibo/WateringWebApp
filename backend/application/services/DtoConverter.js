@@ -2,7 +2,7 @@ import { HumidityBinMeasureData, HumidityBinsDataResponse, InterpolatedDataRespo
 import { ColtureDto } from "../dtos/coltureDto.js";
 import { Company } from "../dtos/companyDto.js";
 import { SignalData, MeasureData, SignalTypeData } from '../dtos/dataDto.js';
-import { WateringScheduleResponse, WateringEventDto } from "../dtos/wateringScheduleDto.js";
+import { WateringScheduleResponse, WateringEventData, ThesisContributionData } from "../dtos/wateringScheduleDto.js";
 import { DistanceProfile, OptimalProfileData, OptStateDto } from "../dtos/optStateDto.js";
 import { WateringAdviceDto } from "../dtos/wateringAdviceDto.js";
 import { SectorCompactDto, SectorDataDto, ThesisRefDto } from "../dtos/sectorDto.js";
@@ -88,7 +88,7 @@ class DtoConverter {
         });
     }
 
-    convertThesisDetailsWrapper(result){
+    convertThesisDetailsWrapper(result) {
         return new Thesis(result.thesisName, result.sectorId, result.weight)
     }
 
@@ -330,6 +330,79 @@ class DtoConverter {
         });
 
         return signalTypeDataArray;
+    }
+
+    convertCalendarWrapper(wrappers) {
+        const groupedMap = wrappers.reduce((acc, curr) => {
+            const sectorIdKey = curr.sectorId;
+
+            if (!acc[sectorIdKey]) {
+                acc[sectorIdKey] = {
+                    sectorId: curr.sectorId,
+                    sectorName: curr.sectorName,
+                    events: []
+                };
+            }
+
+            const sector = acc[sectorIdKey];
+            let existingEvent = sector.events.find(event =>
+                event.date === curr.date &&
+                event.updateTimestamp === curr.updateTimestamp &&
+                event.wateringStart === curr.wateringStart &&
+                event.wateringEnd === curr.wateringEnd
+            );
+
+            if (!existingEvent) {
+                existingEvent = {
+                    date: curr.date,
+                    updateTimestamp: curr.updateTimestamp,
+                    wateringStart: curr.wateringStart,
+                    wateringEnd: curr.wateringEnd,
+                    advice: curr.advice,
+                    duration: curr.duration,
+                    expectedWater: curr.expectedWater,
+                    note: curr.note,
+                    updatedBy: curr.updatedBy,
+                    enabled: curr.enabled ?? false,
+                    theses: []
+                };
+                sector.events.push(existingEvent);
+            }
+
+            existingEvent.theses.push(new ThesisContributionData(
+                curr.thesisId,
+                curr.thesisName,
+                curr.weight,
+                curr.imageTimestamp
+            ));
+
+            return acc;
+        }, {});
+
+        const finalResponse = Object.values(groupedMap).map(sectorGroup => {
+            const eventsData = sectorGroup.events.map(event => {
+                return new WateringEventData(
+                    event.date,
+                    event.wateringStart,
+                    event.wateringEnd,
+                    event.duration,
+                    event.enabled,
+                    event.advice,
+                    event.expectedWater,
+                    event.note,
+                    event.updateTimestamp,
+                    event.updatedBy,
+                    event.theses
+                );
+            });
+            return new WateringScheduleResponse(
+                sectorGroup.sectorId,
+                eventsData,
+                sectorGroup.sectorName,
+            );
+        });
+
+        return finalResponse.length > 0 ? finalResponse[0] : null;
     }
 
     convertViewDataOriginalWrapper(wrappers) {

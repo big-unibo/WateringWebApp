@@ -74,6 +74,10 @@ function initThesesAllSignals(sequelize) {
             type: DataTypes.TEXT,
             field: "device_type"
         },
+        deviceBinningId: {
+            type: DataTypes.INTEGER,
+            field: "device_binning_id"
+        },
         x: {
             type: DataTypes.DOUBLE,
             field: "x"

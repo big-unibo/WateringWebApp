@@ -630,7 +630,81 @@ components:
           thesisName:
             type: string
 
+    ThesisContributionData:
+      type: object
+      description: Data structure representing a thesis's contribution to a specific watering event.
+      properties:
+        thesisId:
+          type: number
+          description: ID of the contributing thesis.
+        thesisName:
+          type: string
+          description: Name of the contributing thesis.
+        weight:
+          type: number
+          format: double
+          description: Weight or importance assigned to the thesis for the event calculation.
+        imageTimestamp:
+          type: number
+          description: Timestamp related to the image or data used for this thesis (Seconds elapsed since 01/01/1970 - 00:00).
 
+    WateringEventData:
+      type: object
+      description: Detailed information about a planned or recorded watering event.
+      properties:
+        date:
+          type: string
+          description: Date of the watering event (e.g., YYYY-MM-DD).
+        wateringStart:
+          type: string
+          description: Start time of the watering event (Seconds elapsed since 01/01/1970 - 00:00).
+        wateringEnd:
+          type: string
+          description: End time of the watering event (Seconds elapsed since 01/01/1970 - 00:00).
+        duration:
+          type: number
+          description: Planned duration of the watering in minutes.
+        enabled:
+          type: boolean
+          description: Indicates if the watering event is currently enabled or planned to run.
+        advice:
+          type: string
+          description: General advice or recommendation for the event.
+        expectedWater:
+          type: number
+          format: double
+          description: Expected volume of water to be dispensed (e.g., in Liters).
+        note:
+          type: string
+          nullable: true
+          description: Any user or system notes regarding the event.
+        updateTimestamp:
+          type: number
+          description: Timestamp of the last update (Seconds elapsed since 01/01/1970 - 00:00).
+        updatedBy:
+          type: string
+          description: Identifier of the user or system that last updated the event.
+        theses:
+          type: array
+          description: List of theses contributing to the watering advice.
+          items:
+            $ref: '#/components/schemas/ThesisContributionData'
+            
+    WateringScheduleResponse:
+      type: object
+      description: A complete watering schedule response structure, grouped by sector.
+      properties:
+        sectorId:
+          type: number
+          description: Unique identifier of the sector.
+        sectorName:
+          type: string
+          description: Name of the sector.
+        events:
+          type: array
+          description: Array of individual watering events scheduled for this sector.
+          items:
+            $ref: '#/components/schemas/WateringEventData'
 
 
 

@@ -18,6 +18,7 @@ import initSignalInThesis from './SignalInThesis.js';
 import initMeasurement from './Measurement.js';
 import initThesesAllSignals from './ThesesAllSignals.js';
 import initAdvice from './Advice.js';
+import initWateringEvent from './WateringEvent.js';
 
 
 export default function initModels(sequelize) {
@@ -42,6 +43,7 @@ export default function initModels(sequelize) {
     WateringAlgorithmParams: initWateringAlgorithmParams(sequelize),
     ThesesAllSignals: initThesesAllSignals(sequelize),
     Advice: initAdvice(sequelize),
+    WateringEvent: initWateringEvent(sequelize),
     WateringAlgorithmParams: initWateringAlgorithmParams(sequelize)
   };
 
@@ -90,6 +92,9 @@ export default function initModels(sequelize) {
   models.Thesis.hasMany(models.Advice, {foreignKey: "thesis_id", as: "advices"})
   models.Advice.belongsTo(models.Thesis, {foreignKey: "thesis_id", as: "thesis"})
 
+  models.User.hasMany(models.WateringEvent, {foreign_key: "user_id", as: "updatedEvents"})
+  models.WateringEvent.belongsTo(models.User, {foreign_key: "user_id", as: "user"})
+  
   models.Thesis.hasMany(models.WateringAlgorithmParams, {foreignKey: "thesis_id", as: "algorithmParams"})
   models.WateringAlgorithmParams.belongsTo(models.Thesis, {foreignKey: "thesis_id", as: "thesis"})
 

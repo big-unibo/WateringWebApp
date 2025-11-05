@@ -1,30 +1,35 @@
 export class WateringScheduleResponse {
 
-    constructor(source, refStructureName, companyName, fieldName, sectorName, events) {
-        this.source = source
-        this.refStructureName = refStructureName
-        this.companyName = companyName
-        this.fieldName = fieldName
+    constructor(sectorId, events, sectorName = null) {
+        this.sectorId = sectorId
         this.sectorName = sectorName
         this.events = events
     }
 
 }
 
-export class WateringEventDto {
+export class WateringEventData {
 
-    constructor(thesisName, date, wateringStart, wateringEnd, duration, enabled, expectedWater, advice, adviceTimestamp, updatedBy, updateTimestamp, note) {
-        this.thesisName = thesisName;
+    constructor( date, wateringStart, wateringEnd, duration, enabled, advice, expectedWater, note, updateTimestamp, updatedBy, theses ) {
         this.date = date;
         this.wateringStart = wateringStart;
         this.wateringEnd = wateringEnd;
         this.duration = duration;
         this.enabled = enabled;
-        this.expectedWater = expectedWater;
         this.advice = advice;
-        this.adviceTimestamp = adviceTimestamp;
-        this.updatedBy = updatedBy;
-        this.updateTimestamp = updateTimestamp;
+        this.expectedWater = expectedWater;
         this.note = note;
+        this.updateTimestamp = updateTimestamp;
+        this.updatedBy = updatedBy;
+        this.theses = theses
+    }
+}
+
+export class ThesisContributionData {
+    constructor(thesisId, thesisName, weight, imageTimestamp) {
+        this.thesisId = thesisId;
+        this.thesisName = thesisName;
+        this.weight = weight;
+        this.imageTimestamp = imageTimestamp;
     }
 }
