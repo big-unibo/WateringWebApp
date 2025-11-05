@@ -1,9 +1,9 @@
-import { DeltaWrapper } from '../querywrappers/DeltaWrapper.js';
+import { OptimalDistanceWrapper } from '../querywrappers/OptimalDistanceWrapper.js';
 import { QueryTypes } from "sequelize";
 
-class DeltaRepository {
+class OptimalDistanceRepository {
 
-    constructor(sequelize) {
+    constructor(models, sequelize) {
         this.sequelize = sequelize;
     }
 
@@ -109,7 +109,7 @@ class DeltaRepository {
            }
         });
 
-        return results.map(result => new DeltaWrapper(
+        return results.map(result => new OptimalDistanceWrapper(
             result.refStructureName,
             result.companyName,
             result.fieldName,
@@ -201,4 +201,4 @@ class DeltaRepository {
 
 }
 
-export default DeltaRepository;
+export default OptimalDistanceRepository;

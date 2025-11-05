@@ -1,4 +1,4 @@
-import DeltaRepository from '../persistency/repository/DeltaRepository.js';
+import OptimalDistanceRepository from '../persistency/repository/OptimalDistanceRepository.js';
 import HumidityBinsRepository from '../persistency/repository/HumidityBinsRepository.js';
 import ViewDataOriginalRepository from '../persistency/repository/ViewDataOriginalRepository.js';
 import WateringAggregateRepository from '../persistency/repository/WateringAggregateRepository.js';

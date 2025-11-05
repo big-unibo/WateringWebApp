@@ -1,4 +1,4 @@
-export class DeltaWrapper {
+export class OptimalDistanceWrapper {
 
     constructor(refStructureName, companyName, fieldName, sectorName, thesisName, value, timestamp, detectedValueTypeDescription) {
         this.refStructureName = refStructureName;
