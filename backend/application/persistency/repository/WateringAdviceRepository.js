@@ -1,10 +1,11 @@
-import { Model, Op, Sequelize } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 
 class WateringAdviceRepository {
 
     constructor(models, sequelize) {
         this.Advice = models.Advice
         this.Thesis = models.Thesis
+        this.WateringAlgorithmParams = models.WateringAlgorithmParams
         this.sequelize = sequelize
     }
     
@@ -28,6 +29,23 @@ class WateringAdviceRepository {
             },
             raw: true,
             order: [["wateringStart", 'DESC']]            
+        })
+    }
+
+    async getWateringAlgorithmParams(thesisId, timestamp) {
+
+        return await this.WateringAlgorithmParams.findOne({
+            where: {
+                thesisId: thesisId,
+                validFrom: { [Op.lt]: timestamp },
+                validTo: {
+                    [Op.or]: {
+                        [Op.is]: null,
+                        [Op.gt]: timestamp
+                    },
+                }
+            },
+            raw: true
         })
     }
 }

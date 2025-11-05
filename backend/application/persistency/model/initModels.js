@@ -41,7 +41,8 @@ export default function initModels(sequelize) {
     TranscodingField: initTranscodingField(sequelize),
     WateringAlgorithmParams: initWateringAlgorithmParams(sequelize),
     ThesesAllSignals: initThesesAllSignals(sequelize),
-    Advice: initAdvice(sequelize)
+    Advice: initAdvice(sequelize),
+    WateringAlgorithmParams: initWateringAlgorithmParams(sequelize)
   };
 
   models.Company.belongsTo(models.Organization, { foreignKey: "organization_id", as: "organization" });
@@ -89,6 +90,8 @@ export default function initModels(sequelize) {
   models.Thesis.hasMany(models.Advice, {foreignKey: "thesis_id", as: "advices"})
   models.Advice.belongsTo(models.Thesis, {foreignKey: "thesis_id", as: "thesis"})
 
+  models.Thesis.hasMany(models.WateringAlgorithmParams, {foreignKey: "thesis_id", as: "algorithmParams"})
+  models.WateringAlgorithmParams.belongsTo(models.Thesis, {foreignKey: "thesis_id", as: "thesis"})
 
   //[TO DO]: il resto....
   return models;

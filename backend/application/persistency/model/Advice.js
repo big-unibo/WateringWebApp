@@ -52,11 +52,10 @@ function initAdvice(sequelize) {
         tableName : 'advices',
         modelName : 'Advice',
         timestamps : false,
-        
         sequelize
     });
 
-    return Advice;
+    return Advice
 }
 
-export default initAdvice;
+export default initAdvice
