@@ -608,6 +608,27 @@ components:
           type: number
         lastIrrigation:
           type: number
+    
+    DistanceProfile:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/InterpolatedImageData"
+      - type: object
+        properties:
+          image:
+            type: array
+            items:
+              allOf:
+                - $ref: "#/components/schemas/InterpolatedMeasurementData"
+                - type: object
+                  properties:
+                    weight:
+                      type: number
+                      description: The weight of the cell used in the distance computation
+      - type: object
+        properties:
+          thesisName:
+            type: string
 
 
 

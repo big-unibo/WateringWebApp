@@ -1,21 +1,4 @@
-import OptimalDistanceRepository from '../persistency/repository/OptimalDistanceRepository.js';
-import HumidityBinsRepository from '../persistency/repository/HumidityBinsRepository.js';
-import ViewDataOriginalRepository from '../persistency/repository/ViewDataOriginalRepository.js';
-import WateringAggregateRepository from '../persistency/repository/WateringAggregateRepository.js';
 import DtoConverter from './DtoConverter.js';
-import FieldRepository from '../persistency/repository/FieldRepository.js';
-import { OptStateDto } from "../dtos/optStateDto.js";
-
-import initMatrixProfile from '../persistency/model/MatrixProfile.js';
-import initMatrixField from '../persistency/model/MatrixField.js';
-import initTranscodingField from '../persistency/model/TranscodingField.js';
-import initWateringThesis from '../persistency/model/Thesis.js';
-import initWateringAlgorithmParams from '../persistency/model/WateringAlgorithmParams.js';
-import initWateringSector from '../persistency/model/Sector.js';
-import initField from '../persistency/model/Field.js';
-import initCompany from '../persistency/model/Company.js'
-import CompanyRepository from '../persistency/repository/CompanyRepository.js';
-import initOrganization from '../persistency/model/Organization.js';
 
 const dtoConverter = new DtoConverter();
 
@@ -24,22 +7,13 @@ const MONTH_TO_SECONDS = MINUTE_TO_SECONDS * 60 * 24 * 30
 
 class FieldService {
 
-    // constructor(sequelize) {
-    //     this.dataInterpolatedRepository = new DataInterpolatedRepository(sequelize);
-    //     this.deltaRepository = new DeltaRepository(sequelize);
-    //     this.humidityBinsRepository = new HumidityBinsRepository(sequelize);
-    //     this.viewDataOriginalRepository = new ViewDataOriginalRepository(sequelize);
-    //     this.wateringAggregateRepository = new WateringAggregateRepository(sequelize);
-    //     this.companyRepository = new CompanyRepository(initOrganization(sequelize));
-    //     this.fieldRepository = new FieldRepository(initField(sequelize), initCompany(sequelize), initMatrixProfile(sequelize), initMatrixField(sequelize), initTranscodingField(sequelize), initWateringThesis(sequelize), initWateringSector(sequelize), initWateringAlgorithmParams(sequelize), sequelize);
-    // }
-
-    constructor(fieldRepository, companyRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository){
-        this.fieldRepository = fieldRepository;
-        this.companyRepository = companyRepository;
-        this.thesesAllSignalsRepository = thesesAllSignalsRepository;
-        this.interpolatedProfileRepository = interpolatedProfileRepository;
-        this.humidityBinsRepository = humidityBinsRepository;
+    constructor(fieldRepository, companyRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository){
+        this.fieldRepository = fieldRepository
+        this.companyRepository = companyRepository
+        this.thesesAllSignalsRepository = thesesAllSignalsRepository
+        this.interpolatedProfileRepository = interpolatedProfileRepository
+        this.humidityBinsRepository = humidityBinsRepository
+        this.optimalDistanceRepository = optimalDistanceRepository
     }
 
     async createField(field){ 
@@ -210,6 +184,11 @@ class FieldService {
         return dtoConverter.convertSignalsDataWrapper(result);
     }
 
+    async getPunctualDistance(thesisId, timestamp) {
+        const result = await this.optimalDistanceRepository.findPunctualDistance(thesisId, timestamp);
+        return dtoConverter.convertPunctualDistanceWrapper(result);
+    }
+
     // async getInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {
     //     const result = await this.dataInterpolatedRepository.findInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo);
     //     return [dtoConverter.convertDataInterpolatedMeanWrapper(refStructureName, companyName, fieldName, sectorName, thesisName, result)];
@@ -228,11 +207,6 @@ class FieldService {
     // async getDelta(timestampFrom, timestampTo, refStructureName, companyName, fieldName, sectorName, thesisName) {
     //     const result = await this.deltaRepository.findDelta(timestampFrom, timestampTo, refStructureName, companyName, fieldName, sectorName, thesisName);
     //     return dtoConverter.convertDeltaWrapper(result);
-    // }
-
-    // async getPunctualDistance(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp) {
-    //     const result = await this.deltaRepository.findPunctualDelta(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp);
-    //     return dtoConverter.convertPunctualDistanceWrapper(result);
     // }
 
     // async getHumidityBins(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName) {

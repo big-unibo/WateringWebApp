@@ -14,25 +14,20 @@ export class OptStateDto {
 
 }
 
-export class MatrixData {
-
-  constructor(xx, yy, zz, value, weight) {
-    this.xx = xx
-    this.yy = yy
-    this.zz = zz
-    this.optValue = value
+export class OptimalProfileData {
+  constructor(x, y, z, value, weight) {
+    this.x = x
+    this.y = y
+    this.z = z
+    this.value = value
     this.weight = weight
   }
 }
 
-export class MatrixDistanceData {
-
-  constructor(xx, yy, zz, value, weight) {
-    this.xx = xx
-    this.yy = yy
-    this.zz = zz
-    this.value = value
-    this.weight = weight
+export class DistanceProfile {
+  constructor(thesisName, timestamp, image){
+    this.thesisName = thesisName
+    this.timestamp = timestamp
+    this.image = image
   }
-
 }

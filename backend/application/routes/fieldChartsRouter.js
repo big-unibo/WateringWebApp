@@ -459,6 +459,68 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
         }
     })
 
+    /**
+     * @swagger
+     * /fieldCharts/{thesisId}/distanceProfileToOptimal:
+     *   get:
+     *     security:
+     *       - bearerAuth: []
+     *     summary: Get the profile of distances between actual ond optimal one
+     *     description: Get the profile of distances between actual ond optimal one
+     *     tags: [Field Chart Data]
+     *     parameters:
+     *       - in: path
+     *         name: thesisId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: The id of the thesis
+     *       - in: query
+     *         name: timestamp
+     *         schema:
+     *           type: number
+     *         description: The timestamp in which find the information
+     *     responses:
+     *       '200':
+     *         description: Successfully retrieve profile of distances
+     *         content:
+     *           application/json:
+     *             schema:
+     *                     $ref: '#/components/schemas/DistanceProfile'
+     *       '400':
+     *         description: Invalid request or thesis not found.
+     *       '401':
+     *         description: Unauthorized request.
+     *       '403':
+     *         description: Authentication failed.
+     *       '500':
+     *         description: Error on retrieve optimal field matrix.
+     */
+    router.get('/:thesisId/distanceProfileToOptimal', async (req, res) => {
+        try {
+            const user = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(403).json({ message: 'Authentication failed' });
+        }
+        
+        // TODO authorization
+        // if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
+        //     return res.status(401).json({ message: 'Unauthorized request' });
+
+        const thesisId = Number(req.params.thesisId)
+
+        if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
+            return res.status(400).json({ message: 'thesis ID is required and must be a number' });
+        }
+        const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
+    
+        try {
+            const result = await fieldService.getPunctualDistance(thesisId, timestamp);
+            res.status(200).json(result);
+        } catch (error) {
+            return res.status(500).json({ message: error.message });
+        }
+    });
 // /**
 //  * @swagger
 //  * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/groundWaterPotential:
@@ -1757,94 +1819,6 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
   
 //     try {
 //       const result = await fieldService.getOptimalState(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp);
-//       res.status(200).json(result);
-//     } catch (error) {
-//       return res.status(500).json({ message: error.message });
-//     }
-  
-//   });
-
-//   /**
-//  * @swagger
-//  * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/getDistanceFromOptimalState:
-//  *   get:
-//  *     security:
-//  *       - bearerAuth: []
-//  *     summary: Get distance from optimal state for a field
-//  *     description: Get distance from optimal state for a field.
-//  *     tags: [Field Chart Data]
-//  *     parameters:
-//  *       - in: path
-//  *         name: refStructureName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: The reference structure name
-//  *       - in: path
-//  *         name: companyName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: The company name
-//  *       - in: path
-//  *         name: fieldName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: The field name
-//  *       - in: path
-//  *         name: sectorName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: The sector name
-//  *       - in: path
-//  *         name: thesisName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: The thesisName
-//  *       - in: query
-//  *         name: timestamp
-//  *         schema:
-//  *           type: string
-//  *         description: The timestamp in which find the information
-//  *     responses:
-//  *       '200':
-//  *         description: Success
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *                     $ref: '#/components/schemas/DataValue'
-//  *       '400':
-//  *         description: Invalid request or thesis not found.
-//  *       '401':
-//  *         description: Unauthorized request.
-//  *       '403':
-//  *         description: Authentication failed.
-//  *       '500':
-//  *         description: Error on retrieve optimal field matrix.
-//  */
-// router.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/getDistanceFromOptimalState', async (req, res) => {
-  
-//     const refStructureName = req.params.refStructureName;
-//     const companyName = req.params.companyName;
-//     const fieldName = req.params.fieldName;
-//     const sectorName = req.params.sectorName;
-//     const thesisName = req.params.thesisName;
-//     const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
-//     console.log(req.query)
-
-//     try {
-//       const user = await authenticationService.validateJwt(req.headers.authorization);
-//       if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
-//         return res.status(401).json({ message: 'Unauthorized request' });
-//     } catch (error) {
-//       return res.status(403).json({ message: 'Authentication failed' });
-//     }
-  
-//     try {
-//       const result = await fieldService.getPunctualDistance(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp);
 //       res.status(200).json(result);
 //     } catch (error) {
 //       return res.status(500).json({ message: error.message });

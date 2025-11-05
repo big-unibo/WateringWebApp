@@ -1,9 +1,12 @@
+import { HUMIDITY_DEVICE_TYPE } from '../../commons/constants.js';
+import { errorFunctionsSQLWrapper } from '../../commons/errorFunctions.js';
 import { OptimalDistanceWrapper } from '../querywrappers/OptimalDistanceWrapper.js';
-import { QueryTypes } from "sequelize";
+import { Op, QueryTypes } from "sequelize";
 
 class OptimalDistanceRepository {
 
     constructor(models, sequelize) {
+        this.WateringAlgorithmParams = models.WateringAlgorithmParams
         this.sequelize = sequelize;
     }
 
@@ -121,78 +124,56 @@ class OptimalDistanceRepository {
         ));
     }
 
-    async findPunctualDelta(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp) {
+    async findPunctualDistance(thesisId, timestamp) {
+
+        const errorFunction = await this.WateringAlgorithmParams.findOne({
+            attributes: ["errorFunction"],
+            where:{
+                thesisId: thesisId,
+                validFrom: {
+                    [Op.lt]: timestamp
+                },
+                validTo: {
+                    [Op.or]: {
+                        [Op.gt]: timestamp,
+                        [Op.is]: null
+                    }
+                }
+            },
+            raw: true
+        })
 
         const queryString = `
-            SELECT q1."source",
-                    q1."refStructureName",
-                   q1."companyName",
-                   q1."fieldName",
-                   q1."sectorName",
-                   q1."thesisName",
-                   q1.xx,
-                   q1.yy,
-                   q1."value" - q2."value" as distance,
-                   q1."weight",
-                   q1."timestamp"
-            FROM (
-                SELECT di."source", di."refStructureName", di."companyName", di."fieldName", di."sectorName", di."thesisName", di."timestamp", (CASE WHEN di."value" > -300 THEN LN(ABS(di."value")) * weighted."weight"
-                ELSE LN(ABS(-300)) * weighted."weight" END) as "value", weighted."weight", di."xx", di."yy"
-                FROM data_interpolated as di
-                JOIN (
-                    SELECT "source", "refStructureName", "companyName", "fieldName", "sectorName", "thesisName", "xx", "yy", "weight"
-                    FROM field_matrix as fi
-                    JOIN matrix_profile as mp ON fi."matrixId" = mp."matrixId"
-                    WHERE "source" = 'iFarming' 
-                    AND "refStructureName" = '${refStructureName}'
-                    AND "companyName" = '${companyName}'
-                    AND "fieldName" = '${fieldName}'
-                    AND "sectorName" = '${sectorName}'
-                    AND "thesisName" = '${thesisName}'
-                    AND "timestamp_from" < '${parseInt(timestamp)}' 
-                    AND ("timestamp_to" > '${parseInt(timestamp)}' OR "timestamp_to" IS NULL)
-                ) as weighted 
-                    ON weighted."source" = di."source"
-                        AND weighted."refStructureName" = di."refStructureName"
-                        AND weighted."companyName" = di."companyName"
-                        AND weighted."fieldName" = di."fieldName"
-                        AND weighted."sectorName" = di."sectorName"
-                        AND weighted."thesisName" = di."thesisName"
-                        AND weighted."xx" = di."xx"
-                        AND weighted."yy" = di."yy"
-                WHERE di."timestamp" = ${timestamp}/3600::INT*3600
-                ) as q1
-            JOIN (
-                SELECT "source", "refStructureName", "companyName", "fieldName", "sectorName", "thesisName", "xx", "yy", (CASE WHEN "optValue" > -300 THEN LN(ABS("optValue")) * "weight"
-                    ELSE LN(ABS(-300)) * "weight" END) as "value"
-                FROM field_matrix as fm
-                JOIN matrix_profile as mp ON fm."matrixId" = mp."matrixId"
-                WHERE "refStructureName" = '${refStructureName}'
-                    AND "companyName" = '${companyName}'
-                    AND "fieldName" = '${fieldName}'
-                    AND "sectorName" = '${sectorName}'
-                    AND "thesisName" = '${thesisName}'
-                    AND "timestamp_from" < '${parseInt(timestamp)}' 
-                    AND ("timestamp_to" > '${parseInt(timestamp)}' OR "timestamp_to" IS NULL)
-                ) as q2
-            ON q1."source" = q2."source"
-                        AND q1."refStructureName" = q2."refStructureName"
-                        AND q1."companyName" = q2."companyName"
-                        AND q1."fieldName" = q2."fieldName"
-                        AND q1."sectorName" = q2."sectorName"
-                        AND q1."thesisName" = q2."thesisName"
-                        AND q1."xx" = q2."xx"
-                        AND q1."yy" = q2."yy"`;
+            SELECT grid."thesisName", ip.timestamp, ip.x, ip.y, ip.z, optimal."weight", 
+                (${errorFunctionsSQLWrapper[errorFunction.errorFunction]("ip.value")} - 
+                ${errorFunctionsSQLWrapper[errorFunction.errorFunction]("optimal.value")}) * optimal."weight" AS distance
+                FROM interpolated_profiles as ip
+                JOIN (SELECT DISTINCT device_id, thesis_name AS "thesisName" FROM theses_all_signals
+                        WHERE device_type = :HUMIDITY_DEVICE_TYPE 
+                            AND thesis_id = :thesisId
+                            AND valid_from < :timestamp AND (valid_to > :timestamp OR valid_to IS NULL)
+                ) as grid
+                    ON ip.grid_id = grid.device_id
+                JOIN LATERAL(
+                    SELECT "grid_id", "x", "y", "z", "value", "weight"
+                    FROM grid_optimal_profile_assignment as ga
+                    JOIN optimal_profiles as op ON ga."optimal_profile_id" = op."profile_id"
+                    WHERE grid_id = grid.device_id
+                    AND "valid_from" < :timestamp
+                    AND ("valid_to" > :timestamp OR "valid_to" IS NULL)
+                ) as  optimal
+                    ON optimal."grid_id" = ip."grid_id"
+                        AND optimal."x" = ip."x"
+                        AND optimal."y" = ip."y"
+                        AND optimal."z" = ip."z"
+                WHERE ip."timestamp" = :timestamp /3600::INT*3600`;
 
         const results = await this.sequelize.query(queryString, {
            type: QueryTypes.SELECT,
-           bind: {
-               timestamp,
-               refStructureName,
-               companyName,
-               fieldName,
-               sectorName,
-               thesisName
+           replacements: {
+                HUMIDITY_DEVICE_TYPE,
+                thesisId,
+                timestamp
            }
         });
         return results

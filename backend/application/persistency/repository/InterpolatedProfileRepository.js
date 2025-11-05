@@ -1,6 +1,5 @@
-import { QueryTypes, Op } from 'sequelize'
-
-const HUMIDITY_DEVICE_TYPE = 'SOIL_MOISTURE_GRID'
+import { QueryTypes} from 'sequelize'
+import { HUMIDITY_DEVICE_TYPE } from '../../commons/constants.js';
 
 class InterpolatedProfileRepository {
 

@@ -3,7 +3,7 @@ import { ColtureDto } from "../dtos/coltureDto.js";
 import { Company } from "../dtos/companyDto.js";
 import { SignalData, MeasureData, SignalTypeData } from '../dtos/dataDto.js';
 import { WateringScheduleResponse, WateringEventDto } from "../dtos/wateringScheduleDto.js";
-import { MatrixData, MatrixDistanceData, OptStateDto } from "../dtos/optStateDto.js";
+import { DistanceProfile, OptimalProfileData, OptStateDto } from "../dtos/optStateDto.js";
 import { WateringAdviceDto } from "../dtos/wateringAdviceDto.js";
 import { SectorCompactDto, SectorDataDto, ThesisRefDto } from "../dtos/sectorDto.js";
 import { Signal, Device } from "../dtos/deviceDto.js";
@@ -362,7 +362,7 @@ class DtoConverter {
         return new DataResponse(dataValues);
     }
 
-    convertDeltaWrapper(wrappers) {
+    convertOptimalDistanceWrapper(wrappers) {
         return this.#convertGenericReferenceData(wrappers);
     }
 
@@ -417,11 +417,9 @@ class DtoConverter {
             adviceWrapper.wateringStart, adviceWrapper.r, adviceWrapper.lastWatering);
     }
 
-    convertPunctualDistanceWrapper(wrappers) {
-        const [[jsonKey, values]] = this.#buildGenericReferenceMap(wrappers).entries();
-        const key = JSON.parse(jsonKey)
-        const distances = values.map(v => new MatrixDistanceData(v.xx, v.yy, 0, v.distance, v.weight))
-        return new InterpolatedDataValue(key.refStructureName, key.companyName, key.fieldName, key.sectorName, key.thesisName, distances)
+    convertPunctualDistanceWrapper(results) {
+        const distances = results.map(v => new OptimalProfileData(v.x, v.y, v.z, v.distance, v.weight))
+        return new DistanceProfile(results[0].thesisName, results[0].timestamp, distances)
     }
 
     #buildGenericReferenceMap(wrappers) {
