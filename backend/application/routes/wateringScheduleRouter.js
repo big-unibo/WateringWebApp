@@ -5,16 +5,16 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
 
     /**
      * @swagger
-     * /wateringSchedule/{thesisId}/calendar:
+     * /wateringSchedule/{sectorId}/calendar:
      *   get:
      *     security:
      *       - bearerAuth: []
-     *     summary: TO DO
+     *     summary: Retrivies calendar data for a given secotr within a time range
      *     tags: [Watering Schedule Operation]
-     *     description: TO DO
+     *     description: Returns every watering event for a given sector and within a given time range, also including the contribution of every thesis for the event.
      *     parameters:
      *       - in: path
-     *         name: thesisId
+     *         name: sectorId
      *         required: true
      *         schema:
      *           type: number
@@ -37,7 +37,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: "#/components/schemas/SignalsDataResponse"
+     *               $ref: "#/components/schemas/WateringScheduleResponse"
      *       400:
      *         description: Invalid or missing query parameters
      *         content:
@@ -48,7 +48,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
      *                 message:
      *                   type: string
      *       401:
-     *         description: Unauthorized (user not allowed to view signals)
+     *         description: Authentication failed (invalid or missing JWT)
      *         content:
      *           application/json:
      *             schema:
@@ -57,7 +57,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
      *                 message:
      *                   type: string
      *       403:
-     *         description: Authentication failed (invalid or missing JWT)
+     *         description: Unauthorized (user not allowed to view calendar)
      *         content:
      *           application/json:
      *             schema:
@@ -75,27 +75,38 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
      *                 message:
      *                   type: string
      */
-    router.get('/:thesisId/calendar', async (req, res) => {
+    router.get('/:sectorId/calendar', async (req, res) => {
         let requestUserData;
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
         try {
             //[TO DO]: Authorzation
             // if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'companies')))
-            //     return res.status(401).json({ message: 'Unauthorized request' });
+            //     return res.status(403).json({ message: 'Unauthorized request' });
 
             if (!req.body || req.body === '')
                 throw new Error('Body is empty');
 
-            const thesisId = parseInt(req.params.thesisId);
-             if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
-                return res.status(400).json({ message: 'thesis ID is required and must be a number' });
+            const sectorId = parseInt(req.params.sectorId);
+            if (isNaN(sectorId) || !Number.isInteger(sectorId)) {
+                return res.status(400).json({ message: 'sector ID is required and must be a number' });
             }
 
-            const result = await wateringScheduleService.getSchedule(thesisId, 1,1762267709);
+            const timeFilterFrom = parseInt(req.query.timeFilterFrom);
+            const timeFilterTo = parseInt(req.query.timeFilterTo);
+
+            if (isNaN(timeFilterFrom) || !Number.isInteger(timeFilterFrom)) {
+                return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid date' });
+            }
+
+            if (isNaN(timeFilterTo) || !Number.isInteger(timeFilterTo)) {
+                return res.status(400).json({ message: 'timeFilterTo is required and must be a valid date' });
+            }
+
+            const result = await wateringScheduleService.getSchedule(sectorId, timeFilterFrom, timeFilterTo);
             res.status(200).json(result);
         } catch (error) {
             console.log(`Failed retrieving calendar caused by: ${error.message}`);

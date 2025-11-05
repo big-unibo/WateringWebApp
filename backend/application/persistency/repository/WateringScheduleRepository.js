@@ -11,7 +11,6 @@ class WateringScheduleRepository {
     }
 
     async getSchedule(sectorId, timeFilterFrom, timeFilterTo) {
-        sectorId = 30
         try {
             const query = `
                 SELECT 
@@ -22,6 +21,7 @@ class WateringScheduleRepository {
                     we.watering_end as "wateringEnd",
                     we.advice as "advice",
                     we.duration as "duration",
+                    we.enabled as "enabled",
                     we.expected_water as "expectedWater",
                     we.note as "note",
                     u.email as "updatedBy",
@@ -35,7 +35,6 @@ class WateringScheduleRepository {
                 
                 LEFT JOIN public.users u ON we.user_id = u.id
                 
-                -- INNER JOIN Tesi/Settore (Controlla che l'evento cada nel periodo della tesi)
                 INNER JOIN theses_in_sectors tis ON tis.sector_id = we.sector_id
                     AND tis.valid_from <= we.watering_start
                     AND (tis.valid_to IS NULL OR tis.valid_to >= we.watering_start) 
@@ -66,7 +65,6 @@ class WateringScheduleRepository {
                 type: this.sequelize.QueryTypes.SELECT
             });
 
-            console.log(results); 
             return results;
 
         } catch (error) {

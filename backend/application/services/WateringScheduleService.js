@@ -1,15 +1,19 @@
+import { WateringScheduleResponse } from "../dtos/wateringScheduleDto.js";
 import DtoConverter from "./DtoConverter.js";
 
-//const dtoConverter = new DtoConverter;
+const dtoConverter = new DtoConverter;
 
 class WateringScheduleService {
-    constructor(wateringScheduleRepository){
+    constructor(wateringScheduleRepository) {
         this.wateringScheduleRepository = wateringScheduleRepository
     }
 
-    async getSchedule(thesisId, timeFilterFrom, timeFilterTo){
-        const result = await this.wateringScheduleRepository.getSchedule(thesisId, timeFilterFrom, timeFilterTo)
-        console.log(result)
+    async getSchedule(sectorId, timeFilterFrom, timeFilterTo) {
+        const results = await this.wateringScheduleRepository.getSchedule(sectorId, timeFilterFrom, timeFilterTo)
+        if (results.length == 0) {
+            return new WateringScheduleResponse(sectorId, [])
+        }
+        return dtoConverter.convertCalendarWrapper(results);
     }
 }
 
@@ -80,7 +84,7 @@ export default WateringScheduleService;
 //     }
 
 //     async deleteWateringEvents(refStructureName, companyName, fieldName, sectorName, timestamp){
-//         await this.wateringScheduleRepository.deleteWateringEvents(refStructureName, companyName, fieldName, sectorName, timestamp)  
+//         await this.wateringScheduleRepository.deleteWateringEvents(refStructureName, companyName, fieldName, sectorName, timestamp)
 //     }
 
 // }
