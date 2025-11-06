@@ -2,7 +2,7 @@ import { Op, Sequelize } from 'sequelize';
 
 class FieldRepository {
 
-    constructor(models, sequelize){
+    constructor(models, sequelize) {
         this.Organization = models.Organization
         this.Company = models.Company
         this.Field = models.Field
@@ -33,7 +33,7 @@ class FieldRepository {
         try {
             const company = await this.Company.findByPk(companyId);
             if (!company) {
-            throw new Error(`Company with ID ${companyId} does not exist.`);
+                throw new Error(`Company with ID ${companyId} does not exist.`);
             }
 
             const fieldCreated = await this.Field.create({
@@ -66,16 +66,16 @@ class FieldRepository {
                 throw new Error(`Field with ID ${fieldId} does not exist.`);
             }
             const sectorCreated = await this.Sector.create({
-                sectorName,    
-                fieldId,            
+                sectorName,
+                fieldId,
                 culture,
                 cultureType,
                 location,
                 prescriptive,
                 advice,
-                dripperCapacity,    
-                sprinklerCapacity,  
-                doubleWing 
+                dripperCapacity,
+                sprinklerCapacity,
+                doubleWing
             });
 
             return sectorCreated;
@@ -84,40 +84,40 @@ class FieldRepository {
         }
     }
 
-    async getSectorDetails(sectorId){
+    async getSectorDetails(sectorId) {
         const sector = await this.Sector.findByPk(sectorId, {
-            attributes: ['id', 'sectorName', 'culture', 'cultureType', 'fieldId', 'location', 'prescriptive' , 'advice', 'dripperCapacity', 'sprinklerCapacity', 'doubleWing'],
+            attributes: ['id', 'sectorName', 'culture', 'cultureType', 'fieldId', 'location', 'prescriptive', 'advice', 'dripperCapacity', 'sprinklerCapacity', 'doubleWing'],
             include: [
                 {
-                model: this.Field,
-                as: 'field',
-                attributes: ['fieldName', 'location', 'companyId'],
-                include: [
-                    {
-                    model: this.Company,
-                    as: 'company',
-                    attributes: ['companyName', 'organizationId'],
+                    model: this.Field,
+                    as: 'field',
+                    attributes: ['fieldName', 'location', 'companyId'],
                     include: [
                         {
-                        model: this.Organization,
-                        as: 'organization',
-                        attributes: ['organizationName'],
+                            model: this.Company,
+                            as: 'company',
+                            attributes: ['companyName', 'organizationId'],
+                            include: [
+                                {
+                                    model: this.Organization,
+                                    as: 'organization',
+                                    attributes: ['organizationName'],
+                                }
+                            ]
                         }
                     ]
-                    }
-                ]
                 },
                 {
-                model: this.ThesisInSector,
-                atributes:['thesisId'],
-                as: 'thesisInSector',
-                include: [
-                    {
-                    model: this.Thesis,
-                    as: 'thesis',
-                    attributes: [ 'thesisName']
-                    }
-                ]
+                    model: this.ThesisInSector,
+                    atributes: ['thesisId'],
+                    as: 'thesisInSector',
+                    include: [
+                        {
+                            model: this.Thesis,
+                            as: 'thesis',
+                            attributes: ['thesisName']
+                        }
+                    ]
                 }
             ]
         });
@@ -126,13 +126,13 @@ class FieldRepository {
         return sector.toJSON();
     }
 
-    async getFieldDetails(fieldId){
+    async getFieldDetails(fieldId) {
         const field = await this.Field.findByPk(fieldId, {
             include: [
-            {
-                model: this.Company,
-                as: 'company'  
-            }
+                {
+                    model: this.Company,
+                    as: 'company'
+                }
             ]
         });
 
@@ -159,12 +159,12 @@ class FieldRepository {
         });
     }
 
-    async getThesisDetails(thesisId, timestamp){
+    async getThesisDetails(thesisId, timestamp) {
         return await this.ThesisInSector.findOne({
             where: {
                 thesisId: thesisId,
                 validFrom: {
-                    [Op.lt] : timestamp
+                    [Op.lt]: timestamp
                 },
                 validTo: {
                     [Op.or]: {
@@ -174,9 +174,9 @@ class FieldRepository {
                 }
             },
             include: [{
-               model: this.Thesis,
-               as: "thesis",
-               attributes: []
+                model: this.Thesis,
+                as: "thesis",
+                attributes: []
             }],
             attributes: {
                 include: [
@@ -201,21 +201,33 @@ class FieldRepository {
                 s.culture AS "culture",
                 s.culture_type AS "cultureType",
                 s.location AS "location"
-            FROM permits p
-            JOIN sectors s
-                ON p.id_key = s.id
-            JOIN theses_in_sectors ts
-                ON ts.sector_id = s.id
+            FROM sectors s
             JOIN fields f
                 ON f.id = s.field_id
             JOIN companies c
                 ON c.id = f.company_id
             JOIN organizations o
                 ON o.id = c.organization_id
-            WHERE p.user_id = :userId
-            AND p.table = 'sectors'
-            AND ts.valid_from <= :timeFilterTo
-            AND (ts.valid_to IS NULL OR ts.valid_to >= :timeFilterFrom);
+                
+            JOIN users u
+                ON u.id = :userId 
+
+            LEFT JOIN permits p
+                ON p.id_key = s.id 
+                AND p.table = 'sectors'
+            JOIN theses_in_sectors ts
+                ON ts.sector_id = s.id
+                
+            WHERE 
+                ts.valid_from <= :timeFilterTo
+                AND (ts.valid_to IS NULL OR ts.valid_to >= :timeFilterFrom)           
+                AND (
+                    (u.role = 'admin') 
+                    OR 
+                    (p.user_id = :userId) 
+                )
+            ORDER BY 
+                "organizationName", "companyName", "fieldName", "sectorName";
         `;
 
         const results = await this.sequelize.query(query, {
@@ -326,7 +338,7 @@ class FieldRepository {
     //                 }
     //             }
     //         )
-            
+
     //         const model = this.MatrixField.build({
     //                 source: source,
     //                 refStructureName: refStructureName,
@@ -407,7 +419,7 @@ class FieldRepository {
     //         });
 
     //         return result
-            
+
     //     } catch (error) {
     //         console.error('Error on get optimal state:', error);
     //     }
