@@ -89,8 +89,6 @@ export class WateringAdviceService {
                 throw new Error("Sector details or algorithm params not found");
             }
 
-            console.log(algorithmParams)
-
             const lastImageTimestamp = await this.interpolatedProfileRepository.findLastInterpolationTimestamp(thesisId, timestamp - algorithmParams.wateringFrequency * 3600, timestamp);
 
             if (lastImageTimestamp) {
@@ -100,7 +98,6 @@ export class WateringAdviceService {
 
                 const oldParams = await this.wateringAdviceRepository.getThesisLastWateringAdvice(thesisId, Math.min(timestamp - (algorithmParams.wateringFrequency/2 * 3600), lastImageTimestamp));
 
-                console.log("Last advice params:", oldParams);
                 if (oldParams.advice != null && oldParams.r != null && oldParams.imageTimestamp != null) {
                     let advicePID = oldParams.advice + algorithmParams.kp * (r - oldParams.r) + algorithmParams.ki * r
 
@@ -133,16 +130,13 @@ export class WateringAdviceService {
             }
 
             const {advice, duration} = computeIrrigation(algorithmParams.wateringBaseline, sectorDetails, algorithmParams.maxWatering, algorithmParams.minWatering, expectedWater)
-            const a = new WateringAdviceDto(
+            return new WateringAdviceDto(
                 thesisDetails.thesisName,
                 advice,
                 duration,
                 Number(lastImageTimestamp),
                 Number(timestamp),
                 r, undefined, true)
-
-            console.log(a)
-            return a
         }
         catch (error) {
             console.error("Error in getWateringAdvice:", error);
