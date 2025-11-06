@@ -45,21 +45,43 @@ class HumidityBinsRepository {
                 vip.y,
                 vip.z,
                 vip.value,
-                '(' 
-                    || COALESCE(MAX(CASE WHEN b.bound_value < vip.value THEN b.bound_value END)::text, '-∞')
-                    || ', '
-                    || COALESCE(MIN(CASE WHEN b.bound_value >= vip.value THEN b.bound_value END)::text, '+∞')
-                    || ']' AS humidity_bin_description,
-                MIN(CASE WHEN b.bound_value >= vip.value THEN b.ordinal END) AS humidity_bin
+                bp.humidity_bin,
+                bp.humidity_bin_description,
+                bp.upper_bound,
+                bp.lower_bound
             FROM valid_interpolated_profiles_table vip
             JOIN devices d
                 ON d.id = vip.device_id
-            JOIN profiles_bins pb 
-                ON pb.id = d.binning_id
-            CROSS JOIN LATERAL (
-                VALUES (pb.bound_0, 0), (pb.bound_1, 1), (pb.bound_2, 2), (pb.bound_3, 3),
-                    (pb.bound_4, 4), (pb.bound_5, 5), (pb.bound_6, 6)
-            ) AS b(bound_value, ordinal)
+            CROSS JOIN LATERAL  (
+                SELECT
+                    ordinal as "humidity_bin",
+                    lower_bound,
+                    upper_bound,
+                    '[' || lower_bound
+                        || ', '
+                        || upper_bound
+                        || ')' AS "humidity_bin_description"
+                FROM (
+                    SELECT 
+                        b.ordinal,
+                        b.bound_value AS lower_bound,
+                        LEAD(b.bound_value) OVER (ORDER BY b.ordinal) AS upper_bound
+                    FROM profiles_bins pb
+                    CROSS JOIN LATERAL (
+                        VALUES 
+                            (pb.bound_0, 1),
+                            (pb.bound_1, 2),
+                            (pb.bound_2, 3),
+                            (pb.bound_3, 4),
+                            (pb.bound_4, 5),
+                            (pb.bound_5, 6),
+                            (pb.bound_6, 7)
+                    ) AS b(bound_value, ordinal)
+                    WHERE pb.id = d.binning_id
+                    AND bound_value IS NOT NULL
+                ) sub
+                WHERE upper_bound IS NOT NULL
+            ) AS bp
             GROUP BY
                 vip.thesis_name,
                 vip.device_id,
@@ -67,12 +89,11 @@ class HumidityBinsRepository {
                 vip.x,
                 vip.y,
                 vip.z,
-                vip.value
-            HAVING 
-                vip.value BETWEEN 
-                    COALESCE(MIN(b.bound_value), '-infinity'::float8) 
-                    AND 
-                    COALESCE(MAX(b.bound_value), 'infinity'::float8) 
+                vip.value,
+                bp.humidity_bin,
+                bp.humidity_bin_description,
+                bp.upper_bound,
+                bp.lower_bound
         )
         SELECT
             thesis_name AS "thesisName",
@@ -80,7 +101,12 @@ class HumidityBinsRepository {
             timestamp AS "timestamp",
             humidity_bin_description as "humidityBinDescription",
             humidity_bin as "humidityBin",
-            COUNT(*) AS "count"
+            COUNT(CASE 
+                WHEN value  >= lower_bound 
+                AND value < upper_bound 
+                THEN 1 
+                ELSE NULL 
+            END) AS "count"
         FROM value_bins
         GROUP BY
             thesis_name,
@@ -112,10 +138,10 @@ class HumidityBinsRepository {
                 ordinal as "humidityBin",
                 lower_bound as "lowerBound",
                 upper_bound as "upperBound",
-                '(' || lower_bound
+                '[' || lower_bound
                     || ', '
                     || upper_bound
-                    || ']' AS "humidityBinDescription"
+                    || ')' AS "humidityBinDescription"
             FROM (
                 SELECT 
                     b.ordinal,
@@ -137,7 +163,6 @@ class HumidityBinsRepository {
             ) sub
             WHERE upper_bound IS NOT NULL
             ORDER BY ordinal;
-
         `;
 
         const results = await this.sequelize.query(query, {
