@@ -4,13 +4,13 @@ class FieldRepository {
 
     constructor(models, sequelize){
         this.Organization = models.Organization
-        this.Company = models.Company;
-        this.Field = models.Field;
-        this.Sector = models.Sector;
-        this.Thesis = models.Thesis;
-        this.ThesisInSector = models.ThesisInSector;
-        this.Permit = models.Permit;
-        this.sequelize = sequelize;
+        this.Company = models.Company
+        this.Field = models.Field
+        this.Sector = models.Sector
+        this.Thesis = models.Thesis
+        this.ThesisInSector = models.ThesisInSector
+        this.Permit = models.Permit
+        this.sequelize = sequelize
     }
 
     // constructor(Field, Company,  MatrixProfile, MatrixField, TranscodingField, WateringThesis, WateringSector, WateringAlgorithmParams, sequelize) {
@@ -500,25 +500,6 @@ class FieldRepository {
     //         kp: baseline.kp ? baseline.kp : oldParams.dataValues.kp
     //     });
     //     return model.save()
-    // }
-
-    // async getWateringAlgorithmParams(refStructureName, companyName, fieldName, sectorName, timestamp) {
-    //     this.WateringAlgorithmParams.removeAttribute('id')
-    //     return await this.WateringAlgorithmParams.findOne({
-    //         where: {
-    //             refStructureName: refStructureName,
-    //             companyName: companyName,
-    //             fieldName: fieldName,
-    //             sectorName: sectorName,
-    //             timestamp_from: { [Op.lt]: timestamp },
-    //             timestamp_to: {
-    //                 [Op.or]: {
-    //                     [Op.is]: null,
-    //                     [Op.gt]: timestamp
-    //                 },
-    //             }
-    //         }
-    //     })
     // }
 
     // async setPrescriptiveThesis(refStructureName, companyName, fieldName, sectorName, prescriptiveThesis, timestampFrom){

@@ -493,7 +493,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
             //if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
             //     return res.status(401).json({message: 'Unauthorized request'});
 
-            const result = await wateringAdviceService.getWateringAdvice(refStructureName, companyName, fieldName, sectorName, thesisName, expectedWater, timestamp)
+            const result = await wateringAdviceService.getWateringAdvice(thesisId, expectedWater, timestamp)
 
             return res.status(200).json(result)
         } catch (error) {
