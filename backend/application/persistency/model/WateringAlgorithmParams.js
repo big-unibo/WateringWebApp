@@ -21,7 +21,8 @@ function initWateringAlgorithmParams(sequelize) {
         },
         wateringBaseline: {
             type: DataTypes.DOUBLE,
-            allowNull: true
+            allowNull: true,
+            field: "watering_baseline"
         },
         wateringFrequency: {
             type: DataTypes.DOUBLE,

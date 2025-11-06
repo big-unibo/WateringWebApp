@@ -97,7 +97,7 @@ const authorizationService = new AuthorizationService(userService, fieldService)
 const deviceService = new DeviceService(deviceRepository,signalRepository)
 const signalService = new SignalService(signalRepository)
 const wateringScheduleService = new WateringScheduleService(wateringScheduleRepository)
-const wateringAdviceService = new WateringAdviceService(wateringAdviceRepository, fieldRepository, interpolatedProfileRepository, optimalDistanceRepository)
+const wateringAdviceService = new WateringAdviceService(wateringAdviceRepository, fieldRepository, interpolatedProfileRepository, optimalDistanceRepository, thesesAllSignalsRepository)
 
 app.use(express.json());
 app.use(cors());

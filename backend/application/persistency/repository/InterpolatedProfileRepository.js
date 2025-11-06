@@ -57,8 +57,8 @@ class InterpolatedProfileRepository {
     {
         const query = `
             SELECT MAX("timestamp") AS "lastTimestamp"
-            FROM interpolated_timestamp
-            WHERE ip.grid_id IN (SELECT device_id FROM theses_all_signals
+            FROM interpolated_profiles
+            WHERE grid_id IN (SELECT device_id FROM theses_all_signals
                                     WHERE device_type = :HUMIDITY_DEVICE_TYPE 
                                         AND thesis_id = :thesisId
                                         AND valid_from < :timestampTo AND (valid_to > :timestampFrom OR valid_to IS NULL))

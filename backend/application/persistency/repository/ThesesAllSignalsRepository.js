@@ -91,7 +91,7 @@ class ThesesAllSignalsRepository {
                     vm.unit,
                     vm.computed,
                     ${sqlAggregation} AS value,
-                    ARRAY_AGG(vm.raw_value) AS raw_value,
+                    ARRAY_AGG(vm.raw_value) FILTER (WHERE vm.raw_value IS NOT NULL) AS raw_value,
                     ROUND(vm.timestamp::NUMERIC / :aggregationPeriod) * :aggregationPeriod AS timestamp
                 FROM valid_measurements_table vm
                 GROUP BY
