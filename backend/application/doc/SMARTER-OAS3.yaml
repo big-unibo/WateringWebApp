@@ -598,7 +598,7 @@ components:
           type: string
         advice:
           type: number
-        profileTimestamp:
+        imageTimestamp:
           type: number
         duration:
           type: number
