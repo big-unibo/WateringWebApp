@@ -608,6 +608,8 @@ components:
           type: number
         lastIrrigation:
           type: number
+        baselineFlag:
+          type: boolean
     
     DistanceProfile:
       type: object

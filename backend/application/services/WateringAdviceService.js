@@ -36,7 +36,7 @@ const applyWateringRules = (advice, maxWatering) => {
     return advice;
 }
 
-const computeIrrigation = (advice, sectorDetails, maxWatering, minWatering, expectedWater) => {
+const computeIrrigation = (advice, sectorDetails, maxWatering, expectedWater) => {
     //applyWatering rules
     advice = applyWateringRules(advice, maxWatering)
 
@@ -45,12 +45,6 @@ const computeIrrigation = (advice, sectorDetails, maxWatering, minWatering, expe
     //compute time
     const wateringCapacity = sectorDetails.dripperCapacity || sectorDetails.sprinklerCapacity
     let duration = Math.ceil(irrigationQuantity / wateringCapacity * 60)
-
-    const minWateringDuration = Math.ceil(minWatering / wateringCapacity * 60)
-
-    if (duration < minWateringDuration) {
-        duration = 0
-    }
 
     return {
         advice,
@@ -94,42 +88,48 @@ export class WateringAdviceService {
             if (lastImageTimestamp) {
 
                 const differences = await this.optimalDistanceRepository.findPunctualDistance(thesisId, lastImageTimestamp)
-                r = differences.reduce((acc, curr) => acc + curr.distance, 0) / differences.reduce((acc, curr) => acc + curr.weight, 0)
 
-                const oldParams = await this.wateringAdviceRepository.getThesisLastWateringAdvice(thesisId, Math.min(timestamp - (algorithmParams.wateringFrequency/2 * 3600), lastImageTimestamp));
+                if(differences.length > 0){
 
-                if (oldParams.advice != null && oldParams.r != null && oldParams.imageTimestamp != null) {
-                    let advicePID = oldParams.advice + algorithmParams.kp * (r - oldParams.r) + algorithmParams.ki * r
+                    r = differences.reduce((acc, curr) => acc + curr.distance, 0) / differences.reduce((acc, curr) => acc + curr.weight, 0)
+                    const oldParams = await this.wateringAdviceRepository.getThesisLastWateringAdvice(thesisId, Math.min(timestamp - (algorithmParams.wateringFrequency/2 * 3600), lastImageTimestamp));
 
-                    const {advice, duration} = computeIrrigation(advicePID, sectorDetails, algorithmParams.maxWatering, algorithmParams.minWatering, expectedWater)
+                    if (oldParams.advice != null && oldParams.r != null && oldParams.imageTimestamp != null) {
+                        let advicePID = oldParams.advice + algorithmParams.kp * (r - oldParams.r) + algorithmParams.ki * r
 
-                    const lastIrrigation = (await this.thesesAllSignalsRepository.getMeasurementsByThesis(
-                        thesisId,
-                        ['DRIPPER'],
-                        oldParams.imageTimestamp,
-                        lastImageTimestamp,
-                        'SUM',
-                        (lastImageTimestamp - oldParams.imageTimestamp + 2) * 2
-                    ))[0]?.value || 0;
+                        const {advice, duration} = computeIrrigation(advicePID, sectorDetails, algorithmParams.maxWatering, expectedWater)
 
-                    return new WateringAdviceDto( 
-                        thesisDetails.thesisName, 
-                        advice,
-                        duration, 
-                        Number(lastImageTimestamp), 
-                        Number(timestamp), 
-                        r,  
-                        lastIrrigation, 
-                        false)
+                        const lastIrrigation = (await this.thesesAllSignalsRepository.getMeasurementsByThesis(
+                            thesisId,
+                            ['DRIPPER'],
+                            oldParams.imageTimestamp,
+                            lastImageTimestamp,
+                            'SUM',
+                            (lastImageTimestamp - oldParams.imageTimestamp + 2) * 2
+                        ))[0]?.value || 0;
 
-                } else {
-                    console.warn("No old params found, using baseline");
-                }            
+                        return new WateringAdviceDto( 
+                            thesisDetails.thesisName, 
+                            advice,
+                            duration, 
+                            Number(lastImageTimestamp), 
+                            Number(timestamp), 
+                            r,  
+                            lastIrrigation, 
+                            false)
+
+                    } else {
+                        console.warn("No old params found, using baseline");
+                    }            
+                }
+                else {
+                    console.warn("No optimal image found, using baseline");
+                }
             } else {
                 console.warn("No observed profile found during last irrigation period, using baseline")
             }
 
-            const {advice, duration} = computeIrrigation(algorithmParams.wateringBaseline, sectorDetails, algorithmParams.maxWatering, algorithmParams.minWatering, expectedWater)
+            const {advice, duration} = computeIrrigation(algorithmParams.wateringBaseline, sectorDetails, algorithmParams.maxWatering, expectedWater)
             return new WateringAdviceDto(
                 thesisDetails.thesisName,
                 advice,
