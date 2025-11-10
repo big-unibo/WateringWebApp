@@ -99,7 +99,7 @@ export class WateringAdviceService {
 
                         const {advice, duration} = computeIrrigation(advicePID, sectorDetails, algorithmParams.maxWatering, expectedWater)
 
-                        const lastIrrigation = (await this.thesesAllSignalsRepository.getMeasurementsByThesis(
+                        const lastWatering = (await this.thesesAllSignalsRepository.getMeasurementsByThesis(
                             thesisId,
                             ['DRIPPER'],
                             oldParams.imageTimestamp,
@@ -115,7 +115,7 @@ export class WateringAdviceService {
                             Number(lastImageTimestamp), 
                             Number(timestamp), 
                             r,  
-                            lastIrrigation, 
+                            lastWatering, 
                             false)
 
                     } else {

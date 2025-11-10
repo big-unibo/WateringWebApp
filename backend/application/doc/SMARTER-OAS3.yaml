@@ -606,7 +606,7 @@ components:
           type: number
         r: 
           type: number
-        lastIrrigation:
+        lastWatering:
           type: number
         baselineFlag:
           type: boolean

@@ -1,7 +1,7 @@
 
 export class WateringAdviceDto {
 
-  constructor(thesisName, advice, duration, imageTimestamp, wateringStart, r, lastIrrigation, baselineFlag) {
+  constructor(thesisName, advice, duration, imageTimestamp, wateringStart, r, lastWatering, baselineFlag) {
 
     this.thesisName = thesisName
     this.advice = advice
@@ -9,7 +9,7 @@ export class WateringAdviceDto {
     this.imageTimestamp = imageTimestamp
     this.wateringStart = wateringStart
     this.r = r
-    this.lastIrrigation = lastIrrigation
+    this.lastWatering = lastWatering
     this.baselineFlag = baselineFlag
   }
 }
