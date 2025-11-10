@@ -87,6 +87,7 @@ class UserService {
     }
 
     async computeUserPermits(user, results) {
+        console.log(results)
         try {
             const map = new Map();
 
@@ -100,7 +101,7 @@ class UserService {
                     });
                 } else {
                     if (p.id_key !== null) {
-                        map.get(key).id_keys.add(p.idKey); 
+                        map.get(key).idKeys.add(p.idKey); 
                     }
                 }
             });
