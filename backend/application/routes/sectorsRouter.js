@@ -184,7 +184,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 			return res.status(403).json({ message: 'Authentication failed' });
 		}
 
-		const sectorId = Number(req.body.sectorId)
+		const sectorId = Number(req.params.sectorId)
 
 		if (isNaN(sectorId) || !Number.isInteger(sectorId)) {
 			return res.status(400).json({ message: 'Sector ID is required and must be a number' });
@@ -293,7 +293,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 		if(!req.body || req.body === '')
 			return res.status(400).json({message: 'Invalid request'});
 
-		const sectorId = Number(req.body.sectorId)
+		const sectorId = Number(req.params.sectorId)
 
 		if (isNaN(sectorId) || !Number.isInteger(sectorId)) {
 			return res.status(400).json({ message: 'Sector ID is required and must be a number' });
