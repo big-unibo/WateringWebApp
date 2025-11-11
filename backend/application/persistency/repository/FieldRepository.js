@@ -253,7 +253,6 @@ class FieldRepository {
             )
 
             SELECT
-                v.thesis_id AS "thesisId",
                 v.thesis_name AS "thesisName",
                 gop.grid_id AS "gridId",
                 gop.valid_from AS "validFrom",

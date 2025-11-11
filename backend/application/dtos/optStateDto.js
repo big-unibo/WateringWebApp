@@ -1,15 +1,14 @@
-export class OptStateDto {
+export class OptimalStateData {
 
-  constructor(refStructureName, companyName, fieldName, sectorName, thesisName, validFrom, validTo, matrixId, optimalState) {
-    this.refStructureName = refStructureName
-    this.companyName = companyName
-    this.fieldName = fieldName
-    this.sectorName = sectorName
+  constructor(thesisName, gridId, validFrom, validTo, stopPercentage, optimalLowerBound, optimalUpperBound, optimalProfiles ) {
     this.thesisName = thesisName
+    this.gridId = gridId,
     this.validFrom = validFrom
     this.validTo = validTo,
-    this.matrixId = matrixId,
-    this.optimalState = optimalState
+    this.stopPercentage=stopPercentage,
+    this.optimalLowerBound=optimalLowerBound,
+    this.optimalUpperBound=optimalUpperBound,
+    this.optimalProfile = optimalProfiles
   }
 
 }

@@ -708,6 +708,65 @@ components:
           items:
             $ref: '#/components/schemas/WateringEventData'
 
+    OptimalProfilePoint:
+      type: object
+      description: An individual point within the optimal soil moisture profile, defined by spatial coordinates and a value.
+      properties:
+        x:
+          type: number
+          description: X-coordinate.
+        y:
+          type: number
+          description: Y-coordinate.
+        z:
+          type: number
+          description: Z-coordinate.
+        value:
+          type: number
+          format: double
+          description: The calculated optimal value at this specific profile point.
+        weight:
+          type: number
+          format: double
+          description: The weight or relevance of this point in the overall calculation (0.0 to 1.0).
+
+    OptimalStateData:
+      type: object
+      description: Data representing the optimal soil moisture state for a specific thesis and grid over a defined period.
+      properties:
+        thesisName:
+          type: string
+          description: The name of the thesis.
+        gridId:
+          type: number
+          format: integer
+          description: Unique identifier of the specific grid device.
+        validFrom:
+          type: number
+          format: integer
+          description: Start timestamp (Unix seconds) for when this optimal state data is valid.
+        validTo:
+          type: number
+          format: integer
+          nullable: true
+          description: End timestamp (Unix seconds) for when this optimal state data is valid. Null means indefinitely valid.
+        stopPercentage:
+          type: number
+          nullable: true
+          description: Recommended stop percentage for irrigation based on soil conditions. Null if not applicable.
+        optimalLowerBound:
+          type: number
+          nullable: true
+          description: The lower moisture boundary considered optimal.
+        optimalUpperBound:
+          type: number
+          nullable: true
+          description: The upper moisture boundary considered optimal.
+        optimalProfile:
+          type: array
+          description: Array of individual points defining the optimal soil moisture profile.
+          items:
+            $ref: '#/components/schemas/OptimalProfilePoint'
 
 
 

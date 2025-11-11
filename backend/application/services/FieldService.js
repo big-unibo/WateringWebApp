@@ -1,3 +1,4 @@
+import { OptimalStateData } from '../dtos/optStateDto.js';
 import DtoConverter from './DtoConverter.js';
 
 const dtoConverter = new DtoConverter();
@@ -7,7 +8,7 @@ const MONTH_TO_SECONDS = MINUTE_TO_SECONDS * 60 * 24 * 30
 
 class FieldService {
 
-    constructor(fieldRepository, companyRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository){
+    constructor(fieldRepository, companyRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository) {
         this.fieldRepository = fieldRepository
         this.companyRepository = companyRepository
         this.thesesAllSignalsRepository = thesesAllSignalsRepository
@@ -16,14 +17,14 @@ class FieldService {
         this.optimalDistanceRepository = optimalDistanceRepository
     }
 
-    async createField(field){ 
+    async createField(field) {
         try {
             const fieldCreated = await this.fieldRepository.createField(field.fieldName, field.companyId, field.location);
             return fieldCreated.id;
         } catch (error) {
             console.error(`Error creating field ${field.fieldName}: ${error.message}`);
             throw error;
-        }    
+        }
     }
 
     async createSector(sector) {
@@ -37,28 +38,28 @@ class FieldService {
         }
     }
 
-    async getSectorOwner(sectorId){
+    async getSectorOwner(sectorId) {
         const result = await this.fieldRepository.getSectorDetails(sectorId);
 
         if (!result || !result.field || !result.field.company) {
             throw new Error(`Company not found for sector ${sectorId}`);
         }
 
-        return dtoConverter.convertCompany(result.field.company); 
+        return dtoConverter.convertCompany(result.field.company);
     }
 
     async createThesis(thesis) {
         const newThesisId = await this.fieldRepository.createThesis(thesis.thesisName);
-        if(!newThesisId){
+        if (!newThesisId) {
             throw Error("Impossible to create thesis")
         }
-        await this.fieldRepository.assignThesisToSector(newThesisId, thesis.sectorId, thesis.weight , thesis.validFrom || Math.floor(Date.now()/1000));
+        await this.fieldRepository.assignThesisToSector(newThesisId, thesis.sectorId, thesis.weight, thesis.validFrom || Math.floor(Date.now() / 1000));
         return newThesisId;
     }
 
-    async getFieldOwner(fieldId){
+    async getFieldOwner(fieldId) {
         const result = await this.fieldRepository.getFieldDetails(fieldId);
-        if (!result ||  !result.company) {
+        if (!result || !result.company) {
             throw new Error(`Company not found for field ${fieldId}`);
         }
         return dtoConverter.convertCompany(result.company);
@@ -94,18 +95,18 @@ class FieldService {
         return rule?.period ?? MINUTE_TO_SECONDS; // default: 1 minute
     }
 
-    async getHeatmapByThesis(thesisId, timeFilterFrom, timeFilterTo){
+    async getHeatmapByThesis(thesisId, timeFilterFrom, timeFilterTo) {
         const result = await this.interpolatedProfileRepository.getInterpolatedProfiles(thesisId, timeFilterFrom, timeFilterTo);
         return dtoConverter.convertHeatmapDataWrapper(result);
     }
 
-    async getHumidityBinsByThesis(thesisId, timeFilterFrom, timeFilterTo){
+    async getHumidityBinsByThesis(thesisId, timeFilterFrom, timeFilterTo) {
         const result = await this.humidityBinsRepository.getHumidityBins(thesisId, timeFilterFrom, timeFilterTo);
         return dtoConverter.convertHumidityBinsDataWrapper(result);
     }
 
-    async getWaterAggregateByThesis(thesisId, timeFilterFrom, timeFilterTo){
-        const advicesAndExpectedWater = await this.thesesAllSignalsRepository.getAdvicesAndExpectedWaterByThesis(thesisId, timeFilterFrom, timeFilterTo,  24 * 60 * MINUTE_TO_SECONDS );
+    async getWaterAggregateByThesis(thesisId, timeFilterFrom, timeFilterTo) {
+        const advicesAndExpectedWater = await this.thesesAllSignalsRepository.getAdvicesAndExpectedWaterByThesis(thesisId, timeFilterFrom, timeFilterTo, 24 * 60 * MINUTE_TO_SECONDS);
         const measurementsEt0 = await this.thesesAllSignalsRepository.getMeasurementsByThesis(
             thesisId,
             ['ET0'],
@@ -121,44 +122,44 @@ class FieldService {
 
         const measurements = await this.thesesAllSignalsRepository.getMeasurementsByThesis(
             thesisId,
-            ['DRIPPER','SPRINKER','PLUV_CURR'],
+            ['DRIPPER', 'SPRINKER', 'PLUV_CURR'],
             timeFilterFrom,
             timeFilterTo,
             'SUM',
             24 * 60 * MINUTE_TO_SECONDS
         );
 
-        return dtoConverter.convertMeasurementsDataWrapper([... advicesAndExpectedWater,...measurements, ...measurementsEt0]);
+        return dtoConverter.convertMeasurementsDataWrapper([...advicesAndExpectedWater, ...measurements, ...measurementsEt0]);
     }
 
 
-    async getSectors(userId, timeFilterFrom, timeFilterTo){
+    async getSectors(userId, timeFilterFrom, timeFilterTo) {
         const result = await this.fieldRepository.getSectors(userId, timeFilterFrom, timeFilterTo);
-         return dtoConverter.convertSectorsDataWrapper(result);
+        return dtoConverter.convertSectorsDataWrapper(result);
     }
 
-    async getSectorDetails(sectorId){
+    async getSectorDetails(sectorId) {
         const result = await this.fieldRepository.getSectorDetails(sectorId);
         return dtoConverter.convertSectorDataWrapper(result);
     }
 
-    async getThesisDetails(thesisId, timestamp){
-        const result = await this.fieldRepository.getThesisDetails(thesisId, timestamp || Date.now()/1000)
-        if(result){
+    async getThesisDetails(thesisId, timestamp) {
+        const result = await this.fieldRepository.getThesisDetails(thesisId, timestamp || Date.now() / 1000)
+        if (result) {
             return dtoConverter.convertThesisDetailsWrapper(result)
-        }        
+        }
     }
 
-    async getDevicesByThesis(thesisId){
+    async getDevicesByThesis(thesisId) {
         const result = await this.thesesAllSignalsRepository.getDevicesByThesis(thesisId);
         return dtoConverter.convertDevicesDataWrapper(result);
     }
 
-    async getBinningInfo(binningId){
+    async getBinningInfo(binningId) {
         return this.humidityBinsRepository.getBinningInfo(binningId);
     }
 
-    async getSignalsByThesis(thesisId, signalTypes, timestamp){
+    async getSignalsByThesis(thesisId, signalTypes, timestamp) {
         const result = await this.thesesAllSignalsRepository.getSignalsByThesis(thesisId, signalTypes, timestamp);
         return dtoConverter.convertSignalsDataWrapper(result);
     }
@@ -168,13 +169,12 @@ class FieldService {
         return dtoConverter.convertPunctualDistanceWrapper(result);
     }
 
-    async getOptimalState(thesisId, timestamp){
+    async getOptimalState(thesisId, timestamp) {
         const result = await this.fieldRepository.getOptimalState(thesisId, timestamp)
-        console.log(result)
-        if (result.length > 0){
-            //return dtoConverter.convertOptimalStateWrapper(result)
+        if (result.length > 0) {
+            return dtoConverter.convertOptimalStateWrapper(result)
         }
-        //return new OptStateDto(refStructureName, companyName, fieldName, sectorName, thesisName, undefined, undefined, undefined, [])
+        return new OptimalStateData(undefined, undefined, undefined, undefined, undefined, undefined, undefined, [])
     }
 
     // async getInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {

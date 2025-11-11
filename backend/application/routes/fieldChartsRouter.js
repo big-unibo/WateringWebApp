@@ -594,7 +594,7 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
     *         content:
     *           application/json:
     *             schema:
-    *                     $ref: '#/components/schemas/OptimalProfile'
+    *                     $ref: '#/components/schemas/OptimalStateData'
     *       400:
     *         description: Invalid or missing query parameters
     *         content:

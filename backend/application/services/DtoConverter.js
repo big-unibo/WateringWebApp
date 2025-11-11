@@ -3,7 +3,7 @@ import { ColtureDto } from "../dtos/coltureDto.js";
 import { Company } from "../dtos/companyDto.js";
 import { SignalData, MeasureData, SignalTypeData } from '../dtos/dataDto.js';
 import { WateringScheduleResponse, WateringEventData, ThesisContributionData } from "../dtos/wateringScheduleDto.js";
-import { DistanceProfile, OptimalProfileData, OptStateDto } from "../dtos/optStateDto.js";
+import { DistanceProfile, OptimalProfileData, OptimalStateData } from "../dtos/optStateDto.js";
 import { WateringAdviceDto } from "../dtos/wateringAdviceDto.js";
 import { SectorCompactDto, SectorDataDto, ThesisRefDto } from "../dtos/sectorDto.js";
 import { Signal, Device } from "../dtos/deviceDto.js";
@@ -448,15 +448,10 @@ class DtoConverter {
     //     }
     // }
 
-    // convertOptimalStateWrapper(wrappers) {
-    //     const [[jsonKey, values]] = this.#buildGenericReferenceMap(wrappers).entries();
-    //     const key = JSON.parse(jsonKey)
-    //     const exampleData = values[0]
-    //     const optimalState = values.map(v => new MatrixData(v.xx, v.yy, v.zz, v.optValue, v.weight))
-
-    //     return new OptStateDto(key.refStructureName, key.companyName, key.fieldName, key.sectorName, key.thesisName,
-    //         exampleData.validFrom, exampleData.validTo, exampleData.matrixId, optimalState)
-    // }
+    convertOptimalStateWrapper(results) {
+        const optimalProfile = results.map(v => new OptimalProfileData(v.x, v.y, v.z, v.value, v.weight))
+        return new OptimalStateData(results[0].thesisName, results[0].gridId, results[0].validFrom, results[0].validTo, results[0].stopPercentage, results[0].optimalLowerBound, results[0].optimalUpperBound, optimalProfile)
+    }
 
     convertWateringAdviceWrapper(adviceWrapper) {
         return new WateringAdviceDto(adviceWrapper.thesisName, adviceWrapper.advice, adviceWrapper.duration, adviceWrapper.imageTimestamp,
