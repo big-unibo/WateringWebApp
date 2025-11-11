@@ -1,5 +1,5 @@
 import { Router } from 'express';
-const fieldChartRouter = ({authenticationService, authorizationService, fieldService}) => {
+const fieldChartRouter = ({ authenticationService, authorizationService, fieldService }) => {
     const router = Router();
 
     /**
@@ -126,7 +126,7 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
 
         const timeFilterFrom = Number(req.query.timeFilterFrom)
         const timeFilterTo = Number(req.query.timeFilterTo)
-        
+
         if (isNaN(timeFilterFrom)) {
             return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid timestamp' });
         }
@@ -225,7 +225,7 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
      *                 message:
      *                   type: string
      */
-    router.get('/:thesisId/heatmap', async(req,res) => {
+    router.get('/:thesisId/heatmap', async (req, res) => {
         let requestUserData;
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -241,7 +241,7 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
 
         const timeFilterFrom = Number(req.query.timeFilterFrom)
         const timeFilterTo = Number(req.query.timeFilterTo)
-        
+
         if (isNaN(timeFilterFrom)) {
             return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid timestamp' });
         }
@@ -333,7 +333,7 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
      *                 message:
      *                   type: string
      */
-    router.get('/:thesisId/humidityBins', async(req,res) => {
+    router.get('/:thesisId/humidityBins', async (req, res) => {
         let requestUserData;
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -341,14 +341,14 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
             return res.status(403).json({ message: 'Authentication failed' });
         }
         // [TO DO]: Authorization
-         const thesisId = Number(req.params.thesisId)
+        const thesisId = Number(req.params.thesisId)
         if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
             return res.status(400).json({ message: 'thesis ID is required and must be a number' });
         }
-        
+
         const timeFilterFrom = Number(req.query.timeFilterFrom)
         const timeFilterTo = Number(req.query.timeFilterTo)
-        
+
         if (isNaN(timeFilterFrom)) {
             return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid timestamp' });
         }
@@ -441,22 +441,22 @@ const fieldChartRouter = ({authenticationService, authorizationService, fieldSer
      *                 message:
      *                   type: string
      */
-    router.get('/:thesisId/waterAggregate', async(req,res) => {
-let requestUserData;
+    router.get('/:thesisId/waterAggregate', async (req, res) => {
+        let requestUserData;
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
             return res.status(403).json({ message: 'Authentication failed' });
         }
         // [TO DO]: Authorization
-         const thesisId = Number(req.params.thesisId)
+        const thesisId = Number(req.params.thesisId)
         if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
             return res.status(400).json({ message: 'thesis ID is required and must be a number' });
         }
-        
+
         const timeFilterFrom = Number(req.query.timeFilterFrom)
         const timeFilterTo = Number(req.query.timeFilterTo)
-        
+
         if (isNaN(timeFilterFrom)) {
             return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid timestamp' });
         }
@@ -504,33 +504,61 @@ let requestUserData;
      *           application/json:
      *             schema:
      *                     $ref: '#/components/schemas/DistanceProfile'
-     *       '400':
-     *         description: Invalid request or thesis not found.
-     *       '401':
-     *         description: Unauthorized request.
-     *       '403':
-     *         description: Authentication failed.
-     *       '500':
-     *         description: Error on retrieve optimal field matrix.
+     *       400:
+     *         description: Invalid or missing query parameters
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       401:
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized (user not allowed to view heatmaps)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      */
     router.get('/:thesisId/distanceProfileToOptimal', async (req, res) => {
         try {
             const user = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
-        
+
         // TODO authorization
         // if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
-        //     return res.status(401).json({ message: 'Unauthorized request' });
+        //     return res.status(403).json({ message: 'Unauthorized request' });
 
         const thesisId = Number(req.params.thesisId)
 
         if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
             return res.status(400).json({ message: 'thesis ID is required and must be a number' });
         }
-        const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
-    
+        const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
+
         try {
             const result = await fieldService.getPunctualDistance(thesisId, timestamp);
             res.status(200).json(result);
@@ -539,282 +567,373 @@ let requestUserData;
         }
     });
 
-// /**
-//  * @swagger
-//  * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/profileStatistics:
-//  *   get:
-//  *     security:
-//  *       - bearerAuth: []
-//  *     summary: Retrieves statistics data of profile, specifically the mean and std for each cell
-//  *     tags: [Field Chart Data]
-//  *     parameters:
-//  *       - in: path
-//  *         name: refStructureName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *       - in: path
-//  *         name: companyName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *       - in: path
-//  *         name: fieldName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *       - in: path
-//  *         name: sectorName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *       - in: path
-//  *         name: thesisName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *       - in: query
-//  *         name: timeFilterFrom
-//  *         schema:
-//  *           type: string
-//  *         required: true
-//  *       - in: query
-//  *         name: timeFilterTo
-//  *         schema:
-//  *           type: string
-//  *         required: true
-//  *     responses:
-//  *       200:
-//  *         description: Success
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  *               properties:
-//  *                 data:
-//  *                   type: array
-//  *                   items:
-//  *                     $ref: '#/components/schemas/DataResponse'
-//  *       401:
-//  *         description: Unauthorized request
-//  *       403:
-//  *         description: Authentication failed
-//  *       500:
-//  *         description: Internal server error
-//  */
-// router.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/profileStatistics', async (req, res) => {
+    /**
+    * @swagger
+    * /fieldCharts/{thesisId}/optimalState:
+    *   get:
+    *     security:
+    *       - bearerAuth: []
+    *     summary: Gets the thesis optimal state for a given timestamp
+    *     description: Gets the thesis optimal state for a given timestamp, requires proper authorization ad authentication.
+    *     tags: [Field Chart Data]
+    *     parameters:
+    *       - in: path
+    *         name: thesisId
+    *         required: true
+    *         schema:
+    *           type: integer
+    *         description: The id of the thesis
+    *       - in: query
+    *         name: timestamp
+    *         schema:
+    *           type: number
+    *         description: The timestamp in which find the information
+    *     responses:
+    *       '200':
+    *         description: Successfully retrieve profile of distances
+    *         content:
+    *           application/json:
+    *             schema:
+    *                     $ref: '#/components/schemas/OptimalProfile'
+    *       400:
+    *         description: Invalid or missing query parameters
+    *         content:
+    *           application/json:
+    *             schema:
+    *               type: object
+    *               properties:
+    *                 message:
+    *                   type: string
+    *       401:
+    *         description: Authentication failed (invalid or missing JWT)
+    *         content:
+    *           application/json:
+    *             schema:
+    *               type: object
+    *               properties:
+    *                 message:
+    *                   type: string
+    *       403:
+    *         description: Unauthorized (user not allowed to view heatmaps)
+    *         content:
+    *           application/json:
+    *             schema:
+    *               type: object
+    *               properties:
+    *                 message:
+    *                   type: string
+    *       500:
+    *         description: Internal server error
+    *         content:
+    *           application/json:
+    *             schema:
+    *               type: object
+    *               properties:
+    *                 message:
+    *                   type: string
+    */
+    router.get('/:thesisId/optimalState', async (req, res) => {
+        try {
+            const user = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
 
-//     const refStructureName = req.params.refStructureName;
-//     const companyName = req.params.companyName;
-//     const fieldName = req.params.fieldName;
-//     const sectorName = req.params.sectorName;
-//     const thesisName = req.params.thesisName;
-//     const timeFilterFrom = req.query.timeFilterFrom;
-//     const timeFilterTo = req.query.timeFilterTo;
+        // TODO authorization
+        // if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
+        //     return res.status(403).json({ message: 'Unauthorized request' });
 
-//     try {
-//         const user = await authenticationService.validateJwt(req.headers.authorization);
-//         if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
-//             return res.status(401).json({message: 'Unauthorized request'});
-//     } catch (error) {
-//         return res.status(403).json({message: 'Authentication failed'});
-//     }
+        const thesisId = Number(req.params.thesisId)
 
-//     try {
+        if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
+            return res.status(400).json({ message: 'thesis ID is required and must be a number' });
+        }
+        const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
 
-//         const result = await fieldService.getInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timeFilterFrom, timeFilterTo);
+        try {
+            const result = await fieldService.getOptimalState(thesisId, timestamp);
+            res.status(200).json(result);
+        } catch (error) {
+            return res.status(500).json({ message: error.message });
+        }
+    })
 
-//         res.status(200).json(new InterpolatedDataResponse(result));
-//     } catch (error) {
-//         return res.status(500).json({message: error.message});
-//     }
+    // /**
+    //  * @swagger
+    //  * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/profileStatistics:
+    //  *   get:
+    //  *     security:
+    //  *       - bearerAuth: []
+    //  *     summary: Retrieves statistics data of profile, specifically the mean and std for each cell
+    //  *     tags: [Field Chart Data]
+    //  *     parameters:
+    //  *       - in: path
+    //  *         name: refStructureName
+    //  *         required: true
+    //  *         schema:
+    //  *           type: string
+    //  *       - in: path
+    //  *         name: companyName
+    //  *         required: true
+    //  *         schema:
+    //  *           type: string
+    //  *       - in: path
+    //  *         name: fieldName
+    //  *         required: true
+    //  *         schema:
+    //  *           type: string
+    //  *       - in: path
+    //  *         name: sectorName
+    //  *         required: true
+    //  *         schema:
+    //  *           type: string
+    //  *       - in: path
+    //  *         name: thesisName
+    //  *         required: true
+    //  *         schema:
+    //  *           type: string
+    //  *       - in: query
+    //  *         name: timeFilterFrom
+    //  *         schema:
+    //  *           type: string
+    //  *         required: true
+    //  *       - in: query
+    //  *         name: timeFilterTo
+    //  *         schema:
+    //  *           type: string
+    //  *         required: true
+    //  *     responses:
+    //  *       200:
+    //  *         description: Success
+    //  *         content:
+    //  *           application/json:
+    //  *             schema:
+    //  *               type: object
+    //  *               properties:
+    //  *                 data:
+    //  *                   type: array
+    //  *                   items:
+    //  *                     $ref: '#/components/schemas/DataResponse'
+    //  *       401:
+    //  *         description: Unauthorized request
+    //  *       403:
+    //  *         description: Authentication failed
+    //  *       500:
+    //  *         description: Internal server error
+    //  */
+    // router.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/profileStatistics', async (req, res) => {
 
-// });
+    //     const refStructureName = req.params.refStructureName;
+    //     const companyName = req.params.companyName;
+    //     const fieldName = req.params.fieldName;
+    //     const sectorName = req.params.sectorName;
+    //     const thesisName = req.params.thesisName;
+    //     const timeFilterFrom = req.query.timeFilterFrom;
+    //     const timeFilterTo = req.query.timeFilterTo;
 
-// /**
-//  * @swagger
-//  * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/delta:
-//  *   get:
-//  *     security:
-//  *       - bearerAuth: []
-//  *     summary: Retrieves delta data
-//  *     tags: [Field Chart Data]
-//  *     parameters:
-//  *       - in: path
-//  *         name: refStructureName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *       - in: path
-//  *         name: companyName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *       - in: path
-//  *         name: fieldName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *       - in: path
-//  *         name: sectorName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *       - in: path
-//  *         name: thesisName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *       - in: query
-//  *         name: timeFilterFrom
-//  *         schema:
-//  *           type: string
-//  *         required: true
-//  *       - in: query
-//  *         name: timeFilterTo
-//  *         schema:
-//  *           type: string
-//  *         required: true
-//  *     responses:
-//  *       200:
-//  *         description: Success
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  *               properties:
-//  *                 data:
-//  *                   type: array
-//  *                   items:
-//  *                     $ref: '#/components/schemas/DataResponse'
-//  *       401:
-//  *         description: Unauthorized request
-//  *       403:
-//  *         description: Authentication failed
-//  *       500:
-//  *         description: Internal server error
-//  */
-// router.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/delta', async (req, res) => {
+    //     try {
+    //         const user = await authenticationService.validateJwt(req.headers.authorization);
+    //         if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
+    //             return res.status(401).json({message: 'Unauthorized request'});
+    //     } catch (error) {
+    //         return res.status(403).json({message: 'Authentication failed'});
+    //     }
 
-//     const refStructureName = req.params.refStructureName;
-//     const companyName = req.params.companyName;
-//     const fieldName = req.params.fieldName;
-//     const sectorName = req.params.sectorName;
-//     const thesisName = req.params.thesisName;
-//     const timeFilterFrom = req.query.timeFilterFrom;
-//     const timeFilterTo = req.query.timeFilterTo;
+    //     try {
 
-//     try {
-//         const user = await authenticationService.validateJwt(req.headers.authorization);
-//         if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timeFilterFrom, timeFilterTo)))
-//             return res.status(401).json({message: 'Unauthorized request'});
-//     } catch (error) {
-//         return res.status(403).json({message: 'Authentication failed'});
-//     }
+    //         const result = await fieldService.getInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timeFilterFrom, timeFilterTo);
 
-//     try {
+    //         res.status(200).json(new InterpolatedDataResponse(result));
+    //     } catch (error) {
+    //         return res.status(500).json({message: error.message});
+    //     }
+
+    // });
+
+    // /**
+    //  * @swagger
+    //  * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/delta:
+    //  *   get:
+    //  *     security:
+    //  *       - bearerAuth: []
+    //  *     summary: Retrieves delta data
+    //  *     tags: [Field Chart Data]
+    //  *     parameters:
+    //  *       - in: path
+    //  *         name: refStructureName
+    //  *         required: true
+    //  *         schema:
+    //  *           type: string
+    //  *       - in: path
+    //  *         name: companyName
+    //  *         required: true
+    //  *         schema:
+    //  *           type: string
+    //  *       - in: path
+    //  *         name: fieldName
+    //  *         required: true
+    //  *         schema:
+    //  *           type: string
+    //  *       - in: path
+    //  *         name: sectorName
+    //  *         required: true
+    //  *         schema:
+    //  *           type: string
+    //  *       - in: path
+    //  *         name: thesisName
+    //  *         required: true
+    //  *         schema:
+    //  *           type: string
+    //  *       - in: query
+    //  *         name: timeFilterFrom
+    //  *         schema:
+    //  *           type: string
+    //  *         required: true
+    //  *       - in: query
+    //  *         name: timeFilterTo
+    //  *         schema:
+    //  *           type: string
+    //  *         required: true
+    //  *     responses:
+    //  *       200:
+    //  *         description: Success
+    //  *         content:
+    //  *           application/json:
+    //  *             schema:
+    //  *               type: object
+    //  *               properties:
+    //  *                 data:
+    //  *                   type: array
+    //  *                   items:
+    //  *                     $ref: '#/components/schemas/DataResponse'
+    //  *       401:
+    //  *         description: Unauthorized request
+    //  *       403:
+    //  *         description: Authentication failed
+    //  *       500:
+    //  *         description: Internal server error
+    //  */
+    // router.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/delta', async (req, res) => {
+
+    //     const refStructureName = req.params.refStructureName;
+    //     const companyName = req.params.companyName;
+    //     const fieldName = req.params.fieldName;
+    //     const sectorName = req.params.sectorName;
+    //     const thesisName = req.params.thesisName;
+    //     const timeFilterFrom = req.query.timeFilterFrom;
+    //     const timeFilterTo = req.query.timeFilterTo;
+
+    //     try {
+    //         const user = await authenticationService.validateJwt(req.headers.authorization);
+    //         if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timeFilterFrom, timeFilterTo)))
+    //             return res.status(401).json({message: 'Unauthorized request'});
+    //     } catch (error) {
+    //         return res.status(403).json({message: 'Authentication failed'});
+    //     }
+
+    //     try {
 
 
-//         const result = await fieldService.getDelta(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName);
+    //         const result = await fieldService.getDelta(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName);
 
-//         res.status(200).json(result);
-//     } catch (error) {
-//         res.status(500).json({message: error.message});
-//     }
+    //         res.status(200).json(result);
+    //     } catch (error) {
+    //         res.status(500).json({message: error.message});
+    //     }
 
-// });
+    // });
 
-// /**
-//  * @swagger
-//  * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/getOptimalState:
-//  *   get:
-//  *     security:
-//  *       - bearerAuth: []
-//  *     summary: Get optimal state for a field
-//  *     description: Get the optimal state for a field.
-//  *     tags: [Field Chart Data]
-//  *     parameters:
-//  *       - in: path
-//  *         name: refStructureName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: The reference structure name
-//  *       - in: path
-//  *         name: companyName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: The company name
-//  *       - in: path
-//  *         name: fieldName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: The field name
-//  *       - in: path
-//  *         name: sectorName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: The sector name
-//  *       - in: path
-//  *         name: thesisName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: The thesisName
-//  *       - in: query
-//  *         name: timestamp
-//  *         schema:
-//  *           type: string
-//  *         description: The timestamp in which find the information
-//  *     responses:
-//  *       '200':
-//  *         description: Success
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  *               properties:
-//  *                 data:
-//  *                   type: array
-//  *                   items:
-//  *                     $ref: '#/components/schemas/OptStateDto'
-//  *       '400':
-//  *         description: Invalid request or thesis not found.
-//  *       '401':
-//  *         description: Unauthorized request.
-//  *       '403':
-//  *         description: Authentication failed.
-//  *       '500':
-//  *         description: Error on retrieve optimal field matrix.
-//  */
-// router.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/getOptimalState', async (req, res) => {
-  
-//     const refStructureName = req.params.refStructureName;
-//     const companyName = req.params.companyName;
-//     const fieldName = req.params.fieldName;
-//     const sectorName = req.params.sectorName;
-//     const thesisName = req.params.thesisName;
-//     const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
-  
-//     try {
-//       const user = await authenticationService.validateJwt(req.headers.authorization);
-//       if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
-//         return res.status(401).json({ message: 'Unauthorized request' });
-//     } catch (error) {
-//       return res.status(403).json({ message: 'Authentication failed' });
-//     }
-  
-//     try {
-//       const result = await fieldService.getOptimalState(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp);
-//       res.status(200).json(result);
-//     } catch (error) {
-//       return res.status(500).json({ message: error.message });
-//     }
-  
-//   });
+    // /**
+    //  * @swagger
+    //  * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/getOptimalState:
+    //  *   get:
+    //  *     security:
+    //  *       - bearerAuth: []
+    //  *     summary: Get optimal state for a field
+    //  *     description: Get the optimal state for a field.
+    //  *     tags: [Field Chart Data]
+    //  *     parameters:
+    //  *       - in: path
+    //  *         name: refStructureName
+    //  *         required: true
+    //  *         schema:
+    //  *           type: string
+    //  *         description: The reference structure name
+    //  *       - in: path
+    //  *         name: companyName
+    //  *         required: true
+    //  *         schema:
+    //  *           type: string
+    //  *         description: The company name
+    //  *       - in: path
+    //  *         name: fieldName
+    //  *         required: true
+    //  *         schema:
+    //  *           type: string
+    //  *         description: The field name
+    //  *       - in: path
+    //  *         name: sectorName
+    //  *         required: true
+    //  *         schema:
+    //  *           type: string
+    //  *         description: The sector name
+    //  *       - in: path
+    //  *         name: thesisName
+    //  *         required: true
+    //  *         schema:
+    //  *           type: string
+    //  *         description: The thesisName
+    //  *       - in: query
+    //  *         name: timestamp
+    //  *         schema:
+    //  *           type: string
+    //  *         description: The timestamp in which find the information
+    //  *     responses:
+    //  *       '200':
+    //  *         description: Success
+    //  *         content:
+    //  *           application/json:
+    //  *             schema:
+    //  *               type: object
+    //  *               properties:
+    //  *                 data:
+    //  *                   type: array
+    //  *                   items:
+    //  *                     $ref: '#/components/schemas/OptStateDto'
+    //  *       '400':
+    //  *         description: Invalid request or thesis not found.
+    //  *       '401':
+    //  *         description: Unauthorized request.
+    //  *       '403':
+    //  *         description: Authentication failed.
+    //  *       '500':
+    //  *         description: Error on retrieve optimal field matrix.
+    //  */
+    // router.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/getOptimalState', async (req, res) => {
+
+    //     const refStructureName = req.params.refStructureName;
+    //     const companyName = req.params.companyName;
+    //     const fieldName = req.params.fieldName;
+    //     const sectorName = req.params.sectorName;
+    //     const thesisName = req.params.thesisName;
+    //     const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
+
+    //     try {
+    //       const user = await authenticationService.validateJwt(req.headers.authorization);
+    //       if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
+    //         return res.status(401).json({ message: 'Unauthorized request' });
+    //     } catch (error) {
+    //       return res.status(403).json({ message: 'Authentication failed' });
+    //     }
+
+    //     try {
+    //       const result = await fieldService.getOptimalState(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp);
+    //       res.status(200).json(result);
+    //     } catch (error) {
+    //       return res.status(500).json({ message: error.message });
+    //     }
+
+    //   });
 
     return router;
 }

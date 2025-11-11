@@ -168,6 +168,15 @@ class FieldService {
         return dtoConverter.convertPunctualDistanceWrapper(result);
     }
 
+    async getOptimalState(thesisId, timestamp){
+        const result = await this.fieldRepository.getOptimalState(thesisId, timestamp)
+        console.log(result)
+        if (result.length > 0){
+            //return dtoConverter.convertOptimalStateWrapper(result)
+        }
+        //return new OptStateDto(refStructureName, companyName, fieldName, sectorName, thesisName, undefined, undefined, undefined, [])
+    }
+
     // async getInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {
     //     const result = await this.dataInterpolatedRepository.findInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo);
     //     return [dtoConverter.convertDataInterpolatedMeanWrapper(refStructureName, companyName, fieldName, sectorName, thesisName, result)];

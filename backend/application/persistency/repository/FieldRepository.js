@@ -1,4 +1,5 @@
-import { Op, Sequelize } from 'sequelize';
+import { Op, Sequelize, QueryTypes } from 'sequelize';
+import { HUMIDITY_DEVICE_TYPE } from '../../commons/constants.js';
 
 class FieldRepository {
 
@@ -236,6 +237,54 @@ class FieldRepository {
         });
 
         return results;
+    }
+
+    async getOptimalState(thesisId, timestamp) {
+        const query = `
+            WITH validity_table AS (
+                SELECT device_id, thesis_id, thesis_name
+                FROM theses_all_signals
+                WHERE device_type = :HUMIDITY_DEVICE_TYPE
+                AND thesis_id = :thesisId
+                GROUP BY device_id, thesis_id, thesis_name
+                HAVING MIN(valid_from) < :timestamp
+                AND MAX(COALESCE(valid_to, 'infinity')) > :timestamp
+                LIMIT 1
+            )
+
+            SELECT
+                v.thesis_id AS "thesisId",
+                v.thesis_name AS "thesisName",
+                gop.grid_id AS "gridId",
+                gop.valid_from AS "validFrom",
+                gop.valid_to AS "validTo",
+                gop.stop_percentage AS "stopPercentage",
+                gop.optimal_lower_bound AS "optimalLowerBound",
+                gop.optimal_upper_bound AS "optimalUpperBound",
+                op.x,
+                op.y,
+                op.z,
+                op.weight,
+                op.value
+                FROM validity_table v
+                JOIN grid_optimal_profile_assignment gop
+                ON v.device_id = gop.grid_id
+                JOIN optimal_profiles op
+                ON op.profile_id = gop.optimal_profile_id
+                WHERE gop.valid_from < :timestamp
+                AND (gop.valid_to IS NULL OR gop.valid_to > :timestamp)
+        `;
+
+        const results = await this.sequelize.query(query, {
+            replacements: {
+                thesisId,
+                timestamp,
+                HUMIDITY_DEVICE_TYPE
+            },
+            type: QueryTypes.SELECT
+        });
+
+        return (results);
     }
 
     // async updateWateringSectorDetails(sectorDetails, timestampFrom){
