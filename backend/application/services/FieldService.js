@@ -28,18 +28,7 @@ class FieldService {
 
     async createSector(sector) {
         try {
-            const sectorCreated = await this.fieldRepository.createSector({
-                sectorName: sector.sectorName,
-                fieldId: sector.fieldId,
-                culture: sector.culture,
-                cultureType: sector.cultureType,
-                location: sector.location,
-                prescriptive: sector.prescriptive,
-                advice: sector.advice,
-                dripperCapacity: sector.dripperCapacity,
-                sprinklerCapacity: sector.sprinklerCapacity,
-                doubleWing: sector.doubleWing
-            });
+            const sectorCreated = await this.fieldRepository.createSector(sector);
 
             return sectorCreated.id;
         } catch (error) {
@@ -106,21 +95,11 @@ class FieldService {
     }
 
     async getHeatmapByThesis(thesisId, timeFilterFrom, timeFilterTo){
-        // const gridId = await this.thesesAllSignalsRepository.getGridDeviceByThesis(thesisId, timeFilterFrom, timeFilterTo);
-        // if(!gridId){
-        //     throw Error("No GRID type device found assigned to the given thesis");
-        // }
-
         const result = await this.interpolatedProfileRepository.getInterpolatedProfiles(thesisId, timeFilterFrom, timeFilterTo);
         return dtoConverter.convertHeatmapDataWrapper(result);
     }
 
     async getHumidityBinsByThesis(thesisId, timeFilterFrom, timeFilterTo){
-        // const gridId = await this.thesesAllSignalsRepository.getGridDeviceByThesis(thesisId, timeFilterFrom, timeFilterTo);
-        // if(!gridId){
-        //     throw Error("No GRID type device found assigned to the given thesis");
-        // }
-
         const result = await this.humidityBinsRepository.getHumidityBins(thesisId, timeFilterFrom, timeFilterTo);
         return dtoConverter.convertHumidityBinsDataWrapper(result);
     }
@@ -238,11 +217,6 @@ class FieldService {
     // async getHumidityEventsByFieldReference(detectedValueTypeDescription, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName) {
     //     const result = await this.viewDataOriginalRepository.findHumidityEventsByFieldReference(detectedValueTypeDescription, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName, MINUTE_TO_SECONDS);
     //     return dtoConverter.convertViewDataOriginalWrapper(result);
-    // }
-
-    // async getWaterAggregate(timefilterFrom, timefilterTo, refStructureName, companyName, fieldName, sectorName, thesisName) {
-    //     const result = await this.wateringAggregateRepository.findWaterAggregate(timefilterFrom, timefilterTo, refStructureName, companyName, fieldName, sectorName, thesisName);
-    //     return dtoConverter.convertWaterAggregateWrapper(result);
     // }
 
     // async getOptimalState(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp){

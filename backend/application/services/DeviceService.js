@@ -20,15 +20,7 @@ class DeviceService {
                 throw new Error("Device creation failed");
             }
             const signalsToCreate = (device.signals || []).map(sig => ({
-                typeId: sig.typeId,
-                description: sig.description,
-                x: sig.x,
-                y: sig.y,
-                z: sig.z,
-                virtual: sig.virtual,
-                unit: sig.unit,
-                idOnProvider: sig.idOnProvider,
-                sensorTechnology: sig.sensorTechnology,
+                ...sig,
                 deviceId: createdDeviceId
             }));
 
@@ -58,33 +50,19 @@ class DeviceService {
 
             const validFrom = signalAssociation.validFrom ?? Date.now() / 1000;
             const signals = await this.deviceRepository.getSignals(signalAssociation.deviceId);
+
+            const assingFunctions = {
+                [SignalTargetType.FIELD]: this.signalRepository.assignSignalToField,
+                [SignalTargetType.SECTOR]: this.signalRepository.assignSignalToSector,
+                [SignalTargetType.THESIS]: this.signalRepository.assignSignalToThesis
+            }
         
             for (const signal of signals) {
-                switch (signalAssociation.targetType) {
-                case SignalTargetType.FIELD:
-                    await this.signalRepository.assignSignalToField({
+                assingFunctions[signalAssociation.targetType]({
                         signalId: signal.id,
                         fieldId: signalAssociation.targetId,
                         validFrom
-                    });
-                    break;
-                case SignalTargetType.SECTOR:
-                    await this.signalRepository.assignSignalToSector({
-                        signalId: signal.id,
-                        sectorId: signalAssociation.targetId,
-                        validFrom
-                    });
-                    break;
-                case SignalTargetType.THESIS:
-                    await this.signalRepository.assignSignalToThesis({
-                        signalId: signal.id,
-                        thesisId: signalAssociation.targetId,
-                        validFrom
-                    });
-                    break;
-                default:
-                    throw new Error("Unknown targetType");
-                }
+                    })
             }
         }catch(error){
             console.error(`Error assigning signal: ${error.message}`);
