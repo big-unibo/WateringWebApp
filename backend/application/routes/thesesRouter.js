@@ -87,6 +87,8 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
             return res.status(403).json({message: 'Authentication failed'});
         }
 
+        //[TO DO]: Authorization
+
         const thesisId = Number(req.params.thesisId)
 
         if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
@@ -96,9 +98,6 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         const timestamp = req.query.timestamp || Date.now()/1000
 
         try {
-            // if (!(await authorizationService.isUserAuthorizedInSector(requestUserData.userid, 'update', thesisIdParsed)))
-            //     return res.status(401).json({message: 'Unauthorized request'});
-
             const result = await fieldService.getThesisDetails(thesisId, timestamp);
             if (result){
                 return res.status(200).json(result)
@@ -185,19 +184,18 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         if(!req.body || req.body === '')
         return res.status(400).json({message: 'Invalid request'});
 
-        const { thesisId } = req.params;
+        const thesisId = Number(req.params.thesisId)
 
-        if (!thesisId || isNaN(parseInt(thesisId))) {
-            return res.status(400).json({ message: 'thesisId is required and must be a number' });
+        if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
+            return res.status(400).json({ message: 'thesis ID is required and must be a number' });
         }
-        const thesisIdParsed = parseInt(thesisId);
 
         try {
-            const user = await userService.findUser(requestUserData.userid);
-            // if (!(await authorizationService.isUserAuthorizedInSector(user.id, 'update', thesisIdParsed)))
+            // TODO Authorization
+            // if (!(await authorizationService.isUserAuthorizedInSector(user.id, 'update', thesisId)))
             //     return res.status(401).json({message: 'Unauthorized request'});
 
-            const results = await fieldService.getDevicesByThesis(thesisIdParsed);
+            const results = await fieldService.getDevicesByThesis(thesisId);
             return res.status(200).json(results)
         } catch (error) {
             console.log(`Fail retrieving devices data: ${error.message}`);
@@ -294,31 +292,24 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         if(!req.body || req.body === '')
         return res.status(400).json({message: 'Invalid request'});
 
-        const { thesisId } = req.params;
-        if (!thesisId || isNaN(parseInt(thesisId))) {
-            return res.status(400).json({ message: 'thesisId is required and must be a number' });
+        const thesisId = Number(req.params.thesisId)
+
+        if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
+            return res.status(400).json({ message: 'thesis ID is required and must be a number' });
         }
-        const thesisIdParsed = parseInt(thesisId);
 
         let signalTypes = req.query.signalTypes || [];
         if (!Array.isArray(signalTypes)) signalTypes = [signalTypes];
 
 
-        const timestamp = req.query.timestamp
-            ? Number(req.query.timestamp)
-            : null;
-        
-        if (timestamp === null || isNaN(timestamp)) {
-            return res.status(400).json({ message: 'timestamp is required and must be a valid date' });
-        }
+        const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
 
         try {
-            const user = await userService.findUser(requestUserData.userid);
             //[TO DO]: Authorization
-            // if (!(await authorizationService.isUserAuthorizedInSector(user.id, 'update', thesisIdParsed)))
+            // if (!(await authorizationService.isUserAuthorizedInSector(requestUserData.userid, 'update', thesisId)))
             //     return res.status(401).json({message: 'Unauthorized request'});
 
-            const results = await fieldService.getSignalsByThesis(thesisIdParsed, signalTypes, timestamp);
+            const results = await fieldService.getSignalsByThesis(thesisId, signalTypes, timestamp);
             return res.status(200).json(results)
         } catch (error) {
             console.log(`Fail retrieving devices data: ${error.message}`);
@@ -402,35 +393,35 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *                   type: string
     */
     router.get('/:thesisId/lastWateringAdvice', async (req, res) => {
-      let requestUserData
-      try {
-        requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-      } catch (error) {
-        return res.status(403).json({message: 'Authentication failed'});
-      }
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(403).json({message: 'Authentication failed'});
+        }
 
         const thesisId = Number(req.params.thesisId)
         if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
             return res.status(400).json({ message: 'thesis ID is required and must be a number' });
         }
 
-      const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
+        const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
 
-      try {
-        // TODO Authorization  
-        // if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
-        //     return res.status(401).json({message: 'Unauthorized request'});
+        try {
+            // TODO Authorization  
+            // if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
+            //     return res.status(401).json({message: 'Unauthorized request'});
 
-        const result = await wateringAdviceService.getThesisLastWateringAdvice(thesisId, timestamp)
-        if(result){
-            return res.status(200).json(result)
-        } else {
-            return res.status(404).json({ message: 'No advice found for specified thesis' });
+            const result = await wateringAdviceService.getThesisLastWateringAdvice(thesisId, timestamp)
+            if(result){
+                return res.status(200).json(result)
+            } else {
+                return res.status(404).json({ message: 'No advice found for specified thesis' });
+            }
+        } catch (error) {
+            console.log(`Failed getting watering advice caused by: ${error.message}`)
+            return res.status(500).json({error: "Error getting watering advice"})
         }
-      } catch (error) {
-        console.log(`Failed getting watering advice caused by: ${error.message}`)
-        return res.status(500).json({error: "Error getting watering advice"})
-      }
     });
 
     /**

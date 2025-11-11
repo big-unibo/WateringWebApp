@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-const organizationsRouter = ({ organizationService, authenticationService, userService, authorizationService }) => {
+const organizationsRouter = ({ organizationService, authenticationService, authorizationService }) => {
     const router = Router();
 
     /**

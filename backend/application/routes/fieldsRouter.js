@@ -1,11 +1,9 @@
 import { Router } from 'express';
 
-import { OptStateDto } from '../dtos/optStateDto.js';
-import { Thesis } from '../dtos/thesisDto.js';
 import { Field } from '../dtos/fieldDto.js';
 import { Sector } from '../dtos/sectorDto.js';
 
-const fieldsRouter = ({ userService, authenticationService, authorizationService, fieldService }) => {
+const fieldsRouter = ({ authenticationService, authorizationService, fieldService }) => {
     const router = Router();
 
 

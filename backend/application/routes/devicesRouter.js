@@ -81,8 +81,7 @@ const devicesRouter = ({authenticationService, authorizationService, userService
             return res.status(403).json({ message: 'Authentication failed' });
         }
         try {
-            const user = await userService.findUser(requestUserData.userid);
-            if (!(await authorizationService.isUserAuthorized(user.id, 'create', 'devices')))
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'devices')))
                 return res.status(401).json({ message: 'Unauthorized request' });
 
             if (!req.body || req.body === '')
@@ -197,25 +196,23 @@ const devicesRouter = ({authenticationService, authorizationService, userService
         } catch (error) {
             return res.status(403).json({ message: 'Authentication failed' });
         }
+        //[TO DO]: Authorization
 
         try {
-            // const user = await userService.findUser(requestUserData.userid);
             if (!req.body || req.body === '')
                 throw new Error('Body is empty');
             
-            //[TO DO]: Authorization
+            const deviceId = Number(req.body.deviceId)
 
-            const deviceIdRaw = req.params.deviceId;
-            if (!deviceIdRaw|| isNaN(parseInt(deviceIdRaw ))) {
-                return res.status(400).json({ message: 'deviceId is required and must be a number' });
+            if (isNaN(deviceId) || !Number.isInteger(deviceId)) {
+                return res.status(400).json({ message: 'device ID is required and must be a number' });
             }
-            const deviceIdParsed = parseInt(deviceIdRaw);
 
             const body = req.body;
             if (!Object.values(SignalTargetType).includes(body.targetType))
                 return res.status(400).json({ message: "Invalid targetType" });
             const signalAssociation = new SignalAssociation({
-                    deviceId: deviceIdParsed,
+                    deviceId: deviceId,
                     targetType: body.targetType,
                     targetId: body.targetId,
                     validFrom: body.validFrom

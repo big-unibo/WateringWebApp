@@ -158,44 +158,6 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
 export default usersRouter;
 
 
-    // /**
-    //  * @swagger
-    //  * /validateToken:
-    //  *   get:
-    //  *     summary: Validate JWT token
-    //  *     tags: [User route]
-    //  *     security:
-    //  *       - bearerAuth: []
-    //  *     responses:
-    //  *       '200':
-    //  *         description: Successful token validation
-    //  *         content:
-    //  *           application/json:
-    //  *             schema:
-    //  *               type: object
-    //  *               properties:
-    //  *                 message:
-    //  *                   type: string
-    //  *       '403':
-    //  *         description: Forbidden access
-    //  *         content:
-    //  *           application/json:
-    //  *             schema:
-    //  *               type: object
-    //  *               properties:
-    //  *                 error:
-    //  *                   type: string
-    //  */
-    // router.get("/validateToken", async (req, res) => {
-    //     try {
-    //         const bearerHeader = req.headers.authorization;
-    //         const requestUserData = await authenticationService.validateJwt(bearerHeader);
-    //         res.json({ message: `UserId: ${requestUserData.userid}; Partner: ${requestUserData.affiliation}; Auth_Type: ${requestUserData.auth_type}` });
-    //     } catch (error) {
-    //         return res.status(403).json({error:error.toString()});
-    //     }
-    // });
-
 
      // /**
     //  * @swagger

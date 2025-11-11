@@ -78,13 +78,19 @@
      *                   type: string
      */
     router.get('/:profileId', async (req, res) => {
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(403).json({ message: 'Authentication failed' });
+        }
+        // [TO DO]: Authorization
+
         const profileId = parseInt(req.params.profileId);
         
         if (isNaN(profileId)) {
             return res.status(400).json({ message: 'Invalid profile id' });
         }
-
-        // [TO DO]: Authorization/Authentication.....
 
         try {
             const results = await fieldService.getBinningInfo(profileId);

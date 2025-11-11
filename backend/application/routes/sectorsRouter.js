@@ -2,7 +2,7 @@ import { Router } from 'express';
 
 import { Thesis } from '../dtos/thesisDto.js';
 
-const sectorsRouter = ({ userService, authenticationService, authorizationService, fieldService }) => {
+const sectorsRouter = ({ authenticationService, authorizationService, fieldService }) => {
     const router = Router();
 
 
@@ -80,25 +80,18 @@ const sectorsRouter = ({ userService, authenticationService, authorizationServic
 			return res.status(403).json({ message: 'Authentication failed' });
 		}
 
-		const timeFilterFrom = req.query.timeFilterFrom ? Number(req.query.timeFilterFrom) : null;
-		const timeFilterTo = req.query.timeFilterTo ? Number(req.query.timeFilterTo) : null;
-		const userId = requestUserData.userid;
-
-
-		if (!timeFilterFrom || isNaN(timeFilterFrom)) {
-			return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid date' });
-		}
-		if (!timeFilterTo || isNaN(timeFilterTo)) {
-			return res.status(400).json({ message: 'timeFilterTo is required and must be a valid date' });
-		}
-		if (!userId || isNaN(parseInt(userId))) {
-			return res.status(400).json({ message: "Invalid or missing userId" });
-		}
-
-		const userIdParsed = parseInt(userId);
+        const timeFilterFrom = Number(req.query.timeFilterFrom)
+        const timeFilterTo = Number(req.query.timeFilterTo)
+        
+        if (isNaN(timeFilterFrom)) {
+            return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid timestamp' });
+        }
+        if (isNaN(timeFilterTo)) {
+            return res.status(400).json({ message: 'timeFilterTo is required and must be a valid timestamp' });
+        }
 
 		try {
-			const sectors = await fieldService.getSectors(userIdParsed, timeFilterFrom, timeFilterTo);
+			const sectors = await fieldService.getSectors(requestUserData.userid, timeFilterFrom, timeFilterTo);
 			if (!sectors || sectors.length === 0) {
 				return res.status(404).json({ 
 					error: "User has no permission to view any sectors" 
@@ -191,24 +184,17 @@ const sectorsRouter = ({ userService, authenticationService, authorizationServic
 			return res.status(403).json({ message: 'Authentication failed' });
 		}
 
-		const userId = requestUserData.userid;
-		const sectorId = await req.params.sectorId;
+		const sectorId = Number(req.body.sectorId)
 
-		if (!sectorId || isNaN(parseInt(sectorId ))) {
-			return res.status(400).json({ message: 'SectorId is required and must be a number' });
+		if (isNaN(sectorId) || !Number.isInteger(sectorId)) {
+			return res.status(400).json({ message: 'Sector ID is required and must be a number' });
 		}
-		const sectorIdParsed = parseInt(sectorId);
 
-		if (!userId || isNaN(parseInt(userId))) {
-			return res.status(400).json({ message: "Invalid or missing userId" });
-		}
-		const userIdParsed = parseInt(userId);
-
-		if(!authorizationService.isUserAuthorizedById(userIdParsed, 'monitoring', 'sectors', sectorIdParsed))
+		if(!authorizationService.isUserAuthorizedById(requestUserData.userid, 'monitoring', 'sectors', sectorId))
 			return res.status(401).json({message: 'Unauthorized request'});
 
 		try {
-			const sectorData = await fieldService.getSectorDetails(sectorIdParsed);
+			const sectorData = await fieldService.getSectorDetails(sectorId);
 
 			if (!sectorData) {
 				return res.status(404).json({ 
@@ -307,19 +293,16 @@ const sectorsRouter = ({ userService, authenticationService, authorizationServic
 		if(!req.body || req.body === '')
 			return res.status(400).json({message: 'Invalid request'});
 
-		const { sectorId } = req.params;
-		const { thesisName, validFrom } = req.body;
+		const sectorId = Number(req.body.sectorId)
 
-		if (!sectorId || isNaN(parseInt(sectorId))) {
-			return res.status(400).json({ message: 'sectorId is required and must be a number' });
+		if (isNaN(sectorId) || !Number.isInteger(sectorId)) {
+			return res.status(400).json({ message: 'Sector ID is required and must be a number' });
 		}
-
-		const sectorIdParsed = parseInt(sectorId);
-		const thesis = new Thesis(thesisName, sectorIdParsed, undefined, validFrom);
+		const { thesisName, validFrom } = req.body;
+		const thesis = new Thesis(thesisName, sectorId, undefined, validFrom);
 
 		try {
-			const user = await userService.findUser(requestUserData.userid);
-			if (!(await authorizationService.isUserAuthorizedInSector(user.id, 'update', sectorIdParsed)))
+			if (!(await authorizationService.isUserAuthorizedInSector(requestUserData.userid, 'update', sectorId)))
 				return res.status(401).json({message: 'Unauthorized request'});
 
 			const thesisId = await fieldService.createThesis(thesis);

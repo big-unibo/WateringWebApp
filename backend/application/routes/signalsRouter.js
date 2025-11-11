@@ -84,6 +84,7 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
             return res.status(403).json({message: 'Authentication failed'});
         }
 
+        //[TO DO]: Authorization
         const signalId = req.params.signalId;
         if(!signalId)
             return res.status(400).json({message: 'Bad request, signalId not specified'});
@@ -93,7 +94,6 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
         const sensorTechnology = req.body.sensorTechnology;
 
         try{
-            //[TO DO]: Authorization
             const signalUpdateData = new SignalUpdate({
                 id : signalId,
                 description : description,
@@ -189,11 +189,12 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      */
     router.post('/:signalId/addMeasurements', async(req, res) => {
         let requestUserData;
-        // try{
-        //     requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-        // } catch (error) {
-        //     return res.status(403).json({message: 'Authentication failed'});
-        // }
+        try{
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(403).json({message: 'Authentication failed'});
+        }
+        //[TO DO]: Authorization
 
         const signalId = req.params.signalId;
         if(!signalId)
@@ -202,13 +203,11 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
         const measurements = req.body;
         const measurementsList = Array.isArray(measurements) ? measurements : [];
 
-        if (!measurementsList.length) {
+        if (measurementsList.length === 0){
             return res.status(400).json({ message: 'No measurements provided' });
         }
 
-
         try{
-            //[TO DO]: Authorization
             const measurementsData = new AddMeasurementsDto({
                 id : signalId,
                 measurements : measurementsList,

@@ -95,15 +95,14 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
                 return res.status(400).json({ message: 'sector ID is required and must be a number' });
             }
 
-            const timeFilterFrom = parseInt(req.query.timeFilterFrom);
-            const timeFilterTo = parseInt(req.query.timeFilterTo);
-
-            if (isNaN(timeFilterFrom) || !Number.isInteger(timeFilterFrom)) {
-                return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid date' });
+            const timeFilterFrom = Number(req.query.timeFilterFrom)
+            const timeFilterTo = Number(req.query.timeFilterTo)
+            
+            if (isNaN(timeFilterFrom)) {
+                return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid timestamp' });
             }
-
-            if (isNaN(timeFilterTo) || !Number.isInteger(timeFilterTo)) {
-                return res.status(400).json({ message: 'timeFilterTo is required and must be a valid date' });
+            if (isNaN(timeFilterTo)) {
+                return res.status(400).json({ message: 'timeFilterTo is required and must be a valid timestamp' });
             }
 
             const result = await wateringScheduleService.getSchedule(sectorId, timeFilterFrom, timeFilterTo);
