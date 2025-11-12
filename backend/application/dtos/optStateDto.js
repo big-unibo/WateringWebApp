@@ -1,8 +1,9 @@
 export class OptimalStateData {
 
-  constructor(thesisName, gridId, validFrom, validTo, stopPercentage, optimalLowerBound, optimalUpperBound, optimalProfiles ) {
+  constructor(thesisName, gridId, binningId, validFrom, validTo, stopPercentage, optimalLowerBound, optimalUpperBound, optimalProfiles ) {
     this.thesisName = thesisName
     this.gridId = gridId,
+    this.binningId = binningId,
     this.validFrom = validFrom
     this.validTo = validTo,
     this.stopPercentage=stopPercentage,

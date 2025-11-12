@@ -741,6 +741,10 @@ components:
           type: number
           format: integer
           description: Unique identifier of the specific grid device.
+        binningId:
+          type: number
+          format: integer
+          description: Unique identifier of the binning profile for the data.
         validFrom:
           type: number
           format: integer

@@ -242,11 +242,11 @@ class FieldRepository {
     async getOptimalState(thesisId, timestamp) {
         const query = `
             WITH validity_table AS (
-                SELECT device_id, thesis_id, thesis_name
+                SELECT device_id, device_binning_id, thesis_id, thesis_name
                 FROM theses_all_signals
                 WHERE device_type = :HUMIDITY_DEVICE_TYPE
                 AND thesis_id = :thesisId
-                GROUP BY device_id, thesis_id, thesis_name
+                GROUP BY device_id, thesis_id, thesis_name, device_binning_id
                 HAVING MIN(valid_from) < :timestamp
                 AND MAX(COALESCE(valid_to, 'infinity')) > :timestamp
                 LIMIT 1
@@ -254,6 +254,7 @@ class FieldRepository {
 
             SELECT
                 v.thesis_name AS "thesisName",
+                v.device_binning_id as "binningId",
                 gop.grid_id AS "gridId",
                 gop.valid_from AS "validFrom",
                 gop.valid_to AS "validTo",
