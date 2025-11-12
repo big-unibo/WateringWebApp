@@ -658,6 +658,108 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         }
     })
 
+    /**
+     * @swagger
+     * /fieldCharts/{thesisId}/delta:
+     *   get:
+     *     security:
+     *       - bearerAuth: []
+     *     summary: Retrieves Retrieves delta data, expected water and advice data. (Requires proper authorization and authentication).
+     *     tags: [Field Chart Data]
+     *     description: Retrieves Retrieves delta data (Requires proper authorization and authentication).
+     *     parameters:
+     *       - in: path
+     *         name: thesisId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: Id of the Thesis
+     *       - in: query
+     *         name: timeFilterFrom
+     *         required: true
+     *         schema:
+     *           type: number
+     *         description: Time filter start (timestamp in seconds)
+     *       - in: query
+     *         name: timeFilterTo
+     *         required: true
+     *         schema:
+     *           type: number
+     *         description: Time filter end (timestamp in seconds)
+     *     responses:
+     *       200:
+     *         description: Successfully retrieved heatmap data
+     *       400:
+     *         description: Invalid or missing query parameters
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       401:
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized (user not allowed to view delta data)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.get('/:thesisId/delta', async (req, res) => {
+        try {
+            const user = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        // TODO authorization
+        // if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
+        //     return res.status(403).json({ message: 'Unauthorized request' });
+
+        const thesisId = Number(req.params.thesisId)
+
+        if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
+            return res.status(400).json({ message: 'thesis ID is required and must be a number' });
+        }
+        const timeFilterFrom = Number(req.query.timeFilterFrom)
+        const timeFilterTo = Number(req.query.timeFilterTo)
+
+        if (isNaN(timeFilterFrom)) {
+            return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid timestamp' });
+        }
+        if (isNaN(timeFilterTo)) {
+            return res.status(400).json({ message: 'timeFilterTo is required and must be a valid timestamp' });
+        }
+
+        try {
+            const result = await fieldService.getDelta(thesisId, timeFilterFrom, timeFilterTo);
+            res.status(200).json(result);
+        } catch (error) {
+            return res.status(500).json({ message: error.message });
+        }
+    })
+
     // /**
     //  * @swagger
     //  * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/profileStatistics:

@@ -177,6 +177,12 @@ class FieldService {
         return new OptimalStateData(undefined, undefined, undefined, undefined, undefined, undefined, undefined, [])
     }
 
+    async getDelta(thesisId, timeFilterFrom, timeFilterTo) {
+        const result = await this.optimalDistanceRepository.findDelta(thesisId, timeFilterFrom, timeFilterTo)
+        return dtoConverter.convertDeltaWrapper(result)
+    }
+
+
     // async getInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {
     //     const result = await this.dataInterpolatedRepository.findInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo);
     //     return [dtoConverter.convertDataInterpolatedMeanWrapper(refStructureName, companyName, fieldName, sectorName, thesisName, result)];

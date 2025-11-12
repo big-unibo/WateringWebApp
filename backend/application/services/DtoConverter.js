@@ -3,7 +3,7 @@ import { ColtureDto } from "../dtos/coltureDto.js";
 import { Company } from "../dtos/companyDto.js";
 import { SignalData, MeasureData, SignalTypeData } from '../dtos/dataDto.js';
 import { WateringScheduleResponse, WateringEventData, ThesisContributionData } from "../dtos/wateringScheduleDto.js";
-import { DistanceProfile, OptimalProfileData, OptimalStateData } from "../dtos/optStateDto.js";
+import { DeltaData, DeltaValueTypeData, DistanceProfile, OptimalProfileData, OptimalStateData } from "../dtos/optStateDto.js";
 import { WateringAdviceDto } from "../dtos/wateringAdviceDto.js";
 import { SectorCompactDto, SectorDataDto, ThesisRefDto } from "../dtos/sectorDto.js";
 import { Signal, Device } from "../dtos/deviceDto.js";
@@ -461,6 +461,42 @@ class DtoConverter {
     convertPunctualDistanceWrapper(results) {
         const distances = results.map(v => new OptimalProfileData(v.x, v.y, v.z, v.distance, v.weight))
         return new DistanceProfile(results[0].thesisName, results[0].timestamp, distances)
+    }
+
+    convertDeltaWrapper(wrappers) {
+        const grouped = wrappers.reduce((acc, curr) => {
+            const typeKey = `${curr.thesisName}_${curr.deviceId}_${curr.detectedValueTypeDescription}`;
+            if (!acc[typeKey]) {
+                acc[typeKey] = {
+                    thesisName: curr.thesisName,
+                    deviceId: curr.deviceId,
+                    detectedValueTypeDescription: curr.detectedValueTypeDescription,
+                    values: []
+                };
+            }
+
+            acc[typeKey].values.push(curr);
+
+            return acc;
+        }, {});
+
+
+        const signalTypeDataArray = Object.values(grouped).map(typeGroup => {
+            const values = (typeGroup.values ?? [])
+                .map(s => new DeltaData(
+                    s.value,
+                    s.timestamp
+                ));
+
+            return new DeltaValueTypeData(
+                typeGroup.thesisName,
+                typeGroup.deviceId,
+                typeGroup.detectedValueTypeDescription,
+                values
+            );
+        });
+
+        return signalTypeDataArray;
     }
 
     // #buildGenericReferenceMap(wrappers) {
