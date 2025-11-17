@@ -688,7 +688,11 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *         description: Time filter end (timestamp in seconds)
      *     responses:
      *       200:
-     *         description: Successfully retrieved heatmap data
+    *         description: Successfully retrieved delta data
+    *         content:
+    *           application/json:
+    *             schema:
+    *               $ref: '#/components/schemas/DeltaData'
      *       400:
      *         description: Invalid or missing query parameters
      *         content:

@@ -773,5 +773,43 @@ components:
             $ref: '#/components/schemas/OptimalProfilePoint'
 
 
+    DeltaValuePoint:
+      type: object
+      description: A single calculated delta value.
+      properties:
+        value:
+          type: number
+          format: double
+          description: The computed delta value
+        timestamp:
+          type: number
+          format: integer
+          description: Timestamp representing the day (Unix seconds at 00:00).
+
+    DeltaData:
+      type: object
+      description: Delta information for a specific thesis and device over a time interval.
+      properties:
+        thesisName:
+          type: string
+          description: Name of the thesis associated with the delta calculation.
+        deviceId:
+          type: number
+          format: integer
+          description: Identifier of the grid or device associated with the data.
+        unit:
+          type: string
+          description: Transformed measurement unit used to express delta values.
+        detectedValueTypeDescription:
+          type: string
+          description: Descriptor indicating the type of delta value detected (e.g., daily average, optimal mean, field capacity).
+        values:
+          type: array
+          description: Array of computed delta values grouped by day.
+          items:
+            $ref: '#/components/schemas/DeltaValuePoint'
+
+
+
 
 
