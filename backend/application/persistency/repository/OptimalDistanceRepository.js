@@ -1,5 +1,5 @@
 import { HUMIDITY_DEVICE_TYPE } from '../../commons/constants.js';
-import { errorFunctionsSQLWrapper } from '../../commons/errorFunctions.js';
+import { errorFunctionsSQLWrapper, errorFunctionsUnits } from '../../commons/errorFunctions.js';
 import { OptimalDistanceWrapper } from '../querywrappers/OptimalDistanceWrapper.js';
 import { Op, QueryTypes } from "sequelize";
 
@@ -16,16 +16,17 @@ class OptimalDistanceRepository {
             attributes: ["errorFunction", "validFrom", "validTo"],
             where: {
                 thesisId: thesisId,
-                // validFrom: {
-                //     [Op.lt]: timeFilterTo
-                // },
-                // validTo: {
-                //     [Op.or]: {
-                //         [Op.gt]: timeFilterFrom,
-                //         [Op.is]: null
-                //     }
-                // }
+                validFrom: {
+                    [Op.lt]: timeFilterTo
+                },
+                validTo: {
+                    [Op.or]: {
+                        [Op.gt]: timeFilterFrom,
+                        [Op.is]: null
+                    }
+                }
             },
+            order: [["validFrom", "DESC"]],
             raw: true
         })
 
@@ -35,11 +36,12 @@ class OptimalDistanceRepository {
                     thesis_id, 
                     thesis_name, 
                     sector_id,  
-                    device_id
+                    device_id,
+                    unit
                 FROM theses_all_signals
                 WHERE device_type = :HUMIDITY_DEVICE_TYPE
                     AND thesis_id = :thesisId
-                GROUP BY thesis_id, thesis_name, sector_id,  device_id
+                GROUP BY thesis_id, thesis_name, unit, sector_id,  device_id
                     HAVING MIN(valid_from) < :timeFilterTo
                     AND MAX(COALESCE(valid_to, 'infinity')) > :timeFilterFrom
             ),
@@ -66,7 +68,8 @@ class OptimalDistanceRepository {
                 SELECT 
                     watering_start, 
                     v.thesis_name,
-                    v.device_id
+                    v.device_id,
+                    v.unit
                 FROM watering_events we
                 JOIN validity_table v ON v.sector_id = we.sector_id
                 WHERE we.latest = true
@@ -76,7 +79,8 @@ class OptimalDistanceRepository {
 
             SELECT 
                 wd.thesis_name as "thesisName",
-                wd.device_id as "deviceId", 
+                wd.device_id as "deviceId",
+                ${errorFunctionsUnits[errorFunction.errorFunction]("wd.unit")} as unit,  
                 ROUND(AVG(${errorFunctionsSQLWrapper[errorFunction.errorFunction]("ip.value")} * fd.weight)::numeric,6) as value, 
                 EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd.watering_start)))::INT  as timestamp, 
                 'Media giornaliera' as "detectedValueTypeDescription"
@@ -92,11 +96,12 @@ class OptimalDistanceRepository {
                 AND ip.x = fd.x
                 AND ip.y = fd.y
                 AND ip.z = fd.z
-            GROUP BY wd.thesis_name, wd.device_id, wd.watering_start
+            GROUP BY wd.thesis_name, wd.device_id, unit, wd.watering_start
             UNION (
                 SELECT DISTINCT
                     wd.thesis_name as "thesisName", 
                     wd.device_id as "deviceId",
+                    ${errorFunctionsUnits[errorFunction.errorFunction]("wd.unit")} as unit, 
                     ROUND(AVG(${errorFunctionsSQLWrapper[errorFunction.errorFunction]("fd.value")} * fd.weight)::numeric,6) as value,
                     EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd.watering_start)))::INT  as timestamp, 
                     'Media ottimale' as "detectedValueTypeDescription"
@@ -104,12 +109,13 @@ class OptimalDistanceRepository {
                 JOIN field_data fd 
                     ON wd.watering_start 
                     BETWEEN fd.valid_from AND COALESCE(fd.valid_to, :timeFilterTo)
-                 GROUP BY wd.thesis_name, wd.device_id, wd.watering_start
+                 GROUP BY wd.thesis_name, wd.device_id, unit, wd.watering_start
             )
             UNION(
                 SELECT DISTINCT
                     wd.thesis_name as "thesisName", 
                     wd.device_id as "deviceId",
+                    ${errorFunctionsUnits[errorFunction.errorFunction]("wd.unit")} as unit, 
                     ${errorFunctionsSQLWrapper[errorFunction.errorFunction]("fd.optimal_dry_bound")} as value,
                     EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd.watering_start)))::INT  as timestamp, 
                     'Asciutto' as "detectedValueTypeDescription" 
@@ -121,6 +127,7 @@ class OptimalDistanceRepository {
                 SELECT DISTINCT
                     wd.thesis_name as "thesisName", 
                     wd.device_id as "deviceId",
+                    ${errorFunctionsUnits[errorFunction.errorFunction]("wd.unit")} as unit, 
                     ${errorFunctionsSQLWrapper[errorFunction.errorFunction]("fd.optimal_wet_bound")} as value,  
                     EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd.watering_start)))::INT  as timestamp, 
                     'Capacità di campo' as "detectedValueTypeDescription" 

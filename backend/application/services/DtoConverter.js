@@ -470,6 +470,7 @@ class DtoConverter {
                 acc[typeKey] = {
                     thesisName: curr.thesisName,
                     deviceId: curr.deviceId,
+                    unit: curr.unit,
                     detectedValueTypeDescription: curr.detectedValueTypeDescription,
                     values: []
                 };
@@ -491,6 +492,7 @@ class DtoConverter {
             return new DeltaValueTypeData(
                 typeGroup.thesisName,
                 typeGroup.deviceId,
+                typeGroup.unit,
                 typeGroup.detectedValueTypeDescription,
                 values
             );

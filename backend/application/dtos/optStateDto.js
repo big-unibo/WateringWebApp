@@ -40,9 +40,10 @@ export class DeltaData {
 }
 
 export class DeltaValueTypeData {
-  constructor(thesisName, deviceId, detectedValueTypeDescription, values) {
+  constructor(thesisName, deviceId, unit, detectedValueTypeDescription, values) {
     this.thesisName = thesisName,
       this.deviceId = deviceId,
+      this.unit = unit,
       this.detectedValueTypeDescription = detectedValueTypeDescription,
       this.values = values
   }
