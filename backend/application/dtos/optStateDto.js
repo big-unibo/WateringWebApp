@@ -1,14 +1,14 @@
 export class OptimalStateData {
 
-  constructor(thesisName, gridId, binningId, validFrom, validTo, stopPercentage, optimalLowerBound, optimalUpperBound, optimalProfiles) {
+  constructor(thesisName, gridId, binningId, validFrom, validTo, stopPercentage, optimalDryBound, optimalWetBound, optimalProfiles) {
     this.thesisName = thesisName
     this.gridId = gridId,
       this.binningId = binningId,
       this.validFrom = validFrom
     this.validTo = validTo,
       this.stopPercentage = stopPercentage,
-      this.optimalLowerBound = optimalLowerBound,
-      this.optimalUpperBound = optimalUpperBound,
+      this.optimalDryBound = optimalDryBound,
+      this.optimalWetBound = optimalWetBound,
       this.optimalProfile = optimalProfiles
   }
 

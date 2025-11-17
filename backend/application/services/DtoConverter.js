@@ -450,7 +450,7 @@ class DtoConverter {
 
     convertOptimalStateWrapper(results) {
         const optimalProfile = results.map(v => new OptimalProfileData(v.x, v.y, v.z, v.value, v.weight))
-        return new OptimalStateData(results[0].thesisName, results[0].gridId, results[0].binningId, results[0].validFrom, results[0].validTo, results[0].stopPercentage, results[0].optimalLowerBound, results[0].optimalUpperBound, optimalProfile)
+        return new OptimalStateData(results[0].thesisName, results[0].gridId, results[0].binningId, results[0].validFrom, results[0].validTo, results[0].stopPercentage, results[0].optimalDryBound, results[0].optimalWetBound, optimalProfile)
     }
 
     convertWateringAdviceWrapper(adviceWrapper) {

@@ -758,11 +758,11 @@ components:
           type: number
           nullable: true
           description: Recommended stop percentage for irrigation based on soil conditions. Null if not applicable.
-        optimalLowerBound:
+        optimalDryBound:
           type: number
           nullable: true
           description: The lower moisture boundary considered optimal.
-        optimalUpperBound:
+        optimalWetBound:
           type: number
           nullable: true
           description: The upper moisture boundary considered optimal.
