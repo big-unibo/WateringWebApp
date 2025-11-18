@@ -44,14 +44,21 @@ export class HumidityBinMeasureData {
     }
 }
 
-// export class InterpolatedMeanMeasureData {
+export class InterpolatedMeanMeasureData {
+    constructor(x, y, z, std, mean) {
+        this.x = x,
+        this.y = y,
+        this.z = z,
+        this.std = std,
+        this.mean = mean
+    }
+}
 
-//     constructor(zz, yy, xx, std, mean) {
-//         this.zz = zz;
-//         this.yy = yy;
-//         this.xx = xx;
-//         this.std = std;
-//         this.mean = mean;
-//     }
-
-// }
+export class InterpolatedMeansData {
+    constructor(thesisName, deviceId, binningId, measures) {
+        this.thesisName = thesisName;
+        this.deviceId = deviceId;
+        this.binningId = binningId;
+        this.measures = measures;
+    }
+}

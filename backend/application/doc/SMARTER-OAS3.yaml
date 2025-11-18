@@ -809,6 +809,42 @@ components:
           items:
             $ref: '#/components/schemas/DeltaValuePoint'
 
+    InterpolatedMeansDataResponse:
+      type: object
+      properties:
+        thesisName:
+          type: string
+          description: Thesis name
+        deviceId:
+          type: number
+          description: Id of the device on which interpolation is computed
+        binningId:
+          type: number
+          description: Id of the binning ranges assigned to the device
+        measures:
+          type: array
+          items:
+            $ref: "#/components/schemas/InterpolatedMeanMeasurementData"
+
+    InterpolatedMeanMeasurementData:
+      type: object
+      properties:
+        x: 
+          type: number
+          description: x coordinate
+        y: 
+          type: number
+          description: y coordinate
+        z: 
+          type: number
+          description: x coordinate
+        std: 
+          type: number
+          description: Std of the interpolated cell values
+        mean: 
+          type: number
+          description: Mean of the interpolated cell values
+
 
 
 

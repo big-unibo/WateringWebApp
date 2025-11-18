@@ -1,4 +1,4 @@
-import { HumidityBinMeasureData, HumidityBinsDataResponse, InterpolatedDataResponse, InterpolatedImageData, InterpolatedMeasureData } from "../dtos/interpolatedDataDto.js";
+import { HumidityBinMeasureData, HumidityBinsDataResponse, InterpolatedDataResponse, InterpolatedImageData, InterpolatedMeanMeasureData, InterpolatedMeansData, InterpolatedMeasureData } from "../dtos/interpolatedDataDto.js";
 import { ColtureDto } from "../dtos/coltureDto.js";
 import { Company } from "../dtos/companyDto.js";
 import { SignalData, MeasureData, SignalTypeData } from '../dtos/dataDto.js';
@@ -499,6 +499,11 @@ class DtoConverter {
         });
 
         return signalTypeDataArray;
+    }
+
+    convertInterpolatedMeansWrapper(results) {
+        const measures = results.map(v => new InterpolatedMeanMeasureData(v.x, v.y, v.z, v.std, v.mean))
+        return new InterpolatedMeansData(results[0].thesisName, results[0].deviceId, results[0].binningId , measures)
     }
 
     // #buildGenericReferenceMap(wrappers) {

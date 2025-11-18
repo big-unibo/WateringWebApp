@@ -83,7 +83,6 @@ class InterpolatedProfileRepository {
                     GREATEST(v.valid_from, :timeFilterFrom)
                     AND LEAST(COALESCE(v.valid_to, 'infinity'), :timeFilterTo)
             GROUP BY v.thesis_name, v.device_id , v.device_binning_id, ip.x, ip.y, ip.z
-            ORDER BY ip.timestamp ASC;
         `;
 
 
