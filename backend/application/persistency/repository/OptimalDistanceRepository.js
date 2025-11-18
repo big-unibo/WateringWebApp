@@ -81,7 +81,7 @@ class OptimalDistanceRepository {
                 wd.thesis_name as "thesisName",
                 wd.device_id as "deviceId",
                 ${errorFunctionsUnits[errorFunction.errorFunction]("wd.unit")} as unit,  
-                ROUND(AVG(${errorFunctionsSQLWrapper[errorFunction.errorFunction]("ip.value")} * fd.weight)::numeric,6) as value, 
+                ROUND(AVG(${errorFunctionsSQLWrapper[errorFunction.errorFunction]("ic.value")} * fd.weight)::numeric,6) as value, 
                 EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd.watering_start)))::INT  as timestamp, 
                 'Media giornaliera' as "detectedValueTypeDescription"
             FROM watering_data wd 
@@ -93,9 +93,11 @@ class OptimalDistanceRepository {
             JOIN interpolated_profiles ip 
                 ON ip.timestamp = a.image_timestamp
                 AND ip.grid_id = wd.device_id
-                AND ip.x = fd.x
-                AND ip.y = fd.y
-                AND ip.z = fd.z
+            JOIN interpolated_cells ic 
+                ON ip.id = ic.profile_id
+                AND ic.x = fd.x
+                AND ic.y = fd.y
+                AND ic.z = fd.z
             GROUP BY wd.thesis_name, wd.device_id, unit, wd.watering_start
             UNION (
                 SELECT DISTINCT
@@ -170,10 +172,12 @@ class OptimalDistanceRepository {
         })
 
         const queryString = `
-            SELECT grid."thesisName", ip.timestamp, ip.x, ip.y, ip.z, optimal."weight", 
-                (${errorFunctionsSQLWrapper[errorFunction.errorFunction]("ip.value")} - 
+            SELECT grid."thesisName", ip.timestamp, ic.x, ic.y, ic.z, optimal."weight", 
+                (${errorFunctionsSQLWrapper[errorFunction.errorFunction]("ic.value")} - 
                 ${errorFunctionsSQLWrapper[errorFunction.errorFunction]("optimal.value")}) * optimal."weight" AS distance
                 FROM interpolated_profiles as ip
+                JOIN interpolated_cells ic
+                    ON ip.id = ic.profile_id
                 JOIN (SELECT DISTINCT device_id, thesis_name AS "thesisName" FROM theses_all_signals
                         WHERE device_type = :HUMIDITY_DEVICE_TYPE 
                             AND thesis_id = :thesisId
@@ -189,9 +193,9 @@ class OptimalDistanceRepository {
                     AND ("valid_to" > :timestamp OR "valid_to" IS NULL)
                 ) as  optimal
                     ON optimal."grid_id" = ip."grid_id"
-                        AND optimal."x" = ip."x"
-                        AND optimal."y" = ip."y"
-                        AND optimal."z" = ip."z"
+                        AND optimal."x" = ic."x"
+                        AND optimal."y" = ic."y"
+                        AND optimal."z" = ic."z"
                 WHERE ip."timestamp" = :timestamp /3600::INT*3600`;
 
         const results = await this.sequelize.query(queryString, {

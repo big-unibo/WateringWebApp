@@ -26,16 +26,18 @@ class InterpolatedProfileRepository {
                 v.device_id AS "deviceId",
                 v.device_binning_id AS "binningId",
                 ip.timestamp AS "timestamp",
-                ip.x AS "x",
-                ip.y AS "y",
-                ip.z AS "z",
-                ip.value AS "value"
+                ic.x AS "x",
+                ic.y AS "y",
+                ic.z AS "z",
+                ic.value AS "value"
             FROM validity_table v
             JOIN interpolated_profiles ip 
                 ON ip.grid_id = v.device_id
                 AND ip.timestamp BETWEEN 
                     GREATEST(v.valid_from, :timeFilterFrom)
                     AND LEAST(COALESCE(v.valid_to, 'infinity'), :timeFilterTo)
+            JOIN interpolated_cells ic
+                ON ip.id = ic.profile_id
             ORDER BY ip.timestamp ASC;
         `;
 
@@ -71,18 +73,20 @@ class InterpolatedProfileRepository {
                 v.thesis_name AS "thesisName",
                 v.device_id AS "deviceId",
                 v.device_binning_id AS "binningId",
-                ip.x AS "x",
-                ip.y AS "y",
-                ip.z AS "z",
-                AVG(ip.value * -1)::numeric AS mean, 
-                STDDEV(ip.value) ::numeric AS std
+                ic.x AS "x",
+                ic.y AS "y",
+                ic.z AS "z",
+                AVG(ic.value * -1)::numeric AS mean, 
+                STDDEV(ic.value) ::numeric AS std
             FROM validity_table v
             JOIN interpolated_profiles ip 
                 ON ip.grid_id = v.device_id
                 AND ip.timestamp BETWEEN 
                     GREATEST(v.valid_from, :timeFilterFrom)
                     AND LEAST(COALESCE(v.valid_to, 'infinity'), :timeFilterTo)
-            GROUP BY v.thesis_name, v.device_id , v.device_binning_id, ip.x, ip.y, ip.z
+            JOIN interpolated_cells ic
+                ON ip.id = ic.profile_id
+            GROUP BY v.thesis_name, v.device_id , v.device_binning_id, ic.x, ic.y, ic.z
         `;
 
 

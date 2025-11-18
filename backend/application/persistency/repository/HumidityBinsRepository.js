@@ -25,16 +25,18 @@ class HumidityBinsRepository {
                     v.thesis_name,
                     v.device_id,
                     ip.timestamp,
-                    ip.x,
-                    ip.y,
-                    ip.z,
-                    ip.value
+                    ic.x,
+                    ic.y,
+                    ic.z,
+                    ic.value
                 FROM validity_table v
                 JOIN interpolated_profiles ip 
                     ON ip.grid_id = v.device_id
                     AND ip.timestamp BETWEEN 
                         GREATEST(v.valid_from, :timeFilterFrom)
                         AND LEAST(COALESCE(v.valid_to, 'infinity'), :timeFilterTo)
+                JOIN interpolated_cells ic
+                    ON ip.id = ic.profile_id
             ),
             value_bins AS (
             SELECT
