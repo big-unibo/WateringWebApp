@@ -52,17 +52,17 @@ class DeviceService {
             const signals = await this.deviceRepository.getSignals(signalAssociation.deviceId);
 
             const assingFunctions = {
-                [SignalTargetType.FIELD]: this.signalRepository.assignSignalToField,
-                [SignalTargetType.SECTOR]: this.signalRepository.assignSignalToSector,
-                [SignalTargetType.THESIS]: this.signalRepository.assignSignalToThesis
+                [SignalTargetType.FIELD]: (args) => this.signalRepository.assignSignalToField(args),
+                [SignalTargetType.SECTOR]: (args) => this.signalRepository.assignSignalToSector(args),
+                [SignalTargetType.THESIS]: (args) => this.signalRepository.assignSignalToThesis(args)
             }
         
             for (const signal of signals) {
                 assingFunctions[signalAssociation.targetType]({
-                        signalId: signal.id,
-                        fieldId: signalAssociation.targetId,
-                        validFrom
-                    })
+                    signalId: signal.id,
+                    [signalAssociation.targetType + "Id"]: signalAssociation.targetId,
+                    validFrom
+                })
             }
         }catch(error){
             console.error(`Error assigning signal: ${error.message}`);
