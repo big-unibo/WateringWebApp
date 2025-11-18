@@ -74,7 +74,7 @@ class InterpolatedProfileRepository {
                 ip.x AS "x",
                 ip.y AS "y",
                 ip.z AS "z",
-                AVG(ip.value * -1)::numeric AS mean, 
+                AVG(ip.value)::numeric AS mean, 
                 STDDEV(ip.value) ::numeric AS std
             FROM validity_table v
             JOIN interpolated_profiles ip 
@@ -83,6 +83,7 @@ class InterpolatedProfileRepository {
                     GREATEST(v.valid_from, :timeFilterFrom)
                     AND LEAST(COALESCE(v.valid_to, 'infinity'), :timeFilterTo)
             GROUP BY v.thesis_name, v.device_id , v.device_binning_id, ip.x, ip.y, ip.z
+            ORDER BY ip.z, ip.y, ip.x
         `;
 
 
