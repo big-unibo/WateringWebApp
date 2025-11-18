@@ -199,15 +199,16 @@ const devicesRouter = ({authenticationService, authorizationService, userService
         //[TO DO]: Authorization
 
         try {
-            if (!req.body || req.body === '')
-                throw new Error('Body is empty');
-            
-            const deviceId = Number(req.body.deviceId)
+
+            const deviceId = Number(req.params.deviceId)
 
             if (isNaN(deviceId) || !Number.isInteger(deviceId)) {
                 return res.status(400).json({ message: 'device ID is required and must be a number' });
             }
 
+            if (!req.body || req.body === '')
+                return res.status(400).json({ message: "Missing parameters" });
+            
             const body = req.body;
             if (!Object.values(SignalTargetType).includes(body.targetType))
                 return res.status(400).json({ message: "Invalid targetType" });
