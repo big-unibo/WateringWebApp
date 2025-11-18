@@ -182,6 +182,11 @@ class FieldService {
         return dtoConverter.convertDeltaWrapper(result)
     }
 
+        async getInterpolatedMeans(thesisId, timeFilterFrom, timeFilterTo) {
+        const result = await this.interpolatedProfileRepository.getInterpolatedMeans(thesisId, timeFilterFrom, timeFilterTo)
+        return dtoConverter.convertInterpolatedMeansWrapper(result)
+    }
+
 
     // async getInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {
     //     const result = await this.dataInterpolatedRepository.findInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo);
