@@ -660,13 +660,13 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
 
     /**
      * @swagger
-     * /fieldCharts/{thesisId}/delta:
+     * /fieldCharts/{thesisId}/optimalDistance:
      *   get:
      *     security:
      *       - bearerAuth: []
-     *     summary: Retrieves Retrieves delta data, expected water and advice data. (Requires proper authorization and authentication).
+     *     summary: Retrieves optimal distance data (Requires proper authorization and authentication).
      *     tags: [Field Chart Data]
-     *     description: Retrieves Retrieves delta data (Requires proper authorization and authentication).
+     *     description: Retrieves optimal distance data, with values of actual and optimal level, wet and dry bounds for comparison reference (Requires proper authorization and authentication).
      *     parameters:
      *       - in: path
      *         name: thesisId
@@ -688,11 +688,11 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *         description: Time filter end (timestamp in seconds)
      *     responses:
      *       200:
-    *         description: Successfully retrieved delta data
+    *         description: Successfully retrieved optimal distance data
     *         content:
     *           application/json:
     *             schema:
-    *               $ref: '#/components/schemas/DeltaData'
+    *               $ref: '#/components/schemas/OptimalDistanceData'
      *       400:
      *         description: Invalid or missing query parameters
      *         content:
@@ -712,7 +712,7 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *                 message:
      *                   type: string
      *       403:
-     *         description: Unauthorized (user not allowed to view delta data)
+     *         description: Unauthorized (user not allowed to view optimal distance data)
      *         content:
      *           application/json:
      *             schema:
@@ -730,7 +730,7 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *                 message:
      *                   type: string
      */
-    router.get('/:thesisId/delta', async (req, res) => {
+    router.get('/:thesisId/optimalDistance', async (req, res) => {
         try {
             const user = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
@@ -757,7 +757,7 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         }
 
         try {
-            const result = await fieldService.getDelta(thesisId, timeFilterFrom, timeFilterTo);
+            const result = await fieldService.getOptimalDistanceData(thesisId, timeFilterFrom, timeFilterTo);
             res.status(200).json(result);
         } catch (error) {
             return res.status(500).json({ message: error.message });
@@ -818,7 +818,7 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *                 message:
      *                   type: string
      *       403:
-     *         description: Unauthorized (user not allowed to view delta data)
+     *         description: Unauthorized (user not allowed to view profile statistics)
      *         content:
      *           application/json:
      *             schema:
@@ -869,283 +869,6 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
             return res.status(500).json({ message: error.message });
         }
     })
-
-    // /**
-    //  * @swagger
-    //  * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/profileStatistics:
-    //  *   get:
-    //  *     security:
-    //  *       - bearerAuth: []
-    //  *     summary: Retrieves statistics data of profile, specifically the mean and std for each cell
-    //  *     tags: [Field Chart Data]
-    //  *     parameters:
-    //  *       - in: path
-    //  *         name: refStructureName
-    //  *         required: true
-    //  *         schema:
-    //  *           type: string
-    //  *       - in: path
-    //  *         name: companyName
-    //  *         required: true
-    //  *         schema:
-    //  *           type: string
-    //  *       - in: path
-    //  *         name: fieldName
-    //  *         required: true
-    //  *         schema:
-    //  *           type: string
-    //  *       - in: path
-    //  *         name: sectorName
-    //  *         required: true
-    //  *         schema:
-    //  *           type: string
-    //  *       - in: path
-    //  *         name: thesisName
-    //  *         required: true
-    //  *         schema:
-    //  *           type: string
-    //  *       - in: query
-    //  *         name: timeFilterFrom
-    //  *         schema:
-    //  *           type: string
-    //  *         required: true
-    //  *       - in: query
-    //  *         name: timeFilterTo
-    //  *         schema:
-    //  *           type: string
-    //  *         required: true
-    //  *     responses:
-    //  *       200:
-    //  *         description: Success
-    //  *         content:
-    //  *           application/json:
-    //  *             schema:
-    //  *               type: object
-    //  *               properties:
-    //  *                 data:
-    //  *                   type: array
-    //  *                   items:
-    //  *                     $ref: '#/components/schemas/DataResponse'
-    //  *       401:
-    //  *         description: Unauthorized request
-    //  *       403:
-    //  *         description: Authentication failed
-    //  *       500:
-    //  *         description: Internal server error
-    //  */
-    // router.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/profileStatistics', async (req, res) => {
-
-    //     const refStructureName = req.params.refStructureName;
-    //     const companyName = req.params.companyName;
-    //     const fieldName = req.params.fieldName;
-    //     const sectorName = req.params.sectorName;
-    //     const thesisName = req.params.thesisName;
-    //     const timeFilterFrom = req.query.timeFilterFrom;
-    //     const timeFilterTo = req.query.timeFilterTo;
-
-    //     try {
-    //         const user = await authenticationService.validateJwt(req.headers.authorization);
-    //         if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
-    //             return res.status(401).json({message: 'Unauthorized request'});
-    //     } catch (error) {
-    //         return res.status(403).json({message: 'Authentication failed'});
-    //     }
-
-    //     try {
-
-    //         const result = await fieldService.getInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timeFilterFrom, timeFilterTo);
-
-    //         res.status(200).json(new InterpolatedDataResponse(result));
-    //     } catch (error) {
-    //         return res.status(500).json({message: error.message});
-    //     }
-
-    // });
-
-    // /**
-    //  * @swagger
-    //  * /fieldCharts/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/delta:
-    //  *   get:
-    //  *     security:
-    //  *       - bearerAuth: []
-    //  *     summary: Retrieves delta data
-    //  *     tags: [Field Chart Data]
-    //  *     parameters:
-    //  *       - in: path
-    //  *         name: refStructureName
-    //  *         required: true
-    //  *         schema:
-    //  *           type: string
-    //  *       - in: path
-    //  *         name: companyName
-    //  *         required: true
-    //  *         schema:
-    //  *           type: string
-    //  *       - in: path
-    //  *         name: fieldName
-    //  *         required: true
-    //  *         schema:
-    //  *           type: string
-    //  *       - in: path
-    //  *         name: sectorName
-    //  *         required: true
-    //  *         schema:
-    //  *           type: string
-    //  *       - in: path
-    //  *         name: thesisName
-    //  *         required: true
-    //  *         schema:
-    //  *           type: string
-    //  *       - in: query
-    //  *         name: timeFilterFrom
-    //  *         schema:
-    //  *           type: string
-    //  *         required: true
-    //  *       - in: query
-    //  *         name: timeFilterTo
-    //  *         schema:
-    //  *           type: string
-    //  *         required: true
-    //  *     responses:
-    //  *       200:
-    //  *         description: Success
-    //  *         content:
-    //  *           application/json:
-    //  *             schema:
-    //  *               type: object
-    //  *               properties:
-    //  *                 data:
-    //  *                   type: array
-    //  *                   items:
-    //  *                     $ref: '#/components/schemas/DataResponse'
-    //  *       401:
-    //  *         description: Unauthorized request
-    //  *       403:
-    //  *         description: Authentication failed
-    //  *       500:
-    //  *         description: Internal server error
-    //  */
-    // router.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/delta', async (req, res) => {
-
-    //     const refStructureName = req.params.refStructureName;
-    //     const companyName = req.params.companyName;
-    //     const fieldName = req.params.fieldName;
-    //     const sectorName = req.params.sectorName;
-    //     const thesisName = req.params.thesisName;
-    //     const timeFilterFrom = req.query.timeFilterFrom;
-    //     const timeFilterTo = req.query.timeFilterTo;
-
-    //     try {
-    //         const user = await authenticationService.validateJwt(req.headers.authorization);
-    //         if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timeFilterFrom, timeFilterTo)))
-    //             return res.status(401).json({message: 'Unauthorized request'});
-    //     } catch (error) {
-    //         return res.status(403).json({message: 'Authentication failed'});
-    //     }
-
-    //     try {
-
-
-    //         const result = await fieldService.getDelta(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName);
-
-    //         res.status(200).json(result);
-    //     } catch (error) {
-    //         res.status(500).json({message: error.message});
-    //     }
-
-    // });
-
-    // /**
-    //  * @swagger
-    //  * /fields/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}/getOptimalState:
-    //  *   get:
-    //  *     security:
-    //  *       - bearerAuth: []
-    //  *     summary: Get optimal state for a field
-    //  *     description: Get the optimal state for a field.
-    //  *     tags: [Field Chart Data]
-    //  *     parameters:
-    //  *       - in: path
-    //  *         name: refStructureName
-    //  *         required: true
-    //  *         schema:
-    //  *           type: string
-    //  *         description: The reference structure name
-    //  *       - in: path
-    //  *         name: companyName
-    //  *         required: true
-    //  *         schema:
-    //  *           type: string
-    //  *         description: The company name
-    //  *       - in: path
-    //  *         name: fieldName
-    //  *         required: true
-    //  *         schema:
-    //  *           type: string
-    //  *         description: The field name
-    //  *       - in: path
-    //  *         name: sectorName
-    //  *         required: true
-    //  *         schema:
-    //  *           type: string
-    //  *         description: The sector name
-    //  *       - in: path
-    //  *         name: thesisName
-    //  *         required: true
-    //  *         schema:
-    //  *           type: string
-    //  *         description: The thesisName
-    //  *       - in: query
-    //  *         name: timestamp
-    //  *         schema:
-    //  *           type: string
-    //  *         description: The timestamp in which find the information
-    //  *     responses:
-    //  *       '200':
-    //  *         description: Success
-    //  *         content:
-    //  *           application/json:
-    //  *             schema:
-    //  *               type: object
-    //  *               properties:
-    //  *                 data:
-    //  *                   type: array
-    //  *                   items:
-    //  *                     $ref: '#/components/schemas/OptStateDto'
-    //  *       '400':
-    //  *         description: Invalid request or thesis not found.
-    //  *       '401':
-    //  *         description: Unauthorized request.
-    //  *       '403':
-    //  *         description: Authentication failed.
-    //  *       '500':
-    //  *         description: Error on retrieve optimal field matrix.
-    //  */
-    // router.get('/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/getOptimalState', async (req, res) => {
-
-    //     const refStructureName = req.params.refStructureName;
-    //     const companyName = req.params.companyName;
-    //     const fieldName = req.params.fieldName;
-    //     const sectorName = req.params.sectorName;
-    //     const thesisName = req.params.thesisName;
-    //     const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
-
-    //     try {
-    //       const user = await authenticationService.validateJwt(req.headers.authorization);
-    //       if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
-    //         return res.status(401).json({ message: 'Unauthorized request' });
-    //     } catch (error) {
-    //       return res.status(403).json({ message: 'Authentication failed' });
-    //     }
-
-    //     try {
-    //       const result = await fieldService.getOptimalState(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp);
-    //       res.status(200).json(result);
-    //     } catch (error) {
-    //       return res.status(500).json({ message: error.message });
-    //     }
-
-    //   });
 
     return router;
 }

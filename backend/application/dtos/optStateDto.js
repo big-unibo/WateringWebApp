@@ -32,19 +32,19 @@ export class DistanceProfile {
   }
 }
 
-export class DeltaData {
+export class DistanceValue {
   constructor(value, timestamp) {
     this.value = value,
-      this.timestamp = timestamp
+    this.timestamp = timestamp
   }
 }
 
-export class DeltaValueTypeData {
-  constructor(thesisName, deviceId, unit, detectedValueTypeDescription, values) {
+export class OptimalDistanceData {
+  constructor(thesisName, deviceId, unit, valueType, values) {
     this.thesisName = thesisName,
       this.deviceId = deviceId,
       this.unit = unit,
-      this.detectedValueTypeDescription = detectedValueTypeDescription,
+      this.valueType = valueType,
       this.values = values
   }
 }

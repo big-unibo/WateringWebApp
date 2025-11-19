@@ -379,7 +379,7 @@ function selectedTime(time){
       <div class=" card">
         <div class="card-header">Potenziale Idrico Ottimale e Potenziale Idrico Medio Giornaliero</div>
         <div class="card-body">
-          <delta-chart-smarter style="height: 300px" :config="JSON.stringify(connectionParams)"></delta-chart-smarter>
+          <optimal-distance-chart-smarter style="height: 300px" :config="JSON.stringify(connectionParams)"></optimal-distance-chart-smarter>
         </div>
       </div>
     </div>

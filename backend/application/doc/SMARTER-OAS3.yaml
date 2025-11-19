@@ -772,42 +772,37 @@ components:
           items:
             $ref: '#/components/schemas/OptimalProfilePoint'
 
-
-    DeltaValuePoint:
+    OptimalDistanceData:
       type: object
-      description: A single calculated delta value.
-      properties:
-        value:
-          type: number
-          format: double
-          description: The computed delta value
-        timestamp:
-          type: number
-          format: integer
-          description: Timestamp representing the day (Unix seconds at 00:00).
-
-    DeltaData:
-      type: object
-      description: Delta information for a specific thesis and device over a time interval.
+      description: Optimal distance data for a specific thesis and device over a time interval.
       properties:
         thesisName:
           type: string
-          description: Name of the thesis associated with the delta calculation.
+          description: Name of the thesis.
         deviceId:
           type: number
           format: integer
-          description: Identifier of the grid or device associated with the data.
+          description: Identifier of the grid.
         unit:
           type: string
-          description: Transformed measurement unit used to express delta values.
-        detectedValueTypeDescription:
+          description: Transformed measurement unit used to express values.
+        valueType:
           type: string
-          description: Descriptor indicating the type of delta value detected (e.g., daily average, optimal mean, field capacity).
+          description: Type of optimal distance values (e.g., daily average, optimal mean, field capacity).
         values:
           type: array
-          description: Array of computed delta values grouped by day.
+          description: Array of computed values.
           items:
-            $ref: '#/components/schemas/DeltaValuePoint'
+            type: object
+            properties:
+              value:
+                type: number
+                format: double
+                description: The computed value
+              timestamp:
+                type: number
+                format: integer
+                description: Timestamp representing the day (Unix seconds at 00:00).
 
     InterpolatedMeansDataResponse:
       type: object

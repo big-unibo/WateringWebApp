@@ -1,6 +1,5 @@
 import { HUMIDITY_DEVICE_TYPE } from '../../commons/constants.js';
 import { errorFunctionsSQLWrapper, errorFunctionsUnits } from '../../commons/errorFunctions.js';
-import { OptimalDistanceWrapper } from '../querywrappers/OptimalDistanceWrapper.js';
 import { Op, QueryTypes } from "sequelize";
 
 class OptimalDistanceRepository {
@@ -10,7 +9,7 @@ class OptimalDistanceRepository {
         this.sequelize = sequelize;
     }
 
-    async findDelta(thesisId, timeFilterFrom, timeFilterTo) {
+    async findOptimalDistance(thesisId, timeFilterFrom, timeFilterTo) {
 
         const errorFunction = await this.WateringAlgorithmParams.findOne({
             attributes: ["errorFunction", "validFrom", "validTo"],
@@ -83,7 +82,7 @@ class OptimalDistanceRepository {
                 ${errorFunctionsUnits[errorFunction.errorFunction]("wd.unit")} as unit,  
                 ROUND(AVG(${errorFunctionsSQLWrapper[errorFunction.errorFunction]("ic.value")} * fd.weight)::numeric,6) as value, 
                 EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd.watering_start)))::INT  as timestamp, 
-                'Media giornaliera' as "detectedValueTypeDescription"
+                'Media giornaliera' as "valueType"
             FROM watering_data wd 
             JOIN advices a 
                 ON wd.watering_start = a.watering_start
@@ -106,7 +105,7 @@ class OptimalDistanceRepository {
                     ${errorFunctionsUnits[errorFunction.errorFunction]("wd.unit")} as unit, 
                     ROUND(AVG(${errorFunctionsSQLWrapper[errorFunction.errorFunction]("fd.value")} * fd.weight)::numeric,6) as value,
                     EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd.watering_start)))::INT  as timestamp, 
-                    'Media ottimale' as "detectedValueTypeDescription"
+                    'Media ottimale' as "valueType"
                 FROM watering_data wd 
                 JOIN field_data fd 
                     ON wd.watering_start 
@@ -120,7 +119,7 @@ class OptimalDistanceRepository {
                     ${errorFunctionsUnits[errorFunction.errorFunction]("wd.unit")} as unit, 
                     ${errorFunctionsSQLWrapper[errorFunction.errorFunction]("fd.optimal_dry_bound")} as value,
                     EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd.watering_start)))::INT  as timestamp, 
-                    'Asciutto' as "detectedValueTypeDescription" 
+                    'Asciutto' as "valueType" 
                 FROM watering_data wd 
                 JOIN field_data fd 
                     ON wd.watering_start BETWEEN fd.valid_from AND COALESCE(fd.valid_to, :timeFilterTo)
@@ -132,12 +131,12 @@ class OptimalDistanceRepository {
                     ${errorFunctionsUnits[errorFunction.errorFunction]("wd.unit")} as unit, 
                     ${errorFunctionsSQLWrapper[errorFunction.errorFunction]("fd.optimal_wet_bound")} as value,  
                     EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd.watering_start)))::INT  as timestamp, 
-                    'Capacità di campo' as "detectedValueTypeDescription" 
+                    'Capacità di campo' as "valueType" 
                 FROM watering_data wd 
                 JOIN field_data fd 
                     ON wd.watering_start BETWEEN fd.valid_from AND COALESCE(fd.valid_to, :timeFilterTo)
             )
-            ORDER BY timestamp, "detectedValueTypeDescription" DESC
+            ORDER BY timestamp, "valueType" DESC
         `
 
         const results = await this.sequelize.query(queryString, {
@@ -208,123 +207,6 @@ class OptimalDistanceRepository {
         });
         return results
     }
-
-
 }
 
 export default OptimalDistanceRepository;
-
-
-// async findDelta(timestampFrom, timestampTo, refStructureName, companyName, fieldName, sectorName, thesisName) {
-
-//         const queryString = `
-//             WITH field_data AS (
-//                 SELECT fi."source", fi."refStructureName", fi."companyName", fi."fieldName", fi."sectorName", fi."thesisName",
-//                     mp."xx", mp."yy", mp."weight", mp."optValue", fi."timestamp_from", fi."timestamp_to"
-//                 FROM field_matrix AS fi
-//                 JOIN matrix_profile AS mp ON fi."matrixId" = mp."matrixId"
-//                 WHERE fi."refStructureName" = '${refStructureName}'
-//                     AND fi."companyName" = '${companyName}'
-//                     AND fi."fieldName" = '${fieldName}'
-//                     AND fi."sectorName" = '${sectorName}'
-//                     AND fi."thesisName" = '${thesisName}'
-//                     AND fi."timestamp_from" < '${timestampTo}'
-//                     AND (fi."timestamp_to" > '${timestampFrom}' OR fi."timestamp_to" IS NULL)
-//                 ),
-//             watering_data AS (
-//                 SELECT ("advice_timestamp" / 3600)::INT * 3600 AS "timestamp", "watering_start"
-//                 FROM watering_schedule
-//                 WHERE latest = true
-//                 AND "watering_start" BETWEEN '${timestampFrom}' AND '${timestampTo}'
-//                 AND "source" = 'iFarming'
-//                 AND "refStructureName" = '${refStructureName}'
-//                 AND "companyName" = '${companyName}'
-//                 AND "fieldName" = '${fieldName}'
-//                 AND "sectorName" = '${sectorName}'
-//                 AND "thesisName" = '${thesisName}'
-//             )
-//             SELECT iq."source", iq."refStructureName", iq."companyName", iq."fieldName", iq."sectorName", iq."thesisName",
-//                 ROUND((SUM(CASE WHEN iq."value" > -300 THEN LN(ABS(iq."value")) * iq."weight"
-//                             ELSE LN(ABS(-300)) * iq."weight" END) / SUM(iq."weight"))::numeric,6) AS "value",
-//                 EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(iq."timestamp")))::INT AS "timestamp",
-//                 'Media Pot. Idr. Giornaliera' AS "detectedValueTypeDescription"
-//             FROM (
-//                 SELECT di."source", di."refStructureName", di."companyName", di."fieldName", di."sectorName", di."thesisName",
-//                     di."timestamp", di."value", fd."weight"
-//                 FROM (
-//                     SELECT di."source", di."refStructureName", di."companyName", di."fieldName", di."sectorName", di."thesisName",
-//                     wd."watering_start" AS "timestamp", di."value", di."xx", di."yy"
-//                     FROM data_interpolated AS di
-//                         JOIN watering_data AS wd ON wd."timestamp" = di."timestamp"
-//                 ) as di
-//                 JOIN field_data AS fd
-//                     ON fd."source" = di."source"
-//                         AND fd."refStructureName" = di."refStructureName"
-//                         AND fd."companyName" = di."companyName"
-//                         AND fd."fieldName" = di."fieldName"
-//                         AND fd."sectorName" = di."sectorName"
-//                         AND fd."thesisName" = di."thesisName"
-//                         AND fd."xx" = di."xx"
-//                         AND fd."yy" = di."yy"
-//                         AND di."timestamp" > fd."timestamp_from"
-//                         AND (di."timestamp" < fd."timestamp_to" OR fd."timestamp_to" IS NULL)
-//             ) AS iq
-//             GROUP BY iq."source", iq."refStructureName", iq."companyName", iq."fieldName", iq."sectorName", iq."thesisName", iq."timestamp"
-//             UNION
-//                 (SELECT fd."source", fd."refStructureName", fd."companyName", fd."fieldName", fd."sectorName", fd."thesisName",
-//                 ROUND((SUM(CASE WHEN fd."optValue" > -300 THEN LN(ABS(fd."optValue")) * fd."weight"
-//                             ELSE LN(ABS(-300)) * fd."weight" END)/SUM(fd."weight"))::numeric,6) AS "value",
-//                 EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd."watering_start")))::INT AS "timestamp",
-//                 'Media Pot. Idr. Ottimale' AS "detectedValueTypeDescription"
-//                 FROM field_data AS fd
-//                 JOIN watering_data AS wd ON wd."timestamp" > fd."timestamp_from" AND (wd."timestamp" < fd."timestamp_to" OR fd."timestamp_to" IS NULL)
-//                 WHERE (fd.xx, fd.yy) IN (
-//                     SELECT DISTINCT xx, yy FROM data_interpolated
-//                     WHERE "source" = 'iFarming'
-//                     AND "refStructureName" = '${refStructureName}'
-//                     AND "companyName" = '${companyName}'
-//                     AND "fieldName" = '${fieldName}'
-//                     AND "sectorName" = '${sectorName}'
-//                     AND "thesisName" = '${thesisName}'
-//                     AND timestamp BETWEEN '${timestampFrom}' AND '${timestampTo}'
-//                 )
-//                 GROUP BY fd."source", fd."refStructureName", fd."companyName", fd."fieldName", fd."sectorName", fd."thesisName", wd."watering_start")
-//             UNION
-//                 (SELECT 'iFarming', '${refStructureName}', '${companyName}', '${fieldName}', '${sectorName}', '${thesisName}',
-//                 ROUND(LN(ABS(-300))::numeric,6) AS "value",
-//                 EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd."watering_start")))::INT AS "timestamp",
-//                 'Pot. Idr. Asciutto (-300 cbar)' AS "detectedValueTypeDescription"
-//                 FROM watering_data AS wd)
-//             UNION
-//                 (SELECT 'iFarming', '${refStructureName}', '${companyName}', '${fieldName}', '${sectorName}', '${thesisName}',
-//                 ROUND(LN(ABS(-20))::numeric,6) AS "value",
-//                 EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd."watering_start")))::INT AS "timestamp",
-//                 'Pot. Idr. Capacità di campo (-20 cbar)' AS "detectedValueTypeDescription"
-//                 FROM watering_data AS wd)
-//             ORDER BY "timestamp" DESC;
-//         `
-
-//         const results = await this.sequelize.query(queryString, {
-//            type: QueryTypes.SELECT,
-//            bind: {
-//                timestampFrom,
-//                timestampTo,
-//                refStructureName,
-//                companyName,
-//                fieldName,
-//                sectorName,
-//                thesisName
-//            }
-//         });
-
-//         return results.map(result => new OptimalDistanceWrapper(
-//             result.refStructureName,
-//             result.companyName,
-//             result.fieldName,
-//             result.sectorName,
-//             result.thesisName,
-//             result.value,
-//             result.timestamp,
-//             result.detectedValueTypeDescription
-//         ));
-//     }

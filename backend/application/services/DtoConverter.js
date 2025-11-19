@@ -1,9 +1,8 @@
 import { HumidityBinMeasureData, HumidityBinsDataResponse, InterpolatedDataResponse, InterpolatedImageData, InterpolatedMeanMeasureData, InterpolatedMeansData, InterpolatedMeasureData } from "../dtos/interpolatedDataDto.js";
-import { ColtureDto } from "../dtos/coltureDto.js";
 import { Company } from "../dtos/companyDto.js";
 import { SignalData, MeasureData, SignalTypeData } from '../dtos/dataDto.js';
 import { WateringScheduleResponse, WateringEventData, ThesisContributionData } from "../dtos/wateringScheduleDto.js";
-import { DeltaData, DeltaValueTypeData, DistanceProfile, OptimalProfileData, OptimalStateData } from "../dtos/optStateDto.js";
+import { DistanceValue, OptimalDistanceData, DistanceProfile, OptimalProfileData, OptimalStateData } from "../dtos/optStateDto.js";
 import { WateringAdviceDto } from "../dtos/wateringAdviceDto.js";
 import { SectorCompactDto, SectorDataDto, ThesisRefDto } from "../dtos/sectorDto.js";
 import { Signal, Device } from "../dtos/deviceDto.js";
@@ -463,15 +462,15 @@ class DtoConverter {
         return new DistanceProfile(results[0].thesisName, results[0].timestamp, distances)
     }
 
-    convertDeltaWrapper(wrappers) {
+    convertOptimalDistanceWrapper(wrappers) {
         const grouped = wrappers.reduce((acc, curr) => {
-            const typeKey = `${curr.thesisName}_${curr.deviceId}_${curr.detectedValueTypeDescription}`;
+            const typeKey = `${curr.thesisName}_${curr.deviceId}_${curr.valueType}`;
             if (!acc[typeKey]) {
                 acc[typeKey] = {
                     thesisName: curr.thesisName,
                     deviceId: curr.deviceId,
                     unit: curr.unit,
-                    detectedValueTypeDescription: curr.detectedValueTypeDescription,
+                    valueType: curr.valueType,
                     values: []
                 };
             }
@@ -484,16 +483,16 @@ class DtoConverter {
 
         const signalTypeDataArray = Object.values(grouped).map(typeGroup => {
             const values = (typeGroup.values ?? [])
-                .map(s => new DeltaData(
+                .map(s => new DistanceValue(
                     s.value,
                     s.timestamp
                 ));
 
-            return new DeltaValueTypeData(
+            return new OptimalDistanceData(
                 typeGroup.thesisName,
                 typeGroup.deviceId,
                 typeGroup.unit,
-                typeGroup.detectedValueTypeDescription,
+                typeGroup.valueType,
                 values
             );
         });

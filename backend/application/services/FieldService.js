@@ -177,75 +177,15 @@ class FieldService {
         return new OptimalStateData(undefined, undefined, undefined, undefined, undefined, undefined, undefined, [])
     }
 
-    async getDelta(thesisId, timeFilterFrom, timeFilterTo) {
-        const result = await this.optimalDistanceRepository.findDelta(thesisId, timeFilterFrom, timeFilterTo)
-        return dtoConverter.convertDeltaWrapper(result)
+    async getOptimalDistanceData(thesisId, timeFilterFrom, timeFilterTo) {
+        const result = await this.optimalDistanceRepository.findOptimalDistance(thesisId, timeFilterFrom, timeFilterTo)
+        return dtoConverter.convertOptimalDistanceWrapper(result)
     }
 
         async getInterpolatedMeans(thesisId, timeFilterFrom, timeFilterTo) {
         const result = await this.interpolatedProfileRepository.getInterpolatedMeans(thesisId, timeFilterFrom, timeFilterTo)
         return dtoConverter.convertInterpolatedMeansWrapper(result)
     }
-
-
-    // async getInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {
-    //     const result = await this.dataInterpolatedRepository.findInterpolatedMeans(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo);
-    //     return [dtoConverter.convertDataInterpolatedMeanWrapper(refStructureName, companyName, fieldName, sectorName, thesisName, result)];
-    // }
-
-    // async getDataInterpolated(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp) {
-    //     const result = await this.dataInterpolatedRepository.findDataInterpolated(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp);
-    //     return dtoConverter.convertDataInterpolatedWrapper(result);
-    // }
-
-    // async getDataInterpolatedRange(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {
-    //     const result = await this.dataInterpolatedRepository.findDataInterpolatedRange(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo);
-    //     return dtoConverter.convertDataInterpolatedWrapper(result);
-    // }
-
-    // async getDelta(timestampFrom, timestampTo, refStructureName, companyName, fieldName, sectorName, thesisName) {
-    //     const result = await this.deltaRepository.findDelta(timestampFrom, timestampTo, refStructureName, companyName, fieldName, sectorName, thesisName);
-    //     return dtoConverter.convertDeltaWrapper(result);
-    // }
-
-    // async getHumidityBins(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName) {
-    //     const result = await this.humidityBinsRepository.findHumidityBins(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName);
-    //     return dtoConverter.convertHumidityBinWrapper(result);
-    // }
-
-    // async getAverageByFieldReference(detectedValueTypeDescription, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName) {
-    //     const requestPeriod = timeFilterTo - timeFilterFrom
-    //     let aggregationPeriod = MINUTE_TO_SECONDS //one minute minimum aggregation
-    //     if(requestPeriod > 3 * MONTH_TO_SECONDS){
-    //         aggregationPeriod = 24 * 60 * MINUTE_TO_SECONDS
-    //     } else if(requestPeriod > 1.5 * MONTH_TO_SECONDS){
-    //         aggregationPeriod = 12 * 60 * MINUTE_TO_SECONDS
-    //     } else if(requestPeriod > 14 * 24 * 60 * MINUTE_TO_SECONDS){//two weeks
-    //         aggregationPeriod = 3 * 60 * MINUTE_TO_SECONDS
-    //     } else if(requestPeriod > 3 * 24 * 60 * MINUTE_TO_SECONDS){ // 3 days
-    //         aggregationPeriod = 60 * MINUTE_TO_SECONDS
-    //     }
-    //     const result = await this.viewDataOriginalRepository.findAverageByFieldReference(detectedValueTypeDescription, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName, aggregationPeriod);
-    //     return dtoConverter.convertViewDataOriginalWrapper(result);
-    // }
-
-    // async getEcAverageByFieldReference(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName) {
-    //     const result = await this.viewDataOriginalRepository.findEcAverageByFieldReference(timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName, MINUTE_TO_SECONDS);
-    //     return dtoConverter.convertViewDataOriginalWrapper(result);
-    // }
-
-    // async getHumidityEventsByFieldReference(detectedValueTypeDescription, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName) {
-    //     const result = await this.viewDataOriginalRepository.findHumidityEventsByFieldReference(detectedValueTypeDescription, timeFilterFrom, timeFilterTo, refStructureName, companyName, fieldName, sectorName, thesisName, MINUTE_TO_SECONDS);
-    //     return dtoConverter.convertViewDataOriginalWrapper(result);
-    // }
-
-    // async getOptimalState(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp){
-    //     const result = await this.fieldRepository.getOptimalState(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp)
-    //     if (result.length > 0){
-    //         return dtoConverter.convertOptimalStateWrapper(result)
-    //     }
-    //     return new OptStateDto(refStructureName, companyName, fieldName, sectorName, thesisName, undefined, undefined, undefined, [])
-    // }
 
     // async updateWateringSectorDetails(sectorDetails, timestampFrom) {
     //     await this.fieldRepository.updateWateringSectorDetails(sectorDetails, timestampFrom || Math.floor(Date.now()/1000))
