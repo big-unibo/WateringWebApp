@@ -76,7 +76,7 @@ class InterpolatedProfileRepository {
                 ic.x AS "x",
                 ic.y AS "y",
                 ic.z AS "z",
-                AVG(ic.value * -1)::numeric AS mean, 
+                AVG(ic.value)::numeric AS mean, 
                 STDDEV(ic.value) ::numeric AS std
             FROM validity_table v
             JOIN interpolated_profiles ip 
@@ -87,6 +87,7 @@ class InterpolatedProfileRepository {
             JOIN interpolated_cells ic
                 ON ip.id = ic.profile_id
             GROUP BY v.thesis_name, v.device_id , v.device_binning_id, ic.x, ic.y, ic.z
+            ORDER BY ic.z, ic.y, ic.x
         `;
 
 
