@@ -126,7 +126,12 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *         required: true
      *         schema:
      *           type: integer
-     *         description: ID of the thesis 
+     *         description: ID of the thesis
+     *       - in: query
+     *         name: timestamp
+     *         schema:
+     *           type: number
+     *         description: Timestamp in which find the information
      *     responses:
 	 *       200:
 	 *         description: Informations about devices and signals assigned to the given thesis
@@ -195,7 +200,8 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
             // if (!(await authorizationService.isUserAuthorizedInSector(user.id, 'update', thesisId)))
             //     return res.status(401).json({message: 'Unauthorized request'});
 
-            const results = await fieldService.getDevicesByThesis(thesisId);
+            const timestamp = req.query.timestamp || Date.now()/1000
+            const results = await fieldService.getDevicesByThesis(thesisId, timestamp);
             return res.status(200).json(results)
         } catch (error) {
             console.log(`Fail retrieving devices data: ${error.message}`);
@@ -430,8 +436,8 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *   get:
      *     security:
      *       - bearerAuth: []
-     *     summary: Get watering advice for a thesis
-     *     description: Get watering advice for a thesis
+     *     summary: Simulate watering advice for a thesis
+     *     description: SImulate the watering advice for a thesis in a given timestamp
      *     parameters:
      *      - in: path
      *        name: thesisId

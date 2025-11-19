@@ -150,8 +150,8 @@ class FieldService {
         }
     }
 
-    async getDevicesByThesis(thesisId) {
-        const result = await this.thesesAllSignalsRepository.getDevicesByThesis(thesisId);
+    async getDevicesByThesis(thesisId, timestamp) {
+        const result = await this.thesesAllSignalsRepository.getDevicesByThesis(thesisId, timestamp);
         return dtoConverter.convertDevicesDataWrapper(result);
     }
 
