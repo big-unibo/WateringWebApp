@@ -113,7 +113,7 @@ app.use(
 
 app.use(
   '/sectors',
-  sectorsRouter({ userService, authenticationService, authorizationService, fieldService })
+  sectorsRouter({ userService, authenticationService, authorizationService, fieldService, wateringScheduleService })
 );
 
 app.use(
@@ -151,14 +151,6 @@ app.use(
   profileBinsRouter({authenticationService,authorizationService,fieldService})
 )
 
-app.use(
-  '/wateringSchedule',
-  wateringScheduleRouter({authenticationService,authorizationService, wateringScheduleService})
-)
-
-
-
 app.use('/api-docs', serve, setup(swaggerSpec));
 
-// app.use('/wateringSchedule', wateringScheduleRouter);
 // app.use('/logs', logsRouter)
