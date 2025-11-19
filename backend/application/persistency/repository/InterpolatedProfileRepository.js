@@ -1,9 +1,9 @@
-import { QueryTypes} from 'sequelize'
+import { QueryTypes } from 'sequelize'
 import { HUMIDITY_DEVICE_TYPE } from '../../commons/constants.js';
 
 class InterpolatedProfileRepository {
 
-    constructor(models, sequelize){
+    constructor(models, sequelize) {
         this.sequelize = sequelize;
     }
 
@@ -48,7 +48,7 @@ class InterpolatedProfileRepository {
                 HUMIDITY_DEVICE_TYPE
             },
             type: QueryTypes.SELECT
-        });  
+        });
 
         return results;
     }
@@ -95,14 +95,13 @@ class InterpolatedProfileRepository {
                 HUMIDITY_DEVICE_TYPE
             },
             type: QueryTypes.SELECT
-        });  
+        });
 
         return results;
     }
 
 
-    async findLastInterpolationTimestamp(thesisId, timestampFrom, timestampTo)
-    {
+    async findLastInterpolationTimestamp(thesisId, timestampFrom, timestampTo) {
         const query = `
             SELECT MAX("timestamp") AS "lastTimestamp"
             FROM interpolated_profiles
@@ -124,6 +123,30 @@ class InterpolatedProfileRepository {
         });
 
         return result.length > 0 ? result[0].lastTimestamp : null;
+    }
+
+    async findThesisPoints(gridId) {
+
+        const query = `
+            SELECT "x", "y", "z" 
+            FROM interpolated_profiles
+            WHERE grid_id = :gridId
+                AND  timestamp = (
+                    SELECT MAX(timestamp) 
+                    FROM interpolated_profiles
+                    WHERE grid_id = :gridId)
+            ORDER BY "x", "y", "z"`;
+
+        const results = await this.sequelize.query(query,
+            {
+                type: QueryTypes.SELECT,
+                bind: {
+                    gridId
+                }
+            }
+        );
+
+        return results;
     }
 }
 

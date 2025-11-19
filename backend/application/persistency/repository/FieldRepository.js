@@ -287,6 +287,61 @@ class FieldRepository {
         return (results);
     }
 
+    async createMatrixOptimalState(gridId, validFrom, validTo, stopPercentage, optimalDryBound, optimalWetBound, profileId = null) {
+        try {
+            let newMatrixId
+            if(profileId){
+                this.GridOptimalProfileAssignment.removeAttribute('id')
+                const result = await this.GridOptimalProfileAssignment.findAll({
+                    where: {
+                        optimal_profile_id: profile_id
+                    }
+                })
+                if(result.length > 0){
+                    newMatrixId = profile_id    
+                } else {
+                    throw Error("Optimal profile not found")
+                }
+            } else {
+                newMatrixId = await this.GridOptimalProfileAssignment.max('optimalProfileId') + 1
+            }
+
+            this.GridOptimalProfileAssignment.update(
+                { 
+                    validTo: Math.floor(validFrom),
+                    current: false 
+                },
+                {
+                    where: {
+                        gridId: gridId,
+                        validTo: null
+                    }
+                }
+            )
+
+            const model = this.GridOptimalProfileAssignment.build({
+                    gridId: gridId,
+                    optimaProfileId: newMatrixId,
+                    validFrom: validFrom,
+                    validTo: validTo ? Math.floor(validTo) : null,
+                    stopPercentage: stopPercentage,
+                    optimalDryBound: optimalDryBound,
+                    optimalWetBound: optimalWetBound,
+                })
+
+            await model.save()
+            return newMatrixId
+        } catch (error) {
+            throw Error(error.message)
+        }
+    }
+
+    async createMatrixProfile(matrixId, x, y, z, value, weight) {
+        const model = this.MatrixProfile.build({matrixId: matrixId, x: x, y: y, z: z, value: value, weight})
+        this.MatrixProfile.removeAttribute('id')
+        return await model.save()
+    }
+
     // async updateWateringSectorDetails(sectorDetails, timestampFrom){
     //     this.WateringSector.removeAttribute('id')
     //     this.WateringSector.update(
@@ -344,12 +399,6 @@ class FieldRepository {
     //             }
     //         }
     //     })
-    // }
-
-    // async createMatrixProfile(matrixId, x, y, z, value) {
-    //     const model = this.MatrixProfile.build({matrixId: matrixId, xx: x, yy: y, zz: z, optValue: value, weight: 1})
-    //     this.MatrixProfile.removeAttribute('id')
-    //     return await model.save()
     // }
 
     // async createMatrixField(source, refStructureName, companyName, fieldName, sectorName, thesisName, validFrom, validTo, matrixId) {

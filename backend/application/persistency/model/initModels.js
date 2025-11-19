@@ -2,8 +2,6 @@ import initUser from './User.js';
 import initCompany from './Company.js';
 import initOrganization from './Organization.js';
 import initField from './Field.js';
-import initMatrixProfile from './MatrixProfile.js';
-import initMatrixField from './MatrixField.js';
 import initTranscodingField from './TranscodingField.js';
 import initThesis from './Thesis.js';
 import initWateringAlgorithmParams from './WateringAlgorithmParams.js';
@@ -19,6 +17,8 @@ import initMeasurement from './Measurement.js';
 import initThesesAllSignals from './ThesesAllSignals.js';
 import initAdvice from './Advice.js';
 import initWateringEvent from './WateringEvent.js';
+import initGridOptimalProfileAssignment from './GridOptimalProfileAssignment.js';
+import initOptimalProfile from './OptimalProfile.js';
 
 
 export default function initModels(sequelize) {
@@ -37,14 +37,14 @@ export default function initModels(sequelize) {
     SignalInSector : initSignalInSector(sequelize),
     SignalInThesis : initSignalInThesis(sequelize),
     Measurement : initMeasurement(sequelize),
-    MatrixProfile: initMatrixProfile(sequelize),
-    MatrixField: initMatrixField(sequelize),
     TranscodingField: initTranscodingField(sequelize),
     WateringAlgorithmParams: initWateringAlgorithmParams(sequelize),
     ThesesAllSignals: initThesesAllSignals(sequelize),
     Advice: initAdvice(sequelize),
     WateringEvent: initWateringEvent(sequelize),
-    WateringAlgorithmParams: initWateringAlgorithmParams(sequelize)
+    WateringAlgorithmParams: initWateringAlgorithmParams(sequelize),
+    GridOptimalProfileAssignment : initGridOptimalProfileAssignment(sequelize),
+    OptimalProfile: initOptimalProfile(sequelize)
   };
 
   models.Company.belongsTo(models.Organization, { foreignKey: "organization_id", as: "organization" });
@@ -52,9 +52,6 @@ export default function initModels(sequelize) {
 
   models.Field.belongsTo(models.Company, { foreignKey: "company_id" , as: "company"});
   models.Company.hasMany(models.Field, { foreignKey: "company_id" , as: "fields"});
-
-  models.MatrixField.hasMany(models.MatrixProfile, { foreignKey: "matrixId" });
-  models.MatrixProfile.belongsTo(models.MatrixField, { foreignKey: "matrixId" });
 
   models.User.hasMany(models.Permit, {foreignKey: "user_id", as: "permits" });
   models.Permit.belongsTo(models.User, {foreignKey: "user_id", as: "user" });

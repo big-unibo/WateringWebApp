@@ -50,3 +50,17 @@ export class DeltaValueTypeData {
 }
 
 
+export class GridOptimalProfiles{
+
+  constructor(gridId, validFrom, validTo, stopPercentage, optimalDryBound, optimalWetBound, optimalState) {
+    this.gridId = gridId,
+    this.validFrom = validFrom,
+    this.validTo = validTo,
+    this.stopPercentage = stopPercentage,
+    this.optimalDryBound = optimalDryBound,
+    this.optimalWetBound = optimalWetBound,
+    this.optimalProfile = optimalProfiles,
+    this.optimalState = optimalState
+  }
+}
+
