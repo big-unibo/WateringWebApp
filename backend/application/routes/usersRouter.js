@@ -124,7 +124,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
         }
 
         try {
-            const userId = requestUserData.userId;
+            const userId = requestUserData.userid;
 
             if (!(await authorizationService.isUserAuthorized(userId, 'create', 'users')))
             return res.status(401).json({ message: 'Unauthorized request' });
