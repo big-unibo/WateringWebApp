@@ -218,7 +218,7 @@ class FieldService {
         return this.fieldRepository.createMatrixOptimalState(gridId, validFrom, null, null, null, null, profileId)
     }
 
-    async getDataInterpolated(thesisId, timeFilterFrom, timeFilterTo) {
+    async getInterpolatedProfiles(thesisId, timeFilterFrom, timeFilterTo) {
         return await this.interpolatedProfileRepository.getInterpolatedProfiles(thesisId, timeFilterFrom, timeFilterTo);
     }
 

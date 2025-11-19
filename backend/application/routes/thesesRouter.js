@@ -498,7 +498,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
 
     /**
      * @swagger
-     * /thesis/{thesisId}/setOptimalState:
+     * /theses/{thesisId}/setOptimalState:
      *   put:
      *     security:
      *       - bearerAuth: []
@@ -757,7 +757,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
 
 
     function checkOptState(thesisPoints, newOptimalPoints) {
-        if (thesisPoints.points.length !== newOptimalPoints.length) return false;
+        if (thesisPoints.length !== newOptimalPoints.length) return false;
 
         for (const point of thesisPoints.points) {
             const match = newOptimalPoints.find(optPoint => optPoint.x === point.x && optPoint.y === point.y && optPoint.z === point.z);

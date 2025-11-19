@@ -134,13 +134,14 @@ class InterpolatedProfileRepository {
                 AND  timestamp = (
                     SELECT MAX(timestamp) 
                     FROM interpolated_profiles
-                    WHERE grid_id = :gridId)
+                    WHERE grid_id = :gridId
+                )
             ORDER BY "x", "y", "z"`;
 
         const results = await this.sequelize.query(query,
             {
                 type: QueryTypes.SELECT,
-                bind: {
+                replacements: {
                     gridId
                 }
             }
