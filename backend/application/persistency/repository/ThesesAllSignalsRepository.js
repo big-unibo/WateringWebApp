@@ -295,7 +295,7 @@ class ThesesAllSignalsRepository {
             FROM theses_all_signals tas
             WHERE :timestamp BETWEEN 
                 tas.valid_from AND COALESCE(tas.valid_to, 'infinity')
-            AND tas.signal_type = ANY(ARRAY[:signalTypes])
+            ${signalTypes.length > 0 ? "AND tas.signal_type = ANY(ARRAY[:signalTypes])" : "" }
             AND tas.thesis_id = :thesisId
         `;
 
