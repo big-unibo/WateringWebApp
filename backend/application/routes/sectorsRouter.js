@@ -2,7 +2,7 @@ import { Router } from 'express';
 
 import { Thesis } from '../dtos/thesisDto.js';
 
-const sectorsRouter = ({ authenticationService, authorizationService, fieldService }) => {
+const sectorsRouter = ({ authenticationService, authorizationService, fieldService, wateringScheduleService }) => {
     const router = Router();
 
 
@@ -312,6 +312,116 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 			return res.status(500).json({error: "Error on creating thesis"});
 		}
     });
+
+	/**
+     * @swagger
+     * /sectors/{sectorId}/wateringCalendar:
+     *   get:
+     *     security:
+     *       - bearerAuth: []
+     *     summary: Retrivies calendar data for a given sector within a time range
+     *     tags: [Sectors]
+     *     description: Returns every watering event for a given sector and within a given time range, also including the contribution of every thesis for the event.
+     *     parameters:
+     *       - in: path
+     *         name: sectorId
+     *         required: true
+     *         schema:
+     *           type: number
+     *         description: Id of thesis
+     *       - in: query
+     *         name: timeFilterFrom
+     *         required: true
+     *         schema:
+     *           type: number
+     *         description: Time filter start (timestamp in seconds)
+     *       - in: query
+     *         name: timeFilterTo
+     *         required: true
+     *         schema:
+     *           type: number
+     *         description: Time filter end (timestamp in seconds)
+     *     responses:
+     *       200:
+     *         description: Successfully retrieved signal data
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: "#/components/schemas/WateringScheduleResponse"
+     *       400:
+     *         description: Invalid or missing query parameters
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       401:
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized (user not allowed to view calendar)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.get('/:sectorId/wateringCalendar', async (req, res) => {
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+        try {
+            //[TO DO]: Authorzation
+            // if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'companies')))
+            //     return res.status(403).json({ message: 'Unauthorized request' });
+
+            if (!req.body || req.body === '')
+                throw new Error('Body is empty');
+
+            const sectorId = parseInt(req.params.sectorId);
+            if (isNaN(sectorId) || !Number.isInteger(sectorId)) {
+                return res.status(400).json({ message: 'sector ID is required and must be a number' });
+            }
+
+            const timeFilterFrom = Number(req.query.timeFilterFrom)
+            const timeFilterTo = Number(req.query.timeFilterTo)
+            
+            if (isNaN(timeFilterFrom)) {
+                return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid timestamp' });
+            }
+            if (isNaN(timeFilterTo)) {
+                return res.status(400).json({ message: 'timeFilterTo is required and must be a valid timestamp' });
+            }
+
+            const result = await wateringScheduleService.getSchedule(sectorId, timeFilterFrom, timeFilterTo);
+            res.status(200).json(result);
+        } catch (error) {
+            console.log(`Failed retrieving calendar caused by: ${error.message}`);
+            return res.status(500).json({ message: "Error while retrieving calendar" });
+        }
+    })
   
     return router;
 }
