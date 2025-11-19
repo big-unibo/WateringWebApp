@@ -76,11 +76,15 @@ export class WateringAdviceService {
             let r
             
             const thesisDetails = await this.fieldRepository.getThesisDetails(thesisId, timestamp)
-            const sectorDetails = await this.fieldRepository.getSectorDetails(thesisDetails.sectorId)
             const algorithmParams = await this.wateringAdviceRepository.getWateringAlgorithmParams(thesisId, timestamp)
-            if (!sectorDetails || !algorithmParams) {
-                console.warn("Sector details or algorithm params not found, returning empty advice");
-                throw new Error("Sector details or algorithm params not found");
+            if (!thesisDetails || !algorithmParams) {
+                console.warn("Thesis details or algorithm params not found, returning empty advice");
+                throw new Error("Thesis details or algorithm params not found");
+            }
+            const sectorDetails = await this.fieldRepository.getSectorDetails(thesisDetails.sectorId)
+            if (!sectorDetails){
+                console.warn("Sector details not found, returning empty advice");
+                throw new Error("Sector details not found");
             }
 
             const lastImageTimestamp = await this.interpolatedProfileRepository.findLastInterpolationTimestamp(thesisId, timestamp - algorithmParams.wateringFrequency * 3600, timestamp);
