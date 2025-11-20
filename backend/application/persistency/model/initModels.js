@@ -95,6 +95,9 @@ export default function initModels(sequelize) {
   models.Thesis.hasMany(models.WateringAlgorithmParams, {foreignKey: "thesis_id", as: "algorithmParams"})
   models.WateringAlgorithmParams.belongsTo(models.Thesis, {foreignKey: "thesis_id", as: "thesis"})
 
+  models.GridOptimalProfileAssignment.belongsTo(models.Device, {foreignKey: "grid_id", as: "device" })
+  models.Device.hasMany(models.GridOptimalProfileAssignment,{foreignKey: "grid_id", as: "gridOptimalProfileAssignments" })
+  
   //[TO DO]: il resto....
   return models;
 }

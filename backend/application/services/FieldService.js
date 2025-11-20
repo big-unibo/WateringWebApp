@@ -210,12 +210,8 @@ class FieldService {
         }
     }
 
-    async setOptimalState(
-        gridId,
-        validFrom,
-        profileId
-    ) {
-        return this.fieldRepository.createMatrixOptimalState(gridId, validFrom, null, null, null, null, profileId)
+    async setOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound , optimalDryBound, profileId) {
+        return await this.fieldRepository.createMatrixOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound , optimalDryBound, profileId)
     }
 
     async getInterpolatedProfiles(thesisId, timeFilterFrom, timeFilterTo) {

@@ -511,7 +511,8 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *       The **request behavior is determined by the query parameters:**
      *
      *       1. **Quick Update (optimalProfileId):**  
-     *          If `optimalProfileId` is present, the optimal state is set by referencing a predefined profile ID.  
+     *          If `optimalProfileId` is present, the optimal state is set by referencing an already existing
+     *          image with a predefined profile ID.  
      *
      *       2. **Copy from Image (source thesisId & imageTimestamp):**  
      *          If the source `thesisId` and `imageTimestamp` are present, the optimal state is calculated by copying
@@ -543,7 +544,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *           type: integer
      *         description: |
      *           **CASE 1.** ID of an existing optimal profile to be associated.  
-     *           Excludes the use of source `thesisId`/`imageTimestamp` and the `optimalState` body array.
+     *           Excludes the use of source `thesisId`/`imageTimestamp` and the `optimalState` field from body array.
      *
      *       - in: query
      *         name: thesisId
@@ -551,7 +552,8 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *         schema:
      *           type: integer
      *         description: |
-     *           **CASE 2.** ID of the SOURCE thesis from which to copy the interpolated matrix.  
+     *           **CASE 2.** ID of the SOURCE thesis from which to copy the interpolated matrix. 
+     *           Excludes the use of the `optimalState` field from body array. 
      *           Requires `imageTimestamp`.
      *
      *       - in: query
@@ -561,6 +563,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *           type: integer
      *         description: |
      *           **CASE 2.** Timestamp of the matrix snapshot to copy from the source thesis.  
+     *           Excludes the use of the `optimalState` field from body array. 
      *           Requires source `thesisId`.
      *
      *     requestBody:
@@ -698,7 +701,8 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
                     return res.status(400).json({ message: 'optimalProfileId must be an integer number' });
                 }
 
-                await fieldService.setOptimalState(gridId, validFrom, optimalProfileId)
+                await fieldService.setOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound , optimalDryBound, optimalProfileId)
+                return res.status(200).json({ message: 'Optimal state set successfully' });
             }
             else if (req.query.thesisId !== undefined && req.query.imageTimestamp !== undefined) {
                 const sourceThesisId = Number(req.query.thesisId);
@@ -717,7 +721,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
                     return res.status(400).json({ message: 'Invalid request, given timestamp not found' });
                 }
 
-                const optimalstate = interpolatedMatrix.map(cell => ({
+                const optimalState = interpolatedMatrix.map(cell => ({
                     x: cell.x,
                     y: cell.y,
                     z: cell.z,
@@ -727,7 +731,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
 
                 const gridOptimalProfiles = new GridOptimalProfiles(gridId, validFrom, validTo, stopPercentage, optimalDryBound, optimalWetBound, optimalState)
                 await fieldService.createMatrixOptimalState(gridOptimalProfiles)
-                return res.status(200)
+                return res.status(200).json({ message: 'Optimal state set successfully' });
 
             }
             else {
@@ -747,7 +751,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
 
                 const gridOptimalProfiles = new GridOptimalProfiles(gridId, validFrom, validTo, stopPercentage, optimalDryBound, optimalWetBound, optimalState)
                 await fieldService.createMatrixOptimalState(gridOptimalProfiles)
-                return res.status(200)
+                return res.status(200).json({ message: 'Optimal state set successfully' });
             }
         } catch (error) {
             console.log(`Error while setting optimal state: ${error.message}`)
@@ -759,7 +763,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
     function checkOptState(thesisPoints, newOptimalPoints) {
         if (thesisPoints.length !== newOptimalPoints.length) return false;
 
-        for (const point of thesisPoints.points) {
+        for (const point of thesisPoints) {
             const match = newOptimalPoints.find(optPoint => optPoint.x === point.x && optPoint.y === point.y && optPoint.z === point.z);
             if (!match) return false;
         }

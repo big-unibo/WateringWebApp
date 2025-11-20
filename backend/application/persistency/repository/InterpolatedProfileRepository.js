@@ -39,7 +39,6 @@ class InterpolatedProfileRepository {
             ORDER BY ip.timestamp ASC;
         `;
 
-
         const results = await this.sequelize.query(query, {
             replacements: {
                 timeFilterFrom,
@@ -146,7 +145,6 @@ class InterpolatedProfileRepository {
                 }
             }
         );
-
         return results;
     }
 }

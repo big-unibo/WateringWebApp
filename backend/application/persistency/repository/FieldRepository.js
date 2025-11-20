@@ -11,6 +11,8 @@ class FieldRepository {
         this.Thesis = models.Thesis
         this.ThesisInSector = models.ThesisInSector
         this.Permit = models.Permit
+        this.GridOptimalProfileAssignment = models.GridOptimalProfileAssignment
+        this.OptimalProfile = models.OptimalProfile
         this.sequelize = sequelize
     }
 
@@ -290,44 +292,52 @@ class FieldRepository {
     async createMatrixOptimalState(gridId, validFrom, validTo, stopPercentage, optimalDryBound, optimalWetBound, profileId = null) {
         try {
             let newMatrixId
-            if(profileId){
-                this.GridOptimalProfileAssignment.removeAttribute('id')
+            if (profileId) {
                 const result = await this.GridOptimalProfileAssignment.findAll({
                     where: {
-                        optimal_profile_id: profile_id
+                        optimalProfileId: profileId
                     }
                 })
-                if(result.length > 0){
-                    newMatrixId = profile_id    
+                if (result.length > 0) {
+                    newMatrixId = profileId
                 } else {
                     throw Error("Optimal profile not found")
                 }
             } else {
-                newMatrixId = await this.GridOptimalProfileAssignment.max('optimalProfileId') + 1
+                const maxId = await this.GridOptimalProfileAssignment.max('optimalProfileId')
+                newMatrixId = (maxId ?? 0) + 1;
             }
 
-            this.GridOptimalProfileAssignment.update(
-                { 
+            await this.GridOptimalProfileAssignment.update(
+                {
                     validTo: Math.floor(validFrom),
-                    current: false 
+                    current: false
                 },
                 {
                     where: {
                         gridId: gridId,
-                        validTo: null
+                        validFrom: {
+                            [Op.lt]: validFrom
+                        },
+                        validTo: {
+                            [Op.or]: {
+                                [Op.is]: null,
+                                [Op.gt]: validFrom
+                            },
+                        }
                     }
                 }
             )
 
-            const model = this.GridOptimalProfileAssignment.build({
-                    gridId: gridId,
-                    optimaProfileId: newMatrixId,
-                    validFrom: validFrom,
-                    validTo: validTo ? Math.floor(validTo) : null,
-                    stopPercentage: stopPercentage,
-                    optimalDryBound: optimalDryBound,
-                    optimalWetBound: optimalWetBound,
-                })
+            const model = await this.GridOptimalProfileAssignment.build({
+                gridId: gridId,
+                optimalProfileId: newMatrixId,
+                validFrom: validFrom,
+                validTo: validTo ? Math.floor(validTo) : null,
+                stopPercentage: stopPercentage ?? null,
+                optimalDryBound: optimalDryBound ?? null,
+                optimalWetBound: optimalWetBound ?? null
+            })
 
             await model.save()
             return newMatrixId
@@ -336,9 +346,9 @@ class FieldRepository {
         }
     }
 
-    async createMatrixProfile(matrixId, x, y, z, value, weight) {
-        const model = this.MatrixProfile.build({matrixId: matrixId, x: x, y: y, z: z, value: value, weight})
-        this.MatrixProfile.removeAttribute('id')
+    async createMatrixProfile(profileId, x, y, z, value, weight) {
+        const model = this.OptimalProfile.build({ profileId: profileId, x: x, y: y, z: z, value: value, weight: weight })
+        this.OptimalProfile.removeAttribute('id')
         return await model.save()
     }
 

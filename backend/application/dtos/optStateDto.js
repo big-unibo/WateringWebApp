@@ -59,7 +59,6 @@ export class GridOptimalProfiles{
     this.stopPercentage = stopPercentage,
     this.optimalDryBound = optimalDryBound,
     this.optimalWetBound = optimalWetBound,
-    this.optimalProfile = optimalProfiles,
     this.optimalState = optimalState
   }
 }

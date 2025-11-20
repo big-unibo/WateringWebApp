@@ -18,12 +18,12 @@ function initGridOptimalProfileAssignment(sequelize) {
         field: 'optimal_profile_id'
       },
       validFrom: {
-        type: DataTypes.BIGINT,
+        type: DataTypes.DOUBLE,
         allowNull: false,
         field: 'valid_from'
       },
       validTo: {
-        type: DataTypes.BIGINT,
+        type: DataTypes.DOUBLE,
         allowNull: true,
         field: 'valid_to'
       },
@@ -48,7 +48,8 @@ function initGridOptimalProfileAssignment(sequelize) {
         field: 'optimal_wet_bound'
       },
     }, {
-      modelName: 'grid_optimal_profile_assignment',
+      modelName: 'GridOptimalProfileAssignment',
+      tableName: 'grid_optimal_profile_assignment',
       timestamps: false,
       sequelize
     }

@@ -24,7 +24,7 @@ function initOptimalProfile(sequelize) {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    alue: {
+    value: {
       type: DataTypes.DOUBLE,
       allowNull: false
     },
@@ -33,7 +33,8 @@ function initOptimalProfile(sequelize) {
       allowNull: false
     }
   }, {
-    modelName: 'optimal_profiles',
+    modelName: 'OptimalProfile',
+    tableName: 'optimal_profiles',
     timestamps: false,
     sequelize
   }
