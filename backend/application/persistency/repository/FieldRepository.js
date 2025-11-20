@@ -11,6 +11,8 @@ class FieldRepository {
         this.Thesis = models.Thesis
         this.ThesisInSector = models.ThesisInSector
         this.Permit = models.Permit
+        this.GridOptimalProfileAssignment = models.GridOptimalProfileAssignment
+        this.OptimalProfile = models.OptimalProfile
         this.sequelize = sequelize
     }
 
@@ -287,6 +289,69 @@ class FieldRepository {
         return (results);
     }
 
+    async createMatrixOptimalState(gridId, validFrom, validTo, stopPercentage, optimalDryBound, optimalWetBound, profileId = null) {
+        try {
+            let newMatrixId
+            if (profileId) {
+                const result = await this.GridOptimalProfileAssignment.findAll({
+                    where: {
+                        optimalProfileId: profileId
+                    }
+                })
+                if (result.length > 0) {
+                    newMatrixId = profileId
+                } else {
+                    throw Error("Optimal profile not found")
+                }
+            } else {
+                const maxId = await this.GridOptimalProfileAssignment.max('optimalProfileId')
+                newMatrixId = (maxId ?? 0) + 1;
+            }
+
+            await this.GridOptimalProfileAssignment.update(
+                {
+                    validTo: Math.floor(validFrom),
+                    current: false
+                },
+                {
+                    where: {
+                        gridId: gridId,
+                        validFrom: {
+                            [Op.lt]: validFrom
+                        },
+                        validTo: {
+                            [Op.or]: {
+                                [Op.is]: null,
+                                [Op.gt]: validFrom
+                            },
+                        }
+                    }
+                }
+            )
+
+            const model = await this.GridOptimalProfileAssignment.build({
+                gridId: gridId,
+                optimalProfileId: newMatrixId,
+                validFrom: validFrom,
+                validTo: validTo ? Math.floor(validTo) : null,
+                stopPercentage: stopPercentage ?? null,
+                optimalDryBound: optimalDryBound ?? null,
+                optimalWetBound: optimalWetBound ?? null
+            })
+
+            await model.save()
+            return newMatrixId
+        } catch (error) {
+            throw Error(error.message)
+        }
+    }
+
+    async createMatrixProfile(profileId, x, y, z, value, weight) {
+        const model = this.OptimalProfile.build({ profileId: profileId, x: x, y: y, z: z, value: value, weight: weight })
+        this.OptimalProfile.removeAttribute('id')
+        return await model.save()
+    }
+
     // async updateWateringSectorDetails(sectorDetails, timestampFrom){
     //     this.WateringSector.removeAttribute('id')
     //     this.WateringSector.update(
@@ -344,12 +409,6 @@ class FieldRepository {
     //             }
     //         }
     //     })
-    // }
-
-    // async createMatrixProfile(matrixId, x, y, z, value) {
-    //     const model = this.MatrixProfile.build({matrixId: matrixId, xx: x, yy: y, zz: z, optValue: value, weight: 1})
-    //     this.MatrixProfile.removeAttribute('id')
-    //     return await model.save()
     // }
 
     // async createMatrixField(source, refStructureName, companyName, fieldName, sectorName, thesisName, validFrom, validTo, matrixId) {

@@ -187,22 +187,38 @@ class FieldService {
         return dtoConverter.convertInterpolatedMeansWrapper(result)
     }
 
+    async findThesisPoints(gridId) {
+        return this.interpolatedProfileRepository.findThesisPoints(gridId)
+    }
+
+    async createMatrixOptimalState( gridOptimalProfiles ) {
+        const matrixId = await this.fieldRepository.createMatrixOptimalState(
+            gridOptimalProfiles.gridId,
+            gridOptimalProfiles.validFrom,
+            gridOptimalProfiles.validTo,
+            gridOptimalProfiles.stopPercentage,
+            gridOptimalProfiles.optimalDryBound,
+            gridOptimalProfiles.optimalWetBound,
+        )
+
+        if(!matrixId){
+            throw Error("Impossible to create optimal matrix for this thesis")
+        }
+
+        for (const optimalProfile of gridOptimalProfiles.optimalState) {
+            await this.fieldRepository.createMatrixProfile(matrixId, optimalProfile.x, optimalProfile.y, optimalProfile.z, optimalProfile.value, optimalProfile.weight)
+        }
+    }
+
+    async setOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound , optimalDryBound, profileId) {
+        return await this.fieldRepository.createMatrixOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound , optimalDryBound, profileId)
+    }
+
+    async getInterpolatedProfiles(thesisId, timeFilterFrom, timeFilterTo) {
+        return await this.interpolatedProfileRepository.getInterpolatedProfiles(thesisId, timeFilterFrom, timeFilterTo);
+    }
     // async updateWateringSectorDetails(sectorDetails, timestampFrom) {
     //     await this.fieldRepository.updateWateringSectorDetails(sectorDetails, timestampFrom || Math.floor(Date.now()/1000))
-    // }
-
-    // async createMatrixOptState(optStateDto) {
-    //     const matrixId = await this.fieldRepository.createMatrixField('iFarming', optStateDto.refStructureName, optStateDto.companyName, optStateDto.fieldName, optStateDto.sectorName, optStateDto.thesisName, optStateDto.validFrom, optStateDto.validTo)
-    //     if(!matrixId){
-    //         throw Error("Impossible to create optimal matrix for this field")
-    //     }
-    //     for (const matrixData of optStateDto.optimalState) {
-    //         await this.fieldRepository.createMatrixProfile(matrixId, matrixData.xx, matrixData.yy, matrixData.zz, matrixData.value)
-    //     }
-    // }
-
-    // async setOptimalState(refStructureName, companyName, fieldName, sectorName, thesisName, matrixId, timestampFrom) {
-    //     return this.fieldRepository.createMatrixField('iFarming', refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, null, matrixId)
     // }
 
     // async getDripperInfo(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp) {
