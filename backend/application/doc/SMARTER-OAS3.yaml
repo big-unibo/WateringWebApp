@@ -8,6 +8,9 @@ components:
   schemas:
     UserTokenRequest:
       type: object
+      required:
+        - email
+        - password
       properties:
         email:
           type: string
@@ -85,6 +88,7 @@ components:
           description: Type of the culture
         location:
           $ref: '#/components/schemas/GeometryElement'
+          description: Location of the sector
         prescriptive:
           type: boolean
           description: Indicate if the watering advice is sent to valves
@@ -95,7 +99,6 @@ components:
           type: number
           format: double
           description: Capacity of a dripper in a row expressed in L/h
-          example: 1.5
         sprinklerCapacity:
           type: number
           format: double
@@ -141,7 +144,7 @@ components:
           description: Signal z coordinate
         virtual:
           type: boolean
-          descriptio: True if it's virtual
+          description: True if it's virtual
         unit:
           type: string
           description: Measurement unit of the signal 
@@ -459,6 +462,9 @@ components:
     
     Field:
       type: object
+      required:
+        - id
+        - name
       properties:
         id:
           type: number
@@ -469,7 +475,6 @@ components:
         location:
           $ref: '#/components/schemas/GeometryElement'
           description: Location of the field
-          nullable: true
     
     Company:
       type: object
@@ -738,20 +743,16 @@ components:
           type: string
           description: The name of the thesis.
         gridId:
-          type: number
-          format: integer
+          type: integer
           description: Unique identifier of the specific grid device.
         binningId:
-          type: number
-          format: integer
+          type: integer
           description: Unique identifier of the binning profile for the data.
         validFrom:
-          type: number
-          format: integer
+          type: integer
           description: Start timestamp (Unix seconds) for when this optimal state data is valid.
         validTo:
-          type: number
-          format: integer
+          type: integer
           nullable: true
           description: End timestamp (Unix seconds) for when this optimal state data is valid. Null means indefinitely valid.
         stopPercentage:
@@ -782,8 +783,7 @@ components:
           format: double
           description: The computed delta value
         timestamp:
-          type: number
-          format: integer
+          type: integer
           description: Timestamp representing the day (Unix seconds at 00:00).
 
     DeltaData:
@@ -794,8 +794,7 @@ components:
           type: string
           description: Name of the thesis associated with the delta calculation.
         deviceId:
-          type: number
-          format: integer
+          type: integer
           description: Identifier of the grid or device associated with the data.
         unit:
           type: string

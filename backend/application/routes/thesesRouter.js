@@ -443,10 +443,12 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *        description: The thesis identifier
      *      - in: query
      *        name: expectedWater
-     *        type: number
+     *        schema:
+     *           type: number
      *      - in: query
      *        name: timestamp
-     *        type: number
+     *        schema:
+     *           type: number
      *     tags: [Theses]
      *     responses:
      *       '200':

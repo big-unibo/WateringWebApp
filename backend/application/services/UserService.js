@@ -87,7 +87,6 @@ class UserService {
     }
 
     async computeUserPermits(user, results) {
-        console.log(results)
         try {
             const map = new Map();
 
@@ -106,7 +105,6 @@ class UserService {
                 }
             });
 
-            //Decidi dove mettere sta logica se qua o nel Dto
             const permits = Array.from(map.values()).map(p => new UserPermitDto(
                 p.permit,
                 p.table,
