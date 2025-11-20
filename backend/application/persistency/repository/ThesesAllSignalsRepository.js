@@ -201,7 +201,6 @@ class ThesesAllSignalsRepository {
                         GREATEST(tas.valid_from, :timeFilterFrom)
                         AND LEAST(COALESCE(tas.valid_to, 'infinity'), :timeFilterTo)
                 WHERE tas.thesis_id = :thesisId
-                AND we.latest = true
             )
 
             SELECT *

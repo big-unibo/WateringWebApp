@@ -19,11 +19,6 @@ function initWateringEvent(sequelize) {
             allowNull: false,
             field: "date"
         },
-        updateTimestamp: {
-            type: DataTypes.DOUBLE,
-            allowNull: false,
-            field: "update_timestamp"
-        },
         wateringStart: {
             type: DataTypes.DOUBLE,
             allowNull: false,
@@ -54,25 +49,10 @@ function initWateringEvent(sequelize) {
             allowNull: true,
             field: "note"
         },
-        deleted: {
-            type: DataTypes.BOOLEAN,
-            allowNull: false,
-            field: "deleted"
-        },
-        latest: {
-            type: DataTypes.BOOLEAN,
-            allowNull: false,
-            field: "latest"
-        },
         enabled: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             field: "enabled"
-        },
-        userId: {
-            type: DataTypes.INTEGER,
-            allowNull: true,
-            field: "user_id"
         }
     }, {
         modelName: 'watering_events',

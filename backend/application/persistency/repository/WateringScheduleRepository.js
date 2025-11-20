@@ -16,7 +16,6 @@ class WateringScheduleRepository {
                 SELECT 
                     we.sector_id as "sectorId",
                     we.date as "date",
-                    we.update_timestamp as "updateTimestamp",
                     we.watering_start as "wateringStart",
                     we.watering_end as "wateringEnd",
                     we.advice as "advice",
@@ -24,36 +23,35 @@ class WateringScheduleRepository {
                     we.enabled as "enabled",
                     we.expected_water as "expectedWater",
                     we.note as "note",
+                    ua.timestamp as "updateTimestamp",
                     u.email as "updatedBy",
                     tis.thesis_id as "thesisId",
                     t.thesis_name as "thesisName",
                     s.sector_name as "sectorName",
                     tis.weight as "weight",
                     a.image_timestamp as "imageTimestamp"
-
                 FROM public.watering_events we
-                
-                LEFT JOIN public.users u ON we.user_id = u.id
-                
-                INNER JOIN theses_in_sectors tis ON tis.sector_id = we.sector_id
+                LEFT JOIN public.users_actions ua 
+                    ON we.id = ua.id_key
+                    AND ua.table = 'watering_events'
+                    AND ua.action = 'UPDATE'
+                LEFT JOIN users u
+                    ON ua.user_id = u.id
+                JOIN theses_in_sectors tis 
+                    ON tis.sector_id = we.sector_id
                     AND tis.valid_from <= we.watering_start
                     AND (tis.valid_to IS NULL OR tis.valid_to >= we.watering_start) 
                     AND tis.valid_from <= :timeFilterTo
-                    AND (tis.valid_to IS NULL OR tis.valid_to >= :timeFilterFrom)
-                    
+                    AND (tis.valid_to IS NULL OR tis.valid_to >= :timeFilterFrom)  
                 LEFT JOIN advices a
                     ON tis.thesis_id = a.thesis_id
                     AND we.watering_start = a.watering_start
-                    
-                INNER JOIN theses t ON t.id = tis.thesis_id
-                INNER JOIN sectors s ON s.id = tis.sector_id
-                
+                JOIN theses t 
+                    ON t.id = tis.thesis_id
+                JOIN sectors s 
+                    ON s.id = tis.sector_id
                 WHERE we.sector_id = :sectorId
-                AND we.deleted = false
-                AND we.latest = true
-                AND we.date BETWEEN 
-                    TO_TIMESTAMP(:timeFilterFrom) :: DATE AND 
-                    TO_TIMESTAMP(:timeFilterTo) :: DATE
+                    AND we.watering_start BETWEEN :timeFilterFrom AND :timeFilterTo
             `;
 
             const results = await this.sequelize.query(query, {

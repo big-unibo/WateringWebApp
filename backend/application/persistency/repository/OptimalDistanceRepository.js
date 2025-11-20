@@ -71,9 +71,7 @@ class OptimalDistanceRepository {
                     v.unit
                 FROM watering_events we
                 JOIN validity_table v ON v.sector_id = we.sector_id
-                WHERE we.latest = true
-                    AND we.deleted = false
-                    AND we.watering_start BETWEEN :timeFilterFrom AND :timeFilterTo
+                WHERE we.watering_start BETWEEN :timeFilterFrom AND :timeFilterTo
             )
 
             SELECT 
