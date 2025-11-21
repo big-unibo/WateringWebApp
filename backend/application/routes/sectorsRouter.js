@@ -10,8 +10,6 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 	 * @swagger
 	 * /sectors:
 	 *   get:
-	 *     security:
-	 *       - bearerAuth: []
 	 *     summary: Retrieve all sectors available for the user
 	 *     tags: [Sectors]
 	 *     description: Retrieve all sectors available for the user, filtered by a time range of active theses.
@@ -21,13 +19,13 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 	 *         required: true
 	 *         schema:
 	 *           type: number
-	 *         description: Time filter start (timestamp in seconds)
+	 *         description: Time filter start (timestamp in seconds since 01/01/1970)
 	 *       - in: query
 	 *         name: timeFilterTo
 	 *         required: true
 	 *         schema:
 	 *           type: number
-	 *         description: Time filter end (timestamp in seconds)
+	 *         description: Time filter end (timestamp in seconds since 01/01/1970)
 	 *     responses:
 	 *       200:
 	 *         description: List of sectors for the user
@@ -35,24 +33,39 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 	 *           application/json:
 	 *             schema:
 	 *               $ref: '#/components/schemas/SectorsCompactDto'
-	 *       400:
-	 *         description: Bad request – missing or invalid query parameters
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 message:
-	 *                   type: string
-	 *       403:
-	 *         description: Authentication failed – invalid or missing JWT
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 message:
-	 *                   type: string
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
 	 *       404:
 	 *         description: No sectors found for the current user and time filter
 	 *         content:
@@ -77,24 +90,17 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 		try {
 			requestUserData = await authenticationService.validateJwt(req.headers.authorization);
 		} catch (error) {
-			return res.status(403).json({ message: 'Authentication failed' });
+			return res.status(401).json({ message: 'Authentication failed' });
 		}
 
         const timeFilterFrom = Number(req.query.timeFilterFrom)
         const timeFilterTo = Number(req.query.timeFilterTo)
-        
-        if (isNaN(timeFilterFrom)) {
-            return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid timestamp' });
-        }
-        if (isNaN(timeFilterTo)) {
-            return res.status(400).json({ message: 'timeFilterTo is required and must be a valid timestamp' });
-        }
 
 		try {
 			const sectors = await fieldService.getSectors(requestUserData.userid, timeFilterFrom, timeFilterTo);
 			if (!sectors || sectors.length === 0) {
 				return res.status(404).json({ 
-					error: "User has no permission to view any sectors" 
+					error: "User has no permission to view any sectors in the given period" 
 				});
 			}
 
@@ -110,8 +116,6 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 	 * @swagger
 	 * /sectors/{sectorId}:
 	 *   get:
-	 *     security:
-	 *       - bearerAuth: []
 	 *     summary: Returns detailed information for a sector by its ID
 	 *     tags: [Sectors]
 	 *     description: Returns all sector information given its ID. User must have monitoring permits for the requested sector.
@@ -129,33 +133,48 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 	 *           application/json:
 	 *             schema:
 	 *               $ref: '#/components/schemas/SectorDataDto'
-	 *       400:
-	 *         description: Bad request – missing or invalid sectorId or userId
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 message:
-	 *                   type: string
-	 *       401:
-	 *         description: Unauthorized – user not allowed to view the sector
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 message:
-	 *                   type: string
-	 *       403:
-	 *         description: Authentication failed – invalid or missing JWT
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 message:
-	 *                   type: string
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to retrieve detailed info for this sector)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
 	 *       404:
 	 *         description: No sector found for the given ID
 	 *         content:
@@ -181,17 +200,13 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 		try {
 			requestUserData = await authenticationService.validateJwt(req.headers.authorization);
 		} catch (error) {
-			return res.status(403).json({ message: 'Authentication failed' });
+			return res.status(401).json({ message: 'Authentication failed' });
 		}
 
 		const sectorId = Number(req.params.sectorId)
 
-		if (isNaN(sectorId) || !Number.isInteger(sectorId)) {
-			return res.status(400).json({ message: 'Sector ID is required and must be a number' });
-		}
-
 		if(!authorizationService.isUserAuthorizedById(requestUserData.userid, 'monitoring', 'sectors', sectorId))
-			return res.status(401).json({message: 'Unauthorized request'});
+			return res.status(403).json({message: 'Unauthorized request'});
 
 		try {
 			const sectorData = await fieldService.getSectorDetails(sectorId);
@@ -214,11 +229,9 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      * @swagger
      * /sectors/{sectorId}/createThesis:
      *   post:
-     *     security:
-     *      - bearerAuth: []
      *     summary: Create a thesis and associate it with a sector
      *     tags: [Sectors]
-     *     description: Endpoint to create a new thesis and link it to a sector.
+     *     description: Endpoint to create a new thesis and link it to a sector. Requires authentication and proper validation
      *     parameters:
      *       - in: path
      *         name: sectorId
@@ -245,8 +258,32 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *                 id:
      *                   type: number
      *                   description: Id of the thesis       
-     *       400:
-     *         description: Bad request (missing or invalid sectorId or thesisName)
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
      *         content:
      *           application/json:
      *             schema:
@@ -254,17 +291,8 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *               properties:
      *                 message:
      *                   type: string
-     *       401:
-     *         description: Unauthorized request – user not allowed to create a thesis for the given sector
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       403:
-     *         description: Authentication failed – invalid or missing JWT
+     *       '403':
+     *         description: Unauthorized (user not allowed to create theses for the given sector)
      *         content:
      *           application/json:
      *             schema:
@@ -287,23 +315,16 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 		try {
 			requestUserData = await authenticationService.validateJwt(req.headers.authorization);
 		} catch (error) {
-			return res.status(403).json({message: 'Authentication failed'});
+			return res.status(401).json({message: 'Authentication failed'});
 		}
-
-		if(!req.body || req.body === '')
-			return res.status(400).json({message: 'Invalid request'});
 
 		const sectorId = Number(req.params.sectorId)
-
-		if (isNaN(sectorId) || !Number.isInteger(sectorId)) {
-			return res.status(400).json({ message: 'Sector ID is required and must be a number' });
-		}
-		const { thesisName, validFrom } = req.body;
-		const thesis = new Thesis(thesisName, sectorId, undefined, validFrom);
+		const { thesisName, validFrom, weight } = req.body;
+		const thesis = new Thesis(thesisName, sectorId, weight, validFrom);
 
 		try {
 			if (!(await authorizationService.isUserAuthorizedInSector(requestUserData.userid, 'update', sectorId)))
-				return res.status(401).json({message: 'Unauthorized request'});
+				return res.status(403).json({message: 'Unauthorized request'});
 
 			const thesisId = await fieldService.createThesis(thesis);
 			return res.status(200).json({message: 'Thesis created with success', id: thesisId});
@@ -317,8 +338,6 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      * @swagger
      * /sectors/{sectorId}/wateringCalendar:
      *   get:
-     *     security:
-     *       - bearerAuth: []
      *     summary: Retrivies calendar data for a given sector within a time range
      *     tags: [Sectors]
      *     description: Returns every watering event for a given sector and within a given time range, also including the contribution of every thesis for the event.
@@ -327,20 +346,20 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *         name: sectorId
      *         required: true
      *         schema:
-     *           type: number
+     *           type: integer
      *         description: Id of thesis
      *       - in: query
      *         name: timeFilterFrom
      *         required: true
      *         schema:
      *           type: number
-     *         description: Time filter start (timestamp in seconds)
+     *         description: Time filter start (timestamp in seconds since 01/01/1970)
      *       - in: query
      *         name: timeFilterTo
      *         required: true
      *         schema:
      *           type: number
-     *         description: Time filter end (timestamp in seconds)
+     *         description: Time filter end (timestamp in seconds since 01/01/1970)
      *     responses:
      *       200:
      *         description: Successfully retrieved signal data
@@ -348,16 +367,31 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *           application/json:
      *             schema:
      *               $ref: "#/components/schemas/WateringScheduleResponse"
-     *       400:
-     *         description: Invalid or missing query parameters
+     *       '400':
+     *         description: Input validation error (Bad Request)
      *         content:
      *           application/json:
      *             schema:
      *               type: object
+     *               required:
+     *                 - message
      *               properties:
      *                 message:
      *                   type: string
-     *       401:
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
      *         description: Authentication failed (invalid or missing JWT)
      *         content:
      *           application/json:
@@ -366,7 +400,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *               properties:
      *                 message:
      *                   type: string
-     *       403:
+     *       '403':
      *         description: Unauthorized (user not allowed to view calendar)
      *         content:
      *           application/json:
@@ -397,24 +431,11 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
             // if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'companies')))
             //     return res.status(403).json({ message: 'Unauthorized request' });
 
-            if (!req.body || req.body === '')
-                throw new Error('Body is empty');
-
-            const sectorId = parseInt(req.params.sectorId);
-            if (isNaN(sectorId) || !Number.isInteger(sectorId)) {
-                return res.status(400).json({ message: 'sector ID is required and must be a number' });
-            }
+            const sectorId = Number(req.params.sectorId);
 
             const timeFilterFrom = Number(req.query.timeFilterFrom)
             const timeFilterTo = Number(req.query.timeFilterTo)
             
-            if (isNaN(timeFilterFrom)) {
-                return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid timestamp' });
-            }
-            if (isNaN(timeFilterTo)) {
-                return res.status(400).json({ message: 'timeFilterTo is required and must be a valid timestamp' });
-            }
-
             const result = await wateringScheduleService.getSchedule(sectorId, timeFilterFrom, timeFilterTo);
             res.status(200).json(result);
         } catch (error) {
