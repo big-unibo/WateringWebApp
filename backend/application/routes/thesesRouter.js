@@ -9,11 +9,9 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      * @swagger
      * /theses/{thesisId}:
      *   get:
-     *     security:
-     *      - bearerAuth: []
      *     summary: Return detailed information for a thesis by its ID
      *     tags: [Theses]
-     *     description: Return thesis information given its ID
+     *     description: Return thesis information given its ID. Requires authentication and proper authorization
      *     parameters:
      *       - in: path
      *         name: thesisId
@@ -26,7 +24,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *         required: false
      *         schema:
      *           type: number
-     *         description: Timestamp in which find the information
+     *         description: Timestamp in which find the information (Unix timestamp in seconds elapsed since 1/1/1970)
      *     responses:
      *       200:
      *         description: Deteiled thesis information
@@ -35,8 +33,32 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *             schema:
      *               type: object
      *               $ref: '#/components/schemas/ThesisData'
-     *       400:
-     *         description: Bad request (missing or invalid thesisId)
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
      *         content:
      *           application/json:
      *             schema:
@@ -44,17 +66,8 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *               properties:
      *                 message:
      *                   type: string
-     *       401:
-     *         description: Unauthorized request – user not allowed to get devices info for the thesis
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       403:
-     *         description: Authentication failed – invalid or missing JWT
+     *       '403':
+     *         description: Unauthorized (user not allowed to create theses in this sector)
      *         content:
      *           application/json:
      *             schema:
@@ -86,18 +99,13 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
 
         //[TO DO]: Authorization
 
         const thesisId = Number(req.params.thesisId)
-
-        if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
-            return res.status(400).json({ message: 'thesis ID is required and must be a number' });
-        }
-
-        const timestamp = req.query.timestamp || Date.now() / 1000
+        const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000
 
         try {
             const result = await fieldService.getThesisDetails(thesisId, timestamp);
@@ -117,11 +125,9 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      * @swagger
      * /theses/{thesisId}/devices:
      *   get:
-     *     security:
-     *      - bearerAuth: []
      *     summary: Gets all the devices info for a given thesis
      *     tags: [Theses]
-     *     description: Endpoint to get all devices and signals info for a given thesis
+     *     description: Endpoint to get all devices and signals info for a given thesis. Requires authentication and proper authorization
      *     parameters:
      *       - in: path
      *         name: thesisId
@@ -143,8 +149,32 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *               type: array
      *               items:
      *                  $ref: '#/components/schemas/Device'
-     *       400:
-     *         description: Bad request (missing or invalid thesisId)
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
      *         content:
      *           application/json:
      *             schema:
@@ -152,17 +182,8 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *               properties:
      *                 message:
      *                   type: string
-     *       401:
-     *         description: Unauthorized request – user not allowed to get devices info for the thesis
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       403:
-     *         description: Authentication failed – invalid or missing JWT
+     *       '403':
+     *         description: Unauthorized (user not allowed to get devices info for this thesis)
      *         content:
      *           application/json:
      *             schema:
@@ -185,24 +206,17 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
-
-        if (!req.body || req.body === '')
-            return res.status(400).json({ message: 'Invalid request' });
 
         const thesisId = Number(req.params.thesisId)
-
-        if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
-            return res.status(400).json({ message: 'thesis ID is required and must be a number' });
-        }
 
         try {
             // TODO Authorization
             // if (!(await authorizationService.isUserAuthorizedInSector(user.id, 'update', thesisId)))
-            //     return res.status(401).json({message: 'Unauthorized request'});
+            //     return res.status(403).json({message: 'Unauthorized request'});
 
-            const timestamp = req.query.timestamp || Date.now()/1000
+            const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now()/1000
             const results = await fieldService.getDevicesByThesis(thesisId, timestamp);
             return res.status(200).json(results)
         } catch (error) {
@@ -212,110 +226,113 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
     });
 
     /**
- * @swagger
- * /theses/{thesisId}/signals:
- *   get:
- *     security:
- *       - bearerAuth: []
- *     summary: Gets all signals data for a given thesis
- *     tags: [Theses]
- *     description: >
- *       Endpoint to retrieve all signal information related to a specific thesis at a given timestamp.
- *       Supports filtering by signal types through query parameters.
- *     parameters:
- *       - in: path
- *         name: thesisId
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID of the thesis.
- *       - in: query
- *         name: signalTypes
- *         required: false
- *         schema:
- *           type: array
- *           items:
- *             type: string
- *         style: form
- *         explode: true
- *         description: Filte signal types to include.
- *       - in: query
- *         name: timestamp
- *         schema:
- *           type: number
- *           example: 1715529600
- *         description: Unix timestamp (in seconds) in which find available signal for the thesis
- *     responses:
- *       200:
- *         description: Successfully retrieved signals data for the specified thesis
- *         content:
- *           application/json:
- *             schema:
- *                 $ref: '#/components/schemas/SignalsDataBaseResponse'
- *       400:
- *         description: Bad request — missing or invalid parameters (thesisId or timestamp).
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *       401:
- *         description: Unauthorized request — user not allowed to access signals for the thesis.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *       403:
- *         description: Authentication failed — invalid or missing JWT token.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *       500:
- *         description: Internal server error — unexpected error while retrieving signals data.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- */
+     * @swagger
+     * /theses/{thesisId}/signals:
+     *   get:
+     *     summary: Gets all signals data for a given thesis
+     *     tags: [Theses]
+     *     description: >
+     *       Endpoint to retrieve all signal information related to a specific thesis at a given timestamp.
+     *       Supports filtering by signal types through query parameters.
+     *       Requires authentication and proper authorization
+     *     parameters:
+     *       - in: path
+     *         name: thesisId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of the thesis.
+     *       - in: query
+     *         name: signalTypes
+     *         required: false
+     *         schema:
+     *           type: array
+     *           items:
+     *             type: string
+     *         style: form
+     *         explode: true
+     *         description: Signal types to include.
+     *       - in: query
+     *         name: timestamp
+     *         schema:
+     *           type: number
+     *         description: Unix timestamp (seconds elapsed since 1/1/1970) in which find available signal for the thesis
+     *     responses:
+     *       200:
+     *         description: Successfully retrieved signals data for the specified thesis
+     *         content:
+     *           application/json:
+     *             schema:
+     *                 $ref: '#/components/schemas/SignalsDataBaseResponse'
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to retrieve this thesis signals)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error — unexpected error while retrieving signals data.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
     router.get('/:thesisId/signals', async (req, res) => {
         let requestUserData;
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
-
-        if (!req.body || req.body === '')
-            return res.status(400).json({ message: 'Invalid request' });
 
         const thesisId = Number(req.params.thesisId)
 
-        if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
-            return res.status(400).json({ message: 'thesis ID is required and must be a number' });
-        }
-
-        let signalTypes = req.query.signalTypes || [];
-        if (!Array.isArray(signalTypes)) signalTypes = [signalTypes];
-
-
-        const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
+        let signalTypes = req.query.signalTypes;
+        const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000;
 
         try {
             //[TO DO]: Authorization
             // if (!(await authorizationService.isUserAuthorizedInSector(requestUserData.userid, 'update', thesisId)))
-            //     return res.status(401).json({message: 'Unauthorized request'});
+            //     return res.status(403).json({message: 'Unauthorized request'});
 
             const results = await fieldService.getSignalsByThesis(thesisId, signalTypes, timestamp);
             return res.status(200).json(results)
@@ -323,17 +340,14 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
             console.log(`Fail retrieving devices data: ${error.message}`);
             return res.status(500).json({ error: "Error while retrieving devices data" });
         }
-
     })
 
     /**
      * @swagger
      * /theses/{thesisId}/lastWateringAdvice:
      *   get:
-     *     security:
-     *       - bearerAuth: []
      *     summary: Get last watering advice for a thesis
-     *     description: Get last watering advice for a thesis
+     *     description: Get last watering advice for a thesis. Requires validation and proper authorization.
      *     parameters:
      *      - in: path
      *        name: thesisId
@@ -354,8 +368,32 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *           application/json:
      *             schema:
      *                $ref: '#/components/schemas/WateringAdviceResponse'
-     *       400:
-     *         description: Bad request — missing or invalid parameters (thesisId or timestamp).
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
      *         content:
      *           application/json:
      *             schema:
@@ -363,17 +401,8 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *               properties:
      *                 message:
      *                   type: string
-     *       401:
-     *         description: Unauthorized request — user not allowed to access signals for the thesis.
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       403:
-     *         description: Authentication failed — invalid or missing JWT token.
+     *       '403':
+     *         description: Unauthorized (User not authorized to view this thesis last watering advice)
      *         content:
      *           application/json:
      *             schema:
@@ -391,7 +420,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *                 message:
      *                   type: string
      *       500:
-     *         description: Internal server error — unexpected error while retrieving signals data.
+     *         description: Internal server error — unexpected error while retrieving last watering advice
      *         content:
      *           application/json:
      *             schema:
@@ -405,20 +434,16 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
 
         const thesisId = Number(req.params.thesisId)
-        if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
-            return res.status(400).json({ message: 'thesis ID is required and must be a number' });
-        }
-
-        const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
+        const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000;
 
         try {
             // TODO Authorization  
             // if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
-            //     return res.status(401).json({message: 'Unauthorized request'});
+            //     return res.status(403).json({message: 'Unauthorized request'});
 
             const result = await wateringAdviceService.getThesisLastWateringAdvice(thesisId, timestamp)
             if (result) {
@@ -436,10 +461,8 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      * @swagger
      * /theses/{thesisId}/wateringAdvice:
      *   get:
-     *     security:
-     *       - bearerAuth: []
      *     summary: Simulate watering advice for a thesis
-     *     description: SImulate the watering advice for a thesis in a given timestamp
+     *     description: SImulate the watering advice for a thesis in a given timestamp (Requires authentication and proper validation)
      *     parameters:
      *      - in: path
      *        name: thesisId
@@ -464,35 +487,84 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *             schema:
      *                $ref: '#/components/schemas/WateringAdviceResponse'
      *       '400':
-     *         description: Invalid request.
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
      *       '401':
-     *         description: Unauthorized request.
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       '403':
-     *         description: Authentication failed.
-     *       '500':
-     *         description: Error on computing advice.
-     */
+     *         description: Unauthorized (User not authorized to view this thesis watering advice)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       404:
+     *         description: Advice not found for specified thesis and timestamp.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error — unexpected error while retrieving watering advice
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+    */
     router.get('/:thesisId/wateringAdvice', async (req, res) => {
         let requestUserData
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
 
         const thesisId = Number(req.params.thesisId)
-        if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
-            return res.status(400).json({ message: 'thesis ID is required and must be a number' });
-        }
 
-        const expectedWater = req.query.expectedWater ? req.query.expectedWater : 0;
-        const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
+        const expectedWater = req.query.expectedWater ? Number(req.query.expectedWater) : 0;
+        const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000;
 
 
         try {
             // TODO authorization 
             //if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
-            //     return res.status(401).json({message: 'Unauthorized request'});
+            //     return res.status(403).json({message: 'Unauthorized request'});
 
             const result = await wateringAdviceService.getWateringAdvice(thesisId, expectedWater, timestamp)
 
@@ -508,8 +580,6 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      * @swagger
      * /theses/{thesisId}/setOptimalState:
      *   put:
-     *     security:
-     *       - bearerAuth: []
      *     summary: Sets the new optimal state (soil moisture grid profile) for a thesis.
      *     tags: [Theses]
      *     description: |
@@ -542,7 +612,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *         name: validFrom
      *         required: false
      *         schema:
-     *           type: integer
+     *           type: number
      *         description: Timestamp (Integer) indicating the start date of the new optimal state's validity (Seconds elapsed since 1/1/1970).
      *
      *       - in: query
@@ -568,7 +638,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *         name: imageTimestamp
      *         required: false
      *         schema:
-     *           type: integer
+     *           type: bumber
      *         description: |
      *           **CASE 2.** Timestamp of the matrix snapshot to copy from the source thesis.  
      *           Excludes the use of the `optimalState` field from body array. 
@@ -582,7 +652,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *             type: object
      *             properties:
      *               validTo:
-     *                 type: integer
+     *                 type: number
      *                 description: Timestamp (Integer) for the end date of the new optimal state's validity (Optional).
      *               stopPercentage:
      *                 type: integer
@@ -605,14 +675,38 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *                     y: { type: integer }
      *                     z: { type: integer }
      *                     value: { type: number }
-     *                     weight: { type: integer }
+     *                     weight: { type: number }
      *
      *     responses:
      *       200:
      *         description: Optimal state successfully associated or created.
      *
-     *       400:
-     *         description: Bad request (Missing/invalid parameters, grid not found, optimal state matrix not provided or dimensions mismatched).
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
      *         content:
      *           application/json:
      *             schema:
@@ -620,19 +714,8 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *               properties:
      *                 message:
      *                   type: string
-     *
-     *       401:
-     *         description: Authentication failed (Invalid or missing JWT).
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *
-     *       403:
-     *         description: Unauthorized request – user not allowed to modify the thesis state.
+     *       '403':
+     *         description: Unauthorized (user not allowed to set optimal state)
      *         content:
      *           application/json:
      *             schema:
@@ -659,25 +742,8 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
             return res.status(401).json({ message: 'Authentication failed' });
         }
 
-        if (!req.body || req.body === '')
-            return res.status(400).json({ message: 'Invalid request' });
-
         const thesisId = Number(req.params.thesisId)
-        if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
-            return res.status(400).json({ message: 'thesis ID is required and must be a number' });
-        }
-
-
-        let validFrom;
-
-        if (req.query.validFrom === undefined) {
-            validFrom = Math.floor(Date.now() / 1000); 
-        } else {
-            validFrom = Number(req.query.validFrom);
-            if (isNaN(validFrom) || !Number.isInteger(validFrom)) {
-                return res.status(400).json({ message: 'validFrom must be an integer timestamp' });
-            }
-        }
+        const validFrom = req.query.validFrom ? Number(req.query.validFrom) : Math.floor(Date.now() / 1000);
 
         const {
             validTo: validTo,
@@ -705,23 +771,12 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
             if (req.query.optimalProfileId !== undefined) {
                 const optimalProfileId = Number(req.query.optimalProfileId);
 
-                if (isNaN(optimalProfileId) || !Number.isInteger(optimalProfileId)) {
-                    return res.status(400).json({ message: 'optimalProfileId must be an integer number' });
-                }
-
                 await fieldService.setOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound , optimalDryBound, optimalProfileId)
                 return res.status(200).json({ message: 'Optimal state set successfully' });
             }
             else if (req.query.thesisId !== undefined && req.query.imageTimestamp !== undefined) {
                 const sourceThesisId = Number(req.query.thesisId);
                 const imageTimestamp = Number(req.query.imageTimestamp);
-
-                if (isNaN(sourceThesisId) || !Number.isInteger(sourceThesisId)) {
-                    return res.status(400).json({ message: 'source thesisId must be an integer number' });
-                }
-                if (isNaN(imageTimestamp) || !Number.isInteger(imageTimestamp)) {
-                    return res.status(400).json({ message: 'imageTimestamp must be an integer number' });
-                }
 
                 const interpolatedMatrix = await fieldService.getInterpolatedProfiles(sourceThesisId, imageTimestamp, imageTimestamp)
 
@@ -744,10 +799,6 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
             }
             else {
                 const optimalState = req.body.optimalState
-                if (optimalState === undefined || !Array.isArray(optimalState)) {
-                    return res.status(400).json({ message: 'optimalState is required and must be a vlaid array' });
-                }
-
                 if (optimalState.length === 0) {
                     return res.status(400).json({ message: 'optimalState must not be empty and must contain at least one element.' });
                 }
