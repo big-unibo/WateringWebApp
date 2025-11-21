@@ -15,7 +15,7 @@ class AuthService {
     async login(user) {
         try {
             const response = await axiosInstance.post('/login', {
-                username: user.authUser,
+                email: user.authUser,
                 password: hashPassword(user.authPass),
                 auth_type: 'pwd'
             });
