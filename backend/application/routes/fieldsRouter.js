@@ -208,7 +208,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
             return res.status(401).json({ message: 'Authentication failed' });
         }
         try {
-            const fieldId = req.params.fieldId
+            const fieldId = Number(req.params.fieldId)
 
             if (!(await authorizationService.isUserAuthorizedInField(requestUserData.userid, 'update', fieldId)))
                 return res.status(403).json({ message: 'Unauthorized request' });

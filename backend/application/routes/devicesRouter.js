@@ -101,10 +101,10 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
             
             const device = new CreateDevice({
                 type: req.body.type,
-                providerId: req.body.providerId,
+                providerId: Number(req.body.providerId),
                 description: req.body.description,
                 location: req.body.location,
-                binningId: req.body.binningId,
+                binningId: Number(req.body.binningId),
                 signals: (signalsArray || []).map(sig => new CreateSignal(sig))
             });
 
