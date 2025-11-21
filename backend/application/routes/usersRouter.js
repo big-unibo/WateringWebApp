@@ -105,16 +105,32 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      *                 message:
      *                   type: string
      *       '400':
-     *         description: Bad Request – missing or invalid request body.
+     *         description: Input validation error (Bad Request)
      *         content:
      *           application/json:
      *             schema:
      *               type: object
+     *               required:
+     *                 - message
+     *                 - errors
      *               properties:
      *                 message:
      *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
      *       '401':
-     *         description: Unauthorized – user does not have permission to create users.
+     *         description: Authentication failed – invalid or missing JWT token.
      *         content:
      *           application/json:
      *             schema:
@@ -123,7 +139,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      *                 message:
      *                   type: string
      *       '403':
-     *         description: Authentication failed – invalid or missing JWT token.
+     *         description: Unauthorized – user does not have permission to create users.
      *         content:
      *           application/json:
      *             schema:
@@ -147,17 +163,17 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
 
         try {
             const userId = requestUserData.userid;
 
             if (!(await authorizationService.isUserAuthorized(userId, 'create', 'users')))
-            return res.status(401).json({ message: 'Unauthorized request' });
+            return res.status(403).json({ message: 'Unauthorized request' });
 
-            if (!req.body || !req.body.users || req.body.users.length === 0)
-            return res.status(400).json({ message: 'Request body is missing or invalid' });
+            if (req.body.users.length === 0)
+                return res.status(400).json({ message: 'Insert at  least onew user' });
 
             const request = new Users(
             req.body.users.map(

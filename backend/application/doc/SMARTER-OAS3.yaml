@@ -118,6 +118,10 @@ components:
         validFrom: 
           type: number
           description: The timestamp to set as the start of validity for the thesis in the sector (Seconds elapsed since 01/01/1970 - 00:00 )
+        weight: 
+          type: number
+          format: double
+          description: Weight of the thesis for the given sector
 
     CreateSignal:
       type: object
