@@ -781,8 +781,7 @@ components:
           type: string
           description: Name of the thesis.
         deviceId:
-          type: number
-          format: integer
+          type: integer
           description: Identifier of the grid.
         unit:
           type: string
@@ -801,8 +800,7 @@ components:
                 format: double
                 description: The computed value
               timestamp:
-                type: number
-                format: integer
+                type: integer
                 description: Timestamp representing the day (Unix seconds at 00:00).
 
     InterpolatedMeansDataResponse:
