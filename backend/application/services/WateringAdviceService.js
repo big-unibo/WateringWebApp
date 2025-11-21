@@ -148,8 +148,8 @@ export class WateringAdviceService {
         }
     }
 
-    async setWateringAlgorithmParams(thesisId, wateringParams, validFrom) {
-        await this.wateringAdviceRepository.setWateringAlgorithmParams(thesisId, wateringParams, validFrom)
+    async setWateringAlgorithmParams(thesisId, wateringParams, validFrom, validTo) {
+        await this.wateringAdviceRepository.setWateringAlgorithmParams(thesisId, wateringParams, validFrom, validTo)
     }
 }
 

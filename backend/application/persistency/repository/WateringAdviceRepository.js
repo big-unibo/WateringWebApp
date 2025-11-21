@@ -50,7 +50,7 @@ class WateringAdviceRepository {
     }
 
         
-    async setWateringAlgorithmParams(thesisId, wateringParams, validFrom){
+    async setWateringAlgorithmParams(thesisId, wateringParams, validFrom, validTo){
 
         try{
             const oldParams = await this.getWateringAlgorithmParams(thesisId, validFrom)
@@ -76,6 +76,7 @@ class WateringAdviceRepository {
             const model = this.WateringAlgorithmParams.create({
                 thesisId: thesisId,
                 validFrom: validFrom,
+                validTo: validTo,
                 maxWatering: wateringParams.maxWatering ?? oldParams.maxWatering,
                 minWatering: wateringParams.minWatering ?? oldParams.minWatering, 
                 wateringBaseline: wateringParams.wateringBaseline ?? oldParams.wateringBaseline,

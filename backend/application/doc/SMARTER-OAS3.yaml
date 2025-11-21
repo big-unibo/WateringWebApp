@@ -753,10 +753,10 @@ components:
           type: integer
           description: Unique identifier of the binning profile for the data.
         validFrom:
-          type: integer
+          type: number
           description: Start timestamp (Unix seconds) for when this optimal state data is valid.
         validTo:
-          type: integer
+          type: number
           nullable: true
           description: End timestamp (Unix seconds) for when this optimal state data is valid. Null means indefinitely valid.
         stopPercentage:
@@ -804,7 +804,7 @@ components:
                 format: double
                 description: The computed value
               timestamp:
-                type: integer
+                type: number
                 description: Timestamp representing the day (Unix seconds at 00:00).
 
     InterpolatedMeansDataResponse:

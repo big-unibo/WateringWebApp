@@ -615,7 +615,11 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *         schema:
      *           type: number
      *         description: Timestamp indicating the start date of the new optimal state's validity (Seconds elapsed since 1/1/1970).
-     *
+     *       - in: query
+     *         name: validTo
+     *         schema:
+     *           type: number
+     *         description: Timestamp for the end date of the new optimal state's validity (Optional).
      *       - in: query
      *         name: optimalProfileId
      *         required: false
@@ -652,9 +656,6 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *           schema:
      *             type: object
      *             properties:
-     *               validTo:
-     *                 type: number
-     *                 description: Timestamp for the end date of the new optimal state's validity (Optional).
      *               stopPercentage:
      *                 type: integer
      *                 description: Irrigation stop percentage (Optional).
@@ -745,9 +746,9 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
 
         const thesisId = Number(req.params.thesisId)
         const validFrom = req.query.validFrom ? Number(req.query.validFrom) : Math.floor(Date.now() / 1000);
+        const validTo = req.query.validTo
 
         const {
-            validTo: validTo,
             stopPercentage: stopPercentage,
             optimalWetBound: optimalWetBound,
             optimalDryBound: optimalDryBound,
@@ -840,7 +841,12 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *         required: false
      *         schema:
      *           type: number
-     *         description: Timestamp indicating the start date of the new algorithm parameters validity (Seconds elapsed since 1/1/1970).
+     *         description: Timestamp indicating the start date of the new algorithm parameters validity, if not set take actual timestamp (Seconds elapsed since 1/1/1970).
+     *       - in: query
+     *         name: validTo
+     *         schema:
+     *           type: number
+     *         description: Timestamp for the end date of the new algorithm parameters validity (Seconds elapsed since 1/1/1970).
      *     requestBody:
      *       required: true
      *       content:
@@ -902,6 +908,9 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         if (!(await authorizationService.isUserAuthorizedById(requestUserData.userid, 'edit_advice', 'sectors', sectorId)))
             return res.status(403).json({ message: 'Unauthorized request' });
 
+        const validFrom = req.query.validFrom ?? Date.now()/1000
+        const validTo = req.query.validTo
+
         const {
             maxWatering,
             minWatering,
@@ -910,7 +919,6 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
             ki,
             kp,
             errorFunction,
-            validFrom,
             description
         } = req.body;
 
@@ -925,7 +933,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
             description
         });
 
-        await wateringAdviceService.setWateringAlgorithmParams(thesisId, wateringParams, validFrom || Date.now()/1000)
+        await wateringAdviceService.setWateringAlgorithmParams(thesisId, wateringParams, validFrom, validTo)
 
         return res.status(200).json({message: `Watering Parameters updated with success`})
       } catch (error) {
