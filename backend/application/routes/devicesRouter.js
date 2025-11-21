@@ -1,9 +1,9 @@
 import { Router } from 'express';
 
-import { CreateSignal, SignalAssociation, SignalTargetType, CreateDevice } from '../dtos/deviceDto.js'; 
+import { CreateSignal, SignalAssociation, SignalTargetType, CreateDevice } from '../dtos/deviceDto.js';
 
 
-const devicesRouter = ({authenticationService, authorizationService, userService, deviceService}) => {
+const devicesRouter = ({ authenticationService, authorizationService, userService, deviceService }) => {
     const router = Router();
 
     /**
@@ -13,7 +13,7 @@ const devicesRouter = ({authenticationService, authorizationService, userService
      *     security:
      *       - bearerAuth: []
      *     summary: Create a new device with its signals
-     *     description: Receives a device object with a list of signals and creates the device along with its signals.
+     *     description: Receives a device object with a list of signals and creates the device along with its signals.  Requires authentication and proper authorization.
      *     tags:
      *       - Devices
      *     requestBody:
@@ -35,8 +35,32 @@ const devicesRouter = ({authenticationService, authorizationService, userService
      *                 id:
      *                   type: number
      *                   description: The created device id
-     *       400:
-     *         description: Bad request – missing or invalid fields in the body
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
      *         content:
      *           application/json:
      *             schema:
@@ -44,17 +68,8 @@ const devicesRouter = ({authenticationService, authorizationService, userService
      *               properties:
      *                 message:
      *                   type: string
-     *       401:
-     *         description: Unauthorized – user is authenticated but not allowed to create devices
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       403:
-     *         description: Forbidden – authentication failed due to invalid or missing JWT
+     *       '403':
+     *         description: Unauthorized (user not allowed to create devices)
      *         content:
      *           application/json:
      *             schema:
@@ -78,30 +93,25 @@ const devicesRouter = ({authenticationService, authorizationService, userService
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
         try {
             if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'devices')))
-                return res.status(401).json({ message: 'Unauthorized request' });
+                return res.status(403).json({ message: 'Unauthorized request' });
 
-            if (!req.body || req.body === '')
-                throw new Error('Body is empty');
-
-            const signalsArray = Array.isArray(req.body.signals) 
-                ? req.body.signals 
-                : JSON.parse(req.body.signals || "[]");
-
+            const signalsArray = req.body.signals
+            
             const device = new CreateDevice({
                 type: req.body.type,
                 providerId: req.body.providerId,
                 description: req.body.description,
                 location: req.body.location,
                 binningId: req.body.binningId,
-                signals: (signalsArray|| []).map(sig => new CreateSignal(sig))
+                signals: (signalsArray || []).map(sig => new CreateSignal(sig))
             });
 
             const deviceId = await deviceService.createDevice(device);
-            return res.status(200).json({ message: `Device created with success`, id:  deviceId});
+            return res.status(200).json({ message: `Device created with success`, id: deviceId });
         } catch (error) {
             console.log(`Failed creating Device caused by: ${error.message}`);
             return res.status(500).json({ message: "Error on creating device" });
@@ -152,8 +162,32 @@ const devicesRouter = ({authenticationService, authorizationService, userService
      *               properties:
      *                 message:
      *                   type: string
-     *       400:
-     *         description: Bad request – missing required fields or invalid targetType
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
      *         content:
      *           application/json:
      *             schema:
@@ -161,17 +195,8 @@ const devicesRouter = ({authenticationService, authorizationService, userService
      *               properties:
      *                 message:
      *                   type: string
-     *       401:
-     *         description: Unauthorized – user is authenticated but not allowed to assign signals
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       403:
-     *         description: Forbidden – authentication failed due to invalid or missing JWT
+     *       '403':
+     *         description: Unauthorized (user not allowed to create companies)
      *         content:
      *           application/json:
      *             schema:
@@ -194,30 +219,22 @@ const devicesRouter = ({authenticationService, authorizationService, userService
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
+
         //[TO DO]: Authorization
 
         try {
 
-            const deviceId = Number(req.params.deviceId)
+            const deviceId = req.params.deviceId
+            const targetType = req.body.targetType;
 
-            if (isNaN(deviceId) || !Number.isInteger(deviceId)) {
-                return res.status(400).json({ message: 'device ID is required and must be a number' });
-            }
-
-            if (!req.body || req.body === '')
-                return res.status(400).json({ message: "Missing parameters" });
-            
-            const body = req.body;
-            if (!Object.values(SignalTargetType).includes(body.targetType))
-                return res.status(400).json({ message: "Invalid targetType" });
             const signalAssociation = new SignalAssociation({
-                    deviceId: deviceId,
-                    targetType: body.targetType,
-                    targetId: body.targetId,
-                    validFrom: body.validFrom
-                });
+                deviceId: deviceId,
+                targetType: targetType,
+                targetId: body.targetId,
+                validFrom: body.validFrom
+            });
 
             await deviceService.assignSignals(signalAssociation);
             return res.status(200).json({ message: 'Signals successfully associated' });
@@ -226,7 +243,6 @@ const devicesRouter = ({authenticationService, authorizationService, userService
             return res.status(500).json({ message: "Error assigning signals" });
         }
     });
-
 
     return router;
 }

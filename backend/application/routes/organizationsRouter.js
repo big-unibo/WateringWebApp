@@ -43,7 +43,6 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
      *               type: object
      *               required:
      *                 - message
-     *                 - errors
      *               properties:
      *                 message:
      *                   type: string

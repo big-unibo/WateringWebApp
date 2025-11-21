@@ -38,7 +38,6 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
      *               type: object
      *               required:
      *                 - message
-     *                 - errors
      *               properties:
      *                 message:
      *                   type: string

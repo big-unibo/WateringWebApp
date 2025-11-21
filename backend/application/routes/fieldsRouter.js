@@ -42,7 +42,6 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *               type: object
      *               required:
      *                 - message
-     *                 - errors
      *               properties:
      *                 message:
      *                   type: string
@@ -156,7 +155,6 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *               type: object
      *               required:
      *                 - message
-     *                 - errors
      *               properties:
      *                 message:
      *                   type: string
