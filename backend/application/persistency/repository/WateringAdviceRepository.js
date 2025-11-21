@@ -48,6 +48,47 @@ class WateringAdviceRepository {
             raw: true
         })
     }
+
+        
+    async setWateringAlgorithmParams(thesisId, wateringParams, validFrom){
+
+        try{
+            const oldParams = await this.getWateringAlgorithmParams(thesisId, validFrom)
+
+            await this.WateringAlgorithmParams.update(
+                { 
+                    validTo: validFrom,
+                },
+                {
+                    where: {
+                        thesisId: thesisId,
+                        validFrom: { [Op.lt]: validFrom },
+                        validTo: {
+                            [Op.or]: {
+                                [Op.is]: null,
+                                [Op.gt]: validFrom
+                            },
+                        }
+                    }
+                }
+            )
+
+            const model = this.WateringAlgorithmParams.create({
+                thesisId: thesisId,
+                validFrom: validFrom,
+                maxWatering: wateringParams.maxWatering ?? oldParams.maxWatering,
+                minWatering: wateringParams.minWatering ?? oldParams.minWatering, 
+                wateringBaseline: wateringParams.wateringBaseline ?? oldParams.wateringBaseline,
+                wateringFrequency: wateringParams.wateringFrequency ?? oldParams.wateringFrequency,
+                ki: wateringParams.ki ?? oldParams.ki,
+                kp: wateringParams.kp ?? oldParams.kp,
+                errorFunction: wateringParams.errorFunction ?? oldParams.errorFunction,
+                description: wateringParams.description
+            });
+        } catch (error) {
+            throw new Error(`Error setting watering algorithm parameters: ${error.message}`);
+        }
+    }
 }
 
 export default WateringAdviceRepository;

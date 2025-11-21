@@ -838,6 +838,26 @@ components:
         mean: 
           type: number
           description: Mean of the interpolated cell values
+    
+    WateringParams:
+      type: object
+      properties:
+        maxWatering:
+          type: number
+        minWatering:
+          type: number
+        wateringBaseline:
+          type: number
+        wateringFrequency:
+          type: number
+        ki:
+          type: number
+        kp:
+          type: number
+        errorFunction:
+          type: string
+        description:
+          type: string
 
 
 

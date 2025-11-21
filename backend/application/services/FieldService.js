@@ -229,10 +229,6 @@ class FieldService {
     //     return this.dataInterpolatedRepository.findThesisPoints(refStructureName, companyName, fieldName, sectorName, thesisName)
     // }
 
-    // async setWateringBaseline(baseline, timestampFrom) {
-    //     await this.fieldRepository.setWateringBaseline(baseline, timestampFrom || Math.floor(Date.now()/1000))
-    // }
-
     // async setPrescriptiveThesis(refStructureName, companyName, fieldName, sectorName, prescriptiveThesis, timestampFrom) {
     //     await this.fieldRepository.setPrescriptiveThesis(refStructureName, companyName, fieldName, sectorName, prescriptiveThesis, timestampFrom || Math.floor(Date.now()/1000))
     // }

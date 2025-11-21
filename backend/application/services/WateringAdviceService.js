@@ -146,7 +146,10 @@ export class WateringAdviceService {
             console.error("Error in getWateringAdvice:", error);
             throw new Error("Failed to compute watering advice");
         }
-        
+    }
+
+    async setWateringAlgorithmParams(thesisId, wateringParams, validFrom) {
+        await this.wateringAdviceRepository.setWateringAlgorithmParams(thesisId, wateringParams, validFrom)
     }
 }
 
