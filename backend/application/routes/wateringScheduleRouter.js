@@ -17,20 +17,20 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
      *         name: sectorId
      *         required: true
      *         schema:
-     *           type: number
+     *           type: integer
      *         description: Id of thesis
      *       - in: query
      *         name: timeFilterFrom
      *         required: true
      *         schema:
      *           type: number
-     *         description: Time filter start (timestamp in seconds)
+     *         description: Time filter start (timestamp in seconds elapsed since 1/1/1970)
      *       - in: query
      *         name: timeFilterTo
      *         required: true
      *         schema:
      *           type: number
-     *         description: Time filter end (timestamp in seconds)
+     *         description: Time filter end (timestamp in seconds elapsed since 1/1/1970)
      *     responses:
      *       200:
      *         description: Successfully retrieved signal data
@@ -38,8 +38,33 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
      *           application/json:
      *             schema:
      *               $ref: "#/components/schemas/WateringScheduleResponse"
-     *       400:
-     *         description: Invalid or missing query parameters
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *                 - errors
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed – invalid or missing JWT token.
      *         content:
      *           application/json:
      *             schema:
@@ -47,17 +72,8 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
      *               properties:
      *                 message:
      *                   type: string
-     *       401:
-     *         description: Authentication failed (invalid or missing JWT)
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       403:
-     *         description: Unauthorized (user not allowed to view calendar)
+     *       '403':
+     *         description: Unauthorized – user does not have permission to view calendar
      *         content:
      *           application/json:
      *             schema:
@@ -87,23 +103,10 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             // if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'companies')))
             //     return res.status(403).json({ message: 'Unauthorized request' });
 
-            if (!req.body || req.body === '')
-                throw new Error('Body is empty');
-
             const sectorId = parseInt(req.params.sectorId);
-            if (isNaN(sectorId) || !Number.isInteger(sectorId)) {
-                return res.status(400).json({ message: 'sector ID is required and must be a number' });
-            }
 
             const timeFilterFrom = Number(req.query.timeFilterFrom)
             const timeFilterTo = Number(req.query.timeFilterTo)
-            
-            if (isNaN(timeFilterFrom)) {
-                return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid timestamp' });
-            }
-            if (isNaN(timeFilterTo)) {
-                return res.status(400).json({ message: 'timeFilterTo is required and must be a valid timestamp' });
-            }
 
             const result = await wateringScheduleService.getSchedule(sectorId, timeFilterFrom, timeFilterTo);
             res.status(200).json(result);
