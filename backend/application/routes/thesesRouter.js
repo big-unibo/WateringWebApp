@@ -638,7 +638,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *         name: imageTimestamp
      *         required: false
      *         schema:
-     *           type: bumber
+     *           type: number
      *         description: |
      *           **CASE 2.** Timestamp of the matrix snapshot to copy from the source thesis.  
      *           Excludes the use of the `optimalState` field from body array. 
@@ -653,7 +653,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *             properties:
      *               validTo:
      *                 type: number
-     *                 description: Timestamp (Integer) for the end date of the new optimal state's validity (Optional).
+     *                 description: Timestamp for the end date of the new optimal state's validity (Optional).
      *               stopPercentage:
      *                 type: integer
      *                 description: Irrigation stop percentage (Optional).
