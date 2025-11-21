@@ -7,8 +7,6 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
      * @swagger
      * /organizations/create:
      *   post:
-     *     security:
-     *       - bearerAuth: []
      *     summary: Create a new organization
      *     description: Endpoint to register a new organization with a given name. Requires authentication and proper authorization.
      *     tags: [Organizations]
@@ -25,7 +23,7 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
      *                 type: string
      *                 description: Name of the organization to create
      *     responses:
-     *       200:
+     *       '200':
      *         description: Organization created successfully
      *         content:
      *           application/json:
@@ -37,25 +35,32 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
      *                 id:
      *                   type: number
      *                   description: Id of the new Organization                      
-     *       400:
-     *         description: Bad request (missing or invalid organizationName)
+     *       '400':
+     *         description: Input validation error (Bad Request)
      *         content:
      *           application/json:
      *             schema:
      *               type: object
+     *               required:
+     *                 - message
+     *                 - errors
      *               properties:
      *                 message:
      *                   type: string
-     *       401:
-     *         description: Unauthorized (user not allowed to create organization)
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       403:
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
      *         description: Authentication failed (invalid or missing JWT)
      *         content:
      *           application/json:
@@ -64,7 +69,16 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
      *               properties:
      *                 message:
      *                   type: string
-     *       500:
+     *       '403':
+     *         description: Unauthorized (user not allowed to create organizations)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '500':
      *         description: Internal server error while creating the organization
      *         content:
      *           application/json:
@@ -80,16 +94,12 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
 
         try {
             if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'organizations')))
-                return res.status(401).json({ message: 'Unauthorized request' });
-
-            if (!req.body || !req.body.organizationName) {
-                throw new Error('Body is empty or missing organizationName');
-            }
+                return res.status(403).json({ message: 'Unauthorized request' });
 
             const organizationId = await organizationService.createOrganization(req.body.organizationName);
             return res.status(200).json({ message: 'Organization created successfully', id: organizationId });

@@ -8,9 +8,7 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
      * @swagger
      * /companies/create:
      *   post:
-     *     security:
-     *       - bearerAuth: []
-     *     summary: Create a new company and associate it with an organization
+     *     summary: Creates a new company and associate it with an organization
      *     description: Endpoint to register a new company under a specified organization. Requires authentication and proper authorization.
      *     tags: [Company route]
      *     requestBody:
@@ -33,16 +31,32 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
      *                   type: number
      *                   description: Id of the new Company           
      *       '400':
-     *         description: Bad Request – missing or invalid request data
+     *         description: Input validation error (Bad Request)
      *         content:
      *           application/json:
      *             schema:
      *               type: object
+     *               required:
+     *                 - message
+     *                 - errors
      *               properties:
      *                 message:
      *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
      *       '401':
-     *         description: Unauthorized – user does not have permission to create a company
+     *         description: Authentication failed (invalid or missing JWT)
      *         content:
      *           application/json:
      *             schema:
@@ -51,16 +65,7 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
      *                 message:
      *                   type: string
      *       '403':
-     *         description: Authentication failed – invalid or missing JWT
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       '409':
-     *         description: Conflict – company name already exists
+     *         description: Unauthorized (user not allowed to create companies)
      *         content:
      *           application/json:
      *             schema:
@@ -85,22 +90,14 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
 
         try {
             if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'companies')))
-                return res.status(401).json({ message: 'Unauthorized request' });
+                return res.status(403).json({ message: 'Unauthorized request' });
 
-            if (!req.body || req.body === '')
-                throw new Error('Body is empty');
-
-            const organizationId = Number(req.body.organizationId)
-
-            if (isNaN(organizationId) || !Number.isInteger(organizationId)) {
-                return res.status(400).json({ message: 'organization ID is required and must be a number' });
-            }
-
+            const organizationId = req.body.organizationId
             const companyName = req.body.companyName;
             const company = new Company(companyName, organizationId);
 

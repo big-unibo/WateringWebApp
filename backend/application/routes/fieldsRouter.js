@@ -15,8 +15,6 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *     description: Creates a new field within a company. Requires authentication and proper authorization.
      *     tags:
      *       - Fields
-     *     security:
-     *       - bearerAuth: []
      *     requestBody:
      *       required: true
      *       content:
@@ -36,8 +34,33 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *                 id:
      *                   type: number
      *                   description: Id of the new Field           
-     *       400:
-     *         description: Bad Request (missing or invalid companyId)
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *                 - errors
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
      *         content:
      *           application/json:
      *             schema:
@@ -45,17 +68,8 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *               properties:
      *                 message:
      *                   type: string
-     *       401:
-     *         description: Unauthorized (user not allowed to create field)
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       403:
-     *         description: Authentication failed
+     *       '403':
+     *         description: Unauthorized (user not allowed to create fields)
      *         content:
      *           application/json:
      *             schema:
@@ -79,24 +93,18 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
 
         try {
-            if (!req.body || req.body === '')
-                throw new Error('Body is empty');
-
             const companyId = Number(req.body.companyId)
 
-            if (isNaN(companyId) || !Number.isInteger(companyId)) {
-                return res.status(400).json({ message: 'companyId is required and must be a number' });
-            }
-
             if (!(await authorizationService.isUserAuthorizedById(requestUserData.userid, 'update', 'companies', companyId)))
-                return res.status(401).json({ message: 'Unauthorized request' });
+                return res.status(403).json({ message: 'Unauthorized request' });
 
             const fieldLocation = req.body.location
-            const field = new Field(req.body.fieldName, companyId, fieldLocation);
+            const fieldName = req.body.fieldName
+            const field = new Field(fieldName, companyId, fieldLocation);
             const fieldId = await fieldService.createField(field);
 
             return res.status(200).json({ message: `Field created with success`, id: fieldId })
@@ -110,9 +118,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      * @swagger
      * /fields/{fieldId}/createSector:
      *   post:
-     *     security:
-     *       - bearerAuth: []
-     *     summary: Create a new sector
+     *     summary: Creates a new sector
      *     description: Creates a new sector within a field. Requires authentication and proper authorization.
      *     tags:
      *       - Fields
@@ -142,8 +148,33 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *                 id:
      *                   type: number
      *                   description: Id of the new Sector          
-     *       400:
-     *         description: Bad request (missing or invalid fieldId, sectorName, or culture)
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *                 - errors
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
      *         content:
      *           application/json:
      *             schema:
@@ -151,17 +182,8 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *               properties:
      *                 message:
      *                   type: string
-     *       401:
-     *         description: Unauthorized request – user not allowed to create a sector
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       403:
-     *         description: Authentication failed – invalid or missing JWT
+     *       '403':
+     *         description: Unauthorized (user not allowed to create sectors for the given field)
      *         content:
      *           application/json:
      *             schema:
@@ -185,20 +207,13 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
         try {
-            if (!req.body || req.body === '')
-                throw new Error('Body is empty');
-
-            const fieldId = Number(req.params.fieldId)
-
-            if (isNaN(fieldId) || !Number.isInteger(fieldId)) {
-                return res.status(400).json({ message: 'field ID is required and must be a number' });
-            }
+            const fieldId = req.params.fieldId
 
             if (!(await authorizationService.isUserAuthorizedInField(requestUserData.userid, 'update', fieldId)))
-                return res.status(401).json({ message: 'Unauthorized request' });
+                return res.status(403).json({ message: 'Unauthorized request' });
 
             const {
                 sectorName,

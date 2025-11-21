@@ -3,11 +3,12 @@ import { UserTokenRequest, UserTokenResponse } from '../dtos/authenticationDto.j
 import { User, Users } from '../dtos/userDto.js';
 
 const usersRouter = ({ userService, authenticationService, authorizationService }) => {
-        const router = Router();
+    const router = Router();
     /**
      * @swagger
      * /login:
      *   post:
+     *     security: []
      *     summary: Authenticate user and generate token
      *     tags: [User route]
      *     requestBody:
@@ -23,6 +24,32 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      *           application/json:
      *             schema:
      *               $ref: '#/components/schemas/UserTokenResponse'
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *                 - errors
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+
      *       '500':
      *         description: Internal server error
      *         content:

@@ -1,27 +1,27 @@
-openapi: 3.0.0
-info:
-  version: 1.0.1
-  title: GeoJSON format
-  description: >
-    This document defines the GeoJSON format as an OpenAPI.
-    It contains the definitions for 'Feature' object and 'FeatureCollection'
-    objects, as well as the definitions for all 'Geometry' objects.
-    It conforms with the 'RFC-7946' standard from IETF (August 2016 version)
+# openapi: 3.0.0
+# info:
+#   version: 1.0.1
+#   title: GeoJSON format
+#   description: >
+#     This document defines the GeoJSON format as an OpenAPI.
+#     It contains the definitions for 'Feature' object and 'FeatureCollection'
+#     objects, as well as the definitions for all 'Geometry' objects.
+#     It conforms with the 'RFC-7946' standard from IETF (August 2016 version)
 
-    Kudos to @bubbobne and @idkw whose code helped me not start from scratch
-    https://gist.github.com/bubbobne/fe5f2db65acf039be6a9fd92fc9c7233
+#     Kudos to @bubbobne and @idkw whose code helped me not start from scratch
+#     https://gist.github.com/bubbobne/fe5f2db65acf039be6a9fd92fc9c7233
 
-  termsOfService: 'no'
-  contact:
-    name: Zitoun
-    email: 'zitoun@gmail.com'
-  license: 
-    name: MIT
-    url: https://opensource.org/licenses/mit-license.php
-#•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
-externalDocs:
-  description: 'Official GeoJSON specification – IETF RFC-7946 (August 2016)'
-  url: 'https://tools.ietf.org/html/rfc7946'
+#   termsOfService: 'no'
+#   contact:
+#     name: Zitoun
+#     email: 'zitoun@gmail.com'
+#   license: 
+#     name: MIT
+#     url: https://opensource.org/licenses/mit-license.php
+# #•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+# externalDocs:
+#   description: 'Official GeoJSON specification – IETF RFC-7946 (August 2016)'
+#   url: 'https://tools.ietf.org/html/rfc7946'
 
 #•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 components:
@@ -125,8 +125,17 @@ components:
             - MultiPolygon
         required:
         - type
+        - coordinates
         discriminator:
           propertyName: type
+          mapping:
+            Point: '#/components/schemas/Point'
+            MultiPoint: '#/components/schemas/MultiPoint'
+            LineString: '#/components/schemas/LineString'
+            MultiLineString: '#/components/schemas/MultiLineString'
+            Polygon: '#/components/schemas/Polygon'
+            MultiPolygon: '#/components/schemas/MultiPolygon'
+          
 
     #---------------------------------------------------------------------------
     'Position':
@@ -151,6 +160,35 @@ components:
       maxItems: 3
       items:
         type: number
+  
+    #---------------------------------------------------------------------------
+    'LineStringCoordinates':
+      description: >
+        GeoJSon fundamental geometry construct, array of two or more positions.
+      externalDocs:
+        url: 'https://tools.ietf.org/html/rfc7946#section-3.1.4'
+      type: array
+      items:
+        $ref: '#/components/schemas/Position'
+      minItems: 2
+      
+    #---------------------------------------------------------------------------
+    'LinearRing':
+      description: >
+        A linear ring is a closed LineString with four or more positions.
+        The first and last positions are equivalent, and they MUST contain
+        identical values; their representation SHOULD also be identical.
+        A linear ring is the boundary of a surface or the boundary of a hole in
+        a surface.
+        A linear ring MUST follow the right-hand rule with respect to the area
+        it bounds, i.e., exterior rings are counterclockwise, and holes are
+        clockwise.
+      externalDocs:
+        url: 'https://tools.ietf.org/html/rfc7946#section-3.1.6'
+      type: array
+      items:
+        $ref: '#/components/schemas/Position'
+      minItems: 4
 
     #---------------------------------------------------------------------------
     'Point':

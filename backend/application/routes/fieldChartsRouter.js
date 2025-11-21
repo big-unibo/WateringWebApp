@@ -35,11 +35,12 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *       - in: query
      *         name: signalTypes
      *         required: true
+     *         style: form
+     *         explode: true
      *         schema:
      *           type: array
      *           items:
      *             type: string
-     *           collectionFormat: multi
      *         description: Array of Signal Types 
      *       - in: query
      *         name: timeFilterFrom
