@@ -10,8 +10,6 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      * @swagger
      * /devices/create:
      *   post:
-     *     security:
-     *       - bearerAuth: []
      *     summary: Create a new device with its signals
      *     description: Receives a device object with a list of signals and creates the device along with its signals.  Requires authentication and proper authorization.
      *     tags:
@@ -122,8 +120,6 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      * @swagger
      * /devices/{deviceId}/assign:
      *   post:
-     *     security:
-     *       - bearerAuth: []
      *     summary: Assigns all the signals of a device to a given field, sector, or thesis
      *     description: |
      *       Assigns all the signals of a device to a given field, sector, or thesis.

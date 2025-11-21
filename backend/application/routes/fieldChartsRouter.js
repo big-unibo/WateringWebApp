@@ -6,13 +6,11 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      * @swagger
      * /fieldCharts/{thesisId}/signals:
      *   get:
-     *     security:
-     *       - bearerAuth: []
      *     summary: Retrieves data for one or more given types of signals for a given thesis, optionally filtered by time
      *     tags: [Field Chart Data]
      *     description: |
      *       Retrieves data for one or more given types of signals for a given thesis,
-     *       optionally filtered by time.
+     *       optionally filtered by time. Requires authentication and proper authorization.
      *       
      *       **Query parameters:**
      *       - **signalTypes** (*array of string*): Types of signals to retrieve.
@@ -47,13 +45,13 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *         required: true
      *         schema:
      *           type: number
-     *         description: Time filter start (timestamp in seconds)
+     *         description: Time filter start (timestamp in seconds since 01/01/1970)
      *       - in: query
      *         name: timeFilterTo
      *         required: true
      *         schema:
      *           type: number
-     *         description: Time filter end (timestamp in seconds)
+     *         description: Time filter end (timestamp in seconds since 01/01/1970)
      *       - in: query
      *         name: aggregationPeriod
      *         schema:
@@ -71,26 +69,41 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *           application/json:
      *             schema:
      *               $ref: "#/components/schemas/SignalsDataResponse"
-     *       400:
-     *         description: Invalid or missing query parameters
+     *       '400':
+     *         description: Input validation error (Bad Request)
      *         content:
      *           application/json:
      *             schema:
      *               type: object
+     *               required:
+     *                 - message
      *               properties:
      *                 message:
      *                   type: string
-     *       401:
-     *         description: Unauthorized (user not allowed to view signals)
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       403:
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
      *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to retrieve signals data for the given thesis)
      *         content:
      *           application/json:
      *             schema:
@@ -113,30 +126,17 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
         // [TO DO]: Authorization
         const thesisId = Number(req.params.thesisId)
 
-        if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
-            return res.status(400).json({ message: 'thesis ID is required and must be a number' });
-        }
-
-        let signalTypes = req.query.signalTypes || []
-        if (!Array.isArray(signalTypes)) signalTypes = [signalTypes]
-
         const timeFilterFrom = Number(req.query.timeFilterFrom)
         const timeFilterTo = Number(req.query.timeFilterTo)
 
-        if (isNaN(timeFilterFrom)) {
-            return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid timestamp' });
-        }
-        if (isNaN(timeFilterTo)) {
-            return res.status(400).json({ message: 'timeFilterTo is required and must be a valid timestamp' });
-        }
-
+        const signalTypes = req.query.signalTypes
         const aggregationType = req.query.aggregationType;
-        const aggregationPeriod = req.query.aggregationPeriod;
+        const aggregationPeriod = req.query.aggregationPeriod ? Number(req.query.aggregationPeriod) : undefined;
 
         try {
             const results = await fieldService.getMeasurementsByThesis(
@@ -158,11 +158,9 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      * @swagger
      * /fieldCharts/{thesisId}/heatmap:
      *   get:
-     *     security:
-     *       - bearerAuth: []
      *     summary: Retrieves the heatmap for a given thesis in a time interval
      *     tags: [Field Chart Data]
-     *     description: Retrieves the heatmap for a given thesis in a time interval
+     *     description: Retrieves the heatmap for a given thesis in a time interval. Requires authentication and proper authorization.
      *     parameters:
      *       - in: path
      *         name: thesisId
@@ -175,13 +173,13 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *         required: true
      *         schema:
      *           type: number
-     *         description: Time filter start (timestamp in seconds)
+     *         description: Time filter start (in seconds since 01/01/1970)
      *       - in: query
      *         name: timeFilterTo
      *         required: true
      *         schema:
      *           type: number
-     *         description: Time filter end (timestamp in seconds)
+     *         description: Time filter end (in seconds since 01/01/1970)
      *     responses:
      *       200:
      *         description: Successfully retrieved heatmap data
@@ -189,26 +187,41 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *           application/json:
      *             schema:
      *               $ref: "#/components/schemas/InterpolatedDataResponse"
-     *       400:
-     *         description: Invalid or missing query parameters
+     *       '400':
+     *         description: Input validation error (Bad Request)
      *         content:
      *           application/json:
      *             schema:
      *               type: object
+     *               required:
+     *                 - message
      *               properties:
      *                 message:
      *                   type: string
-     *       401:
-     *         description: Unauthorized (user not allowed to view heatmaps)
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       403:
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
      *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to retrieve heatmap data for the given thesis)
      *         content:
      *           application/json:
      *             schema:
@@ -231,25 +244,15 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
 
         // [TO DO]: Authorization
         const thesisId = Number(req.params.thesisId)
-        if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
-            return res.status(400).json({ message: 'thesis ID is required and must be a number' });
-        }
 
         const timeFilterFrom = Number(req.query.timeFilterFrom)
         const timeFilterTo = Number(req.query.timeFilterTo)
-
-        if (isNaN(timeFilterFrom)) {
-            return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid timestamp' });
-        }
-        if (isNaN(timeFilterTo)) {
-            return res.status(400).json({ message: 'timeFilterTo is required and must be a valid timestamp' });
-        }
-
+        
         try {
             const results = await fieldService.getHeatmapByThesis(
                 thesisId,
@@ -258,6 +261,7 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
             );
             return res.status(200).json(results);
         } catch (error) {
+            console.error(`Failed retrieving thesis heatmap caused by: ${error.message}`);
             return res.status(500).json({ message: error.message });
         }
     })
@@ -266,11 +270,9 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      * @swagger
      * /fieldCharts/{thesisId}/humidityBins:
      *   get:
-     *     security:
-     *       - bearerAuth: []
      *     summary: Retrieves humidity bins data for a given thesis in a time interval
      *     tags: [Field Chart Data]
-     *     description: Retrieves humidity bins data for a given thesis in a time interval
+     *     description: Retrieves humidity bins data for a given thesis in a time interval. Requires authentication and proper authorization.
      *     parameters:
      *       - in: path
      *         name: thesisId
@@ -283,13 +285,13 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *         required: true
      *         schema:
      *           type: number
-     *         description: Time filter start (timestamp in seconds)
+     *         description: Time filter start (timestamp in seconds since 01/01/1970)
      *       - in: query
      *         name: timeFilterTo
      *         required: true
      *         schema:
      *           type: number
-     *         description: Time filter end (timestamp in seconds)
+     *         description: Time filter end (timestamp in seconds since 01/01/1970)
      *     responses:
      *       200:
      *         description: Successfully retrieved humidity bins data
@@ -297,26 +299,41 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *           application/json:
      *             schema:
      *               $ref: "#/components/schemas/HumidityBinsDataResponse"
-     *       400:
-     *         description: Invalid or missing query parameters
+     *       '400':
+     *         description: Input validation error (Bad Request)
      *         content:
      *           application/json:
      *             schema:
      *               type: object
+     *               required:
+     *                 - message
      *               properties:
      *                 message:
      *                   type: string
-     *       401:
-     *         description: Unauthorized (user not allowed to see humidity bins data)
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       403:
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
      *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to retrieve humidty bins data for the given thesis)
      *         content:
      *           application/json:
      *             schema:
@@ -339,23 +356,13 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
         // [TO DO]: Authorization
         const thesisId = Number(req.params.thesisId)
-        if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
-            return res.status(400).json({ message: 'thesis ID is required and must be a number' });
-        }
 
         const timeFilterFrom = Number(req.query.timeFilterFrom)
         const timeFilterTo = Number(req.query.timeFilterTo)
-
-        if (isNaN(timeFilterFrom)) {
-            return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid timestamp' });
-        }
-        if (isNaN(timeFilterTo)) {
-            return res.status(400).json({ message: 'timeFilterTo is required and must be a valid timestamp' });
-        }
 
         try {
             const results = await fieldService.getHumidityBinsByThesis(
@@ -365,6 +372,7 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
             );
             return res.status(200).json(results);
         } catch (error) {
+            console.error(`Failed retrieving humidty heatmap caused by: ${error.message}`);
             return res.status(500).json({ message: error.message });
         }
     })
@@ -374,8 +382,6 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      * @swagger
      * /fieldCharts/{thesisId}/waterAggregate:
      *   get:
-     *     security:
-     *       - bearerAuth: []
      *     summary: Retrieves daily aggregates of a thesis' signals, expected water and advice data. (Requires proper authorization and authentication).
      *     tags: [Field Chart Data]
      *     description: Retrieves daily aggregates of a thesis' signals, expected water and advice data. (Requires proper authorization and authentication).
@@ -391,13 +397,13 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *         required: true
      *         schema:
      *           type: number
-     *         description: Time filter start (timestamp in seconds)
+     *         description: Time filter start (timestamp in seconds since 01/01/1970)
      *       - in: query
      *         name: timeFilterTo
      *         required: true
      *         schema:
      *           type: number
-     *         description: Time filter end (timestamp in seconds)
+     *         description: Time filter end (timestamp in seconds since 01/01/1970)
      *     responses:
      *       200:
      *         description: Successfully retrieved heatmap data
@@ -405,26 +411,41 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *           application/json:
      *             schema:
      *               $ref: "#/components/schemas/SignalsDataResponse"
-     *       400:
-     *         description: Invalid or missing query parameters
+     *       '400':
+     *         description: Input validation error (Bad Request)
      *         content:
      *           application/json:
      *             schema:
      *               type: object
+     *               required:
+     *                 - message
      *               properties:
      *                 message:
      *                   type: string
-     *       401:
-     *         description: Unauthorized (user not allowed to view heatmaps)
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       403:
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
      *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to retrieve water aggregate data for the given thesis)
      *         content:
      *           application/json:
      *             schema:
@@ -447,23 +468,13 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
         // [TO DO]: Authorization
         const thesisId = Number(req.params.thesisId)
-        if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
-            return res.status(400).json({ message: 'thesis ID is required and must be a number' });
-        }
 
         const timeFilterFrom = Number(req.query.timeFilterFrom)
         const timeFilterTo = Number(req.query.timeFilterTo)
-
-        if (isNaN(timeFilterFrom)) {
-            return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid timestamp' });
-        }
-        if (isNaN(timeFilterTo)) {
-            return res.status(400).json({ message: 'timeFilterTo is required and must be a valid timestamp' });
-        }
 
         try {
             const results = await fieldService.getWaterAggregateByThesis(
@@ -473,6 +484,7 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
             );
             return res.status(200).json(results);
         } catch (error) {
+            console.error(`Failed retrieving humidty humidty bins caused by: ${error.message}`);
             return res.status(500).json({ message: error.message });
         }
     })
@@ -481,10 +493,8 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      * @swagger
      * /fieldCharts/{thesisId}/distanceProfileToOptimal:
      *   get:
-     *     security:
-     *       - bearerAuth: []
      *     summary: Get the profile of distances between actual ond optimal one
-     *     description: Get the profile of distances between actual ond optimal one
+     *     description: Get the profile of distances between actual ond optimal one. Requires authentication and proper validation.
      *     tags: [Field Chart Data]
      *     parameters:
      *       - in: path
@@ -505,16 +515,31 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *           application/json:
      *             schema:
      *                     $ref: '#/components/schemas/DistanceProfile'
-     *       400:
-     *         description: Invalid or missing query parameters
+     *       '400':
+     *         description: Input validation error (Bad Request)
      *         content:
      *           application/json:
      *             schema:
      *               type: object
+     *               required:
+     *                 - message
      *               properties:
      *                 message:
      *                   type: string
-     *       401:
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
      *         description: Authentication failed (invalid or missing JWT)
      *         content:
      *           application/json:
@@ -523,8 +548,8 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *               properties:
      *                 message:
      *                   type: string
-     *       403:
-     *         description: Unauthorized (user not allowed to view heatmaps)
+     *       '403':
+     *         description: Unauthorized (user not allowed to retrieve distance to optimal data for the given thesis)
      *         content:
      *           application/json:
      *             schema:
@@ -554,16 +579,13 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         //     return res.status(403).json({ message: 'Unauthorized request' });
 
         const thesisId = Number(req.params.thesisId)
-
-        if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
-            return res.status(400).json({ message: 'thesis ID is required and must be a number' });
-        }
-        const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
+        const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000;
 
         try {
             const result = await fieldService.getPunctualDistance(thesisId, timestamp);
             res.status(200).json(result);
         } catch (error) {
+            console.error(`Failed retrieving distnace profile to optimal caused by: ${error.message}`);
             return res.status(500).json({ message: error.message });
         }
     });
@@ -572,10 +594,8 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
     * @swagger
     * /fieldCharts/{thesisId}/optimalState:
     *   get:
-    *     security:
-    *       - bearerAuth: []
     *     summary: Gets the thesis optimal state for a given timestamp
-    *     description: Gets the thesis optimal state for a given timestamp, requires proper authorization ad authentication.
+    *     description: Gets the thesis optimal state for a given timestamp, requires auhtentication ad proper authorization.
     *     tags: [Field Chart Data]
     *     parameters:
     *       - in: path
@@ -596,33 +616,48 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
     *           application/json:
     *             schema:
     *                     $ref: '#/components/schemas/OptimalStateData'
-    *       400:
-    *         description: Invalid or missing query parameters
-    *         content:
-    *           application/json:
-    *             schema:
-    *               type: object
-    *               properties:
-    *                 message:
-    *                   type: string
-    *       401:
-    *         description: Authentication failed (invalid or missing JWT)
-    *         content:
-    *           application/json:
-    *             schema:
-    *               type: object
-    *               properties:
-    *                 message:
-    *                   type: string
-    *       403:
-    *         description: Unauthorized (user not allowed to view heatmaps)
-    *         content:
-    *           application/json:
-    *             schema:
-    *               type: object
-    *               properties:
-    *                 message:
-    *                   type: string
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to retrieve optimal state data for the given thesis)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
     *       500:
     *         description: Internal server error
     *         content:
@@ -645,11 +680,7 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         //     return res.status(403).json({ message: 'Unauthorized request' });
 
         const thesisId = Number(req.params.thesisId)
-
-        if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
-            return res.status(400).json({ message: 'thesis ID is required and must be a number' });
-        }
-        const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
+        const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000;
 
         try {
             const result = await fieldService.getOptimalState(thesisId, timestamp);
@@ -663,8 +694,6 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      * @swagger
      * /fieldCharts/{thesisId}/optimalDistance:
      *   get:
-     *     security:
-     *       - bearerAuth: []
      *     summary: Retrieves optimal distance data (Requires proper authorization and authentication).
      *     tags: [Field Chart Data]
      *     description: Retrieves optimal distance data, with values of actual and optimal level, wet and dry bounds for comparison reference (Requires proper authorization and authentication).
@@ -680,30 +709,45 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *         required: true
      *         schema:
      *           type: number
-     *         description: Time filter start (timestamp in seconds)
+     *         description: Time filter start (timestamp in seconds since 01/01/1970)
      *       - in: query
      *         name: timeFilterTo
      *         required: true
      *         schema:
      *           type: number
-     *         description: Time filter end (timestamp in seconds)
+     *         description: Time filter end (timestamp in seconds since 01/01/1970)
      *     responses:
      *       200:
-    *         description: Successfully retrieved optimal distance data
-    *         content:
-    *           application/json:
-    *             schema:
-    *               $ref: '#/components/schemas/OptimalDistanceData'
-     *       400:
-     *         description: Invalid or missing query parameters
+     *         description: Successfully retrieved optimal distance data
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/OptimalDistanceData'
+     *       '400':
+     *         description: Input validation error (Bad Request)
      *         content:
      *           application/json:
      *             schema:
      *               type: object
+     *               required:
+     *                 - message
      *               properties:
      *                 message:
      *                   type: string
-     *       401:
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
      *         description: Authentication failed (invalid or missing JWT)
      *         content:
      *           application/json:
@@ -712,8 +756,8 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *               properties:
      *                 message:
      *                   type: string
-     *       403:
-     *         description: Unauthorized (user not allowed to view optimal distance data)
+     *       '403':
+     *         description: Unauthorized (user not allowed to retrieve optimal distance data for the given thesis)
      *         content:
      *           application/json:
      *             schema:
@@ -744,18 +788,8 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
 
         const thesisId = Number(req.params.thesisId)
 
-        if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
-            return res.status(400).json({ message: 'thesis ID is required and must be a number' });
-        }
         const timeFilterFrom = Number(req.query.timeFilterFrom)
         const timeFilterTo = Number(req.query.timeFilterTo)
-
-        if (isNaN(timeFilterFrom)) {
-            return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid timestamp' });
-        }
-        if (isNaN(timeFilterTo)) {
-            return res.status(400).json({ message: 'timeFilterTo is required and must be a valid timestamp' });
-        }
 
         try {
             const result = await fieldService.getOptimalDistanceData(thesisId, timeFilterFrom, timeFilterTo);
@@ -769,8 +803,6 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      * @swagger
      * /fieldCharts/{thesisId}/profileStatistics:
      *   get:
-     *     security:
-     *       - bearerAuth: []
      *     summary: Retrieves statistics data of profile, specifically the mean and std for each chell. (Requires proper authorization and authentication).
      *     tags: [Field Chart Data]
      *     description: Retrieves statistics data of profile, specifically the mean and std for each chell. (Requires proper authorization and authentication).
@@ -786,30 +818,45 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *         required: true
      *         schema:
      *           type: number
-     *         description: Time filter start (timestamp in seconds)
+     *         description: Time filter start (timestamp in seconds since 01/01/1970)
      *       - in: query
      *         name: timeFilterTo
      *         required: true
      *         schema:
      *           type: number
-     *         description: Time filter end (timestamp in seconds)
+     *         description: Time filter end (timestamp in seconds since 01/01/1970)
      *     responses:
      *       200:
-    *         description: Successfully retrieved profile statistics
-    *         content:
-    *           application/json:
-    *             schema:
-    *               $ref: '#/components/schemas/InterpolatedMeansDataResponse'
-     *       400:
-     *         description: Invalid or missing query parameters
+     *         description: Successfully retrieved profile statistics
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/InterpolatedMeansDataResponse'
+     *       '400':
+     *         description: Input validation error (Bad Request)
      *         content:
      *           application/json:
      *             schema:
      *               type: object
+     *               required:
+     *                 - message
      *               properties:
      *                 message:
      *                   type: string
-     *       401:
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
      *         description: Authentication failed (invalid or missing JWT)
      *         content:
      *           application/json:
@@ -818,8 +865,8 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *               properties:
      *                 message:
      *                   type: string
-     *       403:
-     *         description: Unauthorized (user not allowed to view profile statistics)
+     *       '403':
+     *         description: Unauthorized (user not allowed to retrieve profile statistics for the given thesis)
      *         content:
      *           application/json:
      *             schema:
@@ -850,18 +897,8 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
 
         const thesisId = Number(req.params.thesisId)
 
-        if (isNaN(thesisId) || !Number.isInteger(thesisId)) {
-            return res.status(400).json({ message: 'thesis ID is required and must be a number' });
-        }
         const timeFilterFrom = Number(req.query.timeFilterFrom)
         const timeFilterTo = Number(req.query.timeFilterTo)
-
-        if (isNaN(timeFilterFrom)) {
-            return res.status(400).json({ message: 'timeFilterFrom is required and must be a valid timestamp' });
-        }
-        if (isNaN(timeFilterTo)) {
-            return res.status(400).json({ message: 'timeFilterTo is required and must be a valid timestamp' });
-        }
 
         try {
             const result = await fieldService.getInterpolatedMeans(thesisId, timeFilterFrom, timeFilterTo);

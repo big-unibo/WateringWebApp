@@ -11,7 +11,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      * @swagger
      * /fields/create:
      *   post:
-     *     summary: Create a new field
+     *     summary: Creates a new field
      *     description: Creates a new field within a company. Requires authentication and proper authorization.
      *     tags:
      *       - Fields
