@@ -9,10 +9,8 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      * @swagger
      * /signals/{signalId}/update:
      *   put:
-     *     security:
-     *       - bearerAuth: []
      *     summary: Update a signal
-     *     description: Updates one or more fields of an existing signal (description, idOnProvider, sensorTechnology).
+     *     description: Updates one or more fields of an existing signal (description, idOnProvider, sensorTechnology). Requires authentication and proper authorization.
      *     tags:
      *       - Signals
      *     parameters:
@@ -38,8 +36,32 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      *               properties:
      *                 message:
      *                   type: string
-     *       400:
-     *         description: Bad request – missing or invalid fields
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
      *         content:
      *           application/json:
      *             schema:
@@ -47,17 +69,8 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      *               properties:
      *                 message:
      *                   type: string
-     *       401:
-     *         description: Unauthorized – user is authenticated but not allowed to update signals
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       403:
-     *         description: Forbidden – authentication failed due to invalid or missing JWT
+     *       '403':
+     *         description: Unauthorized (user not allowed to update signals)
      *         content:
      *           application/json:
      *             schema:
@@ -81,13 +94,11 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
         try{
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({message: 'Authentication failed'});
+            return res.status(401).json({message: 'Authentication failed'});
         }
 
         //[TO DO]: Authorization
-        const signalId = req.params.signalId;
-        if(!signalId)
-            return res.status(400).json({message: 'Bad request, signalId not specified'});
+        const signalId = Number(req.params.signalId);
 
         const description = req.body.description;
         const idOnProvider = req.body.idOnProvider;
@@ -115,10 +126,8 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      * @swagger
      * /signals/{signalId}/addMeasurements:
      *   post:
-     *     security:
-     *       - bearerAuth: []
      *     summary: Adds one or more measurments for a given Signal
-     *     description: Adds one or more measurments for an existing signal.
+     *     description: Adds one or more measurments for an existing signal. Requires authentication and proper authorization.
      *     tags:
      *       - Signals
      *     parameters:
@@ -146,8 +155,32 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      *               properties:
      *                 message:
      *                   type: string
-     *       400:
-     *         description: Bad request – missing or invalid fields
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
      *         content:
      *           application/json:
      *             schema:
@@ -155,9 +188,8 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      *               properties:
      *                 message:
      *                   type: string
-     *                   example: Bad request, signalId not specified
-     *       401:
-     *         description: Unauthorized – user is authenticated but not allowed to create measurements for the given signal
+     *       '403':
+     *         description: Unauthorized (user not allowed to create mesurments for the given signal)
      *         content:
      *           application/json:
      *             schema:
@@ -165,17 +197,6 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      *               properties:
      *                 message:
      *                   type: string
-     *                   example: Unauthorized
-     *       403:
-     *         description: Forbidden – authentication failed due to invalid or missing JWT
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *                   example: Authentication failed
      *       500:
      *         description: Internal server error – unexpected error while creating measurments
      *         content:
@@ -192,30 +213,26 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
         try{
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({message: 'Authentication failed'});
+            return res.status(401).json({message: 'Authentication failed'});
         }
         //[TO DO]: Authorization
 
-        const signalId = req.params.signalId;
-        if(!signalId)
-            return res.status(400).json({message: 'Bad request, signalId not specified'});
+        const signalId = Number(req.params.signalId);
 
         const measurements = req.body;
-        const measurementsList = Array.isArray(measurements) ? measurements : [];
-
-        if (measurementsList.length === 0){
+        if (measurements.length === 0){
             return res.status(400).json({ message: 'No measurements provided' });
         }
 
         try{
             const measurementsData = new AddMeasurementsDto({
                 id : signalId,
-                measurements : measurementsList,
+                measurements : measurements,
             })
 
             await signalService.addMeasurements(measurementsData);
             return res.status(200).json({  
-                message: `Added ${measurementsList.length} measurement(s) to signal ${signalId}`  
+                message: `Added ${measurements.length} measurement(s) to signal ${signalId}`  
             });
         }
         catch (error) {
