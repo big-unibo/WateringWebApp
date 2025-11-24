@@ -174,7 +174,7 @@ class FieldRepository {
         });
     }
 
-    async disableThesesInSector(sectorId, timestamp) {
+    async disableThesisInSector(sectorId, thesisId, timestamp) {
         return await this.ThesisInSector.update(
             {
                 validTo: timestamp
@@ -182,6 +182,7 @@ class FieldRepository {
             {
             where: {
                 sectorId: sectorId,
+                thesisId: thesisId,
                 validFrom: {
                     [Op.lt]: timestamp
                 },

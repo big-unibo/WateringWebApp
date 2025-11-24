@@ -228,9 +228,14 @@ class FieldService {
             throw new Error(`Invalid thesis IDs: ${invalidParams.join(", ")}`);
         }
 
-        await this.fieldRepository.disableThesesInSector(sectorId, validFrom)
-        await thesesContributions.forEach(async t => await this.fieldRepository.assignThesisToSector(t.id, sectorId, t.weight, validFrom, validTo))
-        await [...thesesIds].filter(id => !paramThesisIds.has(id)).forEach(async id => await this.fieldRepository.assignThesisToSector(id, sectorId, 0, validFrom, validTo))
+        await thesesContributions.forEach(async t => {
+            await this.fieldRepository.disableThesisInSector(sectorId, t.id, validFrom)
+            await this.fieldRepository.assignThesisToSector(t.id, sectorId, t.weight, validFrom, validTo)
+        })
+        await [...thesesIds].filter(id => !paramThesisIds.has(id)).forEach(async id => {
+            await this.fieldRepository.disableThesisInSector(sectorId, id, validFrom)
+            await this.fieldRepository.assignThesisToSector(id, sectorId, 0, validFrom, validTo)
+        })
     }
 
     // async updateWateringSectorDetails(sectorDetails, timestampFrom) {
