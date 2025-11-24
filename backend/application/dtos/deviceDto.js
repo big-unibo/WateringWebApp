@@ -10,7 +10,7 @@ export class CreateSignal {
      * @param {string} idOnProvider  - Signal id for the provider
      * @param {string} sensorTechnology - Sensor technology
      */
-    constructor({typeId, description, x, y, z, virtual, unit, idOnProvider, sensorTechnology }) {
+    constructor(typeId, description, x, y, z, virtual, unit, idOnProvider, sensorTechnology) {
         this.typeId = typeId;
         this.description = description;
         this.x = x;
@@ -24,7 +24,7 @@ export class CreateSignal {
 }
 
 export class Device {
-    constructor({deviceId, deviceType, deviceDescription, signals}){
+    constructor(deviceId, deviceType, deviceDescription, signals){
         this.deviceId = deviceId;
         this.deviceType = deviceType;
         this.deviceDescription = deviceDescription;
@@ -33,7 +33,7 @@ export class Device {
 }
 
 export class Signal {
-    constructor({signalId, signalDescription, signalType, signalTypeDescription, x, y, z, virtual, unit}) {
+    constructor(signalId, signalDescription, signalType, signalTypeDescription, x, y, z, virtual, unit) {
         this.signalId = signalId;
         this.signalDescription = signalDescription;
         this.signalType = signalType;
@@ -55,13 +55,13 @@ export class CreateDevice {
      * @param {number} binningId  - Id of the binning profile
      * @param {Array<Signal>} signals - Array of signals
      */
-    constructor( {type, providerId, description, location, binningId, signals = [] }) {
+    constructor(type, providerId, description, location, binningId, signals = []) {
         this.type = type;
         this.providerId = providerId;
         this.description = description;
         this.location = location;
         this.binningId = binningId;
-        this.signals = signals.map(sig => new CreateSignal(sig));
+        this.signals = signals;
     }
 }
 
@@ -74,7 +74,7 @@ export class SignalAssociation {
      * @param {number} targetId - Id of the association target
      * @param {validFrom} - Start of the validy period of the association
      */
-    constructor({ deviceId, targetType, targetId, validFrom }) {
+    constructor(deviceId, targetType, targetId, validFrom) {
     this.deviceId = deviceId;
     this.targetType = targetType; 
     this.targetId = targetId;
@@ -95,7 +95,7 @@ export class SignalUpdate{
      * @param {string} idOnProvider 
      * @param {string} sensorTechnology 
      */
-    constructor({id,description, idOnProvider, sensorTechnology}){
+    constructor(id,description, idOnProvider, sensorTechnology){
         this.id = id;
         this.description = description;
         this.idOnProvider = idOnProvider;
@@ -109,7 +109,7 @@ export class Measurement{
      * @param {boolean} computed
      * @param {number} value
      */
-    constructor({timestamp, computed, value}){
+    constructor(timestamp, computed, value){
         this.timestamp = timestamp;
         this.computed = computed;
         this.value = value;
@@ -121,7 +121,7 @@ export class AddMeasurementsDto{
      * @param {number} id - Id of the signal the measurements ar leated to
      * @param {Array<Measurement>} measurements - Array of measurements 
      */
-    constructor({id, measurements}){
+    constructor(id, measurements){
         this.id = id;
         this.measurements = measurements;
     }

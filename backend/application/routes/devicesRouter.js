@@ -99,14 +99,8 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
 
             const signalsArray = req.body.signals
             
-            const device = new CreateDevice({
-                type: req.body.type,
-                providerId: Number(req.body.providerId),
-                description: req.body.description,
-                location: req.body.location,
-                binningId: Number(req.body.binningId),
-                signals: (signalsArray || []).map(sig => new CreateSignal(sig))
-            });
+            const device = new CreateDevice(req.body.type, Number(req.body.providerId), req.body.description,
+                req.body.location, req.body.binningId, (signalsArray || []).map(sig => new CreateSignal(sig)));
 
             const deviceId = await deviceService.createDevice(device);
             return res.status(200).json({ message: `Device created with success`, id: deviceId });
@@ -223,14 +217,11 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         try {
 
             const deviceId = req.params.deviceId
-            const targetType = req.body.targetType;
+            const targetType = req.body.targetType
+            const targetId = req.body.targetId
+            const validFrom = req.body.validFrom
 
-            const signalAssociation = new SignalAssociation({
-                deviceId: deviceId,
-                targetType: targetType,
-                targetId: body.targetId,
-                validFrom: body.validFrom
-            });
+            const signalAssociation = new SignalAssociation(deviceId, targetType, targetId, validFrom);
 
             await deviceService.assignSignals(signalAssociation);
             return res.status(200).json({ message: 'Signals successfully associated' });

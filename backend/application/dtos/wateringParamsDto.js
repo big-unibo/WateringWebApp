@@ -1,5 +1,5 @@
 export class WateringParams {
-  constructor({
+  constructor(
     maxWatering,
     minWatering,
     wateringBaseline,
@@ -8,7 +8,7 @@ export class WateringParams {
     kp,
     errorFunction,
     description
-  }) {
+  ) {
     this.maxWatering = maxWatering;
     this.minWatering = minWatering;
     this.wateringBaseline = wateringBaseline;

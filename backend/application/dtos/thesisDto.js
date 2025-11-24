@@ -7,7 +7,7 @@ export class Thesis {
      * @param {number} validTo - end of validty period for the thesis (optional)
      */
     constructor(
-            thesisName, 
+            thesisName,
             sectorId,
             weight,
             validFrom,
@@ -19,4 +19,11 @@ export class Thesis {
         this.validTo = validTo
         this.weight = weight
     }
+}
+
+export class ThesisRefDto {
+  constructor(id, name) {
+    this.id = id;
+    this.name = name;
+  }
 }
