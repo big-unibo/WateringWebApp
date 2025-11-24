@@ -172,6 +172,22 @@ components:
           type: string
           description: Sensor technology
 
+    UpdateWateringEvent:
+      type: object
+      properties:
+        wateringStart:
+          type: number
+          description: Start time of the watering event in Unix seconds
+        expectedWater:
+          type: number
+          description: Expected amount of water for the event
+        note:
+          type: string
+          description: Optional note related to the event
+        enabled:
+          type: boolean
+          description: Whether the watering event is enabled
+
     CreateDevice:
       type: object
       required:

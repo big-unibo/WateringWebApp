@@ -70,7 +70,23 @@ class WateringScheduleRepository {
             throw error; 
         }
     }
+
+    async updateWateringEvent(eventId, fieldsToUpdate) {
+        if (fieldsToUpdate.hasOwnProperty('wateringStart') && fieldsToUpdate.wateringStart !== null) {
+            const unixSeconds = fieldsToUpdate.wateringStart;
+            const dateObj = new Date(unixSeconds * 1000);
+            const formattedDate = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2,'0')}-${String(dateObj.getDate()).padStart(2,'0')}`;
+            fieldsToUpdate.date = formattedDate;
+        }
+        try{
+            const event = await this.WateringEvent.findByPk(eventId);
+            if(!event) return null;
+            return await event.update(fieldsToUpdate);      
+        }catch (error){
+           throw new Error(`Error while updating watering event caused by: ${error.message}`);
+        }
     }
+}
 
 export default WateringScheduleRepository;
 

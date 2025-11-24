@@ -15,6 +15,10 @@ class WateringScheduleService {
         }
         return dtoConverter.convertCalendarWrapper(results);
     }
+
+    async updateWateringEvent(eventId, fieldsToUpdate) {
+        return await this.wateringScheduleRepository.updateWateringEvent(eventId, fieldsToUpdate)
+    }
 }
 
 export default WateringScheduleService;

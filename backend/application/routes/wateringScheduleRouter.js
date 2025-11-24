@@ -7,11 +7,9 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
      * @swagger
      * /wateringSchedule/{sectorId}/calendar:
      *   get:
-     *     security:
-     *       - bearerAuth: []
      *     summary: Retrivies calendar data for a given secotr within a time range
      *     tags: [Watering Schedule Operation]
-     *     description: Returns every watering event for a given sector and within a given time range, also including the contribution of every thesis for the event.
+     *     description: Returns every watering event for a given sector and within a given time range, also including the contribution of every thesis for the event. Requires authentication and proper authorization
      *     parameters:
      *       - in: path
      *         name: sectorId
@@ -115,6 +113,133 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             return res.status(500).json({ message: "Error while retrieving calendar" });
         }
     })
+
+    /**
+     * @swagger
+     * /wateringSchedule/{eventId}/update:
+     *   put:
+     *     summary: Updates a watering event with the specified fields
+     *     tags: [Watering Schedule Operation]
+     *     description: Updates the specified watering event. Only the fields provided in the request body will be updated. Fields can be set to null if needed. Requires authentication and proper Authorization.
+     *     parameters:
+     *       - in: path
+     *         name: eventId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: Id of the watering event to update
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: "#/components/schemas/UpdateWateringEvent"
+     *     responses:
+     *       200:
+     *         description: Event successfully updated
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Event successfully updated
+     *       400:
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *                 - errors
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error
+     *       401:
+     *         description: Authentication failed – invalid or missing JWT token
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized – user does not have permission to update the event
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       404:
+     *         description: Event not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+
+    router.put('/:eventId/update', async (req, res) => {
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+        try {
+            //[TO DO]: Authorzation
+            // if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'companies')))
+            //     return res.status(403).json({ message: 'Unauthorized request' });
+
+            const eventId = req.params.eventId;
+
+            const allowedFields = ['wateringStart', 'expectedWater', 'note', 'enabled'];
+            const fieldsToUpdate = Object.fromEntries(
+                allowedFields
+                    .filter(k => req.body.hasOwnProperty(k))
+                    .map(k => [k, req.body[k]])
+            )
+
+            const result = await wateringScheduleService.updateWateringEvent(eventId, fieldsToUpdate);
+            if(!result){
+                return res.status(404).json({ message: "No event found with the given id"});
+            }
+            return res.status(200).json({ message: "Event successfully updated" });
+        } catch (error) {
+            console.log(`Failed retrieving calendar caused by: ${error.message}`);
+            return res.status(500).json({ message: "Error while retrieving calendar" });
+        }
+    })
+
 
     return router;
 };
