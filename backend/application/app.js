@@ -174,6 +174,11 @@ app.use(
   profileBinsRouter({ authenticationService, authorizationService, fieldService })
 )
 
+app.use(
+  '/wateringSchedule',
+  wateringScheduleRouter({authenticationService, authorizationService, wateringScheduleService})
+)
+
 app.use((err, req, res, next) => {
   if (err.status && err.errors) {
     //console.error('Validation Error:', err.errors);
