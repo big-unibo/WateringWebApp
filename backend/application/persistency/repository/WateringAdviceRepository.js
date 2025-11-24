@@ -1,4 +1,4 @@
-import { Op, Sequelize } from 'sequelize';
+import { Op, Sequelize, QueryTypes } from 'sequelize';
 
 class WateringAdviceRepository {
 
@@ -47,6 +47,32 @@ class WateringAdviceRepository {
             },
             raw: true
         })
+    }
+
+    async getWateringAlgorithmParams(sectorId, timefilterFrom, timefilterTo){
+        const query = `
+            SELECT DISTINCT 
+                wad.watering_frequency as "wateringFrequency",
+                wad.valid_from as "validFrom",
+                wad.valid_to as "validTo"
+            FROM watering_algorithm_params wad
+            JOIN theses_in_sectors tis ON tis.thesis_id = wad.thesis_id
+            WHERE tis.sector_id = :sectorId
+                AND tis.valid_from < :timefilterTo
+                AND ( tis.valid_to IS NULL OR tis.valid_to > :timefilterFrom )
+            ORDER BY wad.valid_from ASC
+        `;
+
+        const results = await this.sequelize.query(query, {
+            type: QueryTypes.SELECT,
+            replacements: {
+                sectorId,
+                timefilterFrom,
+                timefilterTo,
+            }
+        });
+
+        return results;
     }
 
         

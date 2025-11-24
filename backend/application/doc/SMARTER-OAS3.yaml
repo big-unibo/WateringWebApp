@@ -175,12 +175,8 @@ components:
     WateringEvent:
       type: object
       required:
-        - sectorId
         - wateringStart
       properties:
-        sectorId:
-          type: integer
-          description: The ID of the sector
         wateringStart:
           type: number
           description: Timestamp in seconds for when the watering starts

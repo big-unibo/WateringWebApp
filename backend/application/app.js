@@ -109,7 +109,7 @@ const fieldService = new FieldService(fieldRepository, companyRepository, theses
 const authorizationService = new AuthorizationService(userService, fieldService)
 const deviceService = new DeviceService(deviceRepository, signalRepository)
 const signalService = new SignalService(signalRepository)
-const wateringScheduleService = new WateringScheduleService(wateringScheduleRepository)
+const wateringScheduleService = new WateringScheduleService(wateringScheduleRepository, wateringAdviceRepository)
 const wateringAdviceService = new WateringAdviceService(wateringAdviceRepository, fieldRepository, interpolatedProfileRepository, optimalDistanceRepository, thesesAllSignalsRepository)
 
 app.use(express.json());

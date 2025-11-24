@@ -17,7 +17,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
      *         required: true
      *         schema:
      *           type: integer
-     *         description: Id of thesis
+     *         description: Id of the sector
      *       - in: query
      *         name: timeFilterFrom
      *         required: true
@@ -243,11 +243,18 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
 
     /**
      * @swagger
-     * /wateringSchedule/create:
+     * /wateringSchedule/{sectorId}/createEvent:
      *   post:
      *     summary: Create a new watering event
      *     tags: [Watering Schedule Operation]
      *     description: Creates a new watering event with the provided details. Requires authentication and proper authorization.
+     *     parameters:
+     *       - in: path
+     *         name: sectorId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: Id of the sector to create the watering event for
      *     requestBody:
      *       required: true
      *       content:
@@ -321,7 +328,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
      *                   type: string
     */
 
-    router.post('/create', async (req, res) => {
+    router.post('/:sectorId/createEvent', async (req, res) => {
         let requestUserData;
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -334,8 +341,8 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             // if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'watering_events')))
             //     return res.status(403).json({ message: 'Unauthorized request' });
 
-            const event= new WateringEvent({
-                sectorId: req.body.sectorId,
+            const event = new WateringEvent({
+                sectorId: req.params.sectorId,
                 wateringStart: req.body.wateringStart,
                 expectedWater: req.body.expectedWater,
                 note: req.body.note,
@@ -350,7 +357,136 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
         }
     });
 
+    /**
+     * @swagger
+     * /wateringSchedule/{sectorId}/createCalendar:
+     *   post:
+     *     summary: Create periodic watering events for a sector
+     *     tags: [Watering Schedule Operation]
+     *     description: |
+     *        Creates multiple watering events for a given sector within the specified time range based on the watering algorithm.  
+     *        Requires authentication and proper authorization.  
+     *        Steps performed:  
+     *            - The `timestampFrom` sets the watering_start timestamp for the first event.  
+     *            - Subsequent events are generated following the frequency defined in the watering algorithms assigned to theses of the sector.  
+     *            - Events are not generated beyond the `timestampTo` threshold.  
+     *     parameters:
+     *       - in: path
+     *         name: sectorId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: Id of the sector to create the watering events for
+     *       - in: query
+     *         name: timestampFrom
+     *         required: true
+     *         schema:
+     *           type: number
+     *         description: Start timestamp (in seconds since Unix epoch) for the watering events
+     *       - in: query
+     *         name: timestampTo
+     *         required: true
+     *         schema:
+     *           type: number
+     *         description: End timestamp (in seconds since Unix epoch) for the watering events
+     *     responses:
+     *       200:
+     *         description: Watering events created successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Watering events created successfully
+     *                 eventIds:
+     *                   type: array
+     *                   description: IDs of the newly created watering events
+     *                   items:
+     *                     type: integer
+     *       400:
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *                 - errors
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       401:
+     *         description: Authentication failed – invalid or missing JWT token.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Authentication failed
+     *       403:
+     *         description: Unauthorized – user does not have permission to create watering events
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Unauthorized request
+     *       500:
+     *         description: Internal server error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Error while creating watering calendar
+     */
 
+    router.post('/:sectorId/createCalendar', async (req, res) => {
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        try {
+            //[TO DO]: Authorization
+            // if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'watering_events')))
+            //     return res.status(403).json({ message: 'Unauthorized request' });
+
+            const sectorId = req.params.sectorId;
+            const timestampFrom = req.query.timestampFrom;
+            const timestampTo = req.query.timestampTo;
+
+
+            const newEventIds = await wateringScheduleService.createPeriodicWateringEvent(sectorId, timestampFrom, timestampTo);
+            res.status(200).json({ message: 'Watering events created successfully', eventIds: newEventIds });
+        } catch (error) {
+            console.error(`Error creating watering events: ${error.message}`);
+            res.status(500).json({ message: 'Error while creating watering calendar' });
+        }
+    });
 
     return router;
 };
