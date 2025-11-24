@@ -39,7 +39,7 @@ class FieldService {
     }
 
     async getSectorOwner(sectorId) {
-        const result = await this.fieldRepository.getSectorDetails(sectorId);
+        const result = await this.fieldRepository.getSectorDetails(sectorId, Date.now()/1000);
 
         if (!result || !result.field || !result.field.company) {
             throw new Error(`Company not found for sector ${sectorId}`);
@@ -53,7 +53,7 @@ class FieldService {
         if (!newThesisId) {
             throw Error("Impossible to create thesis")
         }
-        await this.fieldRepository.assignThesisToSector(newThesisId, thesis.sectorId, thesis.weight, thesis.validFrom || Math.floor(Date.now() / 1000));
+        await this.fieldRepository.assignThesisToSector(newThesisId, thesis.sectorId, undefined, thesis.validFrom || Math.floor(Date.now() / 1000));
         return newThesisId;
     }
 
@@ -138,8 +138,8 @@ class FieldService {
         return dtoConverter.convertSectorsDataWrapper(result);
     }
 
-    async getSectorDetails(sectorId) {
-        const result = await this.fieldRepository.getSectorDetails(sectorId);
+    async getSectorDetails(sectorId, timestamp) {
+        const result = await this.fieldRepository.getSectorDetails(sectorId, timestamp);
         return dtoConverter.convertSectorDataWrapper(result);
     }
 
@@ -182,7 +182,7 @@ class FieldService {
         return dtoConverter.convertOptimalDistanceWrapper(result)
     }
 
-        async getInterpolatedMeans(thesisId, timeFilterFrom, timeFilterTo) {
+    async getInterpolatedMeans(thesisId, timeFilterFrom, timeFilterTo) {
         const result = await this.interpolatedProfileRepository.getInterpolatedMeans(thesisId, timeFilterFrom, timeFilterTo)
         return dtoConverter.convertInterpolatedMeansWrapper(result)
     }
@@ -217,6 +217,27 @@ class FieldService {
     async getInterpolatedProfiles(thesisId, timeFilterFrom, timeFilterTo) {
         return await this.interpolatedProfileRepository.getInterpolatedProfiles(thesisId, timeFilterFrom, timeFilterTo);
     }
+
+    async setThesesContributions(sectorId, thesesContributions, validFrom, validTo) {
+        const thesesIds = new Set((await this.getSectorDetails(sectorId, validFrom)).theses.map(t => t.id))
+        const paramThesisIds = new Set(thesesContributions.map(t => t.id))
+
+        //Find invalid params (present in params but NOT in DB)
+        const invalidParams = [...paramThesisIds].filter(id => !thesesIds.has(id));
+        if (invalidParams.length > 0) {
+            throw new Error(`Invalid thesis IDs: ${invalidParams.join(", ")}`);
+        }
+
+        await thesesContributions.forEach(async t => {
+            await this.fieldRepository.disableThesisInSector(sectorId, t.id, validFrom)
+            await this.fieldRepository.assignThesisToSector(t.id, sectorId, t.weight, validFrom, validTo)
+        })
+        await [...thesesIds].filter(id => !paramThesisIds.has(id)).forEach(async id => {
+            await this.fieldRepository.disableThesisInSector(sectorId, id, validFrom)
+            await this.fieldRepository.assignThesisToSector(id, sectorId, 0, validFrom, validTo)
+        })
+    }
+
     // async updateWateringSectorDetails(sectorDetails, timestampFrom) {
     //     await this.fieldRepository.updateWateringSectorDetails(sectorDetails, timestampFrom || Math.floor(Date.now()/1000))
     // }
@@ -227,10 +248,6 @@ class FieldService {
 
     // async findThesisPoints(refStructureName, companyName, fieldName, sectorName, thesisName) {
     //     return this.dataInterpolatedRepository.findThesisPoints(refStructureName, companyName, fieldName, sectorName, thesisName)
-    // }
-
-    // async setPrescriptiveThesis(refStructureName, companyName, fieldName, sectorName, prescriptiveThesis, timestampFrom) {
-    //     await this.fieldRepository.setPrescriptiveThesis(refStructureName, companyName, fieldName, sectorName, prescriptiveThesis, timestampFrom || Math.floor(Date.now()/1000))
     // }
 
     // async disableWateringBaseline(refStructureName, companyName, fieldName, sectorName, timestamp) {

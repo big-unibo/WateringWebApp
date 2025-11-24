@@ -4,9 +4,9 @@ import { SignalData, MeasureData, SignalTypeData } from '../dtos/dataDto.js';
 import { WateringScheduleResponse, WateringEventData, ThesisContributionData } from "../dtos/wateringScheduleDto.js";
 import { DistanceValue, OptimalDistanceData, DistanceProfile, OptimalProfileData, OptimalStateData } from "../dtos/optStateDto.js";
 import { WateringAdviceDto } from "../dtos/wateringAdviceDto.js";
-import { SectorCompactDto, SectorDataDto, ThesisRefDto } from "../dtos/sectorDto.js";
+import { SectorCompactDto, SectorDataDto } from "../dtos/sectorDto.js";
 import { Signal, Device } from "../dtos/deviceDto.js";
-import { Thesis } from "../dtos/thesisDto.js";
+import { Thesis,ThesisRefDto} from "../dtos/thesisDto.js";
 
 class DtoConverter {
 
@@ -21,25 +21,25 @@ class DtoConverter {
     convertSectorsDataWrapper(sectorsData) {
         if (!Array.isArray(sectorsData)) return [];
 
-        return sectorsData.map(s => new SectorCompactDto({
-            sectorId: s.sectorId,
-            sectorName: s.sectorName,
-            culture: s.culture,
-            cultureType: s.cultureType,
-            location: s.location,
-            field: {
+        return sectorsData.map(s => new SectorCompactDto(
+            s.sectorId,
+            s.sectorName,
+            s.culture,
+            s.cultureType,
+            s.location,
+            {
                 id: s.fieldId,
                 name: s.fieldName
             },
-            company: {
+            {
                 id: s.companyId,
                 name: s.companyName
             },
-            organization: {
+            {
                 id: s.organizationId,
                 name: s.organizationName
             }
-        }));
+        ));
     }
 
 
@@ -50,7 +50,7 @@ class DtoConverter {
         })) || [];
 
         const uniqueTheses = Array.from(new Map(theses.map(t => [t.id, t])).values());
-        const thesisDtos = uniqueTheses.map(t => new ThesisRefDto(t));
+        const thesisDtos = uniqueTheses.map(t => new ThesisRefDto(t.id, t.name));
 
         const organization = {
             id: sectorData.field.company.organizationId,
@@ -69,22 +69,22 @@ class DtoConverter {
         };
 
 
-        return new SectorDataDto({
-            sectorId: sectorData.id,
-            sectorName: sectorData.sectorName,
-            culture: sectorData.culture,
-            cultureType: sectorData.cultureType,
-            location: sectorData.location,
-            prescriptive: sectorData.prescriptive,
-            advice: sectorData.advice,
-            dripperCapacity: sectorData.dripperCapacity,
-            sprinklerCapacity: sectorData.sprinklerCapacity,
-            doubleWing: sectorData.doubleWing,
+        return new SectorDataDto(
+            sectorData.id,
+            sectorData.sectorName,
+            sectorData.culture,
+            sectorData.cultureType,
+            sectorData.location,
+            sectorData.prescriptive,
+            sectorData.advice,
+            sectorData.dripperCapacity,
+            sectorData.sprinklerCapacity,
+            sectorData.doubleWing,
             field,
             company,
             organization,
-            theses: thesisDtos
-        });
+            thesisDtos
+        );
     }
 
     convertThesisDetailsWrapper(result) {

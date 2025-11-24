@@ -126,6 +126,11 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 	 *         schema:
 	 *           type: integer
 	 *         description: ID of the sector to retrieve information for
+	 *       - in: query
+	 *         name: timestamp
+     *         schema:
+     *           type: number
+     *         description: The timestamp in which find the information
 	 *     responses:
 	 *       200:
 	 *         description: Detailed sector information
@@ -196,31 +201,32 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 	 */
 
     router.get('/:sectorId', async (req, res) => {
-		let requestUserData;
+		let requestUserData
 		try {
-			requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+			requestUserData = await authenticationService.validateJwt(req.headers.authorization)
 		} catch (error) {
-			return res.status(401).json({ message: 'Authentication failed' });
+			return res.status(401).json({ message: 'Authentication failed' })
 		}
 
 		const sectorId = Number(req.params.sectorId)
+        const timestamp = req.params.timestamp ?? Date.now()/1000
 
 		if(!authorizationService.isUserAuthorizedById(requestUserData.userid, 'monitoring', 'sectors', sectorId))
-			return res.status(403).json({message: 'Unauthorized request'});
+			return res.status(403).json({message: 'Unauthorized request'})
 
 		try {
-			const sectorData = await fieldService.getSectorDetails(sectorId);
+			const sectorData = await fieldService.getSectorDetails(sectorId, timestamp)
 
 			if (!sectorData) {
 				return res.status(404).json({ 
 					error: "No sector found with the given Id to retrieve informations from" 
-				});
+				})
 			}
 
-			return res.status(200).json(sectorData);
+			return res.status(200).json(sectorData)
 		} catch (error) {
-			console.log(`Fail retrieving sectors caused by: ${error.message}`);
-			return res.status(500).json({ error: "Error while retrieving sectors" });
+			console.log(`Fail retrieving sectors caused by: ${error.message}`)
+			return res.status(500).json({ error: "Error while retrieving sectors" })
 		}
 	});
 
@@ -244,7 +250,14 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *       content:
      *         application/json:
      *           schema:
-     *             $ref: '#/components/schemas/CreateThesis'
+     *             type: object
+     *             allOf:
+     *              - $ref: '#/components/schemas/Thesis'
+     *              - type: object
+     *                properties:
+     *                  validFrom:
+     *                    type: number
+     *                    description: Timestamp indicating the start date of the thesis in the sector (Seconds elapsed since 1/1/1970).
      *     responses:
      *       200:
      *         description: Thesis created with success
@@ -319,8 +332,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 		}
 
 		const sectorId = Number(req.params.sectorId)
-		const { thesisName, validFrom, weight } = req.body;
-		const thesis = new Thesis(thesisName, sectorId, weight, validFrom);
+		const thesis = new Thesis(req.body.name, sectorId, req.query.validFrom);
 
 		try {
 			if (!(await authorizationService.isUserAuthorizedInSector(requestUserData.userid, 'update', sectorId)))
@@ -443,6 +455,134 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
             return res.status(500).json({ message: "Error while retrieving calendar" });
         }
     })
+
+    /**
+     * @swagger
+     * /sectors/{sectorId}/thesesContributions:
+     *   put:
+     *     security:
+     *       - bearerAuth: []
+     *     summary: Set the theses weigths to use for computation of sector watering advice
+     *     description: Set the theses weigths to use for computation of sector watering advice. The sum of specified weights must be 1,
+     *                      if some thesis is not specified will be assumed as weight 0
+     *     tags: [Sectors]
+     *     parameters:
+     *       - in: path
+     *         name: sectorId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: Id of sector in which update theses weights
+     *       - in: query
+     *         name: validFrom
+     *         schema:
+     *           type: number
+     *         description: Timestamp indicating the start date of the new weigths validity, if not set take actual timestamp (Seconds elapsed since 1/1/1970).
+     *       - in: query
+     *         name: validTo
+     *         schema:
+     *           type: number
+     *         description: Timestamp for the end date of the new weights validity (Seconds elapsed since 1/1/1970).
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/ThesesContributions'
+     *     responses:
+     *       200:
+     *         description: Theses contribution updated with success
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string  
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to create theses for the given sector)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while updating theses contribution
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.put('/:sectorId/thesesContributions', async (req, res) => {
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(403).json({message: 'Authentication failed'});
+        }
+
+        try {
+            const sectorId = req.params.sectorId
+        
+            if (!(await authorizationService.isUserAuthorizedById(requestUserData.userid, 'EDIT_ADVICE', 'sectors', sectorId)))
+                return res.status(403).json({ message: 'Unauthorized request' });
+
+            const validFrom = req.query.validFrom ?? Date.now()/1000
+            const validTo = req.query.validTo
+            const thesesContributions = req.body.theses
+
+            if (Math.abs(thesesContributions.reduce((sum, t) => sum + Number(t.weight), 0) - 1) > 1e-9) {
+                return res.status(400).json({ message: "Total weight must be exactly 1" });
+            }
+
+            await fieldService.setThesesContributions(sectorId, thesesContributions, validFrom, validTo)
+
+            return res.status(200).json({message: `Theses contributions updated with success`})
+
+        } catch (error) {
+            console.log(`Fail updating theses contributions caused by: ${error.message}`)
+            return res.status(500).json({error: "Error updating theses contributions"})
+        }
+
+    });
   
     return router;
 }

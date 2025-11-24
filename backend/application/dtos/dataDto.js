@@ -31,13 +31,3 @@ export class MeasureData {
     }
 
 }
-
-// export class HumidityBinMeasureData {
-
-//     constructor(humidityBin, timestamp, count) {
-//         this.humidityBin = humidityBin;
-//         this.timestamp = timestamp;
-//         this.count = count;
-//     }
-
-// }

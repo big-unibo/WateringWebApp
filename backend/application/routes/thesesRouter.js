@@ -608,7 +608,6 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *         schema:
      *           type: integer
      *         description: ID of the thesis to associate the new optimal state with (Destination).
-     *
      *       - in: query
      *         name: validFrom
      *         required: false
@@ -905,7 +904,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
     
       try {
         const sectorId = fieldService.getThesisDetails(thesisId).sectorId
-        if (!(await authorizationService.isUserAuthorizedById(requestUserData.userid, 'edit_advice', 'sectors', sectorId)))
+        if (!(await authorizationService.isUserAuthorizedById(requestUserData.userid, 'EDIT_ADVICE', 'sectors', sectorId)))
             return res.status(403).json({ message: 'Unauthorized request' });
 
         const validFrom = req.query.validFrom ?? Date.now()/1000
@@ -922,7 +921,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
             description
         } = req.body;
 
-        const wateringParams = new WateringParams({
+        const wateringParams = new WateringParams(
             maxWatering,
             minWatering,
             wateringBaseline,
@@ -931,7 +930,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
             kp,
             errorFunction,
             description
-        });
+        );
 
         await wateringAdviceService.setWateringAlgorithmParams(thesisId, wateringParams, validFrom, validTo)
 

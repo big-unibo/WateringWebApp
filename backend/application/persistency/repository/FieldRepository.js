@@ -87,7 +87,7 @@ class FieldRepository {
         }
     }
 
-    async getSectorDetails(sectorId) {
+    async getSectorDetails(sectorId, timestamp) {
         const sector = await this.Sector.findByPk(sectorId, {
             attributes: ['id', 'sectorName', 'culture', 'cultureType', 'fieldId', 'location', 'prescriptive', 'advice', 'dripperCapacity', 'sprinklerCapacity', 'doubleWing'],
             include: [
@@ -120,7 +120,18 @@ class FieldRepository {
                             as: 'thesis',
                             attributes: ['thesisName']
                         }
-                    ]
+                    ],
+                    where: {
+                        validFrom: {
+                            [Op.lt]: timestamp
+                        },
+                        validTo: {
+                            [Op.or]: {
+                                [Op.is]: null,
+                                [Op.gt]: timestamp
+                            },
+                        }
+                    }
                 }
             ]
         });
@@ -146,21 +157,44 @@ class FieldRepository {
 
     async createThesis(thesisName) {
         try {
-            const thesis = await this.Thesis.create({ thesisName });
+            const thesis = await this.Thesis.create({ thesisName: thesisName });
             return thesis.id;
         } catch (error) {
             throw new Error(`Error creating thesis: ${error.message}`);
         }
     }
 
-    async assignThesisToSector(thesisId, sectorId, weight, validFrom) {
+    async assignThesisToSector(thesisId, sectorId, weight, validFrom, validTo) {
         return await this.ThesisInSector.create({
             thesisId,
             sectorId,
             weight,
             validFrom,
+            validTo
         });
     }
+
+    async disableThesisInSector(sectorId, thesisId, timestamp) {
+        return await this.ThesisInSector.update(
+            {
+                validTo: timestamp
+            },
+            {
+            where: {
+                sectorId: sectorId,
+                thesisId: thesisId,
+                validFrom: {
+                    [Op.lt]: timestamp
+                },
+                validTo: {
+                    [Op.or]: {
+                        [Op.is]: null,
+                        [Op.gt]: timestamp
+                    },
+                }
+            }
+        })
+   }
 
     async getThesisDetails(thesisId, timestamp) {
         return await this.ThesisInSector.findOne({
@@ -310,8 +344,7 @@ class FieldRepository {
 
             await this.GridOptimalProfileAssignment.update(
                 {
-                    validTo: Math.floor(validFrom),
-                    current: false
+                    validTo: Math.floor(validFrom)
                 },
                 {
                     where: {

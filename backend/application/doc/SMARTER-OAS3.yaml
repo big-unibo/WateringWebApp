@@ -107,22 +107,6 @@ components:
           type: boolean
           description: True if in the sector is present a double wing irrigation system
 
-    CreateThesis:
-      type: object
-      required:
-        - thesisName
-      properties:
-        thesisName:
-          type: string
-          description: Name of the thesis
-        validFrom: 
-          type: number
-          description: The timestamp to set as the start of validity for the thesis in the sector (Seconds elapsed since 01/01/1970 - 00:00 )
-        weight: 
-          type: number
-          format: double
-          description: Weight of the thesis for the given sector
-
     CreateSignal:
       type: object
       required:
@@ -886,20 +870,43 @@ components:
       properties:
         maxWatering:
           type: number
+          description: Max watering advice amount
         minWatering:
           type: number
+          description: Min watering advice amount
         wateringBaseline:
           type: number
+          description: Default watering advice amount to use in case of errors
         wateringFrequency:
           type: number
+          description: Typical frequency of watering events
         ki:
           type: number
+          description: Integral parameter constant used for advice computation
         kp:
           type: number
+          description: Proportional parameter constant used for advice computation
         errorFunction:
           type: string
+          description: Name of the function used for tranform data during advice computation
         description:
           type: string
+
+    ThesesContributions:
+      type: object
+      properties:
+        theses:
+          type: array
+          items: 
+            type: object
+            properties:
+              id:
+                type: integer
+                description: Identifier of the thesis
+              weight:
+                type: number
+                description: Weight of the thesis inside a sector
+           
 
 
 

@@ -105,12 +105,7 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
         const sensorTechnology = req.body.sensorTechnology;
 
         try{
-            const signalUpdateData = new SignalUpdate({
-                id : signalId,
-                description : description,
-                idOnProvider : idOnProvider,
-                sensorTechnology : sensorTechnology
-            })
+            const signalUpdateData = new SignalUpdate(signalId, description, idOnProvider, sensorTechnology)
 
             await signalService.updateSignal(signalUpdateData);
             return res.status(200).json({ message: 'Signal successfully updated' });
@@ -225,10 +220,7 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
         }
 
         try{
-            const measurementsData = new AddMeasurementsDto({
-                id : signalId,
-                measurements : measurements,
-            })
+            const measurementsData = new AddMeasurementsDto(signalId, measurements)
 
             await signalService.addMeasurements(measurementsData);
             return res.status(200).json({  
