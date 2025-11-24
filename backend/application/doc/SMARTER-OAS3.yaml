@@ -903,7 +903,15 @@ components:
                 type: number
                 description: Weight of the thesis inside a sector
            
-
+    Log:
+      type: object
+      properties:
+        timestamp:
+          type: number
+        type:
+          type: string
+        description:
+          type: string
 
 
 

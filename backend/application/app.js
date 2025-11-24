@@ -41,6 +41,9 @@ import WateringScheduleRepository2 from './persistency/repository/WateringSchedu
 import WateringScheduleService from './services/WateringScheduleService.js';
 import wateringScheduleRouter from './routes/wateringScheduleRouter.js';
 import OptimalDistanceRepository from './persistency/repository/OptimalDistanceRepository.js';
+import logsRouter from './routes/logsRouter.js';
+import LogService from './services/LogService.js';
+import LogRepository from './persistency/repository/LogRepository.js';
 
 dotenv.config()
 
@@ -100,6 +103,7 @@ const humidityBinsRepository = new HumidityBinsRepository(models, sequelize)
 const wateringAdviceRepository = new WateringAdviceRepository(models, sequelize)
 const wateringScheduleRepository = new WateringScheduleRepository2(models, sequelize)
 const optimalDistanceRepository = new OptimalDistanceRepository(models, sequelize)
+const logRepository = new LogRepository(models, sequelize)
 
 const organizationService = new OrganizationService(organizationRepository)
 const userService = new UserService(userRepository)
@@ -111,6 +115,7 @@ const deviceService = new DeviceService(deviceRepository, signalRepository)
 const signalService = new SignalService(signalRepository)
 const wateringScheduleService = new WateringScheduleService(wateringScheduleRepository, wateringAdviceRepository)
 const wateringAdviceService = new WateringAdviceService(wateringAdviceRepository, fieldRepository, interpolatedProfileRepository, optimalDistanceRepository, thesesAllSignalsRepository)
+const logService = new LogService(logRepository)
 
 app.use(express.json());
 app.use(cors());
@@ -179,6 +184,11 @@ app.use(
   wateringScheduleRouter({authenticationService, authorizationService, wateringScheduleService})
 )
 
+app.use(
+  '/logs',
+  logsRouter({authenticationService, authorizationService, logService})
+)
+
 app.use((err, req, res, next) => {
   if (err.status && err.errors) {
     //console.error('Validation Error:', err.errors);
@@ -201,5 +211,3 @@ app.use((err, req, res, next) => {
 });
 
 app.use('/api-docs', serve, setup(swaggerSpec));
-
-// app.use('/logs', logsRouter)

@@ -1,112 +1,123 @@
-// import { Router } from 'express';
-// import sequelize from '../configs/dbConfig.js';
+import { Router } from 'express';
 
-// import UserService from '../services/UserService.js';
-// import AuthenticationService from '../services/AuthenticationService.js';
-// import AuthorizationService from '../services/AuthorizationService.js';
-// import LogService from '../services/LogService.js';
 
-// const logsRouter = Router();
-// const userService = new UserService(sequelize);
-// const authenticationService = new AuthenticationService(userService);
-// const authorizationService = new AuthorizationService(sequelize)
-// const logService = new LogService(sequelize)
+const logsRouter = ({authenticationService, authorizationService, logService}) => {
+    const router = Router()
 
-// /**
-//  * @swagger
-//  * /logs/{refStructureName}/{companyName}/{fieldName}/{sectorName}/{thesisName}:
-//  *   get:
-//  *     security:
-//  *       - bearerAuth: []
-//  *     summary: Get logs about a thesis
-//  *     description:  Get logs about a thesis
-//  *     tags: [Logs Operations]
-//  *     parameters:
-//  *       - in: path
-//  *         name: refStructureName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: The reference structure name
-//  *       - in: path
-//  *         name: companyName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: The company name
-//  *       - in: path
-//  *         name: fieldName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: The field name
-//  *       - in: path
-//  *         name: sectorName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: The sector name
-//  *       - in: path
-//  *         name: thesisName
-//  *         required: true
-//  *         schema:
-//  *           type: string
-//  *         description: The thesisName
-//  *       - in: query
-//  *         name: timeFilterFrom
-//  *         schema:
-//  *           type: string
-//  *         description: The timestamp in which find the information
-//  *       - in: query
-//  *         name: timeFilterTo
-//  *         schema:
-//  *           type: string
-//  *         description: The timestamp in which find the information
-//  *     responses:
-//  *       '200':
-//  *         description: Success
-//  *         content:
-//  *           application/json:
-//  *             schema:
-//  *               type: object
-//  *               properties:
-//  *                 data:
-//  *                   type: array
-//  *                   items:
-//  *                     $ref: '#/components/schemas/LogDto'
-//  *       '400':
-//  *         description: Invalid request or thesis not found.
-//  *       '401':
-//  *         description: Unauthorized request.
-//  *       '403':
-//  *         description: Authentication failed.
-//  *       '500':
-//  *         description: Error on retrieving data.
-//  */
-// logsRouter.get("/:refStructureName/:companyName/:fieldName/:sectorName/:thesisName/", async (req, res) => {
-//     const refStructureName = req.params.refStructureName;
-//     const companyName = req.params.companyName;
-//     const fieldName = req.params.fieldName;
-//     const sectorName = req.params.sectorName;
-//     const thesisName = req.params.thesisName;
-//     const timeFilterFrom = req.query.timeFilterFrom;
-//     const timeFilterTo = req.query.timeFilterTo;
+    /**
+     * @swagger
+     * /logs/{thesisId}/anomalies:
+     *   get:
+     *     security:
+     *       - bearerAuth: []
+     *     summary: Get anomalies logs about a thesis
+     *     description:  Get anomalies logs about a thesis
+     *     tags: [Logs]
+     *     parameters:
+     *       - in: path
+     *         name: thesisId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: Id of the thesis
+     *       - in: query
+     *         name: timeFilterFrom
+     *         required: true
+     *         schema:
+     *           type: number
+     *         description: Time filter start (timestamp in seconds since 01/01/1970)
+     *       - in: query
+     *         name: timeFilterTo
+     *         required: true
+     *         schema:
+     *           type: number
+     *         description: Time filter end (timestamp in seconds since 01/01/1970)
+     *     responses:
+     *       '200':
+     *         description: Success
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 data:
+     *                   type: array
+     *                   items:
+     *                     $ref: '#/components/schemas/Log'
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to retrieve optimal distance data for the given thesis)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.get("/:thesisId/anomalies", async (req, res) => {
+        const thesisId = req.params.thesisId;
+        const timeFilterFrom = req.query.timeFilterFrom;
+        const timeFilterTo = req.query.timeFilterTo;
 
-//     try {
-//         const user = await authenticationService.validateJwt(req.headers.authorization);
-//         if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
-//             return res.status(401).json({ message: 'Unauthorized request' });
-//     } catch (error) {
-//         return res.status(403).json({ message: 'Authentication failed' });
-//     }
+        try {
+            const user = await authenticationService.validateJwt(req.headers.authorization);
+            // if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
+            //     return res.status(401).json({ message: 'Unauthorized request' });
+        } catch (error) {
+            return res.status(403).json({ message: 'Authentication failed' });
+        }
 
-//     try {
+        try {
+            const result = await logService.getThesisLogs(thesisId, timeFilterFrom, timeFilterTo);
+            res.status(200).json(result);
+        } catch (error) {
+            return res.status(500).json({ message: error.message });
+        }
+    })
 
-//         const result = await logService.getLogs(refStructureName, companyName, fieldName, sectorName, thesisName, timeFilterFrom, timeFilterTo);
-//         res.status(200).json(result);
-//     } catch (error) {
-//         return res.status(500).json({ message: error.message });
-//     }
-// })
+    return router
+}
 
-// export default logsRouter;
+export default logsRouter;

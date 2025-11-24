@@ -1,15 +1,11 @@
-import LogRepository from '../persistency/repository/LogRepository.js';
-
-import initLog from '../persistency/model/Log.js';
-
 class LogService {
 
-    constructor(sequelize) {
-        this.logRepository = new LogRepository(initLog(sequelize), sequelize);
+    constructor(logRepository) {
+        this.logRepository =logRepository;
     }
 
-    async getLogs(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {
-        const results = await this.logRepository.getLogs(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo)
+    async getThesisLogs(thesisId, timestampFrom, timestampTo) {
+        const results = await this.logRepository.getThesisLogs(thesisId, timestampFrom, timestampTo)
         return results
     }
 }

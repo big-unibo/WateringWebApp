@@ -1,35 +1,44 @@
-import { SCHEDULE_SAFE_INTERVAL } from '../../commons/constants.js';
-import { Op, where } from "sequelize";
-
+import { QueryTypes } from 'sequelize'
 
 class LogRepository {
 
-    constructor(Log, sequelize) {
-        this.Log = Log
+    constructor(models, sequelize) {
         this.sequelize = sequelize
     }
 
-    async getLogs(refStructureName, companyName, fieldName, sectorName, thesisName, timestampFrom, timestampTo) {
+    async getThesisLogs(thesisId, timestampFrom, timestampTo) {
         try {
-            this.Log.removeAttribute('id')
-            return (await this.Log.findAll({
-                where: {
-                    refStructureName: refStructureName,
-                    companyName: companyName,
-                    fieldName: fieldName,
-                    sectorName: sectorName,
-                    timestamp: {
-                        [Op.gt]: timestampFrom,
-                        [Op.lt]: timestampTo
-                    },
-                    thesisName: {
-                        [Op.or]: {
-                            [Op.like]: thesisName,
-                            [Op.is]: null
-                        },
-                    }
+            const query = `SELECT timestamp, type, description
+            FROM anomalies_logs l
+            JOIN (
+                SELECT 'theses' AS table, id FROM theses WHERE id = :thesisId
+                UNION ALL
+                    SELECT DISTINCT 'sectors' AS table, sector_id AS id FROM theses_in_sectors 
+                    WHERE thesis_id = :thesisId 
+                        AND valid_from < :timestampTo
+                        AND COALESCE(valid_to, 'infinity') > :timestampFrom 
+                UNION ALL
+                    SELECT DISTINCT 'devices' AS table, device_id AS id FROM theses_all_signals
+                    WHERE thesis_id = :thesisId
+                     AND valid_from < :timestampTo
+                        AND COALESCE(valid_to, 'infinity') > :timestampFrom 
+                UNION ALL
+                    SELECT DISTINCT 'signals' AS table, signal_id AS id FROM theses_all_signals
+                    WHERE thesis_id = :thesisId
+                     AND valid_from < :timestampTo
+                        AND COALESCE(valid_to, 'infinity') > :timestampFrom
+            ) ids 
+                ON l.table = ids.table
+                    AND l.id_key = ids.id`
+            
+            return await this.sequelize.query(query, {
+                type: QueryTypes.SELECT,
+                replacements: {
+                    thesisId,
+                    timestampFrom,
+                    timestampTo
                 }
-            }));
+            });
         } catch (error) {
             console.error('Error on find logs:', error);
         }
