@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { WateringEvent } from '../dtos/wateringScheduleDto.js';
 
 const wateringScheduleRouter = ({ authenticationService, authorizationService, wateringScheduleService }) => {
     const router = Router();
@@ -230,8 +231,8 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             )
 
             const result = await wateringScheduleService.updateWateringEvent(eventId, fieldsToUpdate);
-            if(!result){
-                return res.status(404).json({ message: "No event found with the given id"});
+            if (!result) {
+                return res.status(404).json({ message: "No event found with the given id" });
             }
             return res.status(200).json({ message: "Event successfully updated" });
         } catch (error) {
@@ -239,6 +240,116 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             return res.status(500).json({ message: "Error while retrieving calendar" });
         }
     })
+
+    /**
+     * @swagger
+     * /wateringSchedule/create:
+     *   post:
+     *     summary: Create a new watering event
+     *     tags: [Watering Schedule Operation]
+     *     description: Creates a new watering event with the provided details. Requires authentication and proper authorization.
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema: 
+     *              $ref: "#/components/schemas/WateringEvent"
+     *     responses:
+     *       200:
+     *         description: Watering event created successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                 eventId:
+     *                   type: integer
+     *                   description: ID of the newly created event
+     *       400:
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *                 - errors
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error
+     *       '401':
+     *         description: Authentication failed – invalid or missing JWT token.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized – user does not have permission to view calendar
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+    */
+
+    router.post('/create', async (req, res) => {
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        try {
+            //[TO DO]: Authorization
+            // if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'watering_events')))
+            //     return res.status(403).json({ message: 'Unauthorized request' });
+
+            const event= new WateringEvent({
+                sectorId: req.body.sectorId,
+                wateringStart: req.body.wateringStart,
+                expectedWater: req.body.expectedWater,
+                note: req.body.note,
+                enabled: req.body.enabled ?? true
+            });
+
+            const newEventId = await wateringScheduleService.createWateringEvent(event);
+            res.status(200).json({ message: 'Watering event created successfully', eventId: newEventId });
+        } catch (error) {
+            console.error(`Error creating watering event: ${error.message}`);
+            res.status(500).json({ message: 'Error while creating watering event' });
+        }
+    });
+
 
 
     return router;

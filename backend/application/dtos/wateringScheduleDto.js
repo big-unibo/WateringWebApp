@@ -10,7 +10,7 @@ export class WateringScheduleResponse {
 
 export class WateringEventData {
 
-    constructor( date, wateringStart, wateringEnd, duration, enabled, advice, expectedWater, note, updateTimestamp, updatedBy, theses ) {
+    constructor(date, wateringStart, wateringEnd, duration, enabled, advice, expectedWater, note, updateTimestamp, updatedBy, theses) {
         this.date = date;
         this.wateringStart = wateringStart;
         this.wateringEnd = wateringEnd;
@@ -31,5 +31,23 @@ export class ThesisContributionData {
         this.thesisName = thesisName;
         this.weight = weight;
         this.imageTimestamp = imageTimestamp;
+    }
+}
+
+
+export class WateringEvent {
+    /**
+     * @param {number} sectorId - ID of the sector where the watering event takes place
+     * @param {number} wateringStart - Timestamp in seconds for the start of watering
+     * @param {number} [expectedWater] - Optional expected amount of water
+     * @param {string} [note] - Optional note for the event
+     * @param {boolean} [enabled] - Whether the event is enabled (default: true)
+     */
+    constructor({ sectorId, wateringStart, expectedWater = null, note = null, enabled = true }) {
+        this.sectorId = sectorId;
+        this.wateringStart = wateringStart;
+        this.expectedWater = expectedWater;
+        this.note = note;
+        this.enabled = enabled;
     }
 }

@@ -187,6 +187,28 @@ components:
         enabled:
           type: boolean
           description: Whether the watering event is enabled
+    
+    WateringEvent:
+      type: object
+      required:
+        - sectorId
+        - wateringStart
+      properties:
+        sectorId:
+          type: integer
+          description: The ID of the sector
+        wateringStart:
+          type: number
+          description: Timestamp in seconds for when the watering starts
+        expectedWater:
+          type: number
+          description: Expected amount of water (optional)
+        note:
+          type: string
+          description: Optional note for the event
+        enabled:
+          type: boolean
+          description: Whether the event is enabled (default true)
 
     CreateDevice:
       type: object

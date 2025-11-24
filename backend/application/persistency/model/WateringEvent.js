@@ -7,7 +7,8 @@ function initWateringEvent(sequelize) {
         id: {
             type: DataTypes.INTEGER,
             field: "id",
-            primaryKey: true
+            primaryKey: true,
+            autoIncrement: true
         },
         sectorId: {
             type: DataTypes.INTEGER,

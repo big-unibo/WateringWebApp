@@ -86,6 +86,37 @@ class WateringScheduleRepository {
            throw new Error(`Error while updating watering event caused by: ${error.message}`);
         }
     }
+
+    async createWateringEvent({
+        sectorId, 
+        wateringStart, 
+        expectedWater = null, 
+        note = null, 
+        enabled = true
+    }) {
+        try {
+            let date = null;
+            if (wateringStart !== null && wateringStart !== undefined) {
+                const dateObj = new Date(wateringStart * 1000);
+                date = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2,'0')}-${String(dateObj.getDate()).padStart(2,'0')}`;
+            }
+
+            const newEvent = await this.WateringEvent.create({
+                sectorId,
+                wateringStart,
+                expectedWater,
+                note,
+                enabled,
+                date
+            });
+
+            return newEvent.id;
+
+        } catch (error) {
+            console.error('Error while creating watering event:', error);
+            throw new Error(`Error while creating watering event caused by: ${error.message}`);
+        }
+    }
 }
 
 export default WateringScheduleRepository;

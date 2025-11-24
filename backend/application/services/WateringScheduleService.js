@@ -19,6 +19,10 @@ class WateringScheduleService {
     async updateWateringEvent(eventId, fieldsToUpdate) {
         return await this.wateringScheduleRepository.updateWateringEvent(eventId, fieldsToUpdate)
     }
+
+    async createWateringEvent(event) {
+       return await this.wateringScheduleRepository.createWateringEvent(event)
+    }
 }
 
 export default WateringScheduleService;
