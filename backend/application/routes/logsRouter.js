@@ -38,12 +38,9 @@ const logsRouter = ({authenticationService, authorizationService, logService}) =
      *         content:
      *           application/json:
      *             schema:
-     *               type: object
-     *               properties:
-     *                 data:
-     *                   type: array
-     *                   items:
-     *                     $ref: '#/components/schemas/Log'
+     *               type: array
+     *               items:
+     *                 $ref: '#/components/schemas/Log'
      *       '400':
      *         description: Input validation error (Bad Request)
      *         content:
