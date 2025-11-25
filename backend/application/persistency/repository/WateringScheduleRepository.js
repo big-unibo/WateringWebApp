@@ -22,6 +22,7 @@ class WateringScheduleRepository {
                     we.duration as "duration",
                     we.enabled as "enabled",
                     we.expected_water as "expectedWater",
+                    we.id as "eventId",
                     we.note as "note",
                     ua.timestamp as "updateTimestamp",
                     u.email as "updatedBy",

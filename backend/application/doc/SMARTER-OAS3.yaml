@@ -681,6 +681,9 @@ components:
       type: object
       description: Detailed information about a planned or recorded watering event.
       properties:
+        eventId:
+          type: integer
+          description: id of the watering event.
         date:
           type: string
           description: Date of the watering event (e.g., YYYY-MM-DD).

@@ -326,6 +326,7 @@ class DtoConverter {
 
             if (!existingEvent) {
                 existingEvent = {
+                    eventId: curr.eventId,
                     date: curr.date,
                     updateTimestamp: curr.updateTimestamp,
                     wateringStart: curr.wateringStart,
@@ -354,6 +355,7 @@ class DtoConverter {
         const finalResponse = Object.values(groupedMap).map(sectorGroup => {
             const eventsData = sectorGroup.events.map(event => {
                 return new WateringEventData(
+                    event.eventId,
                     event.date,
                     event.wateringStart,
                     event.wateringEnd,
