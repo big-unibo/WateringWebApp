@@ -896,13 +896,12 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         //     return res.status(403).json({ message: 'Unauthorized request' });
 
         const thesisId = Number(req.params.thesisId)
-
         const timeFilterFrom = Number(req.query.timeFilterFrom)
         const timeFilterTo = Number(req.query.timeFilterTo)
 
         try {
             const result = await fieldService.getInterpolatedMeans(thesisId, timeFilterFrom, timeFilterTo);
-            res.status(200).json(result);
+            return res.status(200).json(result);
         } catch (error) {
             return res.status(500).json({ message: error.message });
         }
