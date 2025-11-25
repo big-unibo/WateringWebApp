@@ -173,34 +173,32 @@ class ThesesAllSignalsRepository {
 
         const query = `
             WITH valid_advices_table AS (
-                SELECT DISTINCT
-                    tas.thesis_id,
-                    tas.thesis_name,
+                SELECT td.thesis_id,
+                    td.thesis_name,
                     a.watering_start,
                     a.advice
-                FROM theses_all_signals tas
+                FROM theses_denormalized td
                 LEFT JOIN advices a
-                    ON a.thesis_id = tas.thesis_id
+                    ON a.thesis_id = td.thesis_id
                     AND a.watering_start BETWEEN 
-                        GREATEST(tas.valid_from, :timeFilterFrom)
-                        AND LEAST(COALESCE(tas.valid_to, 'infinity'), :timeFilterTo)
-                WHERE tas.thesis_id = :thesisId
+                        GREATEST(td.valid_from, :timeFilterFrom)
+                        AND LEAST(COALESCE(td.valid_to, 'infinity'), :timeFilterTo)
+                WHERE td.thesis_id = :thesisId
             ),
             valid_expected_water_table AS (
-                SELECT DISTINCT
-                    tas.thesis_id,
-                    tas.thesis_name,
-                    tas.sector_id,
+                SELECT td.thesis_id,
+                    td.thesis_name,
+                    td.sector_id,
                     we.id,
                     we.watering_start,
                     we.expected_water
-                FROM theses_all_signals tas
+                FROM theses_denormalized td
                 LEFT JOIN watering_events we
-                    ON we.sector_id = tas.sector_id
+                    ON we.sector_id = td.sector_id
                     AND we.watering_start BETWEEN 
-                        GREATEST(tas.valid_from, :timeFilterFrom)
-                        AND LEAST(COALESCE(tas.valid_to, 'infinity'), :timeFilterTo)
-                WHERE tas.thesis_id = :thesisId
+                        GREATEST(td.valid_from, :timeFilterFrom)
+                        AND LEAST(COALESCE(td.valid_to, 'infinity'), :timeFilterTo)
+                WHERE td.thesis_id = :thesisId
             )
 
             SELECT *
@@ -217,9 +215,7 @@ class ThesesAllSignalsRepository {
                 GROUP BY
                     va.thesis_name,
                     ROUND(va.watering_start::NUMERIC / :aggregationPeriod) * :aggregationPeriod
-
                 UNION
-
                 SELECT
                     vew.thesis_name AS "thesisName",
                     'Expected water' AS "signalDescription",
