@@ -148,12 +148,15 @@ components:
       properties:
         description:
           type: string
+          nullable: true
           description: Signal description
         idOnProvider:
           type: string
+          nullable: true
           description: Signal id for the provider
         sensorTechnology:
           type: string
+          nullable: true
           description: Sensor technology
 
     UpdateWateringEvent:
@@ -161,7 +164,6 @@ components:
       properties:
         wateringStart:
           type: number
-          nullable: true
           description: Start time of the watering event in Unix seconds
         expectedWater:
           type: number
