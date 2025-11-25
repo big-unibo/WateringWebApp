@@ -161,15 +161,19 @@ components:
       properties:
         wateringStart:
           type: number
+          nullable: true
           description: Start time of the watering event in Unix seconds
         expectedWater:
           type: number
+          nullable: true
           description: Expected amount of water for the event
         note:
           type: string
+          nullable: true
           description: Optional note related to the event
         enabled:
           type: boolean
+          nullable: true
           description: Whether the watering event is enabled
     
     WateringEvent:
