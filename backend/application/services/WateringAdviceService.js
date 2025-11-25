@@ -151,6 +151,13 @@ export class WateringAdviceService {
     async setWateringAlgorithmParams(thesisId, wateringParams, validFrom, validTo) {
         await this.wateringAdviceRepository.setWateringAlgorithmParams(thesisId, wateringParams, validFrom, validTo)
     }
+
+    async getWateringAlgorithmParams(thesisId, timestamp){
+        const result = await this.wateringAdviceRepository.getWateringAlgorithmParams(thesisId, timestamp)
+        if (result){
+            return dtoConverter.convertWateringAlgorithmParamsWrapper(result)
+        }
+    }
 }
 
 export default WateringAdviceService;

@@ -822,6 +822,109 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
     /**
      * @swagger
      * /theses/{thesisId}/wateringParams:
+     *   get:
+     *     security:
+     *       - bearerAuth: []
+     *     summary: Get information about watering algorithm parameters
+     *     description: Get information about watering algorithm parameters for a given thesis
+     *     tags: [Theses]
+     *     parameters:
+     *       - in: path
+     *         name: thesisId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of thesis in wich set the parameters
+     *       - in: query
+     *         name: timestamp
+     *         schema:
+     *           type: number
+     *         description: Timestamp in which find the information (Seconds elapsed since 1/1/1970).
+     *     responses:
+     *       200:
+     *         description: Watering params returned successfully.
+     *         content:
+     *           application/json:
+     *              schema:
+     *                $ref: '#/components/schemas/WateringParams'  
+     *       400:
+     *         description: Bad request (Missing/invalid parameters).
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       401:
+     *         description: Authentication failed (Invalid or missing JWT).
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized request – user not allowed to read thesis watering params.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       404:
+     *         description: Watering parameters not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error during the process.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.get('/:thesisId/wateringParams', async (req, res) => {
+      let requestUserData
+      try {
+        requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+      } catch (error) {
+        return res.status(403).json({message: 'Authentication failed'});
+      }
+
+      const thesisId = req.params.thesisId;
+    
+      try {
+        const sectorId = fieldService.getThesisDetails(thesisId).sectorId
+        if (!(await authorizationService.isUserAuthorizedById(requestUserData.userid, 'EDIT_ADVICE', 'sectors', sectorId)))
+            return res.status(403).json({ message: 'Unauthorized request' });
+
+        const timestamp = req.query.timestamp ?? Date.now()/1000
+
+        const result = await wateringAdviceService.getWateringAlgorithmParams(thesisId, timestamp)
+        if (result){
+            return res.status(200).json(result)
+        }
+        return res.status(404).json({message: `Watering Parameters not found`})
+      } catch (error) {
+        console.log(`Fail getting watering parameters caused by: ${error.message}`)
+        return res.status(500).json({error: "Error getting watering parameters"})
+      }
+
+    });
+
+    /**
+     * @swagger
+     * /theses/{thesisId}/wateringParams:
      *   put:
      *     security:
      *       - bearerAuth: []

@@ -49,7 +49,7 @@ class WateringAdviceRepository {
         })
     }
 
-    async getWateringAlgorithmParams(sectorId, timefilterFrom, timefilterTo){
+    async getSectorWateringFrequency(sectorId, timefilterFrom, timefilterTo){
         const query = `
             SELECT DISTINCT 
                 wad.watering_frequency as "wateringFrequency",

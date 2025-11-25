@@ -7,6 +7,7 @@ import { WateringAdviceDto } from "../dtos/wateringAdviceDto.js";
 import { SectorCompactDto, SectorDataDto } from "../dtos/sectorDto.js";
 import { Signal, Device } from "../dtos/deviceDto.js";
 import { Thesis,ThesisRefDto} from "../dtos/thesisDto.js";
+import { WateringParams } from "../dtos/wateringParamsDto.js";
 
 class DtoConverter {
 
@@ -448,6 +449,20 @@ class DtoConverter {
     //         return new WateringScheduleResponse(source, refStructureName, companyName, fieldName, sectorName, eventsRes)
     //     }
     // }
+
+    convertWateringAlgorithmParamsWrapper(results){
+        const {
+            maxWatering,
+            minWatering,
+            wateringBaseline,
+            wateringFrequency,
+            ki,
+            kp,
+            errorFunction,
+            description
+        } = results
+        return new WateringParams(maxWatering, minWatering, wateringBaseline, wateringFrequency, ki, kp, errorFunction, description)
+    }
 
     convertOptimalStateWrapper(results) {
         const optimalProfile = results.map(v => new OptimalProfileData(v.x, v.y, v.z, v.value, v.weight))
