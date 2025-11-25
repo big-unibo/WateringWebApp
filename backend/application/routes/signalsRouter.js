@@ -116,6 +116,115 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
         }
     });
 
+    
+    /**
+     * @swagger
+     * /signals/{signalId}/disable:
+     *   post:
+     *     summary: Disable a signal
+     *     description: Disable the assignment of a signal considering it no longer available. Requires authentication and proper authorization.
+     *     tags:
+     *       - Signals
+     *     parameters:
+     *       - in: path
+     *         name: signalId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of the signal to update
+	 *       - in: query
+	 *         name: validTo
+     *         schema:
+     *           type: number
+     *         description: The timestamp to use as end of validity for the signal. It must be a future timestamp.
+     *     responses:
+     *       200:
+     *         description: Signal disabled successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       400:
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       401:
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized (user not allowed to update signals)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while updating the signal
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     */
+
+    router.post('/:signalId/disable', async(req, res) => {
+        let requestUserData;
+        try{
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({message: 'Authentication failed'});
+        }
+
+        //[TO DO]: Authorization
+        const signalId = Number(req.params.signalId);
+
+        const currentTimestamp = Date.now()/1000
+        const validTo = req.query.validTo ?? currentTimestamp;
+        try{
+            if (validTo < currentTimestamp){
+                return res.status(400).json({message: 'Invalid validTo timestamp provided. It must be a future timestamp'})
+            }
+            await signalService.disableSignal(signalId, validTo);
+            return res.status(200).json({ message: 'Signal disabled successfully' });
+        }
+        catch (error) {
+            console.log(`Fail disabling signal caused by: ${error.message}`)
+            return res.status(500).json({error: "Error on disabling signal"})
+        }
+    });
 
     /**
      * @swagger

@@ -41,6 +41,10 @@ class SignalService{
             throw error;
         }
     }
+
+    async disableSignal(signalId, validTo){
+        await this.signalRepository.disableSignal(signalId, validTo)
+    }
 }
 
 export default SignalService;

@@ -1,3 +1,5 @@
+import { Op } from "sequelize";
+
 class SignalRepository {
     constructor(models, sequelize){
         this.Signal = models.Signal;
@@ -61,6 +63,63 @@ class SignalRepository {
             await this.Measurement.bulkCreate(measurements);
         }catch (error){
            throw new Error(`Error while creating measurements: ${error.message}`);
+        }
+    }
+
+    async disableSignal(signalId, validTo){
+        try{
+            const signal = await this.Signal.findByPk(signalId);
+            if(!signal) throw new Error("Signal not found");
+            await this.SignalInThesis.update({
+                validTo: validTo
+            },{
+                where: {
+                    signalId: signalId,
+                    validFrom: {
+                        [Op.lt]: validTo
+                    },
+                    validTo: {
+                        [Op.or]: {
+                            [Op.is]: null,
+                            [Op.gt]: validTo
+                        },
+                    }
+                }
+            })
+            await this.SignalInSector.update({
+                validTo: validTo
+            },{
+                where: {
+                    signalId: signalId,
+                    validFrom: {
+                        [Op.lt]: validTo
+                    },
+                    validTo: {
+                        [Op.or]: {
+                            [Op.is]: null,
+                            [Op.gt]: validTo
+                        },
+                    }
+                }
+            })
+            await this.SignalInField.update({
+                validTo: validTo
+            },{
+                where: {
+                    signalId: signalId,
+                    validFrom: {
+                        [Op.lt]: validTo
+                    },
+                    validTo: {
+                        [Op.or]: {
+                            [Op.is]: null,
+                            [Op.gt]: validTo
+                        },
+                    }
+                }
+            })
+        }catch (error){
+           throw new Error(`Error while disabling signal caused by: ${error.message}`);
         }
     }
 }
