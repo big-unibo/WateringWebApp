@@ -27,8 +27,8 @@ class WateringScheduleService {
 
     async createPeriodicWateringEvent(sectorId, timestampFrom, timestampTo) {
 
-        let algorithmParamsList = await this.wateringAdviceRepository.getWateringAlgorithmParams(sectorId, timestampFrom, timestampTo);
-        algorithmParamsList.sort((a, b) => (a.validFrom || 0) - (b.validFrom || 0));
+        let wateringFrequenciesList = await this.wateringAdviceRepository.getSectorWateringFrequency(sectorId, timestampFrom, timestampTo);
+        wateringFrequenciesList.sort((a, b) => (a.validFrom || 0) - (b.validFrom || 0));
 
         let wateringTimestamp = timestampFrom;
         let eventIds = [];
@@ -36,10 +36,10 @@ class WateringScheduleService {
 
         while (wateringTimestamp <= timestampTo) {
 
-            while (paramIndex < algorithmParamsList.length) {
-                const param = algorithmParamsList[paramIndex];
-                const validFrom = param.validFrom || 0;
-                const validTo = param.validTo || Infinity;
+            while (paramIndex < wateringFrequenciesList.length) {
+                const param = wateringFrequenciesList[paramIndex];
+                const validFrom = param.validFrom ?? 0;
+                const validTo = param.validTo ?? Infinity;
 
                 if (wateringTimestamp >= validFrom && wateringTimestamp <= validTo) {
                     break;
@@ -50,11 +50,11 @@ class WateringScheduleService {
                 }
             }
 
-            if (paramIndex >= algorithmParamsList.length) {
+            if (paramIndex >= wateringFrequenciesList.length) {
                 throw new Error(`No valid watering frequency found for timestamp ${wateringTimestamp}`);
             }
 
-            const currentParam = algorithmParamsList[paramIndex];
+            const currentParam = wateringFrequenciesList[paramIndex];
             const currentFrequency = currentParam.wateringFrequency * 3600;
 
             const newEventId = await this.createWateringEvent({
