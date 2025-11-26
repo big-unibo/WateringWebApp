@@ -1,4 +1,5 @@
 import { Op } from "sequelize";
+import { CreateSignal } from "../../dtos/deviceDto.js";
 
 class SignalRepository {
     constructor(models, sequelize){
@@ -8,6 +9,22 @@ class SignalRepository {
         this.SignalInThesis = models.SignalInThesis;
         this.Measurement = models.Measurement;
         this.sequelize = sequelize;
+    }
+
+    /**
+     * Bulk create signals for a device
+     * @param {Number} deviceId - Id of the device
+     * @param {Array<CreateSignal>} signalsData - List of signals
+     */
+    async createSignals(deviceId, signalsData = []) {
+        try {
+            if (!Array.isArray(signalsData) || signalsData.length === 0) {
+                return []; 
+            }
+            return await this.Signal.bulkCreate(signalsData.map(sig => ({...sig, deviceId: deviceId})));
+        } catch (error) {
+            throw new Error(`Error creating signals caused by: ${error.message}`);
+        }
     }
     
     async assignSignalToField(associationData) {

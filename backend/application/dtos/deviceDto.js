@@ -10,7 +10,7 @@ export class CreateSignal {
      * @param {string} idOnProvider  - Signal id for the provider
      * @param {string} sensorTechnology - Sensor technology
      */
-    constructor(typeId, description, x, y, z, virtual, unit, idOnProvider, sensorTechnology) {
+    constructor({typeId, description, x, y, z, virtual, unit, idOnProvider, sensorTechnology}) {
         this.typeId = typeId;
         this.description = description;
         this.x = x;

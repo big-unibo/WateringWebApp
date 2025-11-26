@@ -3,6 +3,16 @@ class SignalService{
         this.signalRepository = signalRepository;
     }
 
+    async createSignal(deviceId, signal){
+        try {
+            const signalCreated = await this.signalRepository.createSignals(deviceId, [signal]);
+            return signalCreated[0].id;
+        } catch (error) {
+            console.error(`Error creating signal: ${error.message}`);
+            throw error;
+        }
+    }
+
     async updateSignal(signalUpdateData){
         try{
             const {id, ...fields} = signalUpdateData;

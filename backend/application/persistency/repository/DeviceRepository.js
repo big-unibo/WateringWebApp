@@ -21,22 +21,6 @@ class DeviceRepository {
         }
     }
 
-    /**
-     * Bulk create signals for a device
-     * @param {Array<Object>} signalsData - List of signals
-     */
-    async createSignals(signalsData = []) {
-        try {
-            if (!Array.isArray(signalsData) || signalsData.length === 0) {
-                return []; 
-            }
-            await this.Signal.bulkCreate(signalsData);
-        } catch (error) {
-            throw new Error(`Error creating signals caused by: ${error.message}`);
-        }
-    }
-
-
     async getSignals(deviceId) {
         const result = await this.Signal.findAll({
             where : {
