@@ -111,9 +111,6 @@ components:
       type: object
       required:
         - typeId
-        - x
-        - y
-        - z
       properties:
         typeId:
           type: integer

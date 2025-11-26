@@ -1,9 +1,115 @@
 import {Router} from 'express';
-import { AddMeasurementsDto,SignalUpdate } from '../dtos/deviceDto.js';
+import { AddMeasurementsDto,CreateSignal,SignalUpdate } from '../dtos/deviceDto.js';
 
 
 const signalsRouter = ({authenticationService, authorizationService, signalService}) => {
     const router = Router();
+
+    /**
+     * @swagger
+     * /signals/create:
+     *   post:
+     *     summary: Create a signal
+     *     description: Create a new signal in a specified device. Requires authentication and proper authorization.
+     *     tags:
+     *       - Signals
+     *     parameters:
+     *       - in: query
+     *         name: deviceId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of the device in which create signal
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *              $ref: '#/components/schemas/CreateSignal'
+     *     responses:
+     *       200:
+     *         description: Signal create successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                 id:
+     *                   type: number
+     *                   description: Id of the new signal
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to create signals)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while creating the signal
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     */
+    router.post('/create', async(req, res) => {
+        let requestUserData;
+        try{
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization)
+        } catch (error) {
+            return res.status(401).json({message: 'Authentication failed'})
+        }
+        //[TO DO]: Authorization
+        try{
+            const signal = new CreateSignal(req.body)
+            const deviceId = req.query.deviceId
+            const signalId = await signalService.createSignal(deviceId, signal)
+            return res.status(200).json({ message: 'Signal successfully updated' , id: signalId })
+        }
+        catch (error) {
+            console.log(`Fail updating signal caused by: ${error.message}`)
+            return res.status(500).json({error: "Error on updating signal"})
+        }
+    });
 
     /**
      * @swagger
