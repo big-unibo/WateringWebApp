@@ -7,6 +7,134 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
     const router = Router();
 
     /**
+	 * @swagger
+	 * /devices:
+	 *   get:
+	 *     summary: Retrieve all devices available for the user
+	 *     tags: 
+     *       - Devices
+	 *     description: Retrieve all devicess available for the user, filtered by a time range
+	 *     parameters:
+	 *       - in: query
+	 *         name: timeFilterFrom
+	 *         required: true
+	 *         schema:
+	 *           type: number
+	 *         description: Time filter start (timestamp in seconds since 01/01/1970)
+	 *       - in: query
+	 *         name: timeFilterTo
+	 *         required: true
+	 *         schema:
+	 *           type: number
+	 *         description: Time filter end (timestamp in seconds since 01/01/1970)
+	 *       - in: query
+	 *         name: providerIds
+	 *         schema:
+     *           type: array
+     *           items:
+     *             type: integer
+     *         style: form
+     *         explode: true
+     *         description: Providers to include
+	 *       - in: query
+	 *         name: types
+	 *         schema:
+     *           type: array
+     *           items:
+     *             type: string
+     *         style: form
+     *         explode: true
+     *         description: Device types to include
+	 *     responses:
+	 *       200:
+	 *         description: List of devices for the user
+	 *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                  $ref: '#/components/schemas/Device'
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+	 *       404:
+	 *         description: No devices found for the current user and time filter
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 error:
+	 *                   type: string
+	 *       500:
+	 *         description: Internal server error – unexpected error while retrieving devices
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 error:
+	 *                   type: string
+	 */
+    router.get('/', async (req, res) => {
+		let requestUserData;
+		try {
+			requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+		} catch (error) {
+			return res.status(401).json({ message: 'Authentication failed' });
+		}
+
+        const timeFilterFrom = Number(req.query.timeFilterFrom)
+        const timeFilterTo = Number(req.query.timeFilterTo)
+        const providerIds = req.query.providerIds
+        const types = req.query.types
+
+		try {
+			const devices = await deviceService.getDevices(requestUserData.userid, timeFilterFrom, timeFilterTo, providerIds, types);
+			if (!devices || devices.length === 0) {
+				return res.status(404).json({ 
+					error: "User has no permission to view any devices in the given period" 
+				});
+			}
+
+			return res.status(200).json(devices);
+		} catch (error) {
+			console.log(`Fail retrieving devices caused by: ${error.message}`);
+			return res.status(500).json({ error: "Error while retrieving devices" });
+		}
+	});
+
+    /**
      * @swagger
      * /devices/create:
      *   post:

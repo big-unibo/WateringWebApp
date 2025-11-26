@@ -248,17 +248,24 @@ class ThesesAllSignalsRepository {
     async getDevicesByThesis(thesisId, timestamp) {
         const query = `
             SELECT DISTINCT 
-                device_id as "deviceId",
-                device_type as "deviceType",
-                device_description as "deviceDescription",
-                signal_id as "signalId",
-                signal_description as "signalDescription",
-                signal_type as "signalType",
-                signal_type_description as "signalTypeDescription",
+                device_id AS "deviceId",
+                device_type AS "deviceType",
+                device_description AS "deviceDescription",
+                provider_id AS "providerId",
+                signal_id AS "signalId",
+                signal_description AS "signalDescription",
+                signal_type AS "signalType",
+                signal_type_description AS "signalTypeDescription",
+                measurement_timestamp AS "lastMeasurementTimestamp",
                 virtual,
                 unit,
                 x, y, z
-            FROM theses_all_signals 
+            FROM theses_all_signals tas
+            JOIN LATERAL(
+                SELECT MAX(timestamp) AS measurement_timestamp
+                FROM measurements m
+                WHERE m.signal_id = tas.signal_id
+            ) m ON true
             WHERE thesis_id = :thesisId
                 AND :timestamp BETWEEN valid_from AND COALESCE(valid_to, 'infinity') 
         `;
@@ -278,19 +285,25 @@ class ThesesAllSignalsRepository {
     async getSignalsByThesis(thesisId, signalTypes, timestamp) {
         const query = `
             SELECT DISTINCT
-                tas.device_id as "deviceId",
-                tas.signal_id as "signalId",
-                tas.signal_description as "signalDescription",
-                tas.signal_type as "signalType",
-                tas.signal_type_description as "signalTypeDescription",
-                tas.x as "x",
-                tas.y as "y",
-                tas.z as "z",
-                tas.virtual as "virtual",
-                tas.unit as "unit"
+                tas.device_id AS "deviceId",
+                tas.signal_id AS "signalId",
+                tas.signal_description AS "signalDescription",
+                tas.signal_type AS "signalType",
+                tas.signal_type_description AS "signalTypeDescription",
+                measurement_timestamp AS "lastMeasurementTimestamp",
+                tas.x AS "x",
+                tas.y AS "y",
+                tas.z AS "z",
+                tas.virtual AS "virtual",
+                tas.unit AS "unit"
             FROM theses_all_signals tas
+            JOIN LATERAL(
+                SELECT MAX(timestamp) AS measurement_timestamp
+                FROM measurements m
+                WHERE m.signal_id = tas.signal_id
+            ) m ON true
             WHERE :timestamp BETWEEN tas.valid_from AND COALESCE(tas.valid_to, 'infinity')
-                ${signalTypes.length > 0 ? "AND tas.signal_type = ANY(ARRAY[:signalTypes])" : "" }
+                ${signalTypes?.length > 0 ? "AND tas.signal_type = ANY(ARRAY[:signalTypes])" : "" }
                 AND tas.thesis_id = :thesisId
         `;
 

@@ -1,4 +1,7 @@
 import { SignalTargetType } from "../dtos/deviceDto.js";
+import DtoConverter from './DtoConverter.js';
+
+const dtoConverter = new DtoConverter();
 
 class DeviceService {
     constructor(deviceRepository, signalRepository){
@@ -68,6 +71,11 @@ class DeviceService {
             console.error(`Error assigning signal: ${error.message}`);
             throw error; 
         }
+    }
+
+    async getDevices(userId, timeFilterFrom, timeFilterTo, providerIds, types){
+        const result = await this.deviceRepository.getDevices(userId, timeFilterFrom, timeFilterTo, providerIds, types);
+        return dtoConverter.convertDevicesDataWrapper(result);
     }
 }
 

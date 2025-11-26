@@ -24,25 +24,27 @@ export class CreateSignal {
 }
 
 export class Device {
-    constructor(deviceId, deviceType, deviceDescription, signals){
-        this.deviceId = deviceId;
-        this.deviceType = deviceType;
-        this.deviceDescription = deviceDescription;
+    constructor({deviceId, deviceType, deviceDescription, providerId, signals}){
+        this.deviceId = deviceId
+        this.deviceType = deviceType
+        this.deviceDescription = deviceDescription
+        this.providerId = providerId
         this.signals = signals
     }
 }
 
 export class Signal {
-    constructor(signalId, signalDescription, signalType, signalTypeDescription, x, y, z, virtual, unit) {
-        this.signalId = signalId;
-        this.signalDescription = signalDescription;
-        this.signalType = signalType;
-        this.signalTypeDescription = signalTypeDescription;
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.virtual = virtual;
-        this.unit = unit;
+    constructor({signalId, signalDescription, signalType, signalTypeDescription, x, y, z, virtual, unit, lastMeasurementTimestamp}) {
+        this.signalId = signalId
+        this.signalDescription = signalDescription
+        this.signalType = signalType
+        this.signalTypeDescription = signalTypeDescription
+        this.x = x
+        this.y = y
+        this.z = z
+        this.virtual = virtual
+        this.unit = unit
+        this.lastMeasurementTimestamp = lastMeasurementTimestamp
     }
 }
 

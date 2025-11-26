@@ -217,6 +217,7 @@ class DtoConverter {
                     deviceId: curr.deviceId,
                     deviceType: curr.deviceType,
                     deviceDescription: curr.deviceDescription,
+                    providerId: curr.providerId,
                     signals: {}
                 };
             }
@@ -233,7 +234,8 @@ class DtoConverter {
                     y: curr.y,
                     z: curr.z,
                     virtual: curr.virtual,
-                    unit: curr.unit
+                    unit: curr.unit,
+                    lastMeasurementTimestamp: curr.lastMeasurementTimestamp
                 };
             }
             return acc;
@@ -241,23 +243,14 @@ class DtoConverter {
 
         const devicesArray = Object.values(grouped).map(deviceGroup => {
             const signalsArray = Object.values(deviceGroup.signals).map(signalGroup => {
-                return new Signal({
-                    signalId: signalGroup.signalId,
-                    signalDescription: signalGroup.signalDescription,
-                    signalType: signalGroup.signalType,
-                    signalTypeDescription: signalGroup.signalTypeDescription,
-                    x: signalGroup.x,
-                    y: signalGroup.y,
-                    z: signalGroup.z,
-                    virtual: signalGroup.virtual,
-                    unit: signalGroup.unit
-                });
+                return new Signal(signalGroup);
             });
 
             return new Device({
                 deviceId: deviceGroup.deviceId,
                 deviceType: deviceGroup.deviceType,
                 deviceDescription: deviceGroup.deviceDescription,
+                providerId: deviceGroup.providerId,
                 signals: signalsArray
             });
         });
