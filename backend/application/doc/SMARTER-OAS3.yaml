@@ -703,7 +703,7 @@ components:
           type: boolean
           description: Indicates if the watering event is currently enabled or planned to run.
         advice:
-          type: string
+          type: number
           description: General advice or recommendation for the event.
         expectedWater:
           type: number

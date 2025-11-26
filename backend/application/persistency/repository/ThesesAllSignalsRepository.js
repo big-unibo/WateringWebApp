@@ -260,7 +260,7 @@ class ThesesAllSignalsRepository {
                 x, y, z
             FROM theses_all_signals 
             WHERE thesis_id = :thesisId
-            AND :timestamp BETWEEN valid_from AND COALESCE(valid_to, 'infinity') 
+                AND :timestamp BETWEEN valid_from AND COALESCE(valid_to, 'infinity') 
         `;
 
         try {
@@ -289,10 +289,9 @@ class ThesesAllSignalsRepository {
                 tas.virtual as "virtual",
                 tas.unit as "unit"
             FROM theses_all_signals tas
-            WHERE :timestamp BETWEEN 
-                tas.valid_from AND COALESCE(tas.valid_to, 'infinity')
-            ${signalTypes.length > 0 ? "AND tas.signal_type = ANY(ARRAY[:signalTypes])" : "" }
-            AND tas.thesis_id = :thesisId
+            WHERE :timestamp BETWEEN tas.valid_from AND COALESCE(tas.valid_to, 'infinity')
+                ${signalTypes.length > 0 ? "AND tas.signal_type = ANY(ARRAY[:signalTypes])" : "" }
+                AND tas.thesis_id = :thesisId
         `;
 
         const results = await this.sequelize.query(query, {

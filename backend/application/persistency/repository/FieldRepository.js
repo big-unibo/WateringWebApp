@@ -245,16 +245,13 @@ class FieldRepository {
                 ON c.id = f.company_id
             JOIN organizations o
                 ON o.id = c.organization_id
-                
             JOIN users u
                 ON u.id = :userId 
-
             LEFT JOIN permits p
                 ON p.id_key = s.id 
                 AND p.table = 'sectors'
             JOIN theses_in_sectors ts
                 ON ts.sector_id = s.id
-                
             WHERE 
                 ts.valid_from <= :timeFilterTo
                 AND (ts.valid_to IS NULL OR ts.valid_to >= :timeFilterFrom)           
@@ -279,12 +276,12 @@ class FieldRepository {
         const query = `
             WITH validity_table AS (
                 SELECT device_id, device_binning_id, thesis_id, thesis_name
-                FROM theses_all_signals
+                    FROM theses_all_signals
                 WHERE device_type = :HUMIDITY_DEVICE_TYPE
-                AND thesis_id = :thesisId
+                    AND thesis_id = :thesisId
                 GROUP BY device_id, thesis_id, thesis_name, device_binning_id
                 HAVING MIN(valid_from) < :timestamp
-                AND MAX(COALESCE(valid_to, 'infinity')) > :timestamp
+                    AND MAX(COALESCE(valid_to, 'infinity')) > :timestamp
                 LIMIT 1
             )
 
@@ -304,11 +301,11 @@ class FieldRepository {
                 op.value
                 FROM validity_table v
                 JOIN grid_optimal_profile_assignment gop
-                ON v.device_id = gop.grid_id
+                    ON v.device_id = gop.grid_id
                 JOIN optimal_profiles op
-                ON op.profile_id = gop.optimal_profile_id
+                    ON op.profile_id = gop.optimal_profile_id
                 WHERE gop.valid_from < :timestamp
-                AND (gop.valid_to IS NULL OR gop.valid_to > :timestamp)
+                    AND (gop.valid_to IS NULL OR gop.valid_to > :timestamp)
         `;
 
         const results = await this.sequelize.query(query, {
@@ -423,128 +420,6 @@ class FieldRepository {
     //         timestamp_from: timestampFrom,
     //         timestamp_to: null
     //     }).save()      
-    // }
-
-    // async getWateringSectorDetails(refStructureName, companyName, fieldName, sectorName, timestamp) {
-    //     this.WateringSector.removeAttribute('id')
-    //     return await this.WateringSector.findOne({
-    //         where: {
-    //             refStructureName: refStructureName,
-    //             companyName: companyName,
-    //             fieldName: fieldName,
-    //             sectorName: sectorName,
-    //             timestamp_from: { [Op.lt]: timestamp },
-    //             timestamp_to: {
-    //                 [Op.or]: {
-    //                     [Op.is]: null,
-    //                     [Op.gt]: timestamp
-    //                 },
-    //             }
-    //         }
-    //     })
-    // }
-
-    // async createMatrixField(source, refStructureName, companyName, fieldName, sectorName, thesisName, validFrom, validTo, matrixId) {
-    //     try {
-    //         let newMatrixId
-    //         if(matrixId){
-    //             this.MatrixProfile.removeAttribute('id')
-    //             const result = await this.MatrixProfile.findAll({
-    //                 where: {
-    //                     matrixId: matrixId
-    //                 }
-    //             })
-    //             if(result.length > 0){
-    //                 newMatrixId = matrixId    
-    //             } else {
-    //                 throw Error("Matrix profile not found")
-    //             }
-    //         } else {
-    //             newMatrixId = await this.MatrixProfile.max('matrixId') + 1
-    //         }
-    //         this.MatrixField.update(
-    //             { 
-    //                 timestamp_to: Math.floor(validFrom),
-    //                 current: false 
-    //             },
-    //             {
-    //                 where: {
-    //                     source: source,
-    //                     refStructureName: refStructureName,
-    //                     companyName: companyName,
-    //                     fieldName: fieldName,
-    //                     sectorName: sectorName,
-    //                     thesisName: thesisName,
-    //                     current: true
-    //                 }
-    //             }
-    //         )
-
-    //         const model = this.MatrixField.build({
-    //                 source: source,
-    //                 refStructureName: refStructureName,
-    //                 companyName: companyName,
-    //                 fieldName: fieldName,
-    //                 sectorName: sectorName,
-    //                 thesisName: thesisName,
-    //                 timestamp_from: Math.floor(validFrom),
-    //                 timestamp_to: validTo ? Math.floor(validTo) : null,
-    //                 current: true,
-    //                 matrixId: newMatrixId
-    //             })
-
-    //         await model.save()
-    //         return newMatrixId
-    //     } catch (error) {
-    //         throw Error(error.message)
-    //     }
-    // }
-
-    // async setPrescriptiveThesis(refStructureName, companyName, fieldName, sectorName, prescriptiveThesis, timestampFrom){
-    //     this.WateringThesis.removeAttribute('id')
-
-    //     const oldTheses = await this.WateringThesis.findAll({
-    //         where: {
-    //             refStructureName: refStructureName,
-    //             companyName: companyName,
-    //             fieldName: fieldName,
-    //             sectorName: sectorName,
-    //             timestamp_from: { [Op.lt]: timestampFrom },
-    //             timestamp_to: {
-    //                 [Op.or]: {
-    //                     [Op.is]: null,
-    //                     [Op.gt]: timestampFrom
-    //                 },
-    //             }
-    //         }
-    //     })
-
-    //     this.WateringThesis.update(
-    //         { 
-    //             timestamp_to: timestampFrom,
-    //         },
-    //         {
-    //             where: {
-    //                 refStructureName: refStructureName,
-    //                 companyName: companyName,
-    //                 fieldName: fieldName,
-    //                 sectorName: sectorName,
-    //                 timestamp_from: { [Op.lt]: timestampFrom },
-    //                 timestamp_to: {
-    //                     [Op.or]: {
-    //                     [Op.is]: null,
-    //                     [Op.gt]: timestampFrom
-    //                     },
-    //                 }
-    //             }
-    //         }
-    //     )
-
-    //     for(const thesis of oldTheses){
-    //         thesis.weight = thesis.thesisName == prescriptiveThesis ? 1 : 0
-    //         thesis.dripperPosition = thesis.dripper_pos
-    //         await this.createThesis(thesis, timestampFrom)
-    //     }
     // }
 
     // async disableWateringBaseline(refStructureName, companyName, fieldName, sectorName, timestamp){

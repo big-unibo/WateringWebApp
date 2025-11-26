@@ -61,7 +61,7 @@ class OptimalDistanceRepository {
 				JOIN optimal_profiles op
                     ON op.profile_id = gop.optimal_profile_id
                 WHERE gop.valid_from < :timeFilterTo
-                AND (gop.valid_to IS NULL OR gop.valid_to > :timeFilterFrom)
+                    AND (gop.valid_to IS NULL OR gop.valid_to > :timeFilterFrom)
             ),
             watering_data AS (
                 SELECT 
@@ -108,7 +108,7 @@ class OptimalDistanceRepository {
                 JOIN field_data fd 
                     ON wd.watering_start 
                     BETWEEN fd.valid_from AND COALESCE(fd.valid_to, :timeFilterTo)
-                 GROUP BY wd.thesis_name, wd.device_id, unit, wd.watering_start
+                GROUP BY wd.thesis_name, wd.device_id, unit, wd.watering_start
             )
             UNION(
                 SELECT DISTINCT
@@ -186,8 +186,8 @@ class OptimalDistanceRepository {
                     FROM grid_optimal_profile_assignment as ga
                     JOIN optimal_profiles as op ON ga."optimal_profile_id" = op."profile_id"
                     WHERE grid_id = grid.device_id
-                    AND "valid_from" < :timestamp
-                    AND ("valid_to" > :timestamp OR "valid_to" IS NULL)
+                        AND "valid_from" < :timestamp
+                        AND ("valid_to" > :timestamp OR "valid_to" IS NULL)
                 ) as  optimal
                     ON optimal."grid_id" = ip."grid_id"
                         AND optimal."x" = ic."x"
