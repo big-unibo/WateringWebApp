@@ -149,6 +149,7 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
             );
             return res.status(200).json(results);
         } catch (error) {
+            console.error(`Failed retrieving thesis heatmap caused by: ${error}`);
             return res.status(500).json({ message: error.message });
         }
     });

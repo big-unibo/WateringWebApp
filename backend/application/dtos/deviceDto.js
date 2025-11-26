@@ -34,7 +34,7 @@ export class Device {
 }
 
 export class Signal {
-    constructor({signalId, signalDescription, signalType, signalTypeDescription, x, y, z, virtual, unit, lastMeasurementTimestamp}) {
+    constructor({signalId, signalDescription, signalType, signalTypeDescription, x, y, z, virtual, unit, lastMeasurementTimestamp, idOnProvider}) {
         this.signalId = signalId
         this.signalDescription = signalDescription
         this.signalType = signalType
@@ -45,6 +45,7 @@ export class Signal {
         this.virtual = virtual
         this.unit = unit
         this.lastMeasurementTimestamp = lastMeasurementTimestamp
+        this.idOnProvider = idOnProvider
     }
 }
 

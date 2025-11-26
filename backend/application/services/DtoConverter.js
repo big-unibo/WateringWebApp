@@ -141,17 +141,10 @@ class DtoConverter {
                 const measurements = (signalGroup.values ?? [])
                     .filter(v => v != null && v.timestamp != null && v.value != null)
                     .map(v => new MeasureData(v.timestamp, v.value, v.computed));
-                return new SignalData(
-                    signalGroup.signalId,
-                    signalGroup.deviceId,
-                    signalGroup.signalDescription,
-                    signalGroup.x,
-                    signalGroup.y,
-                    signalGroup.z,
-                    signalGroup.virtual,
-                    signalGroup.unit,
-                    measurements
-                );
+                return new SignalData({
+                    ...signalGroup,
+                    measurements: measurements
+                });
             });
 
             return new SignalTypeData(
@@ -235,7 +228,8 @@ class DtoConverter {
                     z: curr.z,
                     virtual: curr.virtual,
                     unit: curr.unit,
-                    lastMeasurementTimestamp: curr.lastMeasurementTimestamp
+                    lastMeasurementTimestamp: curr.lastMeasurementTimestamp,
+                    idOnProvider: curr.idOnProvider
                 };
             }
             return acc;
@@ -277,16 +271,7 @@ class DtoConverter {
 
         const signalTypeDataArray = Object.values(grouped).map(typeGroup => {
             const signals = (typeGroup.signals ?? [])
-                .map(s => new SignalData(
-                    s.signalId,
-                    s.deviceId,
-                    s.signalDescription,
-                    s.x,
-                    s.y,
-                    s.z,
-                    s.virtual,
-                    s.unit,
-                ));
+                .map(s => new SignalData(s));
 
             return new SignalTypeData(
                 typeGroup.signalType,

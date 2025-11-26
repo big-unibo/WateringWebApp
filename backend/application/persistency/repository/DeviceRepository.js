@@ -38,6 +38,7 @@ class DeviceRepository {
                 device_type AS "deviceType",
                 device_description AS "deviceDescription",
                 provider_id AS "providerId",
+                signal_id_on_provider AS "idOnProvider",
                 signal_id AS "signalId",
                 signal_description AS "signalDescription",
                 signal_type AS "signalType",

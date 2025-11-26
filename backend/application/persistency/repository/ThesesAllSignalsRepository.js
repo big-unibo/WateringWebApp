@@ -252,6 +252,7 @@ class ThesesAllSignalsRepository {
                 device_type AS "deviceType",
                 device_description AS "deviceDescription",
                 provider_id AS "providerId",
+                signal_id_on_provider AS "idOnProvider",
                 signal_id AS "signalId",
                 signal_description AS "signalDescription",
                 signal_type AS "signalType",
@@ -286,6 +287,7 @@ class ThesesAllSignalsRepository {
         const query = `
             SELECT DISTINCT
                 tas.device_id AS "deviceId",
+                signal_id_on_provider AS "idOnProvider",
                 tas.signal_id AS "signalId",
                 tas.signal_description AS "signalDescription",
                 tas.signal_type AS "signalType",
