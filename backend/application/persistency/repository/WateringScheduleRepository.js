@@ -88,6 +88,50 @@ class WateringScheduleRepository {
         }
     }
 
+    async findFollowingEvent(eventId){
+        const query = `
+            WITH reference_event AS (
+                SELECT sector_id, watering_start
+                FROM watering_events
+                WHERE id = :eventId
+            )
+            SELECT 
+                w.id,
+                w.sector_id as "sectorId",
+                w.date,
+                w.watering_start as "wateringStart",
+                w.watering_end as "wateringEnd",
+                w.advice,
+                w.duration,
+                w.expected_water as expectedWater,
+                w.note,
+                w.enabled
+            FROM watering_events w
+            JOIN reference_event r ON w.sector_id = r.sector_id
+            WHERE w.watering_start > r.watering_start
+            ORDER BY w.watering_start ASC
+            LIMIT 1;
+        `
+
+        try{
+            const result = await this.sequelize.query(query, {
+                replacements: { 
+                    eventId: eventId
+                },
+                type: this.sequelize.QueryTypes.SELECT,
+                plain: true
+            });
+
+            return result
+
+        } catch (error) {
+            console.error('Db error trying to retrieve next event:', error);
+            throw error; 
+        }
+    }
+
+
+
     async createWateringEvent({
         sectorId, 
         wateringStart, 
