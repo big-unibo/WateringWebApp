@@ -1,3 +1,4 @@
+import { SCHEDULE_SAFE_INTERVAL } from "../commons/constants.js";
 import { WateringEvent, WateringScheduleResponse } from "../dtos/wateringScheduleDto.js";
 import DtoConverter from "./DtoConverter.js";
 
@@ -24,7 +25,7 @@ class WateringScheduleService {
     async isEventUpdateAllowed(eventId, newWateringStart) {
         const followingEvent = await this.wateringScheduleRepository.findFollowingEvent(eventId)
         if (followingEvent && followingEvent.wateringStart != null) {
-            return followingEvent.wateringStart > newWateringStart;
+            return followingEvent.wateringStart - SCHEDULE_SAFE_INTERVAL > newWateringStart;
         }
         return false
     }
