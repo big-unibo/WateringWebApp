@@ -186,7 +186,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *                 message:
      *                   type: string
      *       '403':
-     *         description: Unauthorized (user not allowed to create companies)
+     *         description: Unauthorized (user not allowed to assign device)
      *         content:
      *           application/json:
      *             schema:
@@ -195,7 +195,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *                 message:
      *                   type: string
      *       500:
-     *         description: Internal server error – unexpected error while assigning sginals
+     *         description: Internal server error – unexpected error while assigning signals
      *         content:
      *           application/json:
      *             schema:

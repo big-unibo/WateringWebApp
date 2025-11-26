@@ -38,7 +38,7 @@ class DeviceService {
     async assignSignals(signalAssociation) {
         try {
 
-            if (!signalAssociation.deviceId) {
+            if (!signalAssociation.sourceId) {
                 throw new Error("deviceId is required");
             }
             if (!signalAssociation.targetId) {
@@ -49,7 +49,7 @@ class DeviceService {
             }
 
             const validFrom = signalAssociation.validFrom ?? Date.now() / 1000;
-            const signals = await this.deviceRepository.getSignals(signalAssociation.deviceId);
+            const signals = await this.deviceRepository.getSignals(signalAssociation.sourceId);
 
             const assingFunctions = {
                 [SignalTargetType.FIELD]: async (args) => await this.signalRepository.assignSignalToField(args),

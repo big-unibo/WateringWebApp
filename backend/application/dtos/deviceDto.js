@@ -69,13 +69,13 @@ export class CreateDevice {
 export class SignalAssociation {
     /**
      * 
-     * @param {number} deviceId - Id of the device owning the signals
+     * @param {number} sourceId - Id of the device owning the signals
      * @param {SignalTargetType} targetType - Type of the target of the signal association
      * @param {number} targetId - Id of the association target
      * @param {validFrom} - Start of the validy period of the association
      */
-    constructor(deviceId, targetType, targetId, validFrom) {
-    this.deviceId = deviceId;
+    constructor(sourceId, targetType, targetId, validFrom) {
+    this.sourceId = sourceId;
     this.targetType = targetType; 
     this.targetId = targetId;
     this.validFrom = validFrom;

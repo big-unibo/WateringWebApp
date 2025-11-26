@@ -1,3 +1,5 @@
+import { SignalTargetType } from "../dtos/deviceDto.js";
+
 class SignalService{
     constructor(signalRepository){
         this.signalRepository = signalRepository;
@@ -10,6 +12,37 @@ class SignalService{
         } catch (error) {
             console.error(`Error creating signal: ${error.message}`);
             throw error;
+        }
+    }
+
+    async assignSignal(signalAssociation) {
+        try {
+            if (!signalAssociation.sourceId) {
+                throw new Error("signalId is required");
+            }
+            if (!signalAssociation.targetId) {
+                throw new Error("targetId is required");
+            }
+            if (!Object.values(SignalTargetType).includes(signalAssociation.targetType)) {
+                throw new Error(`Invalid targetType: ${signalAssociation.targetType}`);
+            }
+
+            const validFrom = signalAssociation.validFrom ?? Date.now() / 1000;
+
+            const assingFunctions = {
+                [SignalTargetType.FIELD]: async (args) => await this.signalRepository.assignSignalToField(args),
+                [SignalTargetType.SECTOR]: async (args) => await this.signalRepository.assignSignalToSector(args),
+                [SignalTargetType.THESIS]: async (args) => await this.signalRepository.assignSignalToThesis(args)
+            }
+        
+            await assingFunctions[signalAssociation.targetType]({
+                signalId: signalAssociation.sourceId,
+                [signalAssociation.targetType + "Id"]: signalAssociation.targetId,
+                validFrom
+            })
+        }catch(error){
+            console.error(`Error assigning signal: ${error.message}`);
+            throw error; 
         }
     }
 
