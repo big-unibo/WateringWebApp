@@ -141,33 +141,6 @@ class UserRepository {
         }
     }
 
-    // async findFieldsByAffiliation(affiliation){
-    //     try {
-    //         this.TranscodingField.removeAttribute('id')
-    //         const result = await this.TranscodingField.findAll({
-    //             where: {source:affiliation}
-    //         });
-
-    //         const response = new Set();
-    //         result.map(model => {
-    //             const {
-    //                 refStructureName,
-    //                 companyName,
-    //                 fieldName,
-    //                 sectorName,
-    //                 thesisName
-    //             } = model;
-
-    //             const key = `${refStructureName} - ${companyName} - ${fieldName} - ${sectorName} - ${thesisName}`;
-    //             response.add(key)
-    //         });
-
-    //         return response;
-    //     } catch (error) {
-    //         console.error(`Error on finding transcoding fields for affiliation ${affiliation} caused by: ${error.message}`);
-    //     }
-    // }
-
 }
 
 export default UserRepository;
