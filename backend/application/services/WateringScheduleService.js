@@ -21,6 +21,14 @@ class WateringScheduleService {
         return await this.wateringScheduleRepository.updateWateringEvent(eventId, fieldsToUpdate)
     }
 
+    async isEventUpdateAllowed(eventId, newWateringStart) {
+        const followingEvent = await this.wateringScheduleRepository.findFollowingEvent(eventId)
+        if (followingEvent && followingEvent.wateringStart != null) {
+            return followingEvent.wateringStart > newWateringStart;
+        }
+        return false
+    }
+
     async createWateringEvent(event) {
         return await this.wateringScheduleRepository.createWateringEvent(event)
     }

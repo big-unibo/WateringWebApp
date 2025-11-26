@@ -230,6 +230,13 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
                     .map(k => [k, req.body[k]])
             )
 
+            /*Cheking validity of new watering start in relation to the following event */
+            if(Object.hasOwn(fieldsToUpdate, 'wateringStart')){
+                if(!await wateringScheduleService.isEventUpdateAllowed(eventId, fieldsToUpdate.wateringStart)){
+                    return res.status(400).json({ message: "Watering start not allowed for this event" });
+                }
+            }
+
             const result = await wateringScheduleService.updateWateringEvent(eventId, fieldsToUpdate);
             if (!result) {
                 return res.status(404).json({ message: "No event found with the given id" });
