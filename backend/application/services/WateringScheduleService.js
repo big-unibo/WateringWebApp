@@ -75,7 +75,11 @@ class WateringScheduleService {
             wateringTimestamp += currentFrequency;
         }
 
-        return eventIds;
+        return eventIds; 
+    }
+
+    async deleteWateringEvents(sectorId, timestamp) {
+        return await this.wateringScheduleRepository.deleteWateringEvents(sectorId,timestamp)
     }
 }
 

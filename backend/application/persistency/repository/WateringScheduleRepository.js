@@ -162,6 +162,33 @@ class WateringScheduleRepository {
             throw new Error(`Error while creating watering event caused by: ${error.message}`);
         }
     }
+
+    async deleteWateringEvents(sectorId, timestamp){
+        try {
+            const events = await this.WateringEvent.findAll({
+                attributes: ['id'],
+                where: {
+                    sectorId,
+                    wateringStart: { [Op.gt]: timestamp },
+                    advice: null
+                }
+            });
+
+            if (events.length === 0) return [];
+
+            const idsToDelete = events.map(e => e.id);
+
+            await this.WateringEvent.destroy({
+                where: { id: idsToDelete }
+            });
+
+            return idsToDelete;
+
+        } catch (error) {
+            console.error('Error while deleting watering events:', error);
+            throw new Error(`Deletion failed: ${error.message}`);
+        }
+    }
 }
 
 export default WateringScheduleRepository;
