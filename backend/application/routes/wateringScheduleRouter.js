@@ -495,7 +495,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
      * @swagger
      * /wateringSchedule/{sectorId}/endIrrigationSeason:
      *   get:
-     *     summary: Stop the irrigation season by deleting all the watering events after a given timestamp or now by defaults
+     *     summary: Stop the irrigation season by deleting all the watering events after a given timestamp or now + safety period by defaults
      *     tags: [Watering Schedule Operation]
      *     description: Deletes all of the watering events present with watering start after a given timestamp and no advice calculated. Requires authentication and proper authorization
      *     parameters:
@@ -585,8 +585,13 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             // if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'companies')))
             //     return res.status(403).json({ message: 'Unauthorized request' });
 
+            const now = Date.now()/1000
             const sectorId = parseInt(req.params.sectorId);
-            const timestamp = req.query.timestamp || Date.now()/1000
+
+            const timestamp = req.query.timestamp || now + SCHEDULE_SAFE_INTERVAL
+            if(req.query.timestamp < now + SCHEDULE_SAFE_INTERVAL ){
+                return res.status(400).json({ message: "End timestamp is too soon" });
+            }
 
             const deletedEventsIds = await wateringScheduleService.deleteWateringEvents(sectorId, timestamp);
             res.status(200).json({ message: 'Watering seson ended successfully'});
