@@ -582,6 +582,10 @@ components:
           type: boolean
         unit:
           type: string
+        idOnProvider:
+          type: string
+        lastMeasurementTimestamp:
+          type: number
       required:
         - signalId
         - signalType

@@ -140,7 +140,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         const providerIds = req.query.providerIds
         const types = req.query.types
         const page = req.query.page ?? 1
-        const itemsPerPage = req.query.itemsPerPage ?? 20
+        const itemsPerPage = req.query.itemsPerPage ?? 50
 
 		try {
 			const devices = await deviceService.getDevices(requestUserData.userid, timeFilterFrom, timeFilterTo, providerIds, types, page, itemsPerPage);
