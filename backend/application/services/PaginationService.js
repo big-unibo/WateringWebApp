@@ -1,15 +1,15 @@
 class PaginationService {
 
-    computePaginationMetadata(totalItems, pageNumber, itemsPerPage) {
+    computePaginationMetadata(totalItems, page, itemsPerPage) {
         const totalPages = Math.ceil(totalItems / itemsPerPage);
 
         return {
-            page: pageNumber,
+            page: page,
             pageSize: itemsPerPage,
             totalPages: totalPages,
             totalItems: totalItems,
-            hasNext: pageNumber < totalPages,
-            hasPrev: pageNumber > 1
+            hasNext: page < totalPages,
+            hasPrev: page > 1
         };
     }
 

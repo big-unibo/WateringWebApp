@@ -46,7 +46,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *         explode: true
      *         description: Device types to include
 	 *       - in: query
-	 *         name: pageNumber
+	 *         name: page
 	 *         schema:
 	 *           type: number
      *           minimum: 1
@@ -139,11 +139,11 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         const timeFilterTo = Number(req.query.timeFilterTo)
         const providerIds = req.query.providerIds
         const types = req.query.types
-        const pageNumber = req.query.pageNumber ?? 1
+        const page = req.query.page ?? 1
         const itemsPerPage = req.query.itemsPerPage ?? 20
 
 		try {
-			const devices = await deviceService.getDevices(requestUserData.userid, timeFilterFrom, timeFilterTo, providerIds, types, pageNumber, itemsPerPage);
+			const devices = await deviceService.getDevices(requestUserData.userid, timeFilterFrom, timeFilterTo, providerIds, types, page, itemsPerPage);
 			if (!devices?.pagination?.totalItems) {
 				return res.status(404).json({ 
 					error: "User has no permission to view any devices in the given period" 

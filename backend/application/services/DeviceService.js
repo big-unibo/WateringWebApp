@@ -75,10 +75,10 @@ class DeviceService {
         }
     }
 
-    async getDevices(userId, timeFilterFrom, timeFilterTo, providerIds, types, pageNumber, itemsPerPage){
+    async getDevices(userId, timeFilterFrom, timeFilterTo, providerIds, types, page, itemsPerPage){
 
         const devicesCount = await this.deviceRepository.countDevices(userId, timeFilterFrom, timeFilterTo, providerIds, types)
-        const paginationMetadata = paginationService.computePaginationMetadata(devicesCount, pageNumber, itemsPerPage)
+        const paginationMetadata = paginationService.computePaginationMetadata(devicesCount, page, itemsPerPage)
 
         const offset = (paginationMetadata.page - 1) * paginationMetadata.pageSize;
         const limit = paginationMetadata.pageSize;  
