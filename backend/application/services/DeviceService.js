@@ -1,7 +1,9 @@
 import { SignalTargetType } from "../dtos/deviceDto.js";
 import DtoConverter from './DtoConverter.js';
+import PaginationService from "./PaginationService.js";
 
-const dtoConverter = new DtoConverter();
+const dtoConverter = new DtoConverter()
+const paginationService = new PaginationService()
 
 class DeviceService {
     constructor(deviceRepository, signalRepository){
@@ -73,9 +75,18 @@ class DeviceService {
         }
     }
 
-    async getDevices(userId, timeFilterFrom, timeFilterTo, providerIds, types){
-        const result = await this.deviceRepository.getDevices(userId, timeFilterFrom, timeFilterTo, providerIds, types);
-        return dtoConverter.convertDevicesDataWrapper(result);
+    async getDevices(userId, timeFilterFrom, timeFilterTo, providerIds, types, pageNumber, itemsPerPage){
+
+        const devicesCount = await this.deviceRepository.countDevices(userId, timeFilterFrom, timeFilterTo, providerIds, types)
+        const paginationMetadata = paginationService.computePaginationMetadata(devicesCount, pageNumber, itemsPerPage)
+
+        const offset = (paginationMetadata.page - 1) * paginationMetadata.pageSize;
+        const limit = paginationMetadata.pageSize;  
+        const devices = await this.deviceRepository.getDevices(userId, timeFilterFrom, timeFilterTo, providerIds, types, offset, limit)
+        return {
+            data: dtoConverter.convertDevicesDataWrapper(devices),
+            pagination: paginationMetadata
+        }
     }
 }
 

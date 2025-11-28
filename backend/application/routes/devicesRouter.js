@@ -13,7 +13,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
 	 *     summary: Retrieve all devices available for the user
 	 *     tags: 
      *       - Devices
-	 *     description: Retrieve all devicess available for the user, filtered by a time range
+	 *     description: Retrieve all devicess available for the user, filtered by a time range. Results are paginated
 	 *     parameters:
 	 *       - in: query
 	 *         name: timeFilterFrom
@@ -45,15 +45,36 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *         style: form
      *         explode: true
      *         description: Device types to include
+	 *       - in: query
+	 *         name: pageNumber
+	 *         schema:
+	 *           type: number
+     *           minimum: 1
+     *           default: 1
+	 *         description: Number of page for devices to return
+	 *       - in: query
+	 *         name: itemsPerPage
+	 *         schema:
+	 *           type: number
+     *           minimum: 1
+     *           maximum: 500
+     *           default: 50
+	 *         description: Number of devices to include in a response. Max device in a single request 500
 	 *     responses:
 	 *       200:
 	 *         description: List of devices for the user
 	 *         content:
      *           application/json:
      *             schema:
-     *               type: array
-     *               items:
-     *                  $ref: '#/components/schemas/Device'
+     *               type: object
+     *               properties:
+     *                 data:
+     *                   type: array
+     *                   items:
+     *                      $ref: '#/components/schemas/Device'
+     *                 pagination:
+     *                   type: object
+     *                   $ref: '#/components/schemas/PaginationMetadata'
      *       '400':
      *         description: Input validation error (Bad Request)
      *         content:
@@ -118,10 +139,12 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         const timeFilterTo = Number(req.query.timeFilterTo)
         const providerIds = req.query.providerIds
         const types = req.query.types
+        const pageNumber = req.query.pageNumber ?? 1
+        const itemsPerPage = req.query.itemsPerPage ?? 20
 
 		try {
-			const devices = await deviceService.getDevices(requestUserData.userid, timeFilterFrom, timeFilterTo, providerIds, types);
-			if (!devices || devices.length === 0) {
+			const devices = await deviceService.getDevices(requestUserData.userid, timeFilterFrom, timeFilterTo, providerIds, types, pageNumber, itemsPerPage);
+			if (!devices?.pagination?.totalItems) {
 				return res.status(404).json({ 
 					error: "User has no permission to view any devices in the given period" 
 				});

@@ -919,6 +919,20 @@ components:
         description:
           type: string
 
-
+    PaginationMetadata:
+      type: object
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        totalPages:
+          type: integer
+        totalItems:
+          type: integer
+        hasNext:
+          type: boolean
+        hasPrev:
+          type: boolean
 
 
