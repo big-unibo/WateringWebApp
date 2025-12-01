@@ -40,7 +40,7 @@ function initUserAction(sequelize) {
             allowNull: false
         }
     }, {
-        tableName : 'user_actions',
+        tableName : 'users_actions',
         modelName : 'UserAction',
         timestamps : false,
         sequelize

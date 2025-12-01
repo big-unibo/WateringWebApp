@@ -67,8 +67,7 @@ class WateringScheduleRepository {
             return results;
 
         } catch (error) {
-            console.error('Error on find watering events:', error);
-            throw error; 
+            throw new Error(`Error while retrieving watering events caused by: ${error.message}`);
         }
     }
 
@@ -125,8 +124,7 @@ class WateringScheduleRepository {
             return result
 
         } catch (error) {
-            console.error('Db error trying to retrieve next event:', error);
-            throw error; 
+            throw new Error(`Error while searching following event caused by: ${error.message}`);
         }
     }
 
@@ -158,7 +156,6 @@ class WateringScheduleRepository {
             return newEvent.id;
 
         } catch (error) {
-            console.error('Error while creating watering event:', error);
             throw new Error(`Error while creating watering event caused by: ${error.message}`);
         }
     }
@@ -185,7 +182,6 @@ class WateringScheduleRepository {
             return idsToDelete;
 
         } catch (error) {
-            console.error('Error while deleting watering events:', error);
             throw new Error(`Deletion failed: ${error.message}`);
         }
     }

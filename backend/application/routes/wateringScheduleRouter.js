@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { WateringEvent } from '../dtos/wateringScheduleDto.js';
 import { SCHEDULE_SAFE_INTERVAL } from '../commons/constants.js';
 
+const LOG_TABLE = 'watering_events';
+
 const wateringScheduleRouter = ({ authenticationService, authorizationService, wateringScheduleService, userActionService }) => {
     const router = Router();
 
@@ -216,6 +218,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             return res.status(401).json({ message: 'Authentication failed' });
         }
         try {
+            const userId = requestUserData.userId
             //[TO DO]: Authorzation
             // if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'companies')))
             //     return res.status(403).json({ message: 'Unauthorized request' });
@@ -239,7 +242,8 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             const result = await wateringScheduleService.updateWateringEvent(eventId, fieldsToUpdate);
             if (!result) {
                 return res.status(404).json({ message: "No event found with the given id" });
-            }
+            }    
+            userActionService.logUpdate(userId, LOG_TABLE, eventId, null);
             return res.status(200).json({ message: "Event successfully updated" });
         } catch (error) {
             console.log(`Failed retrieving calendar caused by: ${error.message}`);
@@ -357,7 +361,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
 
             const newEventId = await wateringScheduleService.createWateringEvent(event);
             if(newEventId){
-                userActionService.logCreation(userId, 'watering_events', newEventId, null);
+                userActionService.logCreation(userId, LOG_TABLE, newEventId, null);
             }
             res.status(200).json({ message: 'Watering event created successfully', eventId: newEventId });
         } catch (error) {
@@ -479,6 +483,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
         }
 
         try {
+            const userId = requestUserData.userId
             //[TO DO]: Authorization
             // if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'watering_events')))
             //     return res.status(403).json({ message: 'Unauthorized request' });
@@ -489,6 +494,9 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
 
 
             const newEventIds = await wateringScheduleService.createPeriodicWateringEvent(sectorId, timestampFrom, timestampTo);
+            if(newEventIds){
+                userActionService.logCreation(userId, LOG_TABLE, newEventIds, null);
+            }
             res.status(200).json({ message: 'Watering events created successfully', eventIds: newEventIds });
         } catch (error) {
             console.error(`Error creating watering events: ${error.message}`);
@@ -586,6 +594,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             return res.status(401).json({ message: 'Authentication failed' });
         }
         try {
+            const userId = requestUserData.userId
             //[TO DO]: Authorzation
             // if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'companies')))
             //     return res.status(403).json({ message: 'Unauthorized request' });
@@ -599,7 +608,11 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             }
 
             const deletedEventsIds = await wateringScheduleService.deleteWateringEvents(sectorId, timestamp);
-            res.status(200).json({ message: 'Watering seson ended successfully'});
+
+            if(deletedEventsIds){
+                userActionService.logDeletion(userId, LOG_TABLE, deletedEventsIds, null);
+            }
+            res.status(200).json({ message: 'Irrigation season ended successfully'});
         } catch (error) {
             console.log(`Failed ending watering seasons caused by: ${error.message}`);
             return res.status(500).json({ message: "Error while trying to end watering season" });

@@ -11,9 +11,13 @@ class UserActionService {
     }
 
     async _saveLog(userId, action, table, ids, description) {
-        const timestamp = new Date()/1000;
-        const ids = Array.isArray(ids) ? ids : [ids];
-        this.userActionRepository.saveLog(userId, action, table, ids, timestamp, description)
+        const timestamp = Date.now()/1000;
+        const idKeys = Array.isArray(ids) ? ids : [ids];
+        try{
+            return await this.userActionRepository.saveLog(userId, action, table, idKeys, timestamp, description)
+        } catch (error) {
+            throw new Error(`Error loggin user action casued by by: ${error}`);
+        }
     }
 
     async logCreation(userId, table, ids, description) {
