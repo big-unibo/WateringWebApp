@@ -143,7 +143,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         const itemsPerPage = req.query.itemsPerPage ?? 50
 
 		try {
-			const devices = await deviceService.getDevices(requestUserData.userid, timeFilterFrom, timeFilterTo, providerIds, types, page, itemsPerPage);
+			const devices = await deviceService.getDevices(requestUserData.userId, timeFilterFrom, timeFilterTo, providerIds, types, page, itemsPerPage);
 			if (!devices?.pagination?.totalItems) {
 				return res.status(404).json({ 
 					error: "User has no permission to view any devices in the given period" 
@@ -245,7 +245,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
             return res.status(401).json({ message: 'Authentication failed' });
         }
         try {
-            if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'devices')))
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'devices')))
                 return res.status(403).json({ message: 'Unauthorized request' });
 
             const signalsArray = req.body.signals

@@ -167,7 +167,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
         }
 
         try {
-            const userId = requestUserData.userid;
+            const userId = requestUserData.userId;
 
             if (!(await authorizationService.isUserAuthorized(userId, 'create', 'users')))
             return res.status(403).json({ message: 'Unauthorized request' });
@@ -236,8 +236,8 @@ export default usersRouter;
     //     }
 
     //     try {
-    //         const user = await userService.findUser(requestUserData.userid)
-    //         if (!(await authorizationService.isUserAuthorized(user.userid, 'partner')))
+    //         const user = await userService.findUser(requestUserData.userId)
+    //         if (!(await authorizationService.isUserAuthorized(user.userId, 'partner')))
     //             return res.status(401).json({message: 'Unauthorized request'});
 
     //         if(!req.body && req.body === '')
@@ -313,7 +313,7 @@ export default usersRouter;
     //     }
 
     //     try {
-    //         const result = await userService.findUserPermissions(requestUserData.userid, req.query.timeFilterFrom, req.query.timeFilterTo);
+    //         const result = await userService.findUserPermissions(requestUserData.userId, req.query.timeFilterFrom, req.query.timeFilterTo);
     //         res.status(200).json(result);
     //     } catch (error) {
     //         res.status(500).json({message:error.message});

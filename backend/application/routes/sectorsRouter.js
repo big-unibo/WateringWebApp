@@ -97,7 +97,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
         const timeFilterTo = Number(req.query.timeFilterTo)
 
 		try {
-			const sectors = await fieldService.getSectors(requestUserData.userid, timeFilterFrom, timeFilterTo);
+			const sectors = await fieldService.getSectors(requestUserData.userId, timeFilterFrom, timeFilterTo);
 			if (!sectors || sectors.length === 0) {
 				return res.status(404).json({ 
 					error: "User has no permission to view any sectors in the given period" 
@@ -211,7 +211,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 		const sectorId = Number(req.params.sectorId)
         const timestamp = req.params.timestamp ?? Date.now()/1000
 
-		if(!authorizationService.isUserAuthorizedById(requestUserData.userid, 'monitoring', 'sectors', sectorId))
+		if(!authorizationService.isUserAuthorizedById(requestUserData.userId, 'monitoring', 'sectors', sectorId))
 			return res.status(403).json({message: 'Unauthorized request'})
 
 		try {
@@ -335,7 +335,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 		const thesis = new Thesis(req.body.name, sectorId, req.query.validFrom);
 
 		try {
-			if (!(await authorizationService.isUserAuthorizedInSector(requestUserData.userid, 'update', sectorId)))
+			if (!(await authorizationService.isUserAuthorizedInSector(requestUserData.userId, 'update', sectorId)))
 				return res.status(403).json({message: 'Unauthorized request'});
 
 			const thesisId = await fieldService.createThesis(thesis);
@@ -452,7 +452,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
         try {
             const sectorId = req.params.sectorId
         
-            if (!(await authorizationService.isUserAuthorizedById(requestUserData.userid, 'EDIT_ADVICE', 'sectors', sectorId)))
+            if (!(await authorizationService.isUserAuthorizedById(requestUserData.userId, 'EDIT_ADVICE', 'sectors', sectorId)))
                 return res.status(403).json({ message: 'Unauthorized request' });
 
             const validFrom = req.query.validFrom ?? Date.now()/1000

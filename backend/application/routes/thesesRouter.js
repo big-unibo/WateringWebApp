@@ -332,7 +332,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
 
         try {
             //[TO DO]: Authorization
-            // if (!(await authorizationService.isUserAuthorizedInSector(requestUserData.userid, 'update', thesisId)))
+            // if (!(await authorizationService.isUserAuthorizedInSector(requestUserData.userId, 'update', thesisId)))
             //     return res.status(403).json({message: 'Unauthorized request'});
 
             const results = await fieldService.getSignalsByThesis(thesisId, signalTypes, timestamp);
@@ -443,7 +443,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
 
         try {
             // TODO Authorization  
-            // if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
+            // if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userId, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
             //     return res.status(403).json({message: 'Unauthorized request'});
 
             const result = await wateringAdviceService.getThesisLastWateringAdvice(thesisId, timestamp)
@@ -564,7 +564,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
 
         try {
             // TODO authorization 
-            //if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
+            //if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userId, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
             //     return res.status(403).json({message: 'Unauthorized request'});
 
             const result = await wateringAdviceService.getWateringAdvice(thesisId, expectedWater, timestamp)
@@ -755,7 +755,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
 
         try {
             // TODO authorization 
-            //if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
+            //if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userId, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
             //     return res.status(401).json({message: 'Unauthorized request'});
 
             const devices = await fieldService.getDevicesByThesis(thesisId)
@@ -905,7 +905,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
     
       try {
         const sectorId = fieldService.getThesisDetails(thesisId).sectorId
-        if (!(await authorizationService.isUserAuthorizedById(requestUserData.userid, 'EDIT_ADVICE', 'sectors', sectorId)))
+        if (!(await authorizationService.isUserAuthorizedById(requestUserData.userId, 'EDIT_ADVICE', 'sectors', sectorId)))
             return res.status(403).json({ message: 'Unauthorized request' });
 
         const timestamp = req.query.timestamp ?? Date.now()/1000
@@ -1007,7 +1007,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
     
       try {
         const sectorId = fieldService.getThesisDetails(thesisId).sectorId
-        if (!(await authorizationService.isUserAuthorizedById(requestUserData.userid, 'EDIT_ADVICE', 'sectors', sectorId)))
+        if (!(await authorizationService.isUserAuthorizedById(requestUserData.userId, 'EDIT_ADVICE', 'sectors', sectorId)))
             return res.status(403).json({ message: 'Unauthorized request' });
 
         const validFrom = req.query.validFrom ?? Date.now()/1000

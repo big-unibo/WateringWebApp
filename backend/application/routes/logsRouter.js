@@ -100,7 +100,7 @@ const logsRouter = ({authenticationService, authorizationService, logService}) =
 
         try {
             const user = await authenticationService.validateJwt(req.headers.authorization);
-            // if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
+            // if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userId, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
             //     return res.status(401).json({ message: 'Unauthorized request' });
         } catch (error) {
             return res.status(403).json({ message: 'Authentication failed' });

@@ -98,7 +98,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
         try {
             const companyId = Number(req.body.companyId)
 
-            if (!(await authorizationService.isUserAuthorizedById(requestUserData.userid, 'update', 'companies', companyId)))
+            if (!(await authorizationService.isUserAuthorizedById(requestUserData.userId, 'update', 'companies', companyId)))
                 return res.status(403).json({ message: 'Unauthorized request' });
 
             const fieldLocation = req.body.location
@@ -210,7 +210,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
         try {
             const fieldId = Number(req.params.fieldId)
 
-            if (!(await authorizationService.isUserAuthorizedInField(requestUserData.userid, 'update', fieldId)))
+            if (!(await authorizationService.isUserAuthorizedInField(requestUserData.userId, 'update', fieldId)))
                 return res.status(403).json({ message: 'Unauthorized request' });
 
             const {
@@ -312,7 +312,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
     //     const { refStructureName, companyName, fieldName, sectorName, thesisName } = req.params;
 
     //     try {
-    //         if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, '*')))
+    //         if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userId, refStructureName, companyName, fieldName, sectorName, thesisName, '*')))
     //             return res.status(401).json({ message: 'Unauthorized request' });
 
     //         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
@@ -393,7 +393,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
     // //     const sectorName = req.params.sectorName;
 
     // //     try {
-    // //         if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, null, '*')))
+    // //         if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userId, refStructureName, companyName, fieldName, sectorName, null, '*')))
     // //             return res.status(401).json({message: 'Unauthorized request'});
 
     // //         if(!req.body && req.body === '')
@@ -482,7 +482,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
     // //   const { refStructureName, companyName, fieldName, sectorName } = req.params;
 
     // //   try {
-    // //     if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, null, '*')))
+    // //     if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userId, refStructureName, companyName, fieldName, sectorName, null, '*')))
     // //       return res.status(401).json({message: 'Unauthorized request'});
 
     // //     const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;
@@ -541,7 +541,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
     //   const thesisName = req.body.thesisName;
 
     //   try {
-    //     if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA')))
+    //     if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userId, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA')))
     //       return res.status(401).json({message: 'Unauthorized request'});
 
     //     if(!req.body.validFrom || !req.body.optimalState)
@@ -648,7 +648,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
     // //   const dst_thesisName = req.params.thesisName;
 
     // //   try {
-    // //     if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, dst_refStructureName, dst_companyName, dst_fieldName, dst_sectorName, dst_thesisName, 'WA')))
+    // //     if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userId, dst_refStructureName, dst_companyName, dst_fieldName, dst_sectorName, dst_thesisName, 'WA')))
     // //       return res.status(401).json({message: 'Unauthorized request'});
 
     // //   if(req.query.imageTimestamp){
@@ -657,7 +657,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
     // //     const src_fieldName = req.body.fieldName || req.params.fieldName;
     // //     const src_sectorName = req.body.sectorName || req.params.sectorName;
     // //     const src_thesisName = req.body.thesisName || req.params.thesisName;
-    // //     if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, src_refStructureName, src_companyName, src_fieldName, src_sectorName, src_thesisName, 'MO'))){
+    // //     if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userId, src_refStructureName, src_companyName, src_fieldName, src_sectorName, src_thesisName, 'MO'))){
     // //           return res.status(401).json({message: 'Unauthorized request'});
     // //     }
     // //     const interpolatedMatrix = await fieldService.getDataInterpolated(src_refStructureName, src_companyName, src_fieldName, src_sectorName, src_thesisName, req.query.imageTimestamp)
@@ -758,7 +758,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
 
     // //   try {
     // //     const user = await authenticationService.validateJwt(req.headers.authorization);
-    // //     if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
+    // //     if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userId, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
     // //       return res.status(401).json({ message: 'Unauthorized request' });
     // //   } catch (error) {
     // //     return res.status(403).json({ message: 'Authentication failed' });
@@ -867,7 +867,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
     // //   const { refStructureName, companyName, fieldName, sectorName, thesisName, nodeId } = req.params;
 
     // //   try {
-    // //     if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userid, refStructureName, companyName, fieldName, sectorName, thesisName, '*')))
+    // //     if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userId, refStructureName, companyName, fieldName, sectorName, thesisName, '*')))
     // //       return res.status(401).json({message: 'Unauthorized request'});
 
     // //     const timestamp = req.query.timestamp ? req.query.timestamp : Date.now()/1000;

@@ -93,7 +93,7 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
         }
 
         try {
-            if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'companies')))
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'companies')))
                 return res.status(403).json({ message: 'Unauthorized request' });
 
             const organizationId = Number(req.body.organizationId)

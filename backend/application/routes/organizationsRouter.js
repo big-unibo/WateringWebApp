@@ -97,7 +97,7 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
         }
 
         try {
-            if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'organizations')))
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'organizations')))
                 return res.status(403).json({ message: 'Unauthorized request' });
 
             const organizationId = await organizationService.createOrganization(req.body.organizationName);

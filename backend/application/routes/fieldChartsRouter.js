@@ -576,7 +576,7 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         }
 
         // TODO authorization
-        // if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
+        // if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userId, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
         //     return res.status(403).json({ message: 'Unauthorized request' });
 
         const thesisId = Number(req.params.thesisId)
@@ -677,7 +677,7 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         }
 
         // TODO authorization
-        // if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
+        // if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userId, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
         //     return res.status(403).json({ message: 'Unauthorized request' });
 
         const thesisId = Number(req.params.thesisId)
@@ -784,7 +784,7 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         }
 
         // TODO authorization
-        // if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
+        // if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userId, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
         //     return res.status(403).json({ message: 'Unauthorized request' });
 
         const thesisId = Number(req.params.thesisId)
@@ -893,7 +893,7 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         }
 
         // TODO authorization
-        // if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
+        // if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userId, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
         //     return res.status(403).json({ message: 'Unauthorized request' });
 
         const thesisId = Number(req.params.thesisId)
