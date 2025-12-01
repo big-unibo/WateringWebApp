@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { WateringEvent } from '../dtos/wateringScheduleDto.js';
+import { SCHEDULE_SAFE_INTERVAL } from '../commons/constants.js';
 
 const wateringScheduleRouter = ({ authenticationService, authorizationService, wateringScheduleService }) => {
     const router = Router();
