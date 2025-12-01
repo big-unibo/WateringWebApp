@@ -20,7 +20,7 @@ class AuthenticationService {
             if (!match)
                 throw new Error('Password is invalid');
 
-            const payload = { userid: user.dataValues.id, name: user.dataValues.name, role: user.dataValues.role }
+            const payload = { userId: user.dataValues.id, name: user.dataValues.name, role: user.dataValues.role }
             return sign(payload, jwtSecret, { expiresIn: "10h" });
         } catch (error) {
             throw new Error(`Error on generating jwt caused by: ${error}`);
@@ -35,8 +35,8 @@ class AuthenticationService {
                     if (err) {
                         reject(new Error('Authentication failed: token verify error'));
                     } else {
-                        if (decoded.userid !== undefined && decoded.name !== undefined && decoded.role !== undefined)
-                            resolve({ userid: decoded.userid, name: decoded.name, role: decoded.role });
+                        if (decoded.userId !== undefined && decoded.name !== undefined && decoded.role !== undefined)
+                            resolve({ userId: decoded.userId, name: decoded.name, role: decoded.role });
                         else reject(new Error('Authentication failed: token verify error'));
                     }
                 });

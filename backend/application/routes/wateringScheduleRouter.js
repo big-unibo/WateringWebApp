@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { WateringEvent } from '../dtos/wateringScheduleDto.js';
 import { SCHEDULE_SAFE_INTERVAL } from '../commons/constants.js';
 
-const wateringScheduleRouter = ({ authenticationService, authorizationService, wateringScheduleService }) => {
+const wateringScheduleRouter = ({ authenticationService, authorizationService, wateringScheduleService, userActionService }) => {
     const router = Router();
 
     /**
@@ -99,7 +99,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
         }
         try {
             //[TO DO]: Authorzation
-            // if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'companies')))
+            // if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'companies')))
             //     return res.status(403).json({ message: 'Unauthorized request' });
 
             const sectorId = parseInt(req.params.sectorId);
@@ -217,7 +217,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
         }
         try {
             //[TO DO]: Authorzation
-            // if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'companies')))
+            // if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'companies')))
             //     return res.status(403).json({ message: 'Unauthorized request' });
 
             const eventId = req.params.eventId;
@@ -342,8 +342,9 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
         }
 
         try {
+            const userId = requestUserData.userId
             //[TO DO]: Authorization
-            // if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'watering_events')))
+            // if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'watering_events')))
             //     return res.status(403).json({ message: 'Unauthorized request' });
 
             const event = new WateringEvent({
@@ -355,6 +356,9 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             });
 
             const newEventId = await wateringScheduleService.createWateringEvent(event);
+            if(newEventId){
+                userActionService.logCreation(userId, 'watering_events', newEventId, null);
+            }
             res.status(200).json({ message: 'Watering event created successfully', eventId: newEventId });
         } catch (error) {
             console.error(`Error creating watering event: ${error.message}`);
@@ -476,7 +480,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
 
         try {
             //[TO DO]: Authorization
-            // if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'watering_events')))
+            // if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'watering_events')))
             //     return res.status(403).json({ message: 'Unauthorized request' });
 
             const sectorId = req.params.sectorId;
@@ -583,7 +587,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
         }
         try {
             //[TO DO]: Authorzation
-            // if (!(await authorizationService.isUserAuthorized(requestUserData.userid, 'create', 'companies')))
+            // if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'companies')))
             //     return res.status(403).json({ message: 'Unauthorized request' });
 
             const now = Date.now()/1000
@@ -672,7 +676,7 @@ export default wateringScheduleRouter;
 //     const sectorName = req.params.sectorName;
 //     const timestamp = req.query.timestamp || Date.now()/1000
 
-//     if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userid, refStructureName, companyName, fieldName, sectorName, null, '*')))
+//     if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userId, refStructureName, companyName, fieldName, sectorName, null, '*')))
 //         return res.status(401).json({ message: 'Unauthorized request' });
 
 //     try {

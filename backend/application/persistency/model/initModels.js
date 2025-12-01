@@ -19,6 +19,7 @@ import initAdvice from './Advice.js';
 import initWateringEvent from './WateringEvent.js';
 import initGridOptimalProfileAssignment from './GridOptimalProfileAssignment.js';
 import initOptimalProfile from './OptimalProfile.js';
+import initUserAction from './UserAction.js';
 
 
 export default function initModels(sequelize) {
@@ -44,7 +45,8 @@ export default function initModels(sequelize) {
     WateringEvent: initWateringEvent(sequelize),
     WateringAlgorithmParams: initWateringAlgorithmParams(sequelize),
     GridOptimalProfileAssignment : initGridOptimalProfileAssignment(sequelize),
-    OptimalProfile: initOptimalProfile(sequelize)
+    OptimalProfile: initOptimalProfile(sequelize),
+    UserAction : initUserAction(sequelize)
   };
 
   models.Company.belongsTo(models.Organization, { foreignKey: "organization_id", as: "organization" });
@@ -55,6 +57,9 @@ export default function initModels(sequelize) {
 
   models.User.hasMany(models.Permit, {foreignKey: "user_id", as: "permits" });
   models.Permit.belongsTo(models.User, {foreignKey: "user_id", as: "user" });
+
+  models.User.hasMany(models.UserAction, {foreignKey: "user_id", as: "userActions" });
+  models.UserAction.belongsTo(models.User, {foreignKey: "user_id", as: "user" });
 
   models.Field.hasMany(models.Sector, {foreignKey: "field_id", as: "sectors"});
   models.Sector.belongsTo(models.Field, {foreignKey: "field_id", as: 'field'});

@@ -44,6 +44,8 @@ import OptimalDistanceRepository from './persistency/repository/OptimalDistanceR
 import logsRouter from './routes/logsRouter.js';
 import LogService from './services/LogService.js';
 import LogRepository from './persistency/repository/LogRepository.js';
+import UserActionRepository from './persistency/repository/UserActionRepository.js';
+import UserActionService from './services/UserActionService.js';
 
 dotenv.config()
 
@@ -104,6 +106,7 @@ const wateringAdviceRepository = new WateringAdviceRepository(models, sequelize)
 const wateringScheduleRepository = new WateringScheduleRepository2(models, sequelize)
 const optimalDistanceRepository = new OptimalDistanceRepository(models, sequelize)
 const logRepository = new LogRepository(models, sequelize)
+const userActionRepository = new UserActionRepository(models, sequelize)
 
 const organizationService = new OrganizationService(organizationRepository)
 const userService = new UserService(userRepository)
@@ -116,6 +119,7 @@ const signalService = new SignalService(signalRepository)
 const wateringScheduleService = new WateringScheduleService(wateringScheduleRepository, wateringAdviceRepository)
 const wateringAdviceService = new WateringAdviceService(wateringAdviceRepository, fieldRepository, interpolatedProfileRepository, optimalDistanceRepository, thesesAllSignalsRepository)
 const logService = new LogService(logRepository)
+const userActionService = new UserActionService(userActionRepository)
 
 app.use(express.json());
 app.use(cors());
@@ -181,7 +185,7 @@ app.use(
 
 app.use(
   '/wateringSchedule',
-  wateringScheduleRouter({authenticationService, authorizationService, wateringScheduleService})
+  wateringScheduleRouter({authenticationService, authorizationService, wateringScheduleService, userActionService})
 )
 
 app.use(
