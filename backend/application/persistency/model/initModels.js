@@ -20,6 +20,7 @@ import initWateringEvent from './WateringEvent.js';
 import initGridOptimalProfileAssignment from './GridOptimalProfileAssignment.js';
 import initOptimalProfile from './OptimalProfile.js';
 import initUserAction from './UserAction.js';
+import initProvider from './Provider.js';
 
 
 export default function initModels(sequelize) {
@@ -46,7 +47,8 @@ export default function initModels(sequelize) {
     WateringAlgorithmParams: initWateringAlgorithmParams(sequelize),
     GridOptimalProfileAssignment : initGridOptimalProfileAssignment(sequelize),
     OptimalProfile: initOptimalProfile(sequelize),
-    UserAction : initUserAction(sequelize)
+    UserAction : initUserAction(sequelize),
+    Provider : initProvider(sequelize)
   };
 
   models.Company.belongsTo(models.Organization, { foreignKey: "organization_id", as: "organization" });
@@ -72,6 +74,9 @@ export default function initModels(sequelize) {
 
   models.Device.hasMany(models.Signal, {foreignKey: "device_id", as: "signals"});
   models.Signal.belongsTo(models.Device, {foreignKey: "device_id", as: "device"});
+
+  models.Provider.hasMany(models.Device, {foreignKey: "provider_id", as: "devices"});
+  models.Device.belongsTo(models.Provider, {foreignKey: "provider_id", as: "provider"});
 
   models.Field.hasMany(models.SignalInField, {foreignKey: "field_id", as: "signals"});
   models.SignalInField.belongsTo(models.Field, {foreignKey: "field_id", as: "field"});
@@ -99,6 +104,7 @@ export default function initModels(sequelize) {
 
   models.GridOptimalProfileAssignment.belongsTo(models.Device, {foreignKey: "grid_id", as: "device" })
   models.Device.hasMany(models.GridOptimalProfileAssignment,{foreignKey: "grid_id", as: "gridOptimalProfileAssignments" })
+
   
   //[TO DO]: il resto....
   return models;

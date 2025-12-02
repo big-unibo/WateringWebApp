@@ -88,6 +88,10 @@ class DeviceService {
             pagination: paginationMetadata
         }
     }
+
+    async getProviders(){
+        return await this.deviceRepository.getProviders();
+    }
 }
 
 export default DeviceService;

@@ -1,10 +1,11 @@
 class DeviceRepository {
-    constructor(models, sequelize){
+    constructor(models, sequelize) {
         this.Device = models.Device;
         this.Signal = models.Signal;
+        this.Provider = models.Provider;
         this.sequelize = sequelize;
     }
-    
+
     async createDevice(deviceData) {
         try {
             const device = await this.Device.create({
@@ -23,14 +24,14 @@ class DeviceRepository {
 
     async getSignals(deviceId) {
         const result = await this.Signal.findAll({
-            where : {
-                deviceId : deviceId
+            where: {
+                deviceId: deviceId
             }
         });
         return result.map(r => r.get({ plain: true }));
     }
 
-    async countDevices(userId, timeFilterFrom, timeFilterTo, providerIds, types){
+    async countDevices(userId, timeFilterFrom, timeFilterTo, providerIds, types) {
         const query = ` SELECT COUNT(DISTINCT ts.device_id) AS total
             FROM theses_all_signals ts
             WHERE valid_from < :timeFilterTo
@@ -50,7 +51,7 @@ class DeviceRepository {
         }
     }
 
-    async getDevices(userId, timeFilterFrom, timeFilterTo, providerIds, types, offset, limit){
+    async getDevices(userId, timeFilterFrom, timeFilterTo, providerIds, types, offset, limit) {
         //TODO user permits filter
         const query = `WITH paginated_devices AS (
             SELECT DISTINCT ts.device_id
@@ -96,6 +97,15 @@ class DeviceRepository {
         } catch (error) {
             console.error(`Fail retrieving devices data: ${error.message}`);
             throw error;
+        }
+    }
+
+    async getProviders() {
+        try {
+            const providers = await this.Provider.findAll();
+            return providers
+        } catch {
+            throw new Error(`Error while retrieving providers data caused by: ${error.message}`);
         }
     }
 }

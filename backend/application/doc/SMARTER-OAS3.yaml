@@ -938,5 +938,16 @@ components:
           type: boolean
         hasPrev:
           type: boolean
-
+    
+    ProvidersData:
+      type: array
+      items: 
+        type: object
+        properties:
+          id:
+            type: integer
+            description: Identifier of the provider
+          providerName:
+            type: string
+            description: Name of the provider
 
