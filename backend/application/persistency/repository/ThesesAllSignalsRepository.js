@@ -1,5 +1,6 @@
 
 import { Op, QueryTypes } from 'sequelize';
+import { HUMIDITY_DEVICE_TYPE } from '../../commons/constants.js';
 
 class ThesesAllSignalsRepository {
     constructor(models, sequelize) {
@@ -95,7 +96,7 @@ class ThesesAllSignalsRepository {
             attributes: ['deviceId'], 
             where: {
                 thesisId,
-                deviceType: 'GRID',
+                deviceType: HUMIDITY_DEVICE_TYPE,
                 [Op.and]: [
                     { validFrom: { [Op.lte]: timeFilterTo } },
                     {

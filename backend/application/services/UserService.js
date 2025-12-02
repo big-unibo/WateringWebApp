@@ -111,7 +111,7 @@ class UserService {
                 Array.from(p.idKeys)
             ));
 
-            return new UserPermitsDto(user.id, user.role,permits)
+            return new UserPermitsDto(user.id, user.role, permits)
         } catch (error) {
             console.error('Error computing user permits:', error);
             throw error;

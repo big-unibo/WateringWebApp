@@ -180,21 +180,21 @@ class FieldRepository {
                 validTo: timestamp
             },
             {
-            where: {
-                sectorId: sectorId,
-                thesisId: thesisId,
-                validFrom: {
-                    [Op.lt]: timestamp
-                },
-                validTo: {
-                    [Op.or]: {
-                        [Op.is]: null,
-                        [Op.gt]: timestamp
+                where: {
+                    sectorId: sectorId,
+                    thesisId: thesisId,
+                    validFrom: {
+                        [Op.lt]: timestamp
                     },
+                    validTo: {
+                        [Op.or]: {
+                            [Op.is]: null,
+                            [Op.gt]: timestamp
+                        },
+                    }
                 }
-            }
-        })
-   }
+            })
+    }
 
     async getThesisDetails(thesisId, timestamp) {
         return await this.ThesisInSector.findOne({
@@ -382,23 +382,50 @@ class FieldRepository {
         return await model.save()
     }
 
-    async disableThesis(thesisId, timestamp){
-        await this.ThesisInSector.update(
-            {
-                validTo: timestamp
-            },
-            {
-                where:{
-                    thesisId: thesisId,
-                    validFrom: {
-                        [Op.lt]: timestamp
-                    },
-                    validTo: {
-                        [Op.is]: null
-                    },
+    async disableThesisFromSector(thesisId, timestamp) {
+        try {
+            await this.ThesisInSector.update(
+                {
+                    validTo: timestamp
+                },
+                {
+                    where: {
+                        thesisId: thesisId,
+                        validFrom: {
+                            [Op.lt]: timestamp
+                        },
+                        validTo: {
+                            [Op.is]: null
+                        },
+                    }
                 }
-            }
-        )
+            )
+        } catch(error) {
+            throw new Error(`Error disabling thesis from sector: ${error.message}`);
+        }
+    }
+
+    async setOptimalProfileAssignmentEndDate(gridId, timestamp) {
+        try {
+            await this.GridOptimalProfileAssignment.update(
+                {
+                    validTo: timestamp
+                },
+                {
+                    where: {
+                        gridId: gridId,
+                        validFrom: {
+                            [Op.lt]: timestamp
+                        },
+                        validTo: {
+                            [Op.is]: null
+                        },
+                    }
+                }
+            )
+        } catch(error) {
+            throw new Error(`Error setting validty end of the optimal profie: ${error.message}`);
+        }
     }
 
     // async updateWateringSectorDetails(sectorDetails, timestampFrom){

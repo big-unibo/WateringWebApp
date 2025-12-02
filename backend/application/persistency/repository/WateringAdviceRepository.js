@@ -8,19 +8,19 @@ class WateringAdviceRepository {
         this.WateringAlgorithmParams = models.WateringAlgorithmParams
         this.sequelize = sequelize
     }
-    
-    async getThesisLastWateringAdvice(thesisId, timestamp){
+
+    async getThesisLastWateringAdvice(thesisId, timestamp) {
         return await this.Advice.findOne({
             where: {
                 thesisId: thesisId,
                 watering_start: {
-                    [Op.lt] : timestamp
+                    [Op.lt]: timestamp
                 }
             },
             include: [{
-               model: this.Thesis,
-               as: "thesis",
-               attributes: []
+                model: this.Thesis,
+                as: "thesis",
+                attributes: []
             }],
             attributes: {
                 include: [
@@ -28,7 +28,7 @@ class WateringAdviceRepository {
                 ]
             },
             raw: true,
-            order: [["wateringStart", 'DESC']]            
+            order: [["wateringStart", 'DESC']]
         })
     }
 
@@ -49,7 +49,7 @@ class WateringAdviceRepository {
         })
     }
 
-    async getSectorWateringFrequency(sectorId, timefilterFrom, timefilterTo){
+    async getSectorWateringFrequency(sectorId, timefilterFrom, timefilterTo) {
         const query = `
             SELECT DISTINCT 
                 wad.watering_frequency as "wateringFrequency",
@@ -75,14 +75,14 @@ class WateringAdviceRepository {
         return results;
     }
 
-        
-    async setWateringAlgorithmParams(thesisId, wateringParams, validFrom, validTo){
 
-        try{
+    async setWateringAlgorithmParams(thesisId, wateringParams, validFrom, validTo) {
+
+        try {
             const oldParams = await this.getWateringAlgorithmParams(thesisId, validFrom)
 
             await this.WateringAlgorithmParams.update(
-                { 
+                {
                     validTo: validFrom,
                 },
                 {
@@ -104,7 +104,7 @@ class WateringAdviceRepository {
                 validFrom: validFrom,
                 validTo: validTo,
                 maxWatering: wateringParams.maxWatering ?? oldParams.maxWatering,
-                minWatering: wateringParams.minWatering ?? oldParams.minWatering, 
+                minWatering: wateringParams.minWatering ?? oldParams.minWatering,
                 wateringBaseline: wateringParams.wateringBaseline ?? oldParams.wateringBaseline,
                 wateringFrequency: wateringParams.wateringFrequency ?? oldParams.wateringFrequency,
                 ki: wateringParams.ki ?? oldParams.ki,
@@ -114,6 +114,29 @@ class WateringAdviceRepository {
             });
         } catch (error) {
             throw new Error(`Error setting watering algorithm parameters: ${error.message}`);
+        }
+    }
+
+    async setWateringAlgorithmParamsEndDate(thesisId, timestamp) {
+        try {
+            await this.WateringAlgorithmParams.update(
+                {
+                    validTo: timestamp
+                },
+                {
+                    where: {
+                        thesisId: thesisId,
+                        validFrom: {
+                            [Op.lt]: timestamp
+                        },
+                        validTo: {
+                            [Op.is]: null
+                        },
+                    }
+                }
+            )
+        } catch (error) {
+            throw new Error(`Error ending watering algorithm params validity: ${error.message}`);
         }
     }
 }
