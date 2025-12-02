@@ -15,9 +15,8 @@ class AuthService {
     async login(user) {
         try {
             const response = await axiosInstance.post('/login', {
-                email: user.authUser,
+                email: user.authEmail,
                 password: hashPassword(user.authPass),
-                auth_type: 'pwd'
             });
             if (response.data.token) {
                 localStorage.setItem('appToken', JSON.stringify(response.data.token));
@@ -40,18 +39,54 @@ class AuthService {
         else return undefined;
     }
 
-    async retrieveUserFieldPermissions(token, timeFilterFrom, timeFilterTo) {
+    // async retrieveUserFieldPermissions(token, timeFilterFrom, timeFilterTo) {
+    //     let params = undefined
+    //     if (timeFilterFrom && timeFilterTo) {
+    //         params = { timeFilterFrom: timeFilterFrom, timeFilterTo: timeFilterTo }
+    //     }
+    //     return axiosInstance.get('/userFields', {
+    //         headers: {
+    //             'Authorization': 'Bearer ' + token
+    //         },
+    //         params: params
+    //     }).then(response => {
+    //         if(response.data)
+    //             return response.data
+    //     }).catch(error => {
+    //         console.log(error)
+    //         console.error(`Get fields request failed: ${error.message}`)
+    //         this.logout()
+    //     });
+    // }
+
+    async retrieveUserSectors(token, timeFilterFrom, timeFilterTo) {
         let params = undefined
         if (timeFilterFrom && timeFilterTo) {
             params = { timeFilterFrom: timeFilterFrom, timeFilterTo: timeFilterTo }
         }
-        return axiosInstance.get('/userFields', {
+        return await axiosInstance.get('/sectors', {
             headers: {
                 'Authorization': 'Bearer ' + token
             },
             params: params
         }).then(response => {
-            if(response.data)
+            if (response.data)
+                return response.data
+        }).catch(error => {
+            console.log(error)
+            console.error(`Get fields request failed: ${error.message}`)
+            this.logout()
+        });
+    }
+
+
+    async getSectorInfo(token, sectorId) {
+        return await axiosInstance.get(`/sectors/${sectorId}`, {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        }).then(response => {
+            if (response.data)
                 return response.data
         }).catch(error => {
             console.log(error)

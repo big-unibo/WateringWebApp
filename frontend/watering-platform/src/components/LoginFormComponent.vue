@@ -5,21 +5,21 @@ import { useRouter } from 'vue-router';
 const router = useRouter()
 
 const props = defineProps({
-  username: String,
+  email: String,
   password: String,
   jwt: String
 })
 
-let username = ref(props.username)
+let email = ref(props.email)
 let password = ref(props.password)
 let loginError = ref(false)
 
 const handleLogin = async () => {
 
   try {
-    const authUser = username.value;
+    const authEmail = email.value;
     const authPass = password.value;
-    await authService.login({authUser, authPass});
+    await authService.login({authEmail, authPass});
     const token = await authService.authHeader();
     if(token) {
         await router.push("/")
@@ -42,7 +42,7 @@ const handleLogin = async () => {
     <form id="formLogin" class="form-signin" @submit.prevent="handleLogin">
       <img class="mb-4" src="../assets/images/big2018.png" alt="" width="100"><br>
       <h4 class="h4 mb-3 font-weight-normal">Inserisci le credenziali</h4>
-      <input v-model="username" class="form-control input-username" placeholder="Username" required autofocus/>
+      <input v-model="email" class="form-control input-email" placeholder="Email" required autofocus/>
       <input  type="password" v-model="password" class="form-control input-password" placeholder="Password" required/>
       <div v-if="loginError" id="alertCredentials" class="alert alert-danger" role="alert">Email e/o Password errate.</div>
       <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
@@ -56,7 +56,7 @@ const handleLogin = async () => {
   position: relative;
 }
 
-.input-username{
+.input-email{
   margin-bottom: 10%;
 }
 
