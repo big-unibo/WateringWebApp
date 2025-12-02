@@ -950,4 +950,17 @@ components:
           providerName:
             type: string
             description: Name of the provider
+    
+    UserData:
+      type: object
+      properties:
+        email:
+          type: string
+          description: Users's email
+        name: 
+          type: string
+          description: User's name
+        role: 
+          type: string
+          description: User's role
 

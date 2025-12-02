@@ -16,3 +16,11 @@ export class User {
   }
 
 }
+
+export class UserData {
+  constructor(email, name, role) {
+    this.email = email;
+    this.name = name;
+    this.role = role;
+  }
+}

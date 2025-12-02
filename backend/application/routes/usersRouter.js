@@ -6,7 +6,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
     const router = Router();
     /**
      * @swagger
-     * /login:
+     * /users/login:
      *   post:
      *     security: []
      *     summary: Authenticate user and generate token
@@ -79,10 +79,8 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
 
     /**
      * @swagger
-     * /registerUsers:
+     * /users/register:
      *   post:
-     *     security:
-     *       - bearerAuth: []
      *     summary: Register one or more new users
      *     tags: [User route]
      *     description: |
@@ -157,7 +155,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      *                 error:
      *                   type: string
      */
-    router.post('/registerUsers', async (req, res) => {
+    router.post('/register', async (req, res) => {
         let requestUserData;
 
         try {
@@ -192,6 +190,84 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
         } catch (error) {
             console.error(`Fail creating user caused by: ${error.message}`);
             return res.status(500).json({ error: 'Error while creating user' });
+        }
+    });
+
+    /**
+     * @swagger
+     * /users/me:
+     *   get:
+     *     summary: Finds info about the logged user
+     *     tags: [User route]
+     *     description: |
+     *       Return data about the user currenlty logged by using the token
+     *     responses:
+     *       '200':
+     *         description: Users successfully created.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UserData'
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *                 - errors
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed – invalid or missing JWT token.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '500':
+     *         description: Internal Server Error – unexpected error while retrieving user data
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     */
+    router.get('/me', async (req, res) => {
+        let requestUserData;
+
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        try {
+            const userId = requestUserData.userId;
+            const userData = await userService.getUserData(userId);
+            return res.status(200).json(userData);
+        } catch (error) {
+            console.error(`Fail while retrieving user data caused by: ${error.message}`);
+            return res.status(500).json({ error: 'Error while retrieving user data' });
         }
     });
 

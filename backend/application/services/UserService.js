@@ -1,3 +1,4 @@
+import { User, UserData } from "../dtos/userDto.js";
 import { UserPermitDto, UserPermitsDto } from "../dtos/userPermitsDto.js";
 
 
@@ -37,34 +38,6 @@ class UserService {
             throw error;
         }
     }
-
-    // async createUserGrants(role, affiliation, request) {
-    //     if(role !=='admin'){
-    //         if(role === 'partner'){
-    //             const affiliationFields = await this.userRepository.findFieldsByAffiliation(affiliation)
-    //             request.grants.map(grant => {
-    //                 const key = `${grant.refStructureName} - ${grant.companyName} - ${grant.fieldName} - ${grant.sectorName} - ${grant.thesisName}`;
-    //                 if (affiliation !== grant.source || !affiliationFields.has(key))
-    //                     throw Error(`Affiliation ${affiliation} has no permission to create grants for field ${key}`)
-    //             })
-    //         } else {
-    //             throw Error("Error user is not authorized to grant users!!!")
-    //         }
-    //     }
-
-    //     for(const grant of request.grants) {
-    //         const userToGrant = await this.findUserByEmail(grant.username)
-    //         if(userToGrant.affiliation !== affiliation){
-    //             if (role !== 'admin'){
-    //                 throw new Error(`Affiliation mismatch between user ${userToGrant.affiliation} and requestor ${affiliation}`)
-    //             } else if (userToGrant.affiliation !== grant.source) {
-    //                 throw new Error(`Affiliation mismatch between user ${userToGrant.affiliation} and field source ${grant.source}`)
-    //             }
-    //         }
-    //         for(const permit of grant.permits)
-    //             await this.userRepository.createFieldPermit(userToGrant.userid, grant.source, grant.refStructureName, grant.companyName, grant.fieldName, grant.sectorName, grant.thesisName, permit)
-    //     }
-    // }
 
     async findUserPermits(userId){
         try{
@@ -117,6 +90,47 @@ class UserService {
             throw error;
         }
     }
+
+    async getUserData(userId){
+        const rawUserData = await this.findUser(userId);
+        if(rawUserData){
+            return new UserData(
+                rawUserData.email,
+                rawUserData.name,
+                rawUserData.role
+            )
+        }else{
+            return null
+        }
+    }
+
+    // async createUserGrants(role, affiliation, request) {
+    //     if(role !=='admin'){
+    //         if(role === 'partner'){
+    //             const affiliationFields = await this.userRepository.findFieldsByAffiliation(affiliation)
+    //             request.grants.map(grant => {
+    //                 const key = `${grant.refStructureName} - ${grant.companyName} - ${grant.fieldName} - ${grant.sectorName} - ${grant.thesisName}`;
+    //                 if (affiliation !== grant.source || !affiliationFields.has(key))
+    //                     throw Error(`Affiliation ${affiliation} has no permission to create grants for field ${key}`)
+    //             })
+    //         } else {
+    //             throw Error("Error user is not authorized to grant users!!!")
+    //         }
+    //     }
+
+    //     for(const grant of request.grants) {
+    //         const userToGrant = await this.findUserByEmail(grant.username)
+    //         if(userToGrant.affiliation !== affiliation){
+    //             if (role !== 'admin'){
+    //                 throw new Error(`Affiliation mismatch between user ${userToGrant.affiliation} and requestor ${affiliation}`)
+    //             } else if (userToGrant.affiliation !== grant.source) {
+    //                 throw new Error(`Affiliation mismatch between user ${userToGrant.affiliation} and field source ${grant.source}`)
+    //             }
+    //         }
+    //         for(const permit of grant.permits)
+    //             await this.userRepository.createFieldPermit(userToGrant.userid, grant.source, grant.refStructureName, grant.companyName, grant.fieldName, grant.sectorName, grant.thesisName, permit)
+    //     }
+    // }
 
     // async findUserPermissions(userid, timeFilterFrom, timeFilterTo) {
     //     try {

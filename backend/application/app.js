@@ -134,7 +134,7 @@ app.use(
 );
 
 app.use(
-  '/',
+  '/users',
   usersRouter({ userService, authenticationService, authorizationService })
 );
 
