@@ -14,7 +14,7 @@ class AuthService {
 
     async login(user) {
         try {
-            const response = await axiosInstance.post('/login', {
+            const response = await axiosInstance.post('/users/login', {
                 email: user.authEmail,
                 password: hashPassword(user.authPass),
             });
@@ -59,7 +59,7 @@ class AuthService {
     //     });
     // }
 
-    async retrieveUserSectors(token, timeFilterFrom, timeFilterTo) {
+    async retrieveUserSectors(token, timeFilterFrom = null, timeFilterTo = null) {
         let params = undefined
         if (timeFilterFrom && timeFilterTo) {
             params = { timeFilterFrom: timeFilterFrom, timeFilterTo: timeFilterTo }
@@ -75,6 +75,21 @@ class AuthService {
         }).catch(error => {
             console.log(error)
             console.error(`Get fields request failed: ${error.message}`)
+            this.logout()
+        });
+    }
+
+    async retrieveUserData(token) {
+        return await axiosInstance.get('/users/me', {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            },
+        }).then(response => {
+            if (response.data)
+                return response.data
+        }).catch(error => {
+            console.log(error)
+            console.error(`Get fuser data request failed: ${error.message}`)
             this.logout()
         });
     }

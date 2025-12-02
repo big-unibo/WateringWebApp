@@ -33,7 +33,6 @@ let showDetailedWatering = ref(false)
 let detailedWateringButton = ref("Mostra puntuale")
 
 const token = reactive(props.token)
-const user = reactive(props.user)
 const userPermissions = reactive({})
 
 const fields = reactive([])
@@ -42,7 +41,7 @@ let activeThesis
 let connectionParams = {}
 
 onMounted(async () => {
-  if(!user) {
+  if(!token) {
     await router.push('/login')
   }
 })
