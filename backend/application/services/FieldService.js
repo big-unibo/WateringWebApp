@@ -39,7 +39,7 @@ class FieldService {
     }
 
     async getSectorOwner(sectorId) {
-        const result = await this.fieldRepository.getSectorDetails(sectorId, Date.now()/1000);
+        const result = await this.fieldRepository.getSectorDetails(sectorId, Date.now() / 1000);
 
         if (!result || !result.field || !result.field.company) {
             throw new Error(`Company not found for sector ${sectorId}`);
@@ -184,9 +184,9 @@ class FieldService {
 
     async getInterpolatedMeans(thesisId, timeFilterFrom, timeFilterTo) {
         const result = await this.interpolatedProfileRepository.getInterpolatedMeans(thesisId, timeFilterFrom, timeFilterTo)
-        if(result.length > 0){
+        if (result.length > 0) {
             return dtoConverter.convertInterpolatedMeansWrapper(result)
-        }else{
+        } else {
             return null
         }
     }
@@ -195,7 +195,7 @@ class FieldService {
         return this.interpolatedProfileRepository.findThesisPoints(gridId)
     }
 
-    async createMatrixOptimalState( gridOptimalProfiles ) {
+    async createMatrixOptimalState(gridOptimalProfiles) {
         const matrixId = await this.fieldRepository.createMatrixOptimalState(
             gridOptimalProfiles.gridId,
             gridOptimalProfiles.validFrom,
@@ -205,7 +205,7 @@ class FieldService {
             gridOptimalProfiles.optimalWetBound,
         )
 
-        if(!matrixId){
+        if (!matrixId) {
             throw Error("Impossible to create optimal matrix for this thesis")
         }
 
@@ -214,8 +214,8 @@ class FieldService {
         }
     }
 
-    async setOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound , optimalDryBound, profileId) {
-        return await this.fieldRepository.createMatrixOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound , optimalDryBound, profileId)
+    async setOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound, optimalDryBound, profileId) {
+        return await this.fieldRepository.createMatrixOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound, optimalDryBound, profileId)
     }
 
     async getInterpolatedProfiles(thesisId, timeFilterFrom, timeFilterTo) {
@@ -240,6 +240,10 @@ class FieldService {
             await this.fieldRepository.disableThesisInSector(sectorId, id, validFrom)
             await this.fieldRepository.assignThesisToSector(id, sectorId, 0, validFrom, validTo)
         })
+    }
+
+    async disableThesis(thesisId, timestamp) {
+        await this.fieldRepository.disableThesis(thesisId, timestamp)
     }
 
     // async updateWateringSectorDetails(sectorDetails, timestampFrom) {

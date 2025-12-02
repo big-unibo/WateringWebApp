@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { HUMIDITY_DEVICE_TYPE } from '../commons/constants.js'
 import { GridOptimalProfiles } from '../dtos/optStateDto.js'
-import {WateringParams} from '../dtos/wateringParamsDto.js'
+import { WateringParams } from '../dtos/wateringParamsDto.js'
 
 const thesesRouter = ({ userService, authenticationService, authorizationService, fieldService, wateringAdviceService }) => {
     const router = Router();
@@ -217,7 +217,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
             // if (!(await authorizationService.isUserAuthorizedInSector(user.id, 'update', thesisId)))
             //     return res.status(403).json({message: 'Unauthorized request'});
 
-            const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now()/1000
+            const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000
             const results = await fieldService.getDevicesByThesis(thesisId, timestamp);
             return res.status(200).json(results)
         } catch (error) {
@@ -772,7 +772,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
             if (req.query.optimalProfileId !== undefined) {
                 const optimalProfileId = Number(req.query.optimalProfileId);
 
-                await fieldService.setOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound , optimalDryBound, optimalProfileId)
+                await fieldService.setOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound, optimalDryBound, optimalProfileId)
                 return res.status(200).json({ message: 'Optimal state set successfully' });
             }
             else if (req.query.thesisId !== undefined && req.query.imageTimestamp !== undefined) {
@@ -823,8 +823,6 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      * @swagger
      * /theses/{thesisId}/wateringParams:
      *   get:
-     *     security:
-     *       - bearerAuth: []
      *     summary: Get information about watering algorithm parameters
      *     description: Get information about watering algorithm parameters for a given thesis
      *     tags: [Theses]
@@ -847,15 +845,30 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *           application/json:
      *              schema:
      *                $ref: '#/components/schemas/WateringParams'  
-     *       400:
-     *         description: Bad request (Missing/invalid parameters).
+     *       '400':
+     *         description: Input validation error (Bad Request)
      *         content:
      *           application/json:
      *             schema:
      *               type: object
+     *               required:
+     *                 - message
      *               properties:
      *                 message:
      *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
      *       401:
      *         description: Authentication failed (Invalid or missing JWT).
      *         content:
@@ -894,31 +907,31 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *                   type: string
      */
     router.get('/:thesisId/wateringParams', async (req, res) => {
-      let requestUserData
-      try {
-        requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-      } catch (error) {
-        return res.status(403).json({message: 'Authentication failed'});
-      }
-
-      const thesisId = req.params.thesisId;
-    
-      try {
-        const sectorId = fieldService.getThesisDetails(thesisId).sectorId
-        if (!(await authorizationService.isUserAuthorizedById(requestUserData.userId, 'EDIT_ADVICE', 'sectors', sectorId)))
-            return res.status(403).json({ message: 'Unauthorized request' });
-
-        const timestamp = req.query.timestamp ?? Date.now()/1000
-
-        const result = await wateringAdviceService.getWateringAlgorithmParams(thesisId, timestamp)
-        if (result){
-            return res.status(200).json(result)
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(403).json({ message: 'Authentication failed' });
         }
-        return res.status(404).json({message: `Watering Parameters not found`})
-      } catch (error) {
-        console.log(`Fail getting watering parameters caused by: ${error.message}`)
-        return res.status(500).json({error: "Error getting watering parameters"})
-      }
+
+        const thesisId = req.params.thesisId;
+
+        try {
+            const sectorId = fieldService.getThesisDetails(thesisId).sectorId
+            if (!(await authorizationService.isUserAuthorizedById(requestUserData.userId, 'EDIT_ADVICE', 'sectors', sectorId)))
+                return res.status(403).json({ message: 'Unauthorized request' });
+
+            const timestamp = req.query.timestamp ?? Date.now() / 1000
+
+            const result = await wateringAdviceService.getWateringAlgorithmParams(thesisId, timestamp)
+            if (result) {
+                return res.status(200).json(result)
+            }
+            return res.status(404).json({ message: `Watering Parameters not found` })
+        } catch (error) {
+            console.log(`Fail getting watering parameters caused by: ${error.message}`)
+            return res.status(500).json({ error: "Error getting watering parameters" })
+        }
 
     });
 
@@ -926,8 +939,6 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      * @swagger
      * /theses/{thesisId}/wateringParams:
      *   put:
-     *     security:
-     *       - bearerAuth: []
      *     summary: Set information about watering algorithm parameters
      *     description: Set information about watering algorithm parameters
      *     tags: [Theses]
@@ -958,15 +969,30 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *     responses:
      *       200:
      *         description: Watering params updated successfully.
-     *       400:
-     *         description: Bad request (Missing/invalid parameters).
+     *       '400':
+     *         description: Input validation error (Bad Request)
      *         content:
      *           application/json:
      *             schema:
      *               type: object
+     *               required:
+     *                 - message
      *               properties:
      *                 message:
      *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
      *       401:
      *         description: Authentication failed (Invalid or missing JWT).
      *         content:
@@ -996,55 +1022,157 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *                   type: string
      */
     router.put('/:thesisId/wateringParams', async (req, res) => {
-      let requestUserData
-      try {
-        requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-      } catch (error) {
-        return res.status(403).json({message: 'Authentication failed'});
-      }
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(403).json({ message: 'Authentication failed' });
+        }
 
-      const thesisId = req.params.thesisId;
-    
-      try {
-        const sectorId = fieldService.getThesisDetails(thesisId).sectorId
-        if (!(await authorizationService.isUserAuthorizedById(requestUserData.userId, 'EDIT_ADVICE', 'sectors', sectorId)))
-            return res.status(403).json({ message: 'Unauthorized request' });
+        const thesisId = req.params.thesisId;
 
-        const validFrom = req.query.validFrom ?? Date.now()/1000
-        const validTo = req.query.validTo
+        try {
+            const sectorId = fieldService.getThesisDetails(thesisId).sectorId
+            if (!(await authorizationService.isUserAuthorizedById(requestUserData.userId, 'EDIT_ADVICE', 'sectors', sectorId)))
+                return res.status(403).json({ message: 'Unauthorized request' });
 
-        const {
-            maxWatering,
-            minWatering,
-            wateringBaseline,
-            wateringFrequency,
-            ki,
-            kp,
-            errorFunction,
-            description
-        } = req.body;
+            const validFrom = req.query.validFrom ?? Date.now() / 1000
+            const validTo = req.query.validTo
 
-        const wateringParams = new WateringParams(
-            maxWatering,
-            minWatering,
-            wateringBaseline,
-            wateringFrequency,
-            ki,
-            kp,
-            errorFunction,
-            description
-        );
+            const {
+                maxWatering,
+                minWatering,
+                wateringBaseline,
+                wateringFrequency,
+                ki,
+                kp,
+                errorFunction,
+                description
+            } = req.body;
 
-        await wateringAdviceService.setWateringAlgorithmParams(thesisId, wateringParams, validFrom, validTo)
+            const wateringParams = new WateringParams(
+                maxWatering,
+                minWatering,
+                wateringBaseline,
+                wateringFrequency,
+                ki,
+                kp,
+                errorFunction,
+                description
+            );
 
-        return res.status(200).json({message: `Watering Parameters updated with success`})
-      } catch (error) {
-        console.log(`Fail updating watering parameters caused by: ${error.message}`)
-        return res.status(500).json({error: "Error updating watering parameters"})
-      }
+            await wateringAdviceService.setWateringAlgorithmParams(thesisId, wateringParams, validFrom, validTo)
+
+            return res.status(200).json({ message: `Watering Parameters updated with success` })
+        } catch (error) {
+            console.log(`Fail updating watering parameters caused by: ${error.message}`)
+            return res.status(500).json({ error: "Error updating watering parameters" })
+        }
 
     });
 
+    /**
+     * @swagger
+     * /theses/{thesisId}/disable:
+     *   post:
+     *     summary: Disables a monitoring thesis by setting its validity end timestamp
+     *     tags: [Theses]
+     *     parameters:
+     *       - in: path
+     *         name: thesisId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of thesis to disable
+     *       - in: query
+     *         name: timestamp
+     *         required: false
+     *         schema:
+     *           type: number
+     *         description: Timestamp indicating end date of the thesis validity, if not set take actual timestamp (Seconds elapsed since 1/1/1970).
+     *     responses:
+     *       200:
+     *         description: Thesis succesfuly disabled.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Thesis succesfuly disabled.
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       401:
+     *         description: Authentication failed (Invalid or missing JWT).
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized request – user not allowed to end thesis validty.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error during the process.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.post('/:thesisId/disable', async (req, res) => {
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(403).json({ message: 'Authentication failed' });
+        }
+
+        const thesisId = req.params.thesisId;
+        const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
+
+        try{
+            //[TO DO]: Authorization
+            await fieldService.disableThesis(thesisId, timestamp)
+            return res.status(200).json({ message: `Thesis validity succesfully endend` })
+        } catch (error) {
+            console.log(`Failed disabling thesis: ${error.message}`)
+            return res.status(500).json({ error: "Internal error disablingthesis" })
+        }
+    })
 
 
     function checkOptState(thesisPoints, newOptimalPoints) {

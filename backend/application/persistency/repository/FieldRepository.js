@@ -382,6 +382,25 @@ class FieldRepository {
         return await model.save()
     }
 
+    async disableThesis(thesisId, timestamp){
+        await this.ThesisInSector.update(
+            {
+                validTo: timestamp
+            },
+            {
+                where:{
+                    thesisId: thesisId,
+                    validFrom: {
+                        [Op.lt]: timestamp
+                    },
+                    validTo: {
+                        [Op.is]: null
+                    },
+                }
+            }
+        )
+    }
+
     // async updateWateringSectorDetails(sectorDetails, timestampFrom){
     //     this.WateringSector.removeAttribute('id')
     //     this.WateringSector.update(
