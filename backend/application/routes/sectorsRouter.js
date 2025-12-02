@@ -13,16 +13,15 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 	 *     summary: Retrieve all sectors available for the user
 	 *     tags: [Sectors]
 	 *     description: Retrieve all sectors available for the user, filtered by a time range of active theses.
+     *       Time filter is optional. Requires Authentication and proper authorization
 	 *     parameters:
 	 *       - in: query
 	 *         name: timeFilterFrom
-	 *         required: true
 	 *         schema:
 	 *           type: number
 	 *         description: Time filter start (timestamp in seconds since 01/01/1970)
 	 *       - in: query
 	 *         name: timeFilterTo
-	 *         required: true
 	 *         schema:
 	 *           type: number
 	 *         description: Time filter end (timestamp in seconds since 01/01/1970)
@@ -93,8 +92,8 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 			return res.status(401).json({ message: 'Authentication failed' });
 		}
 
-        const timeFilterFrom = Number(req.query.timeFilterFrom)
-        const timeFilterTo = Number(req.query.timeFilterTo)
+        const timeFilterFrom = req.query.timeFilterFrom ?? null
+        const timeFilterTo = req.query.timeFilterTo ?? null
 
 		try {
 			const sectors = await fieldService.getSectors(requestUserData.userId, timeFilterFrom, timeFilterTo);

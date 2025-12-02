@@ -225,6 +225,20 @@ class FieldRepository {
     }
 
     async getSectors(userId, timeFilterFrom, timeFilterTo) {
+
+        let timeConditions = "";
+        const replacements = { userId };
+
+        if (timeFilterTo) {
+            timeConditions += ` AND ts.valid_from <= :timeFilterTo`;
+            replacements.timeFilterTo = timeFilterTo;
+        }
+
+        if (timeFilterFrom) {
+            timeConditions += ` AND (ts.valid_to IS NULL OR ts.valid_to >= :timeFilterFrom)`;
+            replacements.timeFilterFrom = timeFilterFrom;
+        }
+
         const query = `
             SELECT DISTINCT
                 o.id AS "organizationId",
@@ -253,19 +267,23 @@ class FieldRepository {
             JOIN theses_in_sectors ts
                 ON ts.sector_id = s.id
             WHERE 
-                ts.valid_from <= :timeFilterTo
-                AND (ts.valid_to IS NULL OR ts.valid_to >= :timeFilterFrom)           
-                AND (
+                (
                     (u.role = 'admin') 
                     OR 
                     (p.user_id = :userId) 
                 )
+                ${timeConditions}
             ORDER BY 
                 "organizationName", "companyName", "fieldName", "sectorName";
         `;
 
+
+        // ts.valid_from <= :timeFilterTo
+        //         AND (ts.valid_to IS NULL OR ts.valid_to >= :timeFilterFrom)           
+        //         AND 
+
         const results = await this.sequelize.query(query, {
-            replacements: { userId, timeFilterFrom, timeFilterTo },
+            replacements: replacements,
             type: this.sequelize.QueryTypes.SELECT
         });
 
@@ -400,7 +418,7 @@ class FieldRepository {
                     }
                 }
             )
-        } catch(error) {
+        } catch (error) {
             throw new Error(`Error disabling thesis from sector: ${error.message}`);
         }
     }
@@ -423,7 +441,7 @@ class FieldRepository {
                     }
                 }
             )
-        } catch(error) {
+        } catch (error) {
             throw new Error(`Error setting validty end of the optimal profie: ${error.message}`);
         }
     }
