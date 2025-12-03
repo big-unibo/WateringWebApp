@@ -2,12 +2,12 @@
 import AppNavBar from "@/components/AppNavBar.vue";
 import Monitoring from "@/components/Monitoring.vue";
 import authService from "@/services/auth.service.js";
-import { onMounted, onUnmounted, reactive } from "vue";
+import { onMounted, onUnmounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter()
 
-let token = reactive({});
+let token = ref("");
 let user = reactive({});
 
 const checkInterval = 36000000;

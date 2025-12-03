@@ -29,6 +29,7 @@ async function simulateAdvice(){
     const e = expectedWater.value;
     try {
         advice.value = await communicationService.getFieldInfo(parsed.environment, parsed.paths, {expectedWater: e, timestamp: Number(props.selectedTimestamp) + 60}, endpoint)
+        // Chiama wateringAdvice
         advice.value.expectedWater = e;
         advice.error = false;
     } catch (error) {
