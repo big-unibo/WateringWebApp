@@ -13,10 +13,10 @@
     "bootstrap": "^5.3.3",
     "chart.js": "^4.4.1",
     "crypto-js": "^4.2.0",
+    "smarter-charts": "file:../smarter-charts-2.0.0.tgz",
     "vue": "^3.4.15",
     "vue-chartjs": "^5.3.0",
-    "vue-router": "^4.2.5",
-    "smarter-charts": "^1.1.3"
+    "vue-router": "^4.2.5"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.4",
