@@ -248,9 +248,12 @@ class FieldService {
         const deviceId = await this.thesesAllSignalsRepository.getGridDeviceByThesis(thesisId, timestamp, timestamp)
         await this.fieldRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp)
         await this.wateringAdviceRepository.setWateringAlgorithmParamsEndDate(thesisId, timestamp)
-        const signals = await this.thesesAllSignalsRepository.getSignalsByThesis(thesisId, [], timestamp)
+
+
+        const signals = await this.signalsRepository.getThesisAssociatedSignals(thesisId, timestamp)
         signals.forEach(signal => {
-            this.signalsRepository.disableSignal(signal.signalId, timestamp)
+            //[TO DO]: Sepcific disable function
+           this.signalsRepository.disableSignal(signal.signalId, timestamp)
         });
         await this.fieldRepository.disableThesisFromSector(thesisId, timestamp)
     }

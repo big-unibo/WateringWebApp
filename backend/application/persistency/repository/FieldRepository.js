@@ -445,7 +445,6 @@ class FieldRepository {
             throw new Error(`Error setting validty end of the optimal profie: ${error.message}`);
         }
     }
-
     // async updateWateringSectorDetails(sectorDetails, timestampFrom){
     //     this.WateringSector.removeAttribute('id')
     //     this.WateringSector.update(

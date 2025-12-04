@@ -2,7 +2,7 @@ import { Op } from "sequelize";
 import { CreateSignal } from "../../dtos/deviceDto.js";
 
 class SignalRepository {
-    constructor(models, sequelize){
+    constructor(models, sequelize) {
         this.Signal = models.Signal;
         this.SignalInField = models.SignalInField;
         this.SignalInSector = models.SignalInSector;
@@ -19,14 +19,14 @@ class SignalRepository {
     async createSignals(deviceId, signalsData = []) {
         try {
             if (!Array.isArray(signalsData) || signalsData.length === 0) {
-                return []; 
+                return [];
             }
-            return await this.Signal.bulkCreate(signalsData.map(sig => ({...sig, deviceId: deviceId})));
+            return await this.Signal.bulkCreate(signalsData.map(sig => ({ ...sig, deviceId: deviceId })));
         } catch (error) {
             throw new Error(`Error creating signals caused by: ${error.message}`);
         }
     }
-    
+
     async assignSignalToField(associationData) {
         try {
             await this.SignalInField.create({
@@ -63,33 +63,66 @@ class SignalRepository {
         }
     }
 
+    async getThesisAssociatedSignals(thesisId, timestamp) {
+        try {
+            const associations = await this.SignalInThesis.findAll({
+                where: {
+                    thesisId: thesisId, 
+                    validFrom: {
+                        [Op.lte]: timestamp 
+                    },
+                    [Op.or]: [
+                        { validTo: { [Op.gt]: timestamp } },
+                        { validTo: null }
+                    ]
+                },
+                include: [{
+                    model: this.Signal,
+                    required: true,
+                    as: "signal"
+                }]
+            });
+
+            return associations.map(association => {
+                if (association.signal) {
+                    return association.signal.get({ plain: true });
+                }
+                return null;
+            }).filter(s => s !== null);
+
+        } catch (error) {
+             throw new Error(`Error while retrieving thesis signals: ${error.message}`);
+        }
+    }
+
+
     async updateSignal(signalId, updates) {
-        try{
+        try {
             const signal = await this.Signal.findByPk(signalId);
-            if(!signal) throw new Error("Signal not found");
+            if (!signal) throw new Error("Signal not found");
             await signal.update(updates);
-        }catch (error){
-           throw new Error(`Error while updating signal caused by: ${error.message}`);
+        } catch (error) {
+            throw new Error(`Error while updating signal caused by: ${error.message}`);
         }
     }
 
-    async addMeasurements(signalId,measurements){
-        try{
+    async addMeasurements(signalId, measurements) {
+        try {
             const signal = await this.Signal.findByPk(signalId);
-            if(!signal) throw new Error("Signal not found");
+            if (!signal) throw new Error("Signal not found");
             await this.Measurement.bulkCreate(measurements);
-        }catch (error){
-           throw new Error(`Error while creating measurements: ${error.message}`);
+        } catch (error) {
+            throw new Error(`Error while creating measurements: ${error.message}`);
         }
     }
 
-    async disableSignal(signalId, validTo){
-        try{
+    async disableSignal(signalId, validTo) {
+        try {
             const signal = await this.Signal.findByPk(signalId);
-            if(!signal) throw new Error("Signal not found");
+            if (!signal) throw new Error("Signal not found");
             await this.SignalInThesis.update({
                 validTo: validTo
-            },{
+            }, {
                 where: {
                     signalId: signalId,
                     validFrom: {
@@ -105,7 +138,7 @@ class SignalRepository {
             })
             await this.SignalInSector.update({
                 validTo: validTo
-            },{
+            }, {
                 where: {
                     signalId: signalId,
                     validFrom: {
@@ -121,7 +154,7 @@ class SignalRepository {
             })
             await this.SignalInField.update({
                 validTo: validTo
-            },{
+            }, {
                 where: {
                     signalId: signalId,
                     validFrom: {
@@ -135,8 +168,8 @@ class SignalRepository {
                     }
                 }
             })
-        }catch (error){
-           throw new Error(`Error while disabling signal caused by: ${error.message}`);
+        } catch (error) {
+            throw new Error(`Error while disabling signal caused by: ${error.message}`);
         }
     }
 }
