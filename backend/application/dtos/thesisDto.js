@@ -21,7 +21,7 @@ export class Thesis {
     }
 }
 
-export class ThesisRefDto {
+export class ThesisRef {
   constructor(id, name) {
     this.id = id;
     this.name = name;

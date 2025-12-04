@@ -1,4 +1,4 @@
-export class UserPermitDto {
+export class UserPermit {
 	/**
 	 * @param {string} permit - The type of permit.
 	 * @param {string} table - The table or resource the permit applies to.
@@ -11,11 +11,11 @@ export class UserPermitDto {
 	}
 }
 
-export class UserPermitsDto {
+export class UserPermits {
 	/**
 	 * @param {number} userId - The ID of the user.
 	 * @param {string} role - The role of the user (e.g., 'admin', 'user').
-	 * @param {Array<UserPermitDto>} permits - Array of UserPermitDto objects.
+	 * @param {Array<UserPermit>} permits - Array of UserPermit objects.
 	 */
 	constructor(userId, role, permits = []) {
 		this.userId = userId;       

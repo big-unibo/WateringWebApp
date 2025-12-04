@@ -31,7 +31,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 	 *         content:
 	 *           application/json:
 	 *             schema:
-	 *               $ref: '#/components/schemas/SectorsCompactDto'
+	 *               $ref: '#/components/schemas/SectorsCompact'
      *       '400':
      *         description: Input validation error (Bad Request)
      *         content:
@@ -136,7 +136,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 	 *         content:
 	 *           application/json:
 	 *             schema:
-	 *               $ref: '#/components/schemas/SectorDataDto'
+	 *               $ref: '#/components/schemas/SectorData'
      *       '400':
      *         description: Input validation error (Bad Request)
      *         content:

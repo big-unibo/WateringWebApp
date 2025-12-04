@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import { AddMeasurementsDto,CreateSignal,SignalUpdate, SignalAssociation } from '../dtos/deviceDto.js';
+import { AddMeasurementsRequest,CreateSignal,SignalUpdate, SignalAssociation } from '../dtos/deviceDto.js';
 
 
 const signalsRouter = ({authenticationService, authorizationService, signalService}) => {
@@ -556,7 +556,7 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
         }
 
         try{
-            const measurementsData = new AddMeasurementsDto(signalId, measurements)
+            const measurementsData = new AddMeasurementsRequest(signalId, measurements)
 
             await signalService.addMeasurements(measurementsData);
             return res.status(200).json({  

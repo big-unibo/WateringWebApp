@@ -1,5 +1,5 @@
 
-export class WateringAdviceDto {
+export class WateringAdvice {
 
   constructor(thesisName, advice, duration, imageTimestamp, wateringStart, r, lastWatering, baselineFlag) {
 
