@@ -3,10 +3,10 @@ import { Company } from "../dtos/companyDto.js";
 import { SignalData, MeasureData, SignalTypeData } from '../dtos/dataDto.js';
 import { WateringScheduleResponse, WateringEventData, ThesisContributionData } from "../dtos/wateringScheduleDto.js";
 import { DistanceValue, OptimalDistanceData, DistanceProfile, OptimalProfileData, OptimalStateData } from "../dtos/optStateDto.js";
-import { WateringAdviceDto } from "../dtos/wateringAdviceDto.js";
-import { SectorCompactDto, SectorDataDto } from "../dtos/sectorDto.js";
+import { WateringAdvice } from "../dtos/wateringAdviceDto.js";
+import { SectorCompact, SectorData } from "../dtos/sectorDto.js";
 import { Signal, Device } from "../dtos/deviceDto.js";
-import { Thesis, ThesisRefDto } from "../dtos/thesisDto.js";
+import { Thesis,ThesisRef} from "../dtos/thesisDto.js";
 import { WateringParams } from "../dtos/wateringParamsDto.js";
 
 class DtoConverter {
@@ -22,7 +22,7 @@ class DtoConverter {
     convertSectorsDataWrapper(sectorsData) {
         if (!Array.isArray(sectorsData)) return [];
 
-        return sectorsData.map(s => new SectorCompactDto(
+        return sectorsData.map(s => new SectorCompact(
             s.sectorId,
             s.sectorName,
             s.culture,
@@ -51,7 +51,7 @@ class DtoConverter {
         })) || [];
 
         const uniqueTheses = Array.from(new Map(theses.map(t => [t.id, t])).values());
-        const thesisDtos = uniqueTheses.map(t => new ThesisRefDto(t.id, t.name));
+        const thesisDtos = uniqueTheses.map(t => new ThesisRef(t.id, t.name));
 
         const organization = {
             id: sectorData.field.company.organizationId,
@@ -70,7 +70,7 @@ class DtoConverter {
         };
 
 
-        return new SectorDataDto(
+        return new SectorData(
             sectorData.id,
             sectorData.sectorName,
             sectorData.culture,
@@ -448,7 +448,7 @@ class DtoConverter {
     }
 
     convertWateringAdviceWrapper(adviceWrapper) {
-        return new WateringAdviceDto(adviceWrapper.thesisName, adviceWrapper.advice, adviceWrapper.duration, adviceWrapper.imageTimestamp,
+        return new WateringAdvice(adviceWrapper.thesisName, adviceWrapper.advice, adviceWrapper.duration, adviceWrapper.imageTimestamp,
             adviceWrapper.wateringStart, adviceWrapper.r, adviceWrapper.lastWatering);
     }
 

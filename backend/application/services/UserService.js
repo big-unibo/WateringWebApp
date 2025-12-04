@@ -1,5 +1,5 @@
 import { User, UserData } from "../dtos/userDto.js";
-import { UserPermitDto, UserPermitsDto } from "../dtos/userPermitsDto.js";
+import { UserPermit, UserPermits } from "../dtos/userPermitsDto.js";
 
 
 class UserService {
@@ -78,13 +78,13 @@ class UserService {
                 }
             });
 
-            const permits = Array.from(map.values()).map(p => new UserPermitDto(
+            const permits = Array.from(map.values()).map(p => new UserPermit(
                 p.permit,
                 p.table,
                 Array.from(p.idKeys)
             ));
 
-            return new UserPermitsDto(user.id, user.role, permits)
+            return new UserPermits(user.id, user.role, permits)
         } catch (error) {
             console.error('Error computing user permits:', error);
             throw error;

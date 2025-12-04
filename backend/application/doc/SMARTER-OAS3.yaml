@@ -436,7 +436,7 @@ components:
           type: number
           description: Count of the measurements included in the bin
     
-    SectorDataDto:
+    SectorData:
       type: object
       allOf: 
         - $ref: "#/components/schemas/CreateSector" 
@@ -522,7 +522,7 @@ components:
           description: Name of the organization
 
 
-    SectorCompactDto:
+    SectorCompact:
       type: object
       properties:
         id:
@@ -553,10 +553,10 @@ components:
           - $ref: "#/components/schemas/Organization"
           - description: Organization the company belongs to
       
-    SectorsCompactDto:
+    SectorsCompact:
         type: array
         items:
-          $ref: "#/components/schemas/SectorCompactDto"
+          $ref: "#/components/schemas/SectorCompact"
 
     Signal:
       type: object
@@ -604,10 +604,17 @@ components:
         deviceDescription:
           type: string
           nullable: true
-        signals:
-          type: array
-          items:
-            $ref: "#/components/schemas/Signal"
+
+    Device:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/DeviceData"
+      - type: object
+        properties:
+          signals:
+            type: array
+            items:
+              $ref: "#/components/schemas/Signal"
       required:
         - deviceId
         - deviceType

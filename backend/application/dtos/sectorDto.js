@@ -37,7 +37,7 @@ export class Sector {
 }
 
 
-export class SectorCompactDto{
+export class SectorCompact{
   constructor(sectorId, sectorName, culture, cultureType, location, field, company, organization) {
     this.id = sectorId;
     this.name = sectorName;
@@ -51,7 +51,7 @@ export class SectorCompactDto{
 }
 
 
-export class SectorDataDto {
+export class SectorData {
     constructor(
         sectorId,
         sectorName,

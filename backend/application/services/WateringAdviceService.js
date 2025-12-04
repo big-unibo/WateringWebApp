@@ -1,4 +1,4 @@
-import { WateringAdviceDto } from '../dtos/wateringAdviceDto.js';
+import { WateringAdvice } from '../dtos/wateringAdviceDto.js';
 
 
 import DtoConverter from './DtoConverter.js';
@@ -112,7 +112,7 @@ export class WateringAdviceService {
                             (lastImageTimestamp - oldParams.imageTimestamp + 2) * 2
                         ))[0]?.value || 0;
 
-                        return new WateringAdviceDto( 
+                        return new WateringAdvice( 
                             thesisDetails.thesisName, 
                             advice,
                             duration, 
@@ -134,7 +134,7 @@ export class WateringAdviceService {
             }
 
             const {advice, duration} = computeIrrigation(algorithmParams.wateringBaseline, sectorDetails, algorithmParams.maxWatering, expectedWater)
-            return new WateringAdviceDto(
+            return new WateringAdvice(
                 thesisDetails.thesisName,
                 advice,
                 duration,

@@ -121,7 +121,7 @@ export class Measurement{
     }
 }
 
-export class AddMeasurementsDto{
+export class AddMeasurementsRequest{
     /**
      * @param {number} id - Id of the signal the measurements ar leated to
      * @param {Array<Measurement>} measurements - Array of measurements 
