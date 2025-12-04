@@ -468,6 +468,225 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         }
     })
 
+    /**
+     * @swagger
+     * /devices/{deviceId}/disable:
+     *   post:
+     *     summary: Disables alla of the signals for a given device
+     *     tags: [Theses]
+     *     parameters:
+     *       - in: path
+     *         name: deviceId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of device to disable
+     *       - in: query
+     *         name: timestamp
+     *         required: false
+     *         schema:
+     *           type: number
+     *         description: Timestamp indicating end date of the device validity, if not set takes actual timestamp (Seconds elapsed since 1/1/1970).
+     *     responses:
+     *       200:
+     *         description: Device succesfuly disabled.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Device succesfuly disabled.
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       401:
+     *         description: Authentication failed (Invalid or missing JWT).
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized request – user not allowed to end thesis validty.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error during the process.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.post('/:deviceId/disable', async (req, res) => {
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(403).json({ message: 'Authentication failed' });
+        }
+
+        const deviceId = req.params.deviceId;
+        const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
+
+        //[TO DO]: Authorization
+
+        try{
+            await deviceService.disableDevice(deviceId, timestamp)
+            return res.status(200).json({ message: `Device validity succesfully endend` })
+        } catch (error) {
+            console.log(`Failed disabling device: ${error.message}`)
+            return res.status(500).json({ error: "Internal error disabling device and its signals" })
+        }
+    })
+
+
+    /**
+	 * @swagger
+	 * /devices/{deviceId}:
+	 *   get:
+	 *     summary: Retrieve data about a specific device and its signals at a specific timestamp
+	 *     tags: 
+     *       - Devices
+	 *     description: Retrieve data about a specific device and its signals at a specific timestamp. Rquires authentication and proper Authorization
+	 *     parameters:
+     *       - in: path
+     *         name: deviceId
+     *         required: true
+	 *         schema:
+	 *           type: number
+     *       - in: query
+     *         name: timestamp
+	 *         schema:
+	 *           type: number
+	 *     responses:
+	 *       200:
+	 *         description: Device and its signals data
+	 *         content:
+     *           application/json:
+     *             schema:
+     *                $ref: '#/components/schemas/Device'
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized request – user not allowed to view this device data.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+	 *       404:
+	 *         description: Device not found
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 error:
+	 *                   type: string
+	 *       500:
+	 *         description: Internal server error – unexpected error while retrieving devices
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 error:
+	 *                   type: string
+	 */
+    router.get('/:deviceId', async (req, res) => {
+		let requestUserData;
+		try {
+			requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+		} catch (error) {
+			return res.status(401).json({ message: 'Authentication failed' });
+		}
+
+        const deviceId = req.params.deviceId
+        const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
+
+        console.log(deviceId)
+		try {
+			const devices = await deviceService.getDevice(deviceId, timestamp);
+			if (!devices) {
+				return res.status(404).json({ 
+					error: "Information not found for the device at the given timestamp" 
+				});
+			}
+
+			return res.status(200).json(devices);
+		} catch (error) {
+			console.log(`Fail retrieving devices caused by: ${error.message}`);
+			return res.status(500).json({ error: "Error while retrieving devices" });
+		}
+	});
+
+
     return router;
 }
 

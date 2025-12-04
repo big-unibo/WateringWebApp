@@ -89,6 +89,14 @@ class DeviceService {
         }
     }
 
+    async getDevice(deviceId, timestamp){
+        const device = await this.deviceRepository.getDevice(deviceId, timestamp)
+        if(Array.isArray(device) && device.length > 0){
+            return dtoConverter.convertDevicesDataWrapper(device)
+        }
+        return null;
+    }
+
     async getProviders(){
         return await this.deviceRepository.getProviders();
     }

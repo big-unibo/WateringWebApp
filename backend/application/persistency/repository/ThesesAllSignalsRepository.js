@@ -269,6 +269,42 @@ class ThesesAllSignalsRepository {
         return results;
     }
 
+    async getThesisAssociatedSignals(thesisId, timestamp){
+        const query = `
+            SELECT DISTINCT
+                tas.device_id AS "deviceId",
+                signal_id_on_provider AS "idOnProvider",
+                tas.signal_id AS "signalId",
+                tas.signal_description AS "signalDescription",
+                tas.signal_type AS "signalType",
+                tas.signal_type_description AS "signalTypeDescription",
+                measurement_timestamp AS "lastMeasurementTimestamp",
+                tas.x AS "x",
+                tas.y AS "y",
+                tas.z AS "z",
+                tas.virtual AS "virtual",
+                tas.unit AS "unit"
+            FROM theses_all_signals tas
+            JOIN LATERAL(
+                SELECT MAX(timestamp) AS measurement_timestamp
+                FROM measurements m
+                WHERE m.signal_id = tas.signal_id
+            ) m ON true
+            WHERE :timestamp BETWEEN tas.valid_from AND COALESCE(tas.valid_to, 'infinity')
+                ${signalTypes?.length > 0 ? "AND tas.signal_type = ANY(ARRAY[:signalTypes])" : "" }
+                AND tas.thesis_id = :thesisId
+        `;
+
+        const results = await this.sequelize.query(query, {
+        replacements: {
+            thesisId,
+            signalTypes,
+            timestamp
+        },
+            type: QueryTypes.SELECT
+        });
+        return results;
+    }
 }
 
 export default ThesesAllSignalsRepository;

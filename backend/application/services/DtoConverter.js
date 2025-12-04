@@ -6,7 +6,7 @@ import { DistanceValue, OptimalDistanceData, DistanceProfile, OptimalProfileData
 import { WateringAdviceDto } from "../dtos/wateringAdviceDto.js";
 import { SectorCompactDto, SectorDataDto } from "../dtos/sectorDto.js";
 import { Signal, Device } from "../dtos/deviceDto.js";
-import { Thesis,ThesisRefDto} from "../dtos/thesisDto.js";
+import { Thesis, ThesisRefDto } from "../dtos/thesisDto.js";
 import { WateringParams } from "../dtos/wateringParamsDto.js";
 
 class DtoConverter {
@@ -428,7 +428,7 @@ class DtoConverter {
     //     }
     // }
 
-    convertWateringAlgorithmParamsWrapper(results){
+    convertWateringAlgorithmParamsWrapper(results) {
         const {
             maxWatering,
             minWatering,
@@ -497,7 +497,7 @@ class DtoConverter {
 
     convertInterpolatedMeansWrapper(results) {
         const measures = results.map(v => new InterpolatedMeanMeasureData(v.x, v.y, v.z, v.std, v.mean))
-        return new InterpolatedMeansData(results[0].thesisName, results[0].deviceId, results[0].binningId , measures)
+        return new InterpolatedMeansData(results[0].thesisName, results[0].deviceId, results[0].binningId, measures)
     }
 
     // #buildGenericReferenceMap(wrappers) {

@@ -22,6 +22,46 @@ class DeviceRepository {
         }
     }
 
+    async getDevice(deviceId, timestamp) {
+        const query = `
+        SELECT 
+            ts.device_id AS "deviceId",
+            ts.device_type AS "deviceType",
+            ts.device_description AS "deviceDescription",
+            ts.provider_id AS "providerId",
+            ts.signal_id_on_provider AS "idOnProvider",
+            ts.signal_id AS "signalId",
+            ts.signal_description AS "signalDescription",
+            ts.signal_type AS "signalType",
+            ts.signal_type_description AS "signalTypeDescription",
+            m.measurement_timestamp AS "lastMeasurementTimestamp",
+            ts.virtual,
+            ts.unit,
+            ts.x, ts.y, ts.z
+        FROM theses_all_signals ts
+        JOIN LATERAL (
+            SELECT MAX(timestamp) AS measurement_timestamp
+            FROM measurements m
+            WHERE m.signal_id = ts.signal_id
+        ) m ON true
+        WHERE ts.device_id = :deviceId
+        AND valid_from < :timestamp
+        AND COALESCE(valid_to, 'infinity') > :timestamp`
+        
+
+        try {
+            const results = await this.sequelize.query(query, {
+                replacements: { deviceId, timestamp },
+                type: this.sequelize.QueryTypes.SELECT
+            });
+            return results;
+        } catch (error) {
+            console.error(`Fail retrieving device data: ${error.message}`);
+            throw error;
+        }
+    }
+
+
     async getSignals(deviceId) {
         const result = await this.Signal.findAll({
             where: {
