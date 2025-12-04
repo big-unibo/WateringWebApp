@@ -758,7 +758,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
             //if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userId, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
             //     return res.status(401).json({message: 'Unauthorized request'});
 
-            const devices = await fieldService.getDevicesByThesis(thesisId)
+            const devices = await fieldService.getDevicesByThesis(thesisId, validFrom)
             const device = devices.find(d => d.deviceType === HUMIDITY_DEVICE_TYPE);
 
             if (!device) {

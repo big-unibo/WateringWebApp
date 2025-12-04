@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue';
-import { CommunicationService } from 'smarter-charts';
+import { CommunicationService } from '@/services/communication.service';
 import { Modal, Collapse } from 'bootstrap';
 
 const updateStateModal = ref(null)
@@ -13,7 +13,7 @@ const isModalShown = ref(false)
 const updateWithMatrixId = ref(false)
 const selectOptimalButtonText = ref("Imposta ottimo con matrice memorizzata")
 const communicationService = new CommunicationService();
-const endpoint = "setOptState"
+const endpoint = "setOptimalState"
 let modal
 let successAlert
 let errorAlert
@@ -41,6 +41,7 @@ function hideModal() {
 
 async function setOptimal(){
     const parsed = JSON.parse(props.config);
+    console.log(parsed)
     try{
       if(updateWithMatrixId.value){
         console.log(matrixId.value)
@@ -108,7 +109,7 @@ function switchOptimal(){
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="hideModal">Chiudi</button>
+                <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="hideModal">Chiudi</button> -->
                 <button type="submit" class="btn btn-primary">Imposta come ottimo</button>
             </div>
           </form>

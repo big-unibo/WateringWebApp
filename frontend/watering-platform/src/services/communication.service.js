@@ -50,7 +50,7 @@ export class CommunicationService {
         }
     }
 
-    async getWateringAdvice(environment, paths, params, endpoint) {
+    async getWateringAdvice(environment, endpoint, paths, params) {
         const thesisId = paths.thesisId
         const token = environment.token
         try {
@@ -62,6 +62,43 @@ export class CommunicationService {
             });
             return response.data;
 
+        } catch (error) {
+            return this._handleError(error)
+        }
+    }
+
+    async setOptimalStateByMatrixId(environment, endpoint, paths, matrixId) {
+        const thesisId = paths.thesisId
+        const token = environment.token
+        try {
+            const response = await axiosInstance.put(`/theses/${thesisId}/${endpoint}`, {}, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                params: { optimalProfileId: matrixId }
+            });
+            return response.data;
+        } catch (error) {
+            return this._handleError(error)
+        }
+    }
+
+    async setOptimalStateByTimestamp(environment, endpoint, paths, selectedTimestamp) {
+        const thesisId = paths.thesisId
+        const token = environment.token
+        try {
+            const response = await axiosInstance.put(`/theses/${thesisId}/${endpoint}`, {}, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                params: {
+                    thesisId: thesisId,
+                    imageTimestamp: selectedTimestamp
+                }
+            });
+            return response.data;
         } catch (error) {
             return this._handleError(error)
         }

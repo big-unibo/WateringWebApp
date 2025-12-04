@@ -31,9 +31,9 @@ async function simulateAdvice(){
     try {
         advice.value = await communicationService.getWateringAdvice(
           configParsed.environment, 
+          endpoint,
           configParsed.paths,
-          {expectedWater: e, timestamp: Number(props.selectedTimestamp) + 60}, 
-          endpoint
+          {expectedWater: e, timestamp: Number(props.selectedTimestamp) + 60}
         )
         advice.value.expectedWater = e;
         advice.error = false;
