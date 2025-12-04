@@ -1,6 +1,6 @@
 <script setup>
 import { ref} from 'vue';
-import { CommunicationService } from 'smarter-charts';
+import { CommunicationService } from '@/services/communication.service';
 
 const advice = ref(null)
 const expectedWater = ref(0)
@@ -27,14 +27,18 @@ async function simulateAdvice(){
     advice.value = null;
     const configParsed = JSON.parse(props.config);
     const e = expectedWater.value;
+
     try {
-        //const response = await communicationService
-        //advice.value = await communicationService.getFieldInfo(parsed.environment, parsed.paths, {expectedWater: e, timestamp: Number(props.selectedTimestamp) + 60}, endpoint)
-        // Chiama wateringAdvice
+        advice.value = await communicationService.getWateringAdvice(
+          configParsed.environment, 
+          configParsed.paths,
+          {expectedWater: e, timestamp: Number(props.selectedTimestamp) + 60}, 
+          endpoint
+        )
         advice.value.expectedWater = e;
         advice.error = false;
     } catch (error) {
-        console.log("Error fetching watering advice:", error);
+        console.log("Error fetching watering advice:", error.message);
         adviceError.value = true;
         advice.value = null;
     }
@@ -72,9 +76,9 @@ async function simulateAdvice(){
                     Impossibile calcolare il consiglio irriguo.
                 </div>
             </div>
-            <div class="modal-footer">
+            <!-- <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="hideModal">Chiudi</button>
-            </div>
+            </div> -->
           </form>
         </div>
       </div> 
