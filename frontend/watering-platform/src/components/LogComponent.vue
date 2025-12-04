@@ -1,42 +1,53 @@
 <script setup>
-import {watchEffect, ref} from "vue";
-import {CommunicationService} from "smarter-charts";
+import { watchEffect, ref } from "vue";
+import { CommunicationService } from "@/services/communication.service";
 import { luxonDateTimeToString } from "smarter-charts";
 
 const props = defineProps(['config'])
 
 const groupedLogs = ref(null)
 const communicationService = new CommunicationService();
- 
-watchEffect(async ()=>{
-    if(props.config){
+const logsEndpoint = "anomalies"
+const loadingFlag = ref(false)
+const showLogs = ref(false)
+
+watchEffect(async () => {
+    if (props.config) {
         const parsed = JSON.parse(props.config);
         groupedLogs.value = []
-        const logs = await communicationService.getAPI(parsed.environment,"/logs",parsed.paths, parsed.params, "")
-        if(JSON.stringify(parsed) !== props.config){
+
+        loadingFlag.value = true;
+        showLogs.value = false;
+
+        const logs = await communicationService.getLogs(parsed.environment, logsEndpoint, parsed.paths, parsed.params)
+        if (JSON.stringify(parsed) !== props.config) {
             return
         }
-        groupedLogs.value = Array(...groupByType(logs).entries()).map(([k,v]) => {return [k,v.sort((a,b)=> b.timestamp - a.timestamp)]})
+        loadingFlag.value = false;
+        groupedLogs.value = Array(...groupByType(logs).entries()).map(([k, v]) => { return [k, v.sort((a, b) => b.timestamp - a.timestamp)] })
+        if(groupedLogs.value.length > 0){
+            showLogs.value = true;
+        }
     }
 })
 
 const groupByType = (logs) => {
-  return logs.reduce((accumulator, currentValue) => {
-    const key = currentValue.type
-    if (!accumulator.has(key))
-      accumulator.set(key, []);
-    accumulator.get(key).push({
-        timestamp: currentValue.timestamp,
-        description: currentValue.description
-    });
-    return accumulator;
-  }, new Map());
+    return logs.reduce((accumulator, currentValue) => {
+        const key = currentValue.type
+        if (!accumulator.has(key))
+            accumulator.set(key, []);
+        accumulator.get(key).push({
+            timestamp: currentValue.timestamp,
+            description: currentValue.description
+        });
+        return accumulator;
+    }, new Map());
 }
 
 </script>
 
 <template>
-    <div class="accordion" id="logsAccordion">
+    <div v-if="showLogs" class="accordion" id="logsAccordion">
         <div v-for="[type, logs] in groupedLogs" :key="type" class="accordion-item">
             <h2 class="accordion-header">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
@@ -72,6 +83,12 @@ const groupByType = (logs) => {
             </div>
         </div>
     </div>
+    <div v-else-if="loadingFlag" class="d-flex justify-content-center align-items-center">
+        <div class="spinner-border" role="status">
+            <span class="sr-only"></span>
+        </div>
+    </div>
+    <div v-else>Nessuna anomalia riscontrata</div>
 </template>
 
 <style scoped>

@@ -103,4 +103,25 @@ export class CommunicationService {
             return this._handleError(error)
         }
     }
+
+    async getLogs(environment, endpoint, paths, params) {
+        const thesisId = paths.thesisId
+        const token = environment.token
+        const timefilters = {
+            timeFilterFrom: params.timeFilterFrom,
+            timeFilterTo: params.timeFilterTo
+        }
+        try {
+            const response = await axiosInstance.get(`/logs/${thesisId}/${endpoint}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                params: timefilters
+            });
+            return response.data;
+
+        } catch (error) {
+            return this._handleError(error)
+        }
+    }
 }

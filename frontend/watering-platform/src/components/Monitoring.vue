@@ -432,14 +432,14 @@ function selectedTime(time) {
 			</div>
 		</div>
 
-    <!-- <div v-if="hasUserPermission('MO')" class="my-3 container col-md-12">
+    <div v-if="true" class="my-3 container col-md-12">
       <div class="card">
         <div class="card-header">Anomalie riscontrate</div>
         <div class="card-body">
-          <LogComponent :config="JSON.stringify(connectionParams)"></LogComponent>
+          <LogComponent :config="baseConnectionParams"></LogComponent>
         </div>
       </div>
-    </div> -->
+    </div>
 
     <div style="visibility: hidden">
       {{ selectedTimestampTo }} - {{ customSelectedTimestampTo }}
