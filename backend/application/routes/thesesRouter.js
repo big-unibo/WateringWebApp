@@ -1077,6 +1077,18 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *   post:
      *     summary: Disables a monitoring thesis by setting its validity end timestamp
      *     tags: [Theses]
+     *     description: |
+     *       Disables a thesis by:
+     *       
+     *       - Ending validity period of the signals associated with the thesis.
+     *       - Ending optimal profile assignment.
+     *       - Ending watering algorithm validity.
+     *       - Ending thesis validity from sector.
+     * 
+     *       Requires Authentication and proper Authorization.
+     * 
+     * 
+     *       Requires authentication and proper authorization.
      *     parameters:
      *       - in: path
      *         name: thesisId

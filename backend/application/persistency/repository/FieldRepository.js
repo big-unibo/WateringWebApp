@@ -141,17 +141,28 @@ class FieldRepository {
     }
 
     async getFieldDetails(fieldId) {
-        const field = await this.Field.findByPk(fieldId, {
-            include: [
-                {
-                    model: this.Company,
-                    as: 'company'
-                }
-            ]
-        });
+        try {
+            const field = await this.Field.findByPk(fieldId, {
+                include: [
+                    {
+                        model: this.Company,
+                        as: 'company'
+                    },
+                    {
+                        model: this.Sector,
+                        as: 'sectors'
+                    }
+                ]
+            });
 
-        if (!field) throw new Error(`Field with id ${fieldId} not found`);
-        return field;
+            if (!field) {
+                throw new Error(`Field with id ${fieldId} not found`);
+            }
+            return field.get({ plain: true });
+
+        } catch (error) {
+            throw new Error(`Error retrieving field details: ${error.message}`);
+        }
     }
 
 

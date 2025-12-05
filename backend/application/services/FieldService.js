@@ -62,7 +62,7 @@ class FieldService {
 
     async getFieldOwner(fieldId) {
         const result = await this.fieldRepository.getFieldDetails(fieldId);
-        if (!result || !result.company) {
+        if (!result.company) {
             throw new Error(`Company not found for field ${fieldId}`);
         }
         return dtoConverter.convertCompany(result.company);
@@ -263,21 +263,55 @@ class FieldService {
     }
 
 
-    async disableSector(sectorId, timestamp) {
+   async disableSector(sectorId, timestamp) {
         try {
-            const signals = await this.signalsRepository.getSectorAssociatedSignals(sectorId, timestamp)
-            signals.forEach(signal => {
-                this.signalRepository.disableSignalInSector(signal.id, timestamp)
-            });
-            const sectorData = await this.getSectorDetails(sectorId, timestamp)
-            if(sectorData && sectorData.theses && Array.isArray( sectorData.theses)){
-                sectorData.theses.forEach(thesis => {
-                    this.disableThesis(thesis.id, timestamp)
-                })
+            const signals = await this.signalsRepository.getSectorAssociatedSignals(sectorId, timestamp);
+            if (signals && signals.length > 0) {
+                await Promise.all(signals.map(signal => 
+                    this.signalRepository.disableSignalInSector(signal.id, timestamp)
+                ));
             }
-            return await this.wateringScheduleRepository.deleteWateringEvents(sectorId,timestamp)
+
+            try {
+                const sectorData = await this.getSectorDetails(sectorId, timestamp);
+                
+                if (sectorData && sectorData.theses && Array.isArray(sectorData.theses)) {
+                    await Promise.all(sectorData.theses.map(thesis => 
+                        this.disableThesis(thesis.id, timestamp)
+                    ));
+                }
+            } catch (innerError) {
+                console.warn(`Skipping thesis disable for sector ${sectorId}: ${innerError.message}`);
+            }
+
+            await this.wateringScheduleRepository.deleteWateringEvents(sectorId, timestamp);
+
         } catch (error) {
-            console.error(`Error disabling sector: ${error.message}`);
+            console.error(`Error disabling sector ${sectorId}: ${error.message}`);
+            throw error; 
+        }
+    }
+
+    async disableField(fieldId, timestamp) {
+        try {
+            const signals = await this.signalsRepository.getFieldAssociatedSignals(fieldId, timestamp);
+            if (signals && signals.length > 0) {
+                await Promise.all(signals.map(signal => 
+                    this.signalRepository.disableSignalInField(signal.id, timestamp)
+                ));
+            }
+            const fieldData = await this.fieldRepository.getFieldDetails(fieldId);
+            
+            if (fieldData && fieldData.sectors && Array.isArray(fieldData.sectors)) {
+                await Promise.all(fieldData.sectors.map(sector => {
+                    return this.disableSector(sector.id, timestamp).catch(err => {
+                        console.error(`Failed to disable sector ${sector.id} inside field disable: ${err.message}`);
+                    });
+                }));
+            }
+
+        } catch (error) {
+            console.error(`Error disabling field: ${error.message}`);
             throw error;
         }
     }

@@ -113,6 +113,118 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
         }
     })
 
+
+    /**
+     * @swagger
+     * /fields/{fieldId}/disable:
+     *   post:
+     *     summary: Disables a field.
+     *     tags: [Fields]
+     *     description: |
+     *       Disables a field by:
+     *       
+     *       - Ending validity period of the signals associated with the field.
+     *       - Disabling all of the sectors associated with the field.
+     * 
+     *       Requires authentication and proper authorization.
+     *     parameters:
+     *       - in: path
+     *         name: fieldId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of field to disable
+     *       - in: query
+     *         name: timestamp
+     *         required: false
+     *         schema:
+     *           type: number
+     *         description: Timestamp indicating end date of the field validity, if not set takes actual timestamp (Seconds elapsed since 1/1/1970).
+     *     responses:
+     *       200:
+     *         description: Field succesfuly disabled.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Field succesfuly disabled.
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       401:
+     *         description: Authentication failed (Invalid or missing JWT).
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized request – user not allowed to end field validity.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error during the process.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.post('/:fieldId/disable', async (req, res) => {
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(403).json({ message: 'Authentication failed' });
+        }
+
+        const fieldId = req.params.fieldId;
+        const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
+
+        //[TO DO]: Authorization
+
+        try{
+            await fieldService.disableField(fieldId, timestamp)
+            return res.status(200).json({ message: `Field validity succesfully endend` })
+        } catch (error) {
+            console.log(`Failed disabling field: ${error.message}`)
+            return res.status(500).json({ error: "Internal error disablingthesis" })
+        }
+    })
+
     /**
      * @swagger
      * /fields/{fieldId}/createSector:

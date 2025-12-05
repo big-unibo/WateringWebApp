@@ -127,6 +127,38 @@ class SignalRepository {
         }
     }
 
+    async getFieldAssociatedSignals(fieldId, timestamp) {
+        try {
+            const associations = await this.SignalInField.findAll({
+                where: {
+                    fieldId: fieldId,
+                    validFrom: {
+                        [Op.lte]: timestamp
+                    },
+                    [Op.or]: [
+                        { validTo: { [Op.gt]: timestamp } },
+                        { validTo: null }
+                    ]
+                },
+                include: [{
+                    model: this.Signal,
+                    required: true,
+                    as: "signal"
+                }]
+            });
+
+            return associations.map(association => {
+                if (association.signal) {
+                    return association.signal.get({ plain: true });
+                }
+                return null;
+            }).filter(s => s !== null);
+
+        } catch (error) {
+            throw new Error(`Error while retrieving field signals: ${error.message}`);
+        }
+    }
+
 
 
     async updateSignal(signalId, updates) {

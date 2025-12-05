@@ -474,7 +474,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
     });
 
 
-     /**
+    /**
      * @swagger
      * /sectors/{sectorId}/disable:
      *   post:
@@ -486,6 +486,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *       - Ending validity period of the signals associated with the sector.
      *       - Disabling all of the theses associated with the sector.
      *       - Ending the irrigation season (Deleting the scheduled watering event).
+     * 
      *       Requires authentication and proper authorization.
      *     parameters:
      *       - in: path
@@ -562,7 +563,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *               properties:
      *                 message:
      *                   type: string
-     */
+    */
     router.post('/:sectorId/disable', async (req, res) => {
         let requestUserData
         try {
@@ -574,8 +575,9 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
         const sectorId = req.params.sectorId;
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
 
+        //[TO DO]: Authorization
+
         try{
-            //[TO DO]: Authorization
             await fieldService.disableSector(sectorId, timestamp)
             return res.status(200).json({ message: `Sector validity succesfully endend` })
         } catch (error) {
