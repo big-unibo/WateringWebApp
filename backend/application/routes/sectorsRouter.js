@@ -472,6 +472,119 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
         }
 
     });
+
+
+    /**
+     * @swagger
+     * /sectors/{sectorId}/disable:
+     *   post:
+     *     summary: Disables a sector.
+     *     tags: [Sectors]
+     *     description: |
+     *       Disables a sector by:
+     *       
+     *       - Ending validity period of the signals associated with the sector.
+     *       - Disabling all of the theses associated with the sector.
+     *       - Ending the irrigation season (Deleting the scheduled watering event).
+     * 
+     *       Requires authentication and proper authorization.
+     *     parameters:
+     *       - in: path
+     *         name: sectorId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of sector to disable
+     *       - in: query
+     *         name: timestamp
+     *         required: false
+     *         schema:
+     *           type: number
+     *         description: Timestamp indicating end date of the sector validity, if not set take actual timestamp (Seconds elapsed since 1/1/1970).
+     *     responses:
+     *       200:
+     *         description: Sector succesfuly disabled.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Sector succesfuly disabled.
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       401:
+     *         description: Authentication failed (Invalid or missing JWT).
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized request – user not allowed to end sector validity.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error during the process.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+    */
+    router.post('/:sectorId/disable', async (req, res) => {
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(403).json({ message: 'Authentication failed' });
+        }
+
+        const sectorId = req.params.sectorId;
+        const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
+
+        //[TO DO]: Authorization
+
+        try{
+            await fieldService.disableSector(sectorId, timestamp)
+            return res.status(200).json({ message: `Sector validity succesfully endend` })
+        } catch (error) {
+            console.log(`Failed disabling Sector: ${error.message}`)
+            return res.status(500).json({ error: "Internal error disablingthesis" })
+        }
+    })
   
     return router;
 }

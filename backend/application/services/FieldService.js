@@ -8,7 +8,7 @@ const MONTH_TO_SECONDS = MINUTE_TO_SECONDS * 60 * 24 * 30
 
 class FieldService {
 
-    constructor(fieldRepository, companyRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, signalsRepository) {
+    constructor(fieldRepository, companyRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, signalsRepository, wateringScheduleRepository) {
         this.fieldRepository = fieldRepository
         this.companyRepository = companyRepository
         this.thesesAllSignalsRepository = thesesAllSignalsRepository
@@ -17,6 +17,7 @@ class FieldService {
         this.optimalDistanceRepository = optimalDistanceRepository
         this.wateringAdviceRepository = wateringAdviceRepository
         this.signalsRepository = signalsRepository
+        this.wateringScheduleRepository = wateringScheduleRepository
     }
 
     async createField(field) {
@@ -61,7 +62,7 @@ class FieldService {
 
     async getFieldOwner(fieldId) {
         const result = await this.fieldRepository.getFieldDetails(fieldId);
-        if (!result || !result.company) {
+        if (!result.company) {
             throw new Error(`Company not found for field ${fieldId}`);
         }
         return dtoConverter.convertCompany(result.company);
@@ -245,17 +246,74 @@ class FieldService {
     }
 
     async disableThesis(thesisId, timestamp) {
-        const deviceId = await this.thesesAllSignalsRepository.getGridDeviceByThesis(thesisId, timestamp, timestamp)
-        await this.fieldRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp)
-        await this.wateringAdviceRepository.setWateringAlgorithmParamsEndDate(thesisId, timestamp)
+        try {
+            const deviceId = await this.thesesAllSignalsRepository.getGridDeviceByThesis(thesisId, timestamp, timestamp)
+            await this.fieldRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp)
+            await this.wateringAdviceRepository.setWateringAlgorithmParamsEndDate(thesisId, timestamp)
+
+            const signals = await this.signalsRepository.getThesisAssociatedSignals(thesisId, timestamp)
+            await Promise.all(signals.map(signal =>
+                this.signalsRepository.disableSignalInThesis(signal.id, timestamp)
+            ));
+            await this.fieldRepository.disableThesisFromSector(thesisId, timestamp)
+        } catch (error) {
+            console.error(`Error disabling Thesis: ${error.message}`);
+            throw error;
+        }
+    }
 
 
-        const signals = await this.signalsRepository.getThesisAssociatedSignals(thesisId, timestamp)
-        signals.forEach(signal => {
-            //[TO DO]: Sepcific disable function
-           this.signalsRepository.disableSignal(signal.signalId, timestamp)
-        });
-        await this.fieldRepository.disableThesisFromSector(thesisId, timestamp)
+    async disableSector(sectorId, timestamp) {
+        try {
+            const signals = await this.signalsRepository.getSectorAssociatedSignals(sectorId, timestamp);
+            if (signals && signals.length > 0) {
+                await Promise.all(signals.map(signal =>
+                    this.signalRepository.disableSignalInSector(signal.id, timestamp)
+                ));
+            }
+
+            try {
+                const sectorData = await this.getSectorDetails(sectorId, timestamp);
+
+                if (sectorData && sectorData.theses && Array.isArray(sectorData.theses)) {
+                    await Promise.all(sectorData.theses.map(thesis =>
+                        this.disableThesis(thesis.id, timestamp)
+                    ));
+                }
+            } catch (innerError) {
+                console.warn(`Skipping thesis disable for sector ${sectorId}: ${innerError.message}`);
+            }
+
+            await this.wateringScheduleRepository.deleteWateringEvents(sectorId, timestamp);
+
+        } catch (error) {
+            console.error(`Error disabling sector ${sectorId}: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async disableField(fieldId, timestamp) {
+        try {
+            const signals = await this.signalsRepository.getFieldAssociatedSignals(fieldId, timestamp);
+            if (signals && signals.length > 0) {
+                await Promise.all(signals.map(signal =>
+                    this.signalRepository.disableSignalInField(signal.id, timestamp)
+                ));
+            }
+            const fieldData = await this.fieldRepository.getFieldDetails(fieldId);
+
+            if (fieldData && fieldData.sectors && Array.isArray(fieldData.sectors)) {
+                await Promise.all(fieldData.sectors.map(sector => {
+                    return this.disableSector(sector.id, timestamp).catch(err => {
+                        console.error(`Failed to disable sector ${sector.id} inside field disable: ${err.message}`);
+                    });
+                }));
+            }
+
+        } catch (error) {
+            console.error(`Error disabling field: ${error.message}`);
+            throw error;
+        }
     }
 
     // async updateWateringSectorDetails(sectorDetails, timestampFrom) {

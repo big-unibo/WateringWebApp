@@ -474,7 +474,16 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      * /devices/{deviceId}/disable:
      *   post:
      *     summary: Disables alla of the signals for a given device
-     *     tags: [Theses]
+     *     tags: [Devices]
+     *     description: |
+     *       Disables a device by:
+     *       
+     *       - Ending validity period of the signals associated with the device.
+     *       - Ending optimal profile assignment.
+     * 
+     *       Requires Authentication and proper Authorization
+     *  
+     * 
      *     parameters:
      *       - in: path
      *         name: deviceId
