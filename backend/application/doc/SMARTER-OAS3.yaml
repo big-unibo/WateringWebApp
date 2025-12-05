@@ -594,7 +594,7 @@ components:
         - y
         - z
 
-    Device:
+    DeviceData:
       type: object
       properties:
         deviceId:

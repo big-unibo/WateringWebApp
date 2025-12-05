@@ -67,9 +67,9 @@ class SignalRepository {
         try {
             const associations = await this.SignalInThesis.findAll({
                 where: {
-                    thesisId: thesisId, 
+                    thesisId: thesisId,
                     validFrom: {
-                        [Op.lte]: timestamp 
+                        [Op.lte]: timestamp
                     },
                     [Op.or]: [
                         { validTo: { [Op.gt]: timestamp } },
@@ -91,7 +91,7 @@ class SignalRepository {
             }).filter(s => s !== null);
 
         } catch (error) {
-             throw new Error(`Error while retrieving thesis signals: ${error.message}`);
+            throw new Error(`Error while retrieving thesis signals: ${error.message}`);
         }
     }
 
@@ -116,60 +116,67 @@ class SignalRepository {
         }
     }
 
+    _getValidityConditions(signalId, validTo) {
+        return {
+            signalId: signalId,
+            validFrom: {
+                [Op.lt]: validTo
+            },
+            validTo: {
+                [Op.or]: [
+                    { [Op.is]: null },
+                    { [Op.gt]: validTo }
+                ]
+            }
+        };
+    }
+
+    async disableSignalInThesis(signalId, validTo) {
+        try {
+            return await this.SignalInThesis.update(
+                { validTo: validTo },
+                { where: this._getValidityConditions(signalId, validTo) }
+            );
+        } catch (error) {
+            throw new Error(`Error disabling signal in Thesis: ${error.message}`);
+        }
+    }
+
+    async disableSignalInSector(signalId, validTo) {
+        try {
+            return await this.SignalInSector.update(
+                { validTo: validTo },
+                { where: this._getValidityConditions(signalId, validTo) }
+            );
+        } catch (error) {
+            throw new Error(`Error disabling signal in Sector: ${error.message}`);
+        }
+    }
+
+    async disableSignalInField(signalId, validTo) {
+        try {
+            return await this.SignalInField.update(
+                { validTo: validTo },
+                { where: this._getValidityConditions(signalId, validTo) }
+            );
+        } catch (error) {
+            throw new Error(`Error disabling signal in Field: ${error.message}`);
+        }
+    }
+
     async disableSignal(signalId, validTo) {
         try {
             const signal = await this.Signal.findByPk(signalId);
             if (!signal) throw new Error("Signal not found");
-            await this.SignalInThesis.update({
-                validTo: validTo
-            }, {
-                where: {
-                    signalId: signalId,
-                    validFrom: {
-                        [Op.lt]: validTo
-                    },
-                    validTo: {
-                        [Op.or]: {
-                            [Op.is]: null,
-                            [Op.gt]: validTo
-                        },
-                    }
-                }
-            })
-            await this.SignalInSector.update({
-                validTo: validTo
-            }, {
-                where: {
-                    signalId: signalId,
-                    validFrom: {
-                        [Op.lt]: validTo
-                    },
-                    validTo: {
-                        [Op.or]: {
-                            [Op.is]: null,
-                            [Op.gt]: validTo
-                        },
-                    }
-                }
-            })
-            await this.SignalInField.update({
-                validTo: validTo
-            }, {
-                where: {
-                    signalId: signalId,
-                    validFrom: {
-                        [Op.lt]: validTo
-                    },
-                    validTo: {
-                        [Op.or]: {
-                            [Op.is]: null,
-                            [Op.gt]: validTo
-                        },
-                    }
-                }
-            })
+
+            await Promise.all([
+                this.disableSignalInThesis(signalId, validTo),
+                this.disableSignalInSector(signalId, validTo),
+                this.disableSignalInField(signalId, validTo)
+            ]);
+
         } catch (error) {
-            throw new Error(`Error while disabling signal caused by: ${error.message}`);
+            throw error;
         }
     }
 }
