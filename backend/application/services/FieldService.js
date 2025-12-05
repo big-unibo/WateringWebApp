@@ -8,7 +8,7 @@ const MONTH_TO_SECONDS = MINUTE_TO_SECONDS * 60 * 24 * 30
 
 class FieldService {
 
-    constructor(fieldRepository, companyRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, signalsRepository) {
+    constructor(fieldRepository, companyRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, signalsRepository, wateringScheduleRepository) {
         this.fieldRepository = fieldRepository
         this.companyRepository = companyRepository
         this.thesesAllSignalsRepository = thesesAllSignalsRepository
@@ -17,6 +17,7 @@ class FieldService {
         this.optimalDistanceRepository = optimalDistanceRepository
         this.wateringAdviceRepository = wateringAdviceRepository
         this.signalsRepository = signalsRepository
+        this.wateringScheduleRepository = wateringScheduleRepository
     }
 
     async createField(field) {
@@ -245,15 +246,40 @@ class FieldService {
     }
 
     async disableThesis(thesisId, timestamp) {
-        const deviceId = await this.thesesAllSignalsRepository.getGridDeviceByThesis(thesisId, timestamp, timestamp)
-        await this.fieldRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp)
-        await this.wateringAdviceRepository.setWateringAlgorithmParamsEndDate(thesisId, timestamp)
+        try {
+            const deviceId = await this.thesesAllSignalsRepository.getGridDeviceByThesis(thesisId, timestamp, timestamp)
+            await this.fieldRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp)
+            await this.wateringAdviceRepository.setWateringAlgorithmParamsEndDate(thesisId, timestamp)
 
-        const signals = await this.signalsRepository.getThesisAssociatedSignals(thesisId, timestamp)
-        signals.forEach(signal => {
-           this.signalsRepository.disableSignalInThesis(signal.id, timestamp)
-        });
-        await this.fieldRepository.disableThesisFromSector(thesisId, timestamp)
+            const signals = await this.signalsRepository.getThesisAssociatedSignals(thesisId, timestamp)
+            signals.forEach(signal => {
+                this.signalsRepository.disableSignalInThesis(signal.id, timestamp)
+            });
+            await this.fieldRepository.disableThesisFromSector(thesisId, timestamp)
+        } catch (error) {
+            console.error(`Error disabling Thesis: ${error.message}`);
+            throw error;
+        }
+    }
+
+
+    async disableSector(sectorId, timestamp) {
+        try {
+            const signals = await this.signalsRepository.getSectorAssociatedSignals(sectorId, timestamp)
+            signals.forEach(signal => {
+                this.signalRepository.disableSignalInSector(signal.id, timestamp)
+            });
+            const sectorData = await this.getSectorDetails(sectorId, timestamp)
+            if(sectorData && sectorData.theses && Array.isArray( sectorData.theses)){
+                sectorData.theses.forEach(thesis => {
+                    this.disableThesis(thesis.id, timestamp)
+                })
+            }
+            return await this.wateringScheduleRepository.deleteWateringEvents(sectorId,timestamp)
+        } catch (error) {
+            console.error(`Error disabling sector: ${error.message}`);
+            throw error;
+        }
     }
 
     // async updateWateringSectorDetails(sectorDetails, timestampFrom) {
