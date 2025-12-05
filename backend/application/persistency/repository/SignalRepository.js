@@ -1,14 +1,16 @@
 import { Op } from "sequelize";
-import { CreateSignal } from "../../dtos/deviceDto.js";
+import { CreateSignal } from "../../dtos/signalDto.js";
 
 class SignalRepository {
     constructor(models, sequelize) {
-        this.Signal = models.Signal;
-        this.SignalInField = models.SignalInField;
-        this.SignalInSector = models.SignalInSector;
-        this.SignalInThesis = models.SignalInThesis;
-        this.Measurement = models.Measurement;
-        this.sequelize = sequelize;
+        this.Signal = models.Signal
+        this.SignalInField = models.SignalInField
+        this.SignalInSector = models.SignalInSector
+        this.SignalInThesis = models.SignalInThesis
+        this.Measurement = models.Measurement
+        this.ThesesAllSignals = models.ThesesAllSignals
+        this.ThesesAllSignals.removeAttribute('id')
+        this.sequelize = sequelize
     }
 
     /**
@@ -242,6 +244,41 @@ class SignalRepository {
 
         } catch (error) {
             throw error;
+        }
+    }
+
+    
+    async getSignalAssociationEntries(signalId, timestamp){
+        try{
+            const signalAssociations =  await this.ThesesAllSignals.findAll({
+                where: {
+                    signalId,
+                    validFrom: {
+                        [Op.lt]: timestamp
+                    },
+                    validTo: {
+                        [Op.or]: {
+                            [Op.is]: null,
+                            [Op.gt]: timestamp
+                        },
+                    }
+                },
+                raw: true
+            });
+
+            const lastMeasurementTimestamp = await this.Measurement.findOne({
+                where: { signalId: signalId },
+                order: [['timestamp', 'DESC']],
+                attributes: ['timestamp'],
+                raw: true
+            })
+
+            const lastMeasurement = lastMeasurementTimestamp?.timestamp || null
+            signalAssociations.forEach(row => row.lastMeasurementTimestamp = lastMeasurement)
+            
+            return signalAssociations
+        }catch (error){
+           throw new Error(`Error while finding signals associations: ${error.message}`);
         }
     }
 }

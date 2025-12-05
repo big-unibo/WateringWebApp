@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import { AddMeasurementsRequest,CreateSignal,SignalUpdate, SignalAssociation } from '../dtos/deviceDto.js';
+import { AddMeasurementsRequest,CreateSignal,SignalUpdate, SignalAssociation } from '../dtos/signalDto.js';
 
 
 const signalsRouter = ({authenticationService, authorizationService, signalService}) => {
@@ -568,7 +568,123 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
             return res.status(500).json({ error: "Error while adding measurements" });
         }
     });
-    return router;
+
+    /**
+     * @swagger
+     * /signals/{signalId}/:
+     *   get:
+     *     summary: Get all information about a signal including the reference to field, sector or thesis where it is associated 
+     *     description: |
+     *       Get all information about a signal including the reference to field, sector or thesis where it is associated
+     *     tags:
+     *       - Signals
+     *     parameters:
+     *       - in: path
+     *         name: signalId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of the signal
+     *       - in: query
+     *         name: timestamp
+     *         schema:
+     *           type: number
+     *         description: The timestamp in which find the information
+     *     responses:
+     *       200:
+     *         description: Signal successfully associated
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/SignalInfo'
+     *       400:
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       401:
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized (user not allowed to assign signals)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       404:
+     *         description: Signal not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while getting signal information
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.get('/:signalId', async (req, res) => {
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        //[TO DO]: Authorization
+
+        try {
+
+            const signalId = req.params.signalId
+            const timestamp = req.query.timestamp ?? Date.now()/1000
+
+            const result = await signalService.getSignalInfo(signalId, timestamp)
+            if (result){
+                return res.status(200).json(result)
+            }
+            return res.status(404).json({ message: 'Signal not found' })
+        } catch (error) {
+            console.log(`Failed finding signal info caused by: ${error.message}`)
+            return res.status(500).json({ message: "Error finding signal info" })
+        }
+    })
+
+    return router
 }
 
-export default signalsRouter;
+export default signalsRouter

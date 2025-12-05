@@ -5,7 +5,8 @@ import { WateringScheduleResponse, WateringEventData, ThesisContributionData } f
 import { DistanceValue, OptimalDistanceData, DistanceProfile, OptimalProfileData, OptimalStateData } from "../dtos/optStateDto.js";
 import { WateringAdvice } from "../dtos/wateringAdviceDto.js";
 import { SectorCompact, SectorData } from "../dtos/sectorDto.js";
-import { Signal, Device } from "../dtos/deviceDto.js";
+import { Device } from "../dtos/deviceDto.js";
+import { Signal, SignalInfo, SignalTargetType } from "../dtos/signalDto.js";
 import { Thesis,ThesisRef} from "../dtos/thesisDto.js";
 import { WateringParams } from "../dtos/wateringParamsDto.js";
 
@@ -281,6 +282,37 @@ class DtoConverter {
         });
 
         return signalTypeDataArray;
+    }
+
+    convertSignalAssociationsEntries(signalAssociations){
+
+        const s = signalAssociations[0]
+        console.log(s)
+        const signal = {
+            signalId: s.signalId,
+            signalDescription: s.signalDescription,
+            signalType: s.signalType,
+            signalTypeDescription: s.signalTypeDescription,
+            x: s.x,
+            y: s.y,
+            z: s.z,
+            virtual: s.virtual,
+            unit: s.unit,
+            idOnProvider: s.idOnProvider,
+            lastMeasurementTimestamp: s.lastMeasurementTimestamp,
+            device: {
+                deviceId: s.deviceId,
+                deviceType: s.deviceType,
+                deviceDescription: s.deviceDescription
+            }
+        }
+
+        const theses = signalAssociations.filter(s => s.associationType == SignalTargetType.THESIS).map(t => ({id: t.thesisId, name: t.thesisName}))
+        const sectors = signalAssociations.filter(s => s.associationType == SignalTargetType.SECTOR).map(t => ({id: t.sectorId, name: t.sectorName}))
+        const fields = signalAssociations.filter(s => s.associationType == SignalTargetType.FIELD).map(t => ({id: t.fieldId, name: t.fieldName}))
+
+        console.log(signal)
+        return new SignalInfo({...signal, theses, sectors, fields})
     }
 
     convertCalendarWrapper(wrappers) {
