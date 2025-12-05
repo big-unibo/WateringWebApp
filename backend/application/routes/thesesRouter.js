@@ -1086,9 +1086,6 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *       - Ending thesis validity from sector.
      * 
      *       Requires Authentication and proper Authorization.
-     * 
-     * 
-     *       Requires authentication and proper authorization.
      *     parameters:
      *       - in: path
      *         name: thesisId
