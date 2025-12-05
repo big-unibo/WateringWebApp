@@ -2,6 +2,7 @@ import express from 'express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import { serve, setup } from 'swagger-ui-express';
 import OpenApiValidator from 'express-openapi-validator'
+import { savePermissionsToMarkdown } from './commons/permissions.js';
 
 import cors from 'cors';
 
@@ -185,19 +186,19 @@ app.use(
 
 app.use(
   '/wateringSchedule',
-  wateringScheduleRouter({authenticationService, authorizationService, wateringScheduleService, userActionService})
+  wateringScheduleRouter({ authenticationService, authorizationService, wateringScheduleService, userActionService })
 )
 
 app.use(
   '/logs',
-  logsRouter({authenticationService, authorizationService, logService})
+  logsRouter({ authenticationService, authorizationService, logService })
 )
 
 app.use((err, req, res, next) => {
   if (err.status && err.errors) {
     //console.error('Validation Error:', err.errors);
-    if(err.status == 401){
-        return res.status(err.status).json({
+    if (err.status == 401) {
+      return res.status(err.status).json({
         message: 'Authentication failed',
       });
     }
@@ -213,5 +214,8 @@ app.use((err, req, res, next) => {
   }
   next(err);
 });
+
+console.log("Generazione documentazione...");
+savePermissionsToMarkdown()
 
 app.use('/api-docs', serve, setup(swaggerSpec));

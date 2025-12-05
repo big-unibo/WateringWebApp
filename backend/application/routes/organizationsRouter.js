@@ -8,7 +8,10 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
      * /organizations/create:
      *   post:
      *     summary: Create a new organization
-     *     description: Endpoint to register a new organization with a given name. Requires authentication and proper authorization.
+     *     description: |
+     *        Endpoint to register a new organization with a given name. 
+     * 
+     *        Requires authentication and proper authorization.
      *     tags: [Organizations]
      *     requestBody:
      *       required: true
@@ -97,6 +100,8 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
         }
 
         try {
+            //const rule = PERMISSIONS.CREATE_ORGANIZATION.checks[0];
+            
             if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'organizations')))
                 return res.status(403).json({ message: 'Unauthorized request' });
 
