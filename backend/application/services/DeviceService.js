@@ -1,4 +1,4 @@
-import { SignalTargetType } from "../dtos/deviceDto.js";
+import { SignalTargetType } from "../dtos/signalDto.js";
 import DtoConverter from './DtoConverter.js';
 import PaginationService from "./PaginationService.js";
 

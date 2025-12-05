@@ -521,8 +521,7 @@ components:
           type: string
           description: Name of the organization
 
-
-    SectorCompact:
+    SectorIdentifier:
       type: object
       properties:
         id:
@@ -531,27 +530,40 @@ components:
         name:
           type: string
           description: Name of the sector
-        culture:
-          type: string
-          description: Culture in the sector
-        cultureType:
-          type: string
-          description: Type of culture
-        location:
-          $ref: '#/components/schemas/GeometryElement'
-          description: Location of the field
-        field:
-          allOf:
-          - $ref: "#/components/schemas/Field"
-          - description: Field the sector belongs to
-        company:
-          allOf:
-          - $ref: "#/components/schemas/Company"
-          - description: Company owning the field
-        organization:
-          allOf:
-          - $ref: "#/components/schemas/Organization"
-          - description: Organization the company belongs to
+
+    SectorCompact:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/SectorIdentifier"
+      - type: object
+        properties:
+          id:
+            type: number
+            description: Id of the sector
+          name:
+            type: string
+            description: Name of the sector
+          culture:
+            type: string
+            description: Culture in the sector
+          cultureType:
+            type: string
+            description: Type of culture
+          location:
+            $ref: '#/components/schemas/GeometryElement'
+            description: Location of the field
+          field:
+            allOf:
+            - $ref: "#/components/schemas/Field"
+            - description: Field the sector belongs to
+          company:
+            allOf:
+            - $ref: "#/components/schemas/Company"
+            - description: Company owning the field
+          organization:
+            allOf:
+            - $ref: "#/components/schemas/Organization"
+            - description: Organization the company belongs to
       
     SectorsCompact:
         type: array
@@ -593,8 +605,29 @@ components:
         - x
         - y
         - z
+    
+    SignalInfo:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/Signal"
+      - type: object
+        properties:
+          device:
+            $ref: "#/components/schemas/DeviceData"
+          fields:
+            type: array
+            items:
+              $ref: "#/components/schemas/Field"
+          sectors:
+            type: array
+            items:
+              $ref: "#/components/schemas/SectorIdentifier"
+          theses:
+            type: array
+            items:
+              $ref: "#/components/schemas/Thesis"
 
-    Device:
+    DeviceData:
       type: object
       properties:
         deviceId:

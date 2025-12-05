@@ -1,4 +1,7 @@
-import { SignalTargetType } from "../dtos/deviceDto.js";
+import { SignalTargetType } from "../dtos/signalDto.js";
+import DtoConverter from './DtoConverter.js';
+
+const dtoConverter = new DtoConverter();
 
 class SignalService{
     constructor(signalRepository){
@@ -87,6 +90,13 @@ class SignalService{
 
     async disableSignal(signalId, validTo){
         await this.signalRepository.disableSignal(signalId, validTo)
+    }
+
+    async getSignalInfo(signalId, timestamp){
+        const signalAssociations = await this.signalRepository.getSignalAssociationEntries(signalId, timestamp)
+        if (signalAssociations?.length > 0){
+            return dtoConverter.convertSignalAssociationsEntries(signalAssociations)
+        }
     }
 }
 

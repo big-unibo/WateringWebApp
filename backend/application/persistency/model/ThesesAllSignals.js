@@ -98,6 +98,10 @@ function initThesesAllSignals(sequelize) {
             type: DataTypes.TEXT,
             field: "unit"
         },
+        idOnProvider: {
+            type: DataTypes.TEXT,
+            field: "signal_id_on_provider"
+        },
         validFrom: {
             type: DataTypes.DOUBLE,
             field: "valid_from"
@@ -106,6 +110,11 @@ function initThesesAllSignals(sequelize) {
             type: DataTypes.DOUBLE,
             field: "valid_to"
         },
+        associationType: {
+            type: DataTypes.TEXT,
+            field: "association_type"
+        }
+
     }, {
         modelName: 'ThesesAllSignals',
         tableName: 'theses_all_signals',

@@ -53,9 +53,7 @@ class ThesesAllSignalsRepository {
             FROM theses_all_signals tas
             LEFT JOIN measurements m
                 ON m.signal_id = tas.signal_id
-            AND m.timestamp BETWEEN 
-                GREATEST(tas.valid_from, :timeFilterFrom)
-                AND LEAST(COALESCE(tas.valid_to, 'infinity'), :timeFilterTo)
+                AND m.timestamp BETWEEN GREATEST(tas.valid_from, :timeFilterFrom) AND LEAST(COALESCE(tas.valid_to, 'infinity'), :timeFilterTo)
             WHERE tas.signal_type = ANY(ARRAY[:signalTypes])
             AND tas.thesis_id = :thesisId
             GROUP BY
