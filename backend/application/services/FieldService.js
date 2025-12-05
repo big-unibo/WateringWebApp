@@ -252,9 +252,9 @@ class FieldService {
             await this.wateringAdviceRepository.setWateringAlgorithmParamsEndDate(thesisId, timestamp)
 
             const signals = await this.signalsRepository.getThesisAssociatedSignals(thesisId, timestamp)
-            signals.forEach(signal => {
+            await Promise.all(signals.map(signal =>
                 this.signalsRepository.disableSignalInThesis(signal.id, timestamp)
-            });
+            ));
             await this.fieldRepository.disableThesisFromSector(thesisId, timestamp)
         } catch (error) {
             console.error(`Error disabling Thesis: ${error.message}`);
@@ -263,20 +263,20 @@ class FieldService {
     }
 
 
-   async disableSector(sectorId, timestamp) {
+    async disableSector(sectorId, timestamp) {
         try {
             const signals = await this.signalsRepository.getSectorAssociatedSignals(sectorId, timestamp);
             if (signals && signals.length > 0) {
-                await Promise.all(signals.map(signal => 
+                await Promise.all(signals.map(signal =>
                     this.signalRepository.disableSignalInSector(signal.id, timestamp)
                 ));
             }
 
             try {
                 const sectorData = await this.getSectorDetails(sectorId, timestamp);
-                
+
                 if (sectorData && sectorData.theses && Array.isArray(sectorData.theses)) {
-                    await Promise.all(sectorData.theses.map(thesis => 
+                    await Promise.all(sectorData.theses.map(thesis =>
                         this.disableThesis(thesis.id, timestamp)
                     ));
                 }
@@ -288,7 +288,7 @@ class FieldService {
 
         } catch (error) {
             console.error(`Error disabling sector ${sectorId}: ${error.message}`);
-            throw error; 
+            throw error;
         }
     }
 
@@ -296,12 +296,12 @@ class FieldService {
         try {
             const signals = await this.signalsRepository.getFieldAssociatedSignals(fieldId, timestamp);
             if (signals && signals.length > 0) {
-                await Promise.all(signals.map(signal => 
+                await Promise.all(signals.map(signal =>
                     this.signalRepository.disableSignalInField(signal.id, timestamp)
                 ));
             }
             const fieldData = await this.fieldRepository.getFieldDetails(fieldId);
-            
+
             if (fieldData && fieldData.sectors && Array.isArray(fieldData.sectors)) {
                 await Promise.all(fieldData.sectors.map(sector => {
                     return this.disableSector(sector.id, timestamp).catch(err => {
