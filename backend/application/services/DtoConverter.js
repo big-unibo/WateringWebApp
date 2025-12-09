@@ -9,6 +9,7 @@ import { Device } from "../dtos/deviceDto.js";
 import { Signal, SignalInfo, SignalTargetType } from "../dtos/signalDto.js";
 import { Thesis,ThesisRef} from "../dtos/thesisDto.js";
 import { WateringParams } from "../dtos/wateringParamsDto.js";
+import { FieldData } from "../dtos/fieldDto.js";
 
 class DtoConverter {
 
@@ -43,6 +44,7 @@ class DtoConverter {
             }
         ));
     }
+    
 
 
     convertSectorDataWrapper(sectorData) {
@@ -86,6 +88,27 @@ class DtoConverter {
             company,
             organization,
             thesisDtos
+        );
+    }
+
+
+     convertFieldDataWrapper(fieldData) {
+        const organization = {
+            id: fieldData.company.organization.id,
+            name: fieldData.company.organization.organizationName
+        };
+
+        const company = {
+            id: fieldData.company.id,
+            name: fieldData.company.companyName
+        };
+
+        return new FieldData(
+            fieldData.id,
+            fieldData.fieldName,
+            fieldData.location,
+            organization,
+            company    
         );
     }
 

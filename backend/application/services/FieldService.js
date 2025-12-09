@@ -68,6 +68,11 @@ class FieldService {
         return dtoConverter.convertCompany(result.company);
     }
 
+    async getFieldDetails(fieldId) {
+        const result = await this.fieldRepository.getFieldDetails(fieldId);
+        return dtoConverter.convertFieldDataWrapper(result);;
+    }
+
     async getMeasurementsByThesis(thesisId, signalTypes, timeFilterFrom, timeFilterTo, aggregationType, aggregationPeriod = null) {
 
         const period = aggregationPeriod ?? this.getDefaultAggregationPeriod(timeFilterFrom, timeFilterTo);

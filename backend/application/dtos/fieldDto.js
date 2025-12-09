@@ -9,3 +9,20 @@ export class Field{
         this.location = location
     }
 }
+
+
+export class FieldData{
+    constructor(
+        fieldId,
+        fieldName,
+        location,
+        organization,
+        company
+    ) {
+        this.fieldId = fieldId
+        this.fieldName = fieldName
+        this.location = location
+        this.organization = organization
+        this.company = company
+    }
+}

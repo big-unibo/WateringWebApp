@@ -51,11 +51,11 @@ export default function initModels(sequelize) {
     Provider : initProvider(sequelize)
   };
 
-  models.Company.belongsTo(models.Organization, { foreignKey: "organization_id", as: "organization" });
-  models.Organization.hasMany(models.Company, { foreignKey: "organization_id" , as:  "companies"});
+  models.Company.belongsTo(models.Organization, { foreignKey: "organizationId", as: "organization" });
+  models.Organization.hasMany(models.Company, { foreignKey: "organizationId" , as:  "companies"});
 
-  models.Field.belongsTo(models.Company, { foreignKey: "company_id" , as: "company"});
-  models.Company.hasMany(models.Field, { foreignKey: "company_id" , as: "fields"});
+  models.Field.belongsTo(models.Company, { foreignKey: "companyId" , as: "company"});
+  models.Company.hasMany(models.Field, { foreignKey: "companyId" , as: "fields"});
 
   models.User.hasMany(models.Permit, {foreignKey: "user_id", as: "permits" });
   models.Permit.belongsTo(models.User, {foreignKey: "user_id", as: "user" });

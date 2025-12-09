@@ -435,6 +435,26 @@ components:
         count:
           type: number
           description: Count of the measurements included in the bin
+
+    FieldData:
+      type: object
+      properties:
+        fieldId:
+          type: number
+          description: Id of the field
+        fieldName:
+          type: string
+          description: Name of the field
+        location:
+          $ref: '#/components/schemas/GeometryElement'
+          description: Location of the field
+        company:
+            $ref: "#/components/schemas/Company"
+            description: Company owning the field
+        organization:
+            $ref: "#/components/schemas/Organization"
+            description: Organization the company belongs to
+
     
     SectorData:
       type: object

@@ -143,10 +143,21 @@ class FieldRepository {
     async getFieldDetails(fieldId) {
         try {
             const field = await this.Field.findByPk(fieldId, {
+                attributes: {
+                    exclude: ['companyId']
+                },
                 include: [
                     {
                         model: this.Company,
-                        as: 'company'
+                        as: 'company',
+                        attributes: ['id', 'companyName'],
+                        include: [
+                            {
+                                model: this.Organization,
+                                as: 'organization',
+                                attributes: ['id', 'organizationName'],
+                            }
+                        ]
                     },
                     {
                         model: this.Sector,

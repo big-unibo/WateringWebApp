@@ -9,6 +9,107 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
 
     /**
      * @swagger
+     * /fields/{fieldId}:
+     *   get:
+     *     summary: Retrives data about a field.
+     *     tags: [Fields]
+     *     description: |
+     *       Retrives data about a field including:
+     *       
+     *       - Info about the company owning it
+     *       -  Info about the organization owning it
+     * 
+     *       Requires authentication and proper authorization.
+     *     parameters:
+     *       - in: path
+     *         name: fieldId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of field to disable
+     *     responses:
+	 *       200:
+	 *         description: Detailed sector information
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               $ref: '#/components/schemas/FieldData'
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       401:
+     *         description: Authentication failed (Invalid or missing JWT).
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized request – user not allowed view filed data
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error during the process.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.get('/:fieldId', async (req, res) => {
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(403).json({ message: 'Authentication failed' });
+        }
+
+        const fieldId = req.params.fieldId;
+
+        //[TO DO]: Authorization
+
+        try{
+            const result = await fieldService.getFieldDetails(fieldId)
+            return res.status(200).json(result)
+        } catch (error) {
+            console.log(`Failed retrieving field data: ${error.message}`)
+            return res.status(500).json({ error: "Internal error retrieving field data" })
+        }
+    })
+
+
+    /**
+     * @swagger
      * /fields/create:
      *   post:
      *     summary: Creates a new field
@@ -221,7 +322,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
             return res.status(200).json({ message: `Field validity succesfully endend` })
         } catch (error) {
             console.log(`Failed disabling field: ${error.message}`)
-            return res.status(500).json({ error: "Internal error disablingthesis" })
+            return res.status(500).json({ error: "Internal error disabling thesis" })
         }
     })
 
