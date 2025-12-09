@@ -7,7 +7,7 @@ import { WateringAdvice } from "../dtos/wateringAdviceDto.js";
 import { SectorCompact, SectorData } from "../dtos/sectorDto.js";
 import { Device } from "../dtos/deviceDto.js";
 import { Signal, SignalInfo, SignalTargetType } from "../dtos/signalDto.js";
-import { Thesis,ThesisRef} from "../dtos/thesisDto.js";
+import { Thesis,ThesisData,ThesisRef} from "../dtos/thesisDto.js";
 import { WateringParams } from "../dtos/wateringParamsDto.js";
 import { FieldData } from "../dtos/fieldDto.js";
 
@@ -112,8 +112,48 @@ class DtoConverter {
         );
     }
 
-    convertThesisDetailsWrapper(result) {
-        return new Thesis(result.thesisName, result.sectorId, result.weight)
+    convertThesisDataWrapper(thesisData) {
+        const organization = {
+            id: thesisData.sector.field.company.id,
+            name: thesisData.sector.field.company.organization.organizationName
+        };
+
+        const company = {
+            id: thesisData.sector.field.company.id,
+            name: thesisData.sector.field.company.companyName
+        };
+
+        const field = {
+            id: thesisData.sector.field.id,
+            name: thesisData.sector.field.fieldName,
+            location: thesisData.sector.field.location
+        };
+
+        const sector = {
+            id: thesisData.sector.id,
+            name: thesisData.sector.sectorName,
+            culture: thesisData.sector.culture,
+            cultureType: thesisData.sector.cultureType,
+            location: thesisData.sector.location,
+            prescriptive: thesisData.sector.prescriptive,
+            advice: thesisData.sector.advice,
+            dripperCapacity: thesisData.sector.dripperCapacity,
+            sprinklerCapacity: thesisData.sector.sprinklerCapacity,
+            doubleWing: thesisData.sector.doubleWing,
+        };
+
+
+        return new ThesisData(
+            thesisData.thesisId,
+            thesisData.thesisName,
+            thesisData.validFrom,
+            thesisData.validTo,
+            thesisData.weight,
+            organization,
+            company,
+            field,
+            sector
+        );
     }
 
     // convertHumidityBinWrapper(wrappers) {

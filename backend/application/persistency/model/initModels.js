@@ -66,11 +66,11 @@ export default function initModels(sequelize) {
   models.Field.hasMany(models.Sector, {foreignKey: "field_id", as: "sectors"});
   models.Sector.belongsTo(models.Field, {foreignKey: "field_id", as: 'field'});
 
-  models.Thesis.hasMany(models.ThesisInSector, { foreignKey: "thesis_id",  as: "thesisInSector"});
-  models.ThesisInSector.belongsTo(models.Thesis, { foreignKey: "thesis_id", as: "thesis" });
+  models.Thesis.hasMany(models.ThesisInSector, { foreignKey: "thesisId",  as: "thesisInSector"});
+  models.ThesisInSector.belongsTo(models.Thesis, { foreignKey: "thesisId", as: "thesis" });
 
-  models.Sector.hasMany(models.ThesisInSector, { foreignKey: "sector_id", as: "thesisInSector" });
-  models.ThesisInSector.belongsTo(models.Sector, { foreignKey: "sector_id", as: "sector" });
+  models.Sector.hasMany(models.ThesisInSector, { foreignKey: "sectorId", as: "thesisInSector" });
+  models.ThesisInSector.belongsTo(models.Sector, { foreignKey: "sectorId", as: "sector" });
 
   models.Device.hasMany(models.Signal, {foreignKey: "device_id", as: "signals"});
   models.Signal.belongsTo(models.Device, {foreignKey: "device_id", as: "device"});

@@ -917,9 +917,9 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         const thesisId = req.params.thesisId;
 
         try {
-            const sectorId = fieldService.getThesisDetails(thesisId).sectorId
-            if (!(await authorizationService.isUserAuthorizedById(requestUserData.userId, 'EDIT_ADVICE', 'sectors', sectorId)))
-                return res.status(403).json({ message: 'Unauthorized request' });
+            // const sectorId = fieldService.getThesisDetails(thesisId).sectorId
+            // if (!(await authorizationService.isUserAuthorizedById(requestUserData.userId, 'EDIT_ADVICE', 'sectors', sectorId)))
+            //     return res.status(403).json({ message: 'Unauthorized request' });
 
             const timestamp = req.query.timestamp ?? Date.now() / 1000
 
@@ -1032,9 +1032,9 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         const thesisId = req.params.thesisId;
 
         try {
-            const sectorId = fieldService.getThesisDetails(thesisId).sectorId
-            if (!(await authorizationService.isUserAuthorizedById(requestUserData.userId, 'EDIT_ADVICE', 'sectors', sectorId)))
-                return res.status(403).json({ message: 'Unauthorized request' });
+            // const sectorId = fieldService.getThesisDetails(thesisId).sectorId
+            // if (!(await authorizationService.isUserAuthorizedById(requestUserData.userId, 'EDIT_ADVICE', 'sectors', sectorId)))
+            //     return res.status(403).json({ message: 'Unauthorized request' });
 
             const validFrom = req.query.validFrom ?? Date.now() / 1000
             const validTo = req.query.validTo

@@ -219,7 +219,7 @@ class FieldRepository {
     }
 
     async getThesisDetails(thesisId, timestamp) {
-        return await this.ThesisInSector.findOne({
+        const result = await this.ThesisInSector.findOne({
             where: {
                 thesisId: thesisId,
                 validFrom: {
@@ -236,14 +236,40 @@ class FieldRepository {
                 model: this.Thesis,
                 as: "thesis",
                 attributes: []
+            }, {
+                model: this.Sector,
+                as: "sector",
+                include: [
+                    {
+                        model: this.Field,
+                        as: 'field',
+                        attributes: ['id', 'fieldName', 'location'],
+                        include: [
+                            {
+                                model: this.Company,
+                                as: 'company',
+                                attributes: ['id', 'companyName'],
+                                include: [
+                                    {
+                                        model: this.Organization,
+                                        as: 'organization',
+                                        attributes: ['id', 'organizationName'],
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                ]
             }],
             attributes: {
                 include: [
                     [Sequelize.col("thesis.thesis_name"), "thesisName"]
                 ]
             },
-            raw: true
+            raw: true,
+            nest: true
         })
+        return result
     }
 
     async getSectors(userId, timeFilterFrom, timeFilterTo) {

@@ -27,3 +27,27 @@ export class ThesisRef {
     this.name = name;
   }
 }
+
+export class ThesisData{
+    constructor(
+        thesisId,
+        thesisName,
+        validFrom,
+        validTo,
+        weight,
+        organization,
+        company,
+        field,
+        sector
+    ) {
+        this.thesisId = thesisId
+        this.thesisName = thesisName
+        this.validFrom = validFrom
+        this.validTo = validTo
+        this.weight = weight
+        this.organization = organization,
+        this.company = company,
+        this.field = field,
+        this.sector = sector
+    }
+}

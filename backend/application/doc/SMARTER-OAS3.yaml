@@ -496,14 +496,37 @@ components:
     ThesisData:
       type: object
       properties:
+        thesisId:
+          type: integer
+          description: Id of the thesis
         thesisName:
           type: string
           description: Name of the thesis
-        sectorId:
+        validFrom:
           type: integer
-          description: Id of the sector the thesis belongs to
+          description: Thesis validity start (Unix epoch in seconds)
+        validTo:
+          type: integer
+          description: Thesis validity end (Unix epoch in seconds)
         weight:
           type: number
+        organization:
+          $ref: "#/components/schemas/Organization"
+          description: Organization the company belongs to
+        company:
+          $ref: "#/components/schemas/Company"
+          description: Company owning the field
+        field:
+          $ref: "#/components/schemas/Field"
+          description: Field the sector belongs to
+        sector:
+          allOf: 
+            - $ref: "#/components/schemas/CreateSector" 
+            - type: object
+              properties:
+                sectorId:
+                  type: number
+                  description: Id of the sector
     
     Field:
       type: object

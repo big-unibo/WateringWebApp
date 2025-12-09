@@ -154,7 +154,7 @@ class FieldService {
     async getThesisDetails(thesisId, timestamp) {
         const result = await this.fieldRepository.getThesisDetails(thesisId, timestamp || Date.now() / 1000)
         if (result) {
-            return dtoConverter.convertThesisDetailsWrapper(result)
+            return dtoConverter.convertThesisDataWrapper(result)
         }
     }
 
