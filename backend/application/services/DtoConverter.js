@@ -307,11 +307,28 @@ class DtoConverter {
             }
         }
 
-        const theses = signalAssociations.filter(s => s.associationType == SignalTargetType.THESIS).map(t => ({id: t.thesisId, name: t.thesisName}))
-        const sectors = signalAssociations.filter(s => s.associationType == SignalTargetType.SECTOR).map(t => ({id: t.sectorId, name: t.sectorName}))
-        const fields = signalAssociations.filter(s => s.associationType == SignalTargetType.FIELD).map(t => ({id: t.fieldId, name: t.fieldName}))
+        const theses = [
+            ...new Map(
+                signalAssociations
+                .filter(s => s.associationType === SignalTargetType.THESIS)
+                .map(t => [t.thesisId, { id: t.thesisId, name: t.thesisName }])
+            ).values()
+        ]
+        const sectors = [
+            ...new Map(
+                signalAssociations
+                .filter(s => s.associationType === SignalTargetType.SECTOR)
+                .map(t => [t.sectorId, { id: t.sectorId, name: t.sectorName }])
+            ).values()
+        ]
+        const fields = [
+            ...new Map(
+                signalAssociations
+                .filter(s => s.associationType === SignalTargetType.FIELD)
+                .map(t => [t.fieldId, { id: t.fieldId, name: t.fieldName }])
+            ).values()
+        ]
 
-        console.log(signal)
         return new SignalInfo({...signal, theses, sectors, fields})
     }
 
