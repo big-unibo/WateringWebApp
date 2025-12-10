@@ -31,7 +31,7 @@ class DeviceService {
             }));
 
             if (signalsToCreate.length > 0) {
-                await this.deviceRepository.createSignals(signalsToCreate);
+                await this.signalRepository.createSignals(signalsToCreate);
             }
 
             return createdDeviceId;

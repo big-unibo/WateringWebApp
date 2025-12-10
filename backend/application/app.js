@@ -166,12 +166,12 @@ app.use(
 
 app.use(
   '/devices',
-  devicesRouter({ authenticationService, authorizationService, userService, deviceService })
+  devicesRouter({ authenticationService, authorizationService, userService, deviceService, userActionService  })
 )
 
 app.use(
   '/signals',
-  signalsRouter({ authenticationService, authorizationService, signalService })
+  signalsRouter({ authenticationService, authorizationService, signalService, userActionService })
 )
 
 app.use(

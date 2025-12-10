@@ -3,8 +3,9 @@ import { Router } from 'express';
 import { CreateDevice } from '../dtos/deviceDto.js';
 import { CreateSignal, SignalAssociation } from '../dtos/signalDto.js';
 
+const DEVICES_LOG_TABLE = 'devices'
 
-const devicesRouter = ({ authenticationService, authorizationService, userService, deviceService }) => {
+const devicesRouter = ({ authenticationService, authorizationService, userService, deviceService, userActionService }) => {
     const router = Router();
 
     /**
@@ -246,7 +247,8 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
             return res.status(401).json({ message: 'Authentication failed' });
         }
         try {
-            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'devices')))
+            const userId = requestUserData.userId
+            if (!(await authorizationService.isUserAuthorized(userId, 'create', 'devices')))
                 return res.status(403).json({ message: 'Unauthorized request' });
 
             const signalsArray = req.body.signals
@@ -255,6 +257,9 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
                 req.body.location, req.body.binningId, (signalsArray || []).map(sig => new CreateSignal(sig)));
 
             const deviceId = await deviceService.createDevice(device);
+            if(deviceId){
+                userActionService.logCreation(userId, DEVICES_LOG_TABLE, deviceId, null);
+            }
             return res.status(200).json({ message: `Device created with success`, id: deviceId });
         } catch (error) {
             console.log(`Failed creating Device caused by: ${error.message}`);
