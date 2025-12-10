@@ -3,7 +3,10 @@ import { Router } from 'express';
 import { Field } from '../dtos/fieldDto.js';
 import { Sector } from '../dtos/sectorDto.js';
 
-const fieldsRouter = ({ authenticationService, authorizationService, fieldService }) => {
+const FIELDS_LOG_TABLE = 'fields'
+const SECTORS_LOG_TABLE = 'sectors'
+
+const fieldsRouter = ({ authenticationService, authorizationService, fieldService, userActionService }) => {
     const router = Router();
 
 
@@ -93,10 +96,9 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
         } catch (error) {
             return res.status(403).json({ message: 'Authentication failed' });
         }
+        //[TO DO]: Authorization
 
         const fieldId = req.params.fieldId;
-
-        //[TO DO]: Authorization
 
         try{
             const result = await fieldService.getFieldDetails(fieldId)
@@ -197,16 +199,20 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
         }
 
         try {
+            const userId = requestUserData.userId;
             const companyId = Number(req.body.companyId)
 
-            if (!(await authorizationService.isUserAuthorizedById(requestUserData.userId, 'update', 'companies', companyId)))
+            if (!(await authorizationService.isUserAuthorizedById(userId, 'update', 'companies', companyId)))
                 return res.status(403).json({ message: 'Unauthorized request' });
 
             const fieldLocation = req.body.location
             const fieldName = req.body.fieldName
             const field = new Field(fieldName, companyId, fieldLocation);
-            const fieldId = await fieldService.createField(field);
 
+            const fieldId = await fieldService.createField(field);
+            if(fieldId){
+                userActionService.logCreation(userId, FIELDS_LOG_TABLE, fieldId, null);
+            }
             return res.status(200).json({ message: `Field created with success`, id: fieldId })
         } catch (error) {
             console.log(`Failed creating field caused by: ${error.message}`)
@@ -421,9 +427,10 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
             return res.status(401).json({ message: 'Authentication failed' });
         }
         try {
+            const userId = requestUserData.userId
             const fieldId = Number(req.params.fieldId)
 
-            if (!(await authorizationService.isUserAuthorizedInField(requestUserData.userId, 'update', fieldId)))
+            if (!(await authorizationService.isUserAuthorizedInField(userId, 'update', fieldId)))
                 return res.status(403).json({ message: 'Unauthorized request' });
 
             const {
@@ -452,6 +459,9 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
             );
 
             const sectorId = await fieldService.createSector(sector);
+            if(sectorId){
+                userActionService.logCreation(userId, SECTORS_LOG_TABLE, sectorId, null);
+            }
             return res.status(200).json({ message: `Sector created with success`, id: sectorId })
         } catch (error) {
             console.log(`Failed creating sector caused by: ${error.message}`)

@@ -483,6 +483,16 @@ components:
               items:
                 $ref: "#/components/schemas/Thesis"
 
+    CreateThesis:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Name of the thesis
+            validFrom:
+              type: number
+              description: Timestamp of thesis validity start (UNIX epoch timestamp in seconds)
+
     Thesis:
       type: object
       properties:

@@ -2,7 +2,9 @@ import { Router } from 'express';
 
 import { Thesis } from '../dtos/thesisDto.js';
 
-const sectorsRouter = ({ authenticationService, authorizationService, fieldService, wateringScheduleService }) => {
+const THESES_LOG_TABLE = 'theses'
+
+const sectorsRouter = ({ authenticationService, authorizationService, fieldService, wateringScheduleService, userActionService }) => {
     const router = Router();
 
 
@@ -251,7 +253,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *           schema:
      *             type: object
      *             allOf:
-     *              - $ref: '#/components/schemas/Thesis'
+     *              - $ref: '#/components/schemas/CreateThesis'
      *              - type: object
      *                properties:
      *                  validFrom:
@@ -329,15 +331,19 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 		} catch (error) {
 			return res.status(401).json({message: 'Authentication failed'});
 		}
+        const userId = requestUserData.userId
 
 		const sectorId = Number(req.params.sectorId)
 		const thesis = new Thesis(req.body.name, sectorId, req.query.validFrom);
 
-		try {
-			if (!(await authorizationService.isUserAuthorizedInSector(requestUserData.userId, 'update', sectorId)))
-				return res.status(403).json({message: 'Unauthorized request'});
+         // if (!(await authorizationService.isUserAuthorizedInSector(userId, 'update', sectorId)))
+		// 		return res.status(403).json({message: 'Unauthorized request'});
 
+		try {
 			const thesisId = await fieldService.createThesis(thesis);
+            if(thesisId){
+                userActionService.logCreation(userId, THESES_LOG_TABLE, thesisId, null);
+            }
 			return res.status(200).json({message: 'Thesis created with success', id: thesisId});
 		} catch (error) {
 			console.log(`Fail creating thesis caused by: ${error.message}`);
