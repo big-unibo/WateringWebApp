@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { ORGANIZATIONS_LOG_TABLE } from '../commons/constants';
+import { ORGANIZATIONS_LOG_TABLE } from '../commons/constants.js';
 
 const organizationsRouter = ({ organizationService, authenticationService, authorizationService, userActionService }) => {
     const router = Router();
