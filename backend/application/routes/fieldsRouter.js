@@ -2,9 +2,7 @@ import { Router } from 'express';
 
 import { Field } from '../dtos/fieldDto.js';
 import { Sector } from '../dtos/sectorDto.js';
-
-const FIELDS_LOG_TABLE = 'fields'
-const SECTORS_LOG_TABLE = 'sectors'
+import { FIELDS_LOG_TABLE, SECTORS_LOG_TABLE } from '../commons/constants.js';
 
 const fieldsRouter = ({ authenticationService, authorizationService, fieldService, userActionService }) => {
     const router = Router();

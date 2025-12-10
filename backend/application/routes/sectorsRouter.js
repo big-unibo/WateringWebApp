@@ -1,8 +1,7 @@
 import { Router } from 'express';
 
 import { Thesis } from '../dtos/thesisDto.js';
-
-const THESES_LOG_TABLE = 'theses'
+import { THESES_LOG_TABLE } from '../commons/constants.js';
 
 const sectorsRouter = ({ authenticationService, authorizationService, fieldService, wateringScheduleService, userActionService }) => {
     const router = Router();

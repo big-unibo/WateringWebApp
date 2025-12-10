@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { Company } from '../dtos/companyDto.js';
-
-const LOG_TABLE = 'companies';
+import { COMPANIES_LOG_TABLE } from '../commons/constants.js';
 
 const companiesRouter = ({ companyService, authenticationService, authorizationService, userActionService }) => {
     const router = Router();
@@ -105,7 +104,7 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
 
             const companyId = await companyService.createCompany(company);
             if (companyId) {
-                userActionService.logCreation(userId, LOG_TABLE, companyId, null);
+                userActionService.logCreation(userId, COMPANIES_LOG_TABLE, companyId, null);
             }
             return res.status(200).json({ message: `Company created with success`, id: companyId });
         } catch (error) {

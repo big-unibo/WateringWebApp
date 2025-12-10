@@ -1,6 +1,5 @@
 import { Router } from 'express';
-
-const LOG_TABLE = 'organizations';
+import { ORGANIZATIONS_LOG_TABLE } from '../commons/constants';
 
 const organizationsRouter = ({ organizationService, authenticationService, authorizationService, userActionService }) => {
     const router = Router();
@@ -110,7 +109,7 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
 
             const organizationId = await organizationService.createOrganization(req.body.organizationName);
             if(organizationId){
-                userActionService.logCreation(userId, LOG_TABLE, organizationId, null);
+                userActionService.logCreation(userId, ORGANIZATIONS_LOG_TABLE, organizationId, null);
             }
             return res.status(200).json({ message: 'Organization created successfully', id: organizationId });
         } catch (error) {
