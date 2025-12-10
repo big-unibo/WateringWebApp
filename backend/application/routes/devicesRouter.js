@@ -2,9 +2,7 @@ import { Router } from 'express';
 
 import { CreateDevice } from '../dtos/deviceDto.js';
 import { CreateSignal, SignalAssociation } from '../dtos/signalDto.js';
-
-const DEVICES_LOG_TABLE = 'devices'
-const SIGNALS_LOG_TABLE = 'signals'
+import { DEVICES_LOG_TABLE, SIGNALS_LOG_TABLE } from '../commons/constants.js';
 
 const devicesRouter = ({ authenticationService, authorizationService, userService, deviceService, userActionService }) => {
     const router = Router();

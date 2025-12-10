@@ -1,8 +1,9 @@
 import {Router} from 'express';
 import { AddMeasurementsRequest,CreateSignal,SignalUpdate, SignalAssociation } from '../dtos/signalDto.js';
+import { SIGNALS_LOG_TABLE } from '../commons/constants.js';
 
 
-const signalsRouter = ({authenticationService, authorizationService, signalService}) => {
+const signalsRouter = ({authenticationService, authorizationService, signalService, userActionService}) => {
     const router = Router();
 
     /**
@@ -98,16 +99,20 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
         } catch (error) {
             return res.status(401).json({message: 'Authentication failed'})
         }
+        const userId = requestUserData.userId
         //[TO DO]: Authorization
         try{
             const signal = new CreateSignal(req.body)
             const deviceId = req.query.deviceId
             const signalId = await signalService.createSignal(deviceId, signal)
-            return res.status(200).json({ message: 'Signal successfully updated' , id: signalId })
+            if(signalId){
+                userActionService.logCreation(userId, SIGNALS_LOG_TABLE, signalId, null);
+            }
+            return res.status(200).json({ message: 'Signal successfully created' , id: signalId })
         }
         catch (error) {
             console.log(`Fail updating signal caused by: ${error.message}`)
-            return res.status(500).json({error: "Error on updating signal"})
+            return res.status(500).json({error: "Error while creating signal"})
         }
     });
 
