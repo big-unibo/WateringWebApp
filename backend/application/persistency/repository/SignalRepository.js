@@ -23,7 +23,12 @@ class SignalRepository {
             if (!Array.isArray(signalsData) || signalsData.length === 0) {
                 return [];
             }
-            return await this.Signal.bulkCreate(signalsData.map(sig => ({ ...sig, deviceId: deviceId })));
+
+            const createdSignals = await this.Signal.bulkCreate(
+                signalsData.map(sig => ({ ...sig, deviceId: deviceId }))
+            );
+
+            return createdSignals.map(signal => signal.id);
         } catch (error) {
             throw new Error(`Error creating signals caused by: ${error.message}`);
         }

@@ -10,8 +10,10 @@ class SignalService{
 
     async createSignal(deviceId, signal){
         try {
-            const signalCreated = await this.signalRepository.createSignals(deviceId, [signal]);
-            return signalCreated[0].id;
+            const signalIds = await this.signalRepository.createSignals(deviceId, [signal]);
+            if(Array.isArray(signalIds) && signalIds.length > 0){
+                return signalIds[0];
+            }   
         } catch (error) {
             console.error(`Error creating signal: ${error.message}`);
             throw error;

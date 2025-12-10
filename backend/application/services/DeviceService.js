@@ -31,10 +31,16 @@ class DeviceService {
             }));
 
             if (signalsToCreate.length > 0) {
-                await this.signalRepository.createSignals(signalsToCreate);
+                const signalsIds = await this.signalRepository.createSignals(createdDeviceId, signalsToCreate);
+                return {
+                    deviceId: createdDeviceId,
+                    signalsIds: signalsIds
+                }
             }
-
-            return createdDeviceId;
+            return {
+                deviceId: createdDeviceId,
+                signalsIds: []
+            }
         } catch (error) {
             console.error(`Error creating Device with signals: ${error.message}`);
             throw error;

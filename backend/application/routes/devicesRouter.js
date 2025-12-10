@@ -4,68 +4,69 @@ import { CreateDevice } from '../dtos/deviceDto.js';
 import { CreateSignal, SignalAssociation } from '../dtos/signalDto.js';
 
 const DEVICES_LOG_TABLE = 'devices'
+const SIGNALS_LOG_TABLE = 'signals'
 
 const devicesRouter = ({ authenticationService, authorizationService, userService, deviceService, userActionService }) => {
     const router = Router();
 
     /**
-	 * @swagger
-	 * /devices:
-	 *   get:
-	 *     summary: Retrieve all devices available for the user
-	 *     tags: 
+     * @swagger
+     * /devices:
+     *   get:
+     *     summary: Retrieve all devices available for the user
+     *     tags: 
      *       - Devices
-	 *     description: Retrieve all devicess available for the user, filtered by a time range. Results are paginated
-	 *     parameters:
-	 *       - in: query
-	 *         name: timeFilterFrom
-	 *         required: true
-	 *         schema:
-	 *           type: number
-	 *         description: Time filter start (timestamp in seconds since 01/01/1970)
-	 *       - in: query
-	 *         name: timeFilterTo
-	 *         required: true
-	 *         schema:
-	 *           type: number
-	 *         description: Time filter end (timestamp in seconds since 01/01/1970)
-	 *       - in: query
-	 *         name: providerIds
-	 *         schema:
+     *     description: Retrieve all devicess available for the user, filtered by a time range. Results are paginated
+     *     parameters:
+     *       - in: query
+     *         name: timeFilterFrom
+     *         required: true
+     *         schema:
+     *           type: number
+     *         description: Time filter start (timestamp in seconds since 01/01/1970)
+     *       - in: query
+     *         name: timeFilterTo
+     *         required: true
+     *         schema:
+     *           type: number
+     *         description: Time filter end (timestamp in seconds since 01/01/1970)
+     *       - in: query
+     *         name: providerIds
+     *         schema:
      *           type: array
      *           items:
      *             type: integer
      *         style: form
      *         explode: true
      *         description: Providers to include
-	 *       - in: query
-	 *         name: types
-	 *         schema:
+     *       - in: query
+     *         name: types
+     *         schema:
      *           type: array
      *           items:
      *             type: string
      *         style: form
      *         explode: true
      *         description: Device types to include
-	 *       - in: query
-	 *         name: page
-	 *         schema:
-	 *           type: number
+     *       - in: query
+     *         name: page
+     *         schema:
+     *           type: number
      *           minimum: 1
      *           default: 1
-	 *         description: Number of page for devices to return
-	 *       - in: query
-	 *         name: itemsPerPage
-	 *         schema:
-	 *           type: number
+     *         description: Number of page for devices to return
+     *       - in: query
+     *         name: itemsPerPage
+     *         schema:
+     *           type: number
      *           minimum: 1
      *           maximum: 500
      *           default: 50
-	 *         description: Number of devices to include in a response. Max device in a single request 500
-	 *     responses:
-	 *       200:
-	 *         description: List of devices for the user
-	 *         content:
+     *         description: Number of devices to include in a response. Max device in a single request 500
+     *     responses:
+     *       200:
+     *         description: List of devices for the user
+     *         content:
      *           application/json:
      *             schema:
      *               type: object
@@ -110,32 +111,32 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *               properties:
      *                 message:
      *                   type: string
-	 *       404:
-	 *         description: No devices found for the current user and time filter
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 error:
-	 *                   type: string
-	 *       500:
-	 *         description: Internal server error – unexpected error while retrieving devices
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 error:
-	 *                   type: string
-	 */
+     *       404:
+     *         description: No devices found for the current user and time filter
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while retrieving devices
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     */
     router.get('/', async (req, res) => {
-		let requestUserData;
-		try {
-			requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-		} catch (error) {
-			return res.status(401).json({ message: 'Authentication failed' });
-		}
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
 
         const timeFilterFrom = Number(req.query.timeFilterFrom)
         const timeFilterTo = Number(req.query.timeFilterTo)
@@ -144,20 +145,20 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         const page = req.query.page ?? 1
         const itemsPerPage = req.query.itemsPerPage ?? 50
 
-		try {
-			const devices = await deviceService.getDevices(requestUserData.userId, timeFilterFrom, timeFilterTo, providerIds, types, page, itemsPerPage);
-			if (!devices?.pagination?.totalItems) {
-				return res.status(404).json({ 
-					error: "User has no permission to view any devices in the given period" 
-				});
-			}
+        try {
+            const devices = await deviceService.getDevices(requestUserData.userId, timeFilterFrom, timeFilterTo, providerIds, types, page, itemsPerPage);
+            if (!devices?.pagination?.totalItems) {
+                return res.status(404).json({
+                    error: "User has no permission to view any devices in the given period"
+                });
+            }
 
-			return res.status(200).json(devices);
-		} catch (error) {
-			console.log(`Fail retrieving devices caused by: ${error.message}`);
-			return res.status(500).json({ error: "Error while retrieving devices" });
-		}
-	});
+            return res.status(200).json(devices);
+        } catch (error) {
+            console.log(`Fail retrieving devices caused by: ${error.message}`);
+            return res.status(500).json({ error: "Error while retrieving devices" });
+        }
+    });
 
     /**
      * @swagger
@@ -252,13 +253,19 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
                 return res.status(403).json({ message: 'Unauthorized request' });
 
             const signalsArray = req.body.signals
-            
+
             const device = new CreateDevice(req.body.type, Number(req.body.providerId), req.body.description,
                 req.body.location, req.body.binningId, (signalsArray || []).map(sig => new CreateSignal(sig)));
 
-            const deviceId = await deviceService.createDevice(device);
-            if(deviceId){
-                userActionService.logCreation(userId, DEVICES_LOG_TABLE, deviceId, null);
+            const deviceData = await deviceService.createDevice(device);
+            if (deviceData.deviceId) {
+                userActionService.logCreation(userId, DEVICES_LOG_TABLE, deviceData.deviceId, null);
+            }
+
+            if (Array.isArray(deviceData.signalsIds) && deviceData.signalsIds.length > 0) {
+                deviceData.signalsIds.forEach(id => {
+                    userActionService.logCreation(userId, SIGNALS_LOG_TABLE, id, null);
+                });
             }
             return res.status(200).json({ message: `Device created with success`, id: deviceId });
         } catch (error) {
@@ -389,17 +396,17 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
     });
 
     /**
-	 * @swagger
-	 * /devices/providers:
-	 *   get:
-	 *     summary: Retrieve info about all of the known providers
-	 *     tags: 
+     * @swagger
+     * /devices/providers:
+     *   get:
+     *     summary: Retrieve info about all of the known providers
+     *     tags: 
      *       - Devices
-	 *     description: Retrieves all providers, requires authentication and proper authorization
-	 *     responses:
-	 *       '200':
-	 *         description: List of the known providers
-	 *         content:
+     *     description: Retrieves all providers, requires authentication and proper authorization
+     *     responses:
+     *       '200':
+     *         description: List of the known providers
+     *         content:
      *           application/json:
      *             schema:
      *               $ref: '#/components/schemas/ProvidersData'
@@ -445,16 +452,16 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *               properties:
      *                 message:
      *                   type: string
-	 *       500:
-	 *         description: Internal server error – unexpected error while retrieving devices
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 error:
-	 *                   type: string
-	 */
+     *       500:
+     *         description: Internal server error – unexpected error while retrieving devices
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     */
     router.get('/providers', async (req, res) => {
         let requestUserData;
         try {
@@ -462,10 +469,10 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         } catch (error) {
             return res.status(401).json({ message: 'Authentication failed' });
         }
-        
+
         //[TO DO]: Authorization
 
-        try{
+        try {
             const providers = await deviceService.getProviders();
             return res.status(200).json(providers)
         } catch (error) {
@@ -578,7 +585,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
 
         //[TO DO]: Authorization
 
-        try{
+        try {
             await deviceService.disableDevice(deviceId, timestamp)
             return res.status(200).json({ message: `Device validity succesfully endend` })
         } catch (error) {
@@ -589,27 +596,27 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
 
 
     /**
-	 * @swagger
-	 * /devices/{deviceId}:
-	 *   get:
-	 *     summary: Retrieve data about a specific device and its signals at a specific timestamp
-	 *     tags: 
+     * @swagger
+     * /devices/{deviceId}:
+     *   get:
+     *     summary: Retrieve data about a specific device and its signals at a specific timestamp
+     *     tags: 
      *       - Devices
-	 *     description: Retrieve data about a specific device and its signals at a specific timestamp. Rquires authentication and proper Authorization
-	 *     parameters:
+     *     description: Retrieve data about a specific device and its signals at a specific timestamp. Rquires authentication and proper Authorization
+     *     parameters:
      *       - in: path
      *         name: deviceId
      *         required: true
-	 *         schema:
-	 *           type: number
+     *         schema:
+     *           type: number
      *       - in: query
      *         name: timestamp
-	 *         schema:
-	 *           type: number
-	 *     responses:
-	 *       200:
-	 *         description: Device and its signals data
-	 *         content:
+     *         schema:
+     *           type: number
+     *     responses:
+     *       200:
+     *         description: Device and its signals data
+     *         content:
      *           application/json:
      *             schema:
      *                $ref: '#/components/schemas/Device'
@@ -655,51 +662,51 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *               properties:
      *                 message:
      *                   type: string
-	 *       404:
-	 *         description: Device not found
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 error:
-	 *                   type: string
-	 *       500:
-	 *         description: Internal server error – unexpected error while retrieving devices
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               type: object
-	 *               properties:
-	 *                 error:
-	 *                   type: string
-	 */
+     *       404:
+     *         description: Device not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while retrieving devices
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     */
     router.get('/:deviceId', async (req, res) => {
-		let requestUserData;
-		try {
-			requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-		} catch (error) {
-			return res.status(401).json({ message: 'Authentication failed' });
-		}
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
 
         const deviceId = req.params.deviceId
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
 
         console.log(deviceId)
-		try {
-			const devices = await deviceService.getDevice(deviceId, timestamp);
-			if (!devices) {
-				return res.status(404).json({ 
-					error: "Information not found for the device at the given timestamp" 
-				});
-			}
+        try {
+            const devices = await deviceService.getDevice(deviceId, timestamp);
+            if (!devices) {
+                return res.status(404).json({
+                    error: "Information not found for the device at the given timestamp"
+                });
+            }
 
-			return res.status(200).json(devices);
-		} catch (error) {
-			console.log(`Fail retrieving devices caused by: ${error.message}`);
-			return res.status(500).json({ error: "Error while retrieving devices" });
-		}
-	});
+            return res.status(200).json(devices);
+        } catch (error) {
+            console.log(`Fail retrieving devices caused by: ${error.message}`);
+            return res.status(500).json({ error: "Error while retrieving devices" });
+        }
+    });
 
 
     return router;
