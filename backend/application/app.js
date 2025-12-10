@@ -141,27 +141,27 @@ app.use(
 
 app.use(
   '/fields',
-  fieldsRouter({ userService, authenticationService, authorizationService, fieldService })
+  fieldsRouter({ userService, authenticationService, authorizationService, fieldService, userActionService })
 );
 
 app.use(
   '/sectors',
-  sectorsRouter({ userService, authenticationService, authorizationService, fieldService, wateringScheduleService })
+  sectorsRouter({ userService, authenticationService, authorizationService, fieldService, wateringScheduleService, userActionService })
 );
 
 app.use(
   '/theses',
-  thesesRouter({ userService, authenticationService, authorizationService, fieldService, wateringAdviceService })
+  thesesRouter({ userService, authenticationService, authorizationService, fieldService, wateringAdviceService, userActionService })
 );
 
 app.use(
   '/organizations',
-  organizationsRouter({ organizationService, authenticationService, userService, authorizationService })
+  organizationsRouter({ organizationService, authenticationService, userService, authorizationService, userActionService })
 );
 
 app.use(
   '/companies',
-  companiesRouter({ companyService, userService, authenticationService, authorizationService })
+  companiesRouter({ companyService, userService, authenticationService, authorizationService, userActionService })
 );
 
 app.use(

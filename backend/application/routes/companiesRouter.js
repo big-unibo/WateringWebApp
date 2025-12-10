@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { Company } from '../dtos/companyDto.js';
 
-const companiesRouter = ({ companyService, authenticationService, authorizationService }) => {
+const LOG_TABLE = 'companies';
+
+const companiesRouter = ({ companyService, authenticationService, authorizationService, userActionService }) => {
     const router = Router();
 
     /**
@@ -93,14 +95,18 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
         }
 
         try {
-            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'companies')))
-                return res.status(403).json({ message: 'Unauthorized request' });
+            const userId = requestUserData.userId;
+            // if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'companies')))
+            //     return res.status(403).json({ message: 'Unauthorized request' });
 
             const organizationId = Number(req.body.organizationId)
             const companyName = req.body.companyName;
             const company = new Company(companyName, organizationId);
 
             const companyId = await companyService.createCompany(company);
+            if (companyId) {
+                userActionService.logCreation(userId, LOG_TABLE, companyId, null);
+            }
             return res.status(200).json({ message: `Company created with success`, id: companyId });
         } catch (error) {
             console.log(`Failed creating company caused by: ${error.message}`);

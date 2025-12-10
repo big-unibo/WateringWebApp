@@ -1,6 +1,8 @@
 import { Router } from 'express';
 
-const organizationsRouter = ({ organizationService, authenticationService, authorizationService }) => {
+const LOG_TABLE = 'organizations';
+
+const organizationsRouter = ({ organizationService, authenticationService, authorizationService, userActionService }) => {
     const router = Router();
 
     /**
@@ -100,12 +102,16 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
         }
 
         try {
+            const userId = requestUserData.userId;
             //const rule = PERMISSIONS.CREATE_ORGANIZATION.checks[0];
             
-            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'organizations')))
-                return res.status(403).json({ message: 'Unauthorized request' });
+            // if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'organizations')))
+            //     return res.status(403).json({ message: 'Unauthorized request' });
 
             const organizationId = await organizationService.createOrganization(req.body.organizationName);
+            if(organizationId){
+                userActionService.logCreation(userId, LOG_TABLE, organizationId, null);
+            }
             return res.status(200).json({ message: 'Organization created successfully', id: organizationId });
         } catch (error) {
             console.error(`Failed creating organization caused by: ${error.message}`);
