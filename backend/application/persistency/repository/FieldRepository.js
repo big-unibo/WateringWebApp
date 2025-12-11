@@ -425,7 +425,7 @@ class FieldRepository {
                 }
             )
 
-            const model = await this.GridOptimalProfileAssignment.build({
+            const model = this.GridOptimalProfileAssignment.build({
                 gridId: gridId,
                 optimalProfileId: newMatrixId,
                 validFrom: validFrom,
@@ -436,7 +436,10 @@ class FieldRepository {
             })
 
             await model.save()
-            return newMatrixId
+            return {
+                matrixId: newMatrixId,
+                optimalProfileAssignmentId: model.id
+            }
         } catch (error) {
             throw Error(error.message)
         }

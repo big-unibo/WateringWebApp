@@ -204,7 +204,7 @@ class FieldService {
     }
 
     async createMatrixOptimalState(gridOptimalProfiles) {
-        const matrixId = await this.fieldRepository.createMatrixOptimalState(
+        const matrixData = await this.fieldRepository.createMatrixOptimalState(
             gridOptimalProfiles.gridId,
             gridOptimalProfiles.validFrom,
             gridOptimalProfiles.validTo,
@@ -213,17 +213,24 @@ class FieldService {
             gridOptimalProfiles.optimalWetBound,
         )
 
-        if (!matrixId) {
+        if (!matrixData.matrixId || !matrixData.optimalProfileAssignmentId) {
             throw Error("Impossible to create optimal matrix for this thesis")
         }
+        const matrixId = matrixData.matrixId
 
         for (const optimalProfile of gridOptimalProfiles.optimalState) {
             await this.fieldRepository.createMatrixProfile(matrixId, optimalProfile.x, optimalProfile.y, optimalProfile.z, optimalProfile.value, optimalProfile.weight)
         }
+
+        return matrixData.optimalProfileAssignmentId
     }
 
     async setOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound, optimalDryBound, profileId) {
-        return await this.fieldRepository.createMatrixOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound, optimalDryBound, profileId)
+        const matrixData = await this.fieldRepository.createMatrixOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound, optimalDryBound, profileId)
+        if (!matrixData.matrixId || !matrixData.optimalProfileAssignmentId) {
+            throw Error("Impossible to create optimal matrix for this thesis")
+        }
+        return matrixData.optimalProfileAssignmentId
     }
 
     async getInterpolatedProfiles(thesisId, timeFilterFrom, timeFilterTo) {

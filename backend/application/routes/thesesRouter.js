@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { HUMIDITY_DEVICE_TYPE, WATERING_ALGORITHM_LOG_TABLE } from '../commons/constants.js'
+import { HUMIDITY_DEVICE_TYPE, OPTIMAL_PROFILES_LOG_TABLE, WATERING_ALGORITHM_LOG_TABLE } from '../commons/constants.js'
 import { GridOptimalProfiles } from '../dtos/optStateDto.js'
 import { WateringParams } from '../dtos/wateringParamsDto.js'
 
@@ -754,6 +754,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         } = req.body;
 
         try {
+            const userId = requestUserData.userId
             // TODO authorization 
             //if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userId, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
             //     return res.status(401).json({message: 'Unauthorized request'});
@@ -766,14 +767,13 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
                     error: `Grid device not found for the given thesis`
                 });
             }
-            const gridId = device.deviceId;
 
+            const gridId = device.deviceId;
+            let optimalProfileAssignmentId = null;
 
             if (req.query.optimalProfileId !== undefined) {
                 const optimalProfileId = Number(req.query.optimalProfileId);
-
-                await fieldService.setOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound, optimalDryBound, optimalProfileId)
-                return res.status(200).json({ message: 'Optimal state set successfully' });
+                optimalProfileAssignmentId = await fieldService.setOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound, optimalDryBound, optimalProfileId)
             }
             else if (req.query.thesisId !== undefined && req.query.imageTimestamp !== undefined) {
                 const sourceThesisId = Number(req.query.thesisId);
@@ -794,9 +794,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
                 }))
 
                 const gridOptimalProfiles = new GridOptimalProfiles(gridId, validFrom, validTo, stopPercentage, optimalDryBound, optimalWetBound, optimalState)
-                await fieldService.createMatrixOptimalState(gridOptimalProfiles)
-                return res.status(200).json({ message: 'Optimal state set successfully' });
-
+                optimalProfileAssignmentId = await fieldService.createMatrixOptimalState(gridOptimalProfiles)
             }
             else {
                 const optimalState = req.body.optimalState
@@ -810,9 +808,12 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
                     return res.status(400).json({ error: "Optimal state matrix does not match" })
 
                 const gridOptimalProfiles = new GridOptimalProfiles(gridId, validFrom, validTo, stopPercentage, optimalDryBound, optimalWetBound, optimalState)
-                await fieldService.createMatrixOptimalState(gridOptimalProfiles)
-                return res.status(200).json({ message: 'Optimal state set successfully' });
+                optimalProfileAssignmentId =  await fieldService.createMatrixOptimalState(gridOptimalProfiles)  
             }
+            if(optimalProfileAssignmentId){
+                userActionService.logCreation(userId, OPTIMAL_PROFILES_LOG_TABLE, optimalProfileAssignmentId, null)
+            }
+            return res.status(200).json({ message: 'Optimal state set successfully' });
         } catch (error) {
             console.log(`Error while setting optimal state: ${error.message}`)
             return res.status(500).json({ error: "Error while setting optimal state" })
