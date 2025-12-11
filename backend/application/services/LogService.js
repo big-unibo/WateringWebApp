@@ -1,7 +1,8 @@
 class LogService {
 
-    constructor(logRepository) {
+    constructor(logRepository, userActionService) {
         this.logRepository =logRepository;
+        this.userActionService = userActionService;
     }
 
     async getThesisLogs(thesisId, timestampFrom, timestampTo) {

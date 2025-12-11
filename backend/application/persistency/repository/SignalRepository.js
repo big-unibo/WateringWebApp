@@ -36,11 +36,12 @@ class SignalRepository {
 
     async assignSignalToField(associationData) {
         try {
-            await this.SignalInField.create({
+            const model = await this.SignalInField.create({
                 signalId: associationData.signalId,
                 fieldId: associationData.fieldId,
                 validFrom: associationData.validFrom
             });
+            return model.id;
         } catch (error) {
             throw new Error(`Error creating association between signal and field: ${error.message}`);
         }
@@ -48,11 +49,12 @@ class SignalRepository {
 
     async assignSignalToSector(associationData) {
         try {
-            await this.SignalInSector.create({
+            const model = await this.SignalInSector.create({
                 signalId: associationData.signalId,
                 sectorId: associationData.sectorId,
                 validFrom: associationData.validFrom
             });
+            return model.id;
         } catch (error) {
             throw new Error(`Error creating association between signal and sector: ${error.message}`);
         }
@@ -60,11 +62,12 @@ class SignalRepository {
 
     async assignSignalToThesis(associationData) {
         try {
-            await this.SignalInThesis.create({
+            const model = await this.SignalInThesis.create({
                 signalId: associationData.signalId,
                 thesisId: associationData.thesisId,
                 validFrom: associationData.validFrom
             });
+            return model.id;
         } catch (error) {
             throw new Error(`Error creating association between signal and thesis: ${error.message}`);
         }
@@ -252,10 +255,10 @@ class SignalRepository {
         }
     }
 
-    
-    async getSignalAssociationEntries(signalId, timestamp){
-        try{
-            const signalAssociations =  await this.ThesesAllSignals.findAll({
+
+    async getSignalAssociationEntries(signalId, timestamp) {
+        try {
+            const signalAssociations = await this.ThesesAllSignals.findAll({
                 where: {
                     signalId,
                     validFrom: {
@@ -280,10 +283,10 @@ class SignalRepository {
 
             const lastMeasurement = lastMeasurementTimestamp?.timestamp || null
             signalAssociations.forEach(row => row.lastMeasurementTimestamp = lastMeasurement)
-            
+
             return signalAssociations
-        }catch (error){
-           throw new Error(`Error while finding signals associations: ${error.message}`);
+        } catch (error) {
+            throw new Error(`Error while finding signals associations: ${error.message}`);
         }
     }
 }

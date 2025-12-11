@@ -4,8 +4,9 @@ import { UserPermit, UserPermits } from "../dtos/userPermitsDto.js";
 
 class UserService {
 
-    constructor(userRepository) {
+    constructor(userRepository, userActionService) {
         this.userRepository = userRepository;
+        this.userActionService = userActionService;
     }
 
     async findUser(userId) {

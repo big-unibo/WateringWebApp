@@ -109,18 +109,18 @@ const optimalDistanceRepository = new OptimalDistanceRepository(models, sequeliz
 const logRepository = new LogRepository(models, sequelize)
 const userActionRepository = new UserActionRepository(models, sequelize)
 
-const organizationService = new OrganizationService(organizationRepository)
-const userService = new UserService(userRepository)
-const authenticationService = new AuthenticationService(userService)
-const companyService = new CompanyService(companyRepository)
-const fieldService = new FieldService(fieldRepository, companyRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, signalRepository, wateringScheduleRepository)
-const authorizationService = new AuthorizationService(userService, fieldService)
-const deviceService = new DeviceService(deviceRepository, signalRepository, fieldRepository)
-const signalService = new SignalService(signalRepository)
-const wateringScheduleService = new WateringScheduleService(wateringScheduleRepository, wateringAdviceRepository)
-const wateringAdviceService = new WateringAdviceService(wateringAdviceRepository, fieldRepository, interpolatedProfileRepository, optimalDistanceRepository, thesesAllSignalsRepository)
-const logService = new LogService(logRepository)
 const userActionService = new UserActionService(userActionRepository)
+const organizationService = new OrganizationService(organizationRepository, userActionService)
+const userService = new UserService(userRepository, userActionService)
+const authenticationService = new AuthenticationService(userService)
+const companyService = new CompanyService(companyRepository, userActionService)
+const fieldService = new FieldService(fieldRepository, companyRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, signalRepository, wateringScheduleRepository, userActionService)
+const authorizationService = new AuthorizationService(userService, fieldService)
+const deviceService = new DeviceService(deviceRepository, signalRepository, fieldRepository, userActionService)
+const signalService = new SignalService(signalRepository, userActionService)
+const wateringScheduleService = new WateringScheduleService(wateringScheduleRepository, wateringAdviceRepository, userActionService)
+const wateringAdviceService = new WateringAdviceService(wateringAdviceRepository, fieldRepository, interpolatedProfileRepository, optimalDistanceRepository, thesesAllSignalsRepository, userActionService)
+const logService = new LogService(logRepository, userActionService)
 
 app.use(express.json());
 app.use(cors());
@@ -136,42 +136,42 @@ app.use(
 
 app.use(
   '/users',
-  usersRouter({ userService, authenticationService, authorizationService })
+  usersRouter({ userService, authenticationService })
 );
 
 app.use(
   '/fields',
-  fieldsRouter({ userService, authenticationService, authorizationService, fieldService, userActionService })
+  fieldsRouter({ userService, authenticationService, authorizationService, fieldService })
 );
 
 app.use(
   '/sectors',
-  sectorsRouter({ userService, authenticationService, authorizationService, fieldService, wateringScheduleService, userActionService })
+  sectorsRouter({ userService, authenticationService, authorizationService, fieldService, wateringScheduleService })
 );
 
 app.use(
   '/theses',
-  thesesRouter({ userService, authenticationService, authorizationService, fieldService, wateringAdviceService, userActionService })
+  thesesRouter({ userService, authenticationService, authorizationService, fieldService, wateringAdviceService })
 );
 
 app.use(
   '/organizations',
-  organizationsRouter({ organizationService, authenticationService, userService, authorizationService, userActionService })
+  organizationsRouter({ organizationService, authenticationService, userService, authorizationService })
 );
 
 app.use(
   '/companies',
-  companiesRouter({ companyService, userService, authenticationService, authorizationService, userActionService })
+  companiesRouter({ companyService, userService, authenticationService, authorizationService })
 );
 
 app.use(
   '/devices',
-  devicesRouter({ authenticationService, authorizationService, userService, deviceService, userActionService  })
+  devicesRouter({ authenticationService, authorizationService, userService, deviceService  })
 )
 
 app.use(
   '/signals',
-  signalsRouter({ authenticationService, authorizationService, signalService, userActionService })
+  signalsRouter({ authenticationService, authorizationService, signalService })
 )
 
 app.use(
@@ -186,7 +186,7 @@ app.use(
 
 app.use(
   '/wateringSchedule',
-  wateringScheduleRouter({ authenticationService, authorizationService, wateringScheduleService, userActionService })
+  wateringScheduleRouter({ authenticationService, authorizationService, wateringScheduleService })
 )
 
 app.use(

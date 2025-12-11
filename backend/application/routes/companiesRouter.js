@@ -1,8 +1,7 @@
 import { Router } from 'express';
 import { Company } from '../dtos/companyDto.js';
-import { COMPANIES_LOG_TABLE } from '../commons/constants.js';
 
-const companiesRouter = ({ companyService, authenticationService, authorizationService, userActionService }) => {
+const companiesRouter = ({ companyService, authenticationService, authorizationService }) => {
     const router = Router();
 
     /**
@@ -102,10 +101,7 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
             const companyName = req.body.companyName;
             const company = new Company(companyName, organizationId);
 
-            const companyId = await companyService.createCompany(company);
-            if (companyId) {
-                userActionService.logCreation(userId, COMPANIES_LOG_TABLE, companyId, null);
-            }
+            const companyId = await companyService.createCompany(userId, company);
             return res.status(200).json({ message: `Company created with success`, id: companyId });
         } catch (error) {
             console.log(`Failed creating company caused by: ${error.message}`);

@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { Thesis } from '../dtos/thesisDto.js';
 import { THESES_LOG_TABLE } from '../commons/constants.js';
 
-const sectorsRouter = ({ authenticationService, authorizationService, fieldService, wateringScheduleService, userActionService }) => {
+const sectorsRouter = ({ authenticationService, authorizationService, fieldService, wateringScheduleService }) => {
     const router = Router();
 
 
@@ -339,10 +339,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 		// 		return res.status(403).json({message: 'Unauthorized request'});
 
 		try {
-			const thesisId = await fieldService.createThesis(thesis);
-            if(thesisId){
-                userActionService.logCreation(userId, THESES_LOG_TABLE, thesisId, null);
-            }
+			const thesisId = await fieldService.createThesis(userId, thesis);
 			return res.status(200).json({message: 'Thesis created with success', id: thesisId});
 		} catch (error) {
 			console.log(`Fail creating thesis caused by: ${error.message}`);

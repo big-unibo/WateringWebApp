@@ -2,9 +2,8 @@ import { Router } from 'express';
 
 import { Field } from '../dtos/fieldDto.js';
 import { Sector } from '../dtos/sectorDto.js';
-import { FIELDS_LOG_TABLE, SECTORS_LOG_TABLE } from '../commons/constants.js';
 
-const fieldsRouter = ({ authenticationService, authorizationService, fieldService, userActionService }) => {
+const fieldsRouter = ({ authenticationService, authorizationService, fieldService}) => {
     const router = Router();
 
 
@@ -207,10 +206,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
             const fieldName = req.body.fieldName
             const field = new Field(fieldName, companyId, fieldLocation);
 
-            const fieldId = await fieldService.createField(field);
-            if(fieldId){
-                userActionService.logCreation(userId, FIELDS_LOG_TABLE, fieldId, null);
-            }
+            const fieldId = await fieldService.createField(userId, field);
             return res.status(200).json({ message: `Field created with success`, id: fieldId })
         } catch (error) {
             console.log(`Failed creating field caused by: ${error.message}`)
@@ -456,10 +452,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
                 doubleWing
             );
 
-            const sectorId = await fieldService.createSector(sector);
-            if(sectorId){
-                userActionService.logCreation(userId, SECTORS_LOG_TABLE, sectorId, null);
-            }
+            const sectorId = await fieldService.createSector(userId, sector);
             return res.status(200).json({ message: `Sector created with success`, id: sectorId })
         } catch (error) {
             console.log(`Failed creating sector caused by: ${error.message}`)

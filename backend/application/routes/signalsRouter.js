@@ -1,9 +1,7 @@
 import {Router} from 'express';
 import { AddMeasurementsRequest,CreateSignal,SignalUpdate, SignalAssociation } from '../dtos/signalDto.js';
-import { SIGNALS_LOG_TABLE } from '../commons/constants.js';
 
-
-const signalsRouter = ({authenticationService, authorizationService, signalService, userActionService}) => {
+const signalsRouter = ({authenticationService, authorizationService, signalService }) => {
     const router = Router();
 
     /**
@@ -104,10 +102,7 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
         try{
             const signal = new CreateSignal(req.body)
             const deviceId = req.query.deviceId
-            const signalId = await signalService.createSignal(deviceId, signal)
-            if(signalId){
-                userActionService.logCreation(userId, SIGNALS_LOG_TABLE, signalId, null);
-            }
+            const signalId = await signalService.createSignal(userId, deviceId, signal)
             return res.status(200).json({ message: 'Signal successfully created' , id: signalId })
         }
         catch (error) {
@@ -217,6 +212,7 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
         } catch (error) {
             return res.status(401).json({ message: 'Authentication failed' });
         }
+        const userId = requestUserData.userId
 
         //[TO DO]: Authorization
 
@@ -229,7 +225,7 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
 
             const signalAssociation = new SignalAssociation(signalId, targetType, targetId, validFrom);
 
-            await signalService.assignSignal(signalAssociation);
+            await signalService.assignSignal(userId, signalAssociation);
             return res.status(200).json({ message: 'Signals successfully associated' });
         } catch (error) {
             console.log(`Failed assigning signals caused by: ${error.message}`);

@@ -187,15 +187,16 @@ class FieldRepository {
     }
 
     async assignThesisToSector(thesisId, sectorId, weight, validFrom, validTo) {
-        return await this.ThesisInSector.create({
+        const model = await this.ThesisInSector.create({
             thesisId,
             sectorId,
             weight,
             validFrom,
             validTo
         });
+        return model.id;
     }
-
+    
     async disableThesisInSector(sectorId, thesisId, timestamp) {
         return await this.ThesisInSector.update(
             {

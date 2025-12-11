@@ -107,10 +107,9 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
             // if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'organizations')))
             //     return res.status(403).json({ message: 'Unauthorized request' });
 
-            const organizationId = await organizationService.createOrganization(req.body.organizationName);
-            if(organizationId){
-                userActionService.logCreation(userId, ORGANIZATIONS_LOG_TABLE, organizationId, null);
-            }
+            const organizationName = req.body.organizationName;
+
+            const organizationId = await organizationService.createOrganization(userId, organizationName);
             return res.status(200).json({ message: 'Organization created successfully', id: organizationId });
         } catch (error) {
             console.error(`Failed creating organization caused by: ${error.message}`);

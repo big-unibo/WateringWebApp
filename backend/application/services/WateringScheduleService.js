@@ -5,9 +5,10 @@ import DtoConverter from "./DtoConverter.js";
 const dtoConverter = new DtoConverter;
 
 class WateringScheduleService {
-    constructor(wateringScheduleRepository, wateringAdviceRepository) {
+    constructor(wateringScheduleRepository, wateringAdviceRepository, userActionService) {
         this.wateringScheduleRepository = wateringScheduleRepository
         this.wateringAdviceRepository = wateringAdviceRepository
+        this.userActionService = userActionService
     }
 
     async getSchedule(sectorId, timeFilterFrom, timeFilterTo) {

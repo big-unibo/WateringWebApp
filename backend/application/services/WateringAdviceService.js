@@ -55,12 +55,13 @@ const computeIrrigation = (advice, sectorDetails, maxWatering, expectedWater) =>
 
 export class WateringAdviceService {
 
-    constructor(wateringAdviceRepository, fieldRepository, interpolatedProfileRepository, optimalDistanceRepository, thesesAllSignalsRepository){
+    constructor(wateringAdviceRepository, fieldRepository, interpolatedProfileRepository, optimalDistanceRepository, thesesAllSignalsRepository, userActionService){
         this.wateringAdviceRepository = wateringAdviceRepository
         this.fieldRepository = fieldRepository
         this.interpolatedProfileRepository = interpolatedProfileRepository
         this.optimalDistanceRepository = optimalDistanceRepository
         this.thesesAllSignalsRepository = thesesAllSignalsRepository
+        this.userActionService = userActionService
     }
 
     async getThesisLastWateringAdvice(thesisId, timestamp) {

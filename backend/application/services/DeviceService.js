@@ -1,3 +1,4 @@
+import { DEVICES_LOG_TABLE, FIELDS_SIGNALS_LOG_TABLE, SECTORS_SIGNALS_LOG_TABLE, SIGNALS_LOG_TABLE, THESES_SIGNALS_LOG_TABLE } from "../commons/constants.js";
 import { SignalTargetType } from "../dtos/signalDto.js";
 import DtoConverter from './DtoConverter.js';
 import PaginationService from "./PaginationService.js";
@@ -6,13 +7,14 @@ const dtoConverter = new DtoConverter()
 const paginationService = new PaginationService()
 
 class DeviceService {
-    constructor(deviceRepository, signalRepository, fieldRepository) {
+    constructor(deviceRepository, signalRepository, fieldRepository, userActionService) {
         this.deviceRepository = deviceRepository;
         this.signalRepository = signalRepository;
         this.fieldRepository = fieldRepository;
+        this.userActionService = userActionService;
     }
 
-    async createDevice(device) {
+    async createDevice(userId, device) {
         try {
             const createdDeviceId = await this.deviceRepository.createDevice({
                 type: device.type,
@@ -25,6 +27,8 @@ class DeviceService {
             if (!createdDeviceId) {
                 throw new Error("Device creation failed");
             }
+            await this.userActionService.logCreation(userId, DEVICES_LOG_TABLE, createdDeviceId, null);
+
             const signalsToCreate = (device.signals || []).map(sig => ({
                 ...sig,
                 deviceId: createdDeviceId
@@ -32,6 +36,12 @@ class DeviceService {
 
             if (signalsToCreate.length > 0) {
                 const signalsIds = await this.signalRepository.createSignals(createdDeviceId, signalsToCreate);
+                if (Array.isArray(signalsIds) && signalsIds.length > 0) {
+                    const logPromises = signalsIds.map(id =>
+                        this.userActionService.logCreation(userId, SIGNALS_LOG_TABLE, id, null)
+                    );
+                    await Promise.all(logPromises);
+                }
                 return {
                     deviceId: createdDeviceId,
                     signalsIds: signalsIds
@@ -47,7 +57,7 @@ class DeviceService {
         }
     }
 
-    async assignSignals(signalAssociation) {
+    async assignSignals(userId, signalAssociation) {
         try {
 
             if (!signalAssociation.sourceId) {
@@ -69,12 +79,19 @@ class DeviceService {
                 [SignalTargetType.THESIS]: async (args) => await this.signalRepository.assignSignalToThesis(args)
             }
 
+            const logTables = {
+                [SignalTargetType.FIELD]: FIELDS_SIGNALS_LOG_TABLE,
+                [SignalTargetType.SECTOR]: SECTORS_SIGNALS_LOG_TABLE,
+                [SignalTargetType.THESIS]: THESES_SIGNALS_LOG_TABLE
+            }
+
             for (const signal of signals) {
-                await assingFunctions[signalAssociation.targetType]({
+                const assignmentId = await assingFunctions[signalAssociation.targetType]({
                     signalId: signal.id,
                     [signalAssociation.targetType + "Id"]: signalAssociation.targetId,
                     validFrom
                 })
+                await this.userActionService.logCreation(userId, logTables[signalAssociation.targetType], assignmentId, null)
             }
         } catch (error) {
             console.error(`Error assigning signal: ${error.message}`);

@@ -2,9 +2,8 @@ import { Router } from 'express';
 
 import { CreateDevice } from '../dtos/deviceDto.js';
 import { CreateSignal, SignalAssociation } from '../dtos/signalDto.js';
-import { DEVICES_LOG_TABLE, SIGNALS_LOG_TABLE } from '../commons/constants.js';
 
-const devicesRouter = ({ authenticationService, authorizationService, userService, deviceService, userActionService }) => {
+const devicesRouter = ({ authenticationService, authorizationService, userService, deviceService }) => {
     const router = Router();
 
     /**
@@ -255,17 +254,8 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
             const device = new CreateDevice(req.body.type, Number(req.body.providerId), req.body.description,
                 req.body.location, req.body.binningId, (signalsArray || []).map(sig => new CreateSignal(sig)));
 
-            const deviceData = await deviceService.createDevice(device);
-            if (deviceData.deviceId) {
-                userActionService.logCreation(userId, DEVICES_LOG_TABLE, deviceData.deviceId, null);
-            }
-
-            if (Array.isArray(deviceData.signalsIds) && deviceData.signalsIds.length > 0) {
-                deviceData.signalsIds.forEach(id => {
-                    userActionService.logCreation(userId, SIGNALS_LOG_TABLE, id, null);
-                });
-            }
-            return res.status(200).json({ message: `Device created with success`, id: deviceId });
+            const deviceData = await deviceService.createDevice(userId, device);
+            return res.status(200).json({ message: `Device created with success`, id: deviceData.deviceId });
         } catch (error) {
             console.log(`Failed creating Device caused by: ${error.message}`);
             return res.status(500).json({ message: "Error on creating device" });
@@ -374,6 +364,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
             return res.status(401).json({ message: 'Authentication failed' });
         }
 
+        const userId = requestUserData.userId
         //[TO DO]: Authorization
 
         try {
@@ -385,7 +376,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
 
             const signalAssociation = new SignalAssociation(deviceId, targetType, targetId, validFrom);
 
-            await deviceService.assignSignals(signalAssociation);
+            await deviceService.assignSignals(userId, signalAssociation);
             return res.status(200).json({ message: 'Signals successfully associated' });
         } catch (error) {
             console.log(`Failed assigning signals caused by: ${error.message}`);

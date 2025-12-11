@@ -1,3 +1,4 @@
+import { FIELDS_LOG_TABLE, SECTORS_LOG_TABLE, THESES_IN_SECTORS_LOG_TABLE, THESES_LOG_TABLE } from '../commons/constants.js';
 import { OptimalStateData } from '../dtos/optStateDto.js';
 import DtoConverter from './DtoConverter.js';
 
@@ -8,7 +9,7 @@ const MONTH_TO_SECONDS = MINUTE_TO_SECONDS * 60 * 24 * 30
 
 class FieldService {
 
-    constructor(fieldRepository, companyRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, signalsRepository, wateringScheduleRepository) {
+    constructor(fieldRepository, companyRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, signalsRepository, wateringScheduleRepository, userActionService) {
         this.fieldRepository = fieldRepository
         this.companyRepository = companyRepository
         this.thesesAllSignalsRepository = thesesAllSignalsRepository
@@ -18,23 +19,32 @@ class FieldService {
         this.wateringAdviceRepository = wateringAdviceRepository
         this.signalsRepository = signalsRepository
         this.wateringScheduleRepository = wateringScheduleRepository
+        this.userActionService = userActionService
     }
 
-    async createField(field) {
+    async createField(userId, field) {
         try {
             const fieldCreated = await this.fieldRepository.createField(field.fieldName, field.companyId, field.location);
-            return fieldCreated.id;
+            const fieldId = fieldCreated.id;
+            if (fieldId) {
+                this.userActionService.logCreation(userId, FIELDS_LOG_TABLE, fieldId, null)
+                return fieldId
+            }
         } catch (error) {
             console.error(`Error creating field ${field.fieldName}: ${error.message}`);
             throw error;
         }
     }
 
-    async createSector(sector) {
+    async createSector(userId, sector) {
         try {
             const sectorCreated = await this.fieldRepository.createSector(sector);
 
-            return sectorCreated.id;
+            const sectorId = sectorCreated.id;
+            if (sectorId) {
+                this.userActionService.logCreation(userId, SECTORS_LOG_TABLE, sectorId, null)
+                return sectorId
+            }
         } catch (error) {
             console.error(`Error creating sector ${sector.sectorName}: ${error.message}`);
             throw error;
@@ -51,12 +61,14 @@ class FieldService {
         return dtoConverter.convertCompany(result.field.company);
     }
 
-    async createThesis(thesis) {
+    async createThesis(userId, thesis) {
         const newThesisId = await this.fieldRepository.createThesis(thesis.thesisName);
         if (!newThesisId) {
             throw Error("Impossible to create thesis")
-        }
-        await this.fieldRepository.assignThesisToSector(newThesisId, thesis.sectorId, undefined, thesis.validFrom || Math.floor(Date.now() / 1000));
+        } 
+        await this.userActionService.logCreation(userId, THESES_LOG_TABLE, newThesisId, null);
+        const assignmentId = await this.fieldRepository.assignThesisToSector(newThesisId, thesis.sectorId, undefined, thesis.validFrom || Math.floor(Date.now() / 1000));
+        await this.userActionService.logCreation(userId, THESES_IN_SECTORS_LOG_TABLE, assignmentId, null);
         return newThesisId;
     }
 
