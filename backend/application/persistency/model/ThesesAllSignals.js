@@ -84,7 +84,7 @@ function initThesesAllSignals(sequelize) {
         },
         y: {
             type: DataTypes.DOUBLE,
-            field: "z"
+            field: "y"
         },
         z: {
             type: DataTypes.DOUBLE,
