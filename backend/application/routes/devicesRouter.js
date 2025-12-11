@@ -569,13 +569,15 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
             return res.status(403).json({ message: 'Authentication failed' });
         }
 
+        const userId = requestUserData.userId
+
         const deviceId = req.params.deviceId;
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
 
         //[TO DO]: Authorization
 
         try {
-            await deviceService.disableDevice(deviceId, timestamp)
+            await deviceService.disableDevice(userId, deviceId, timestamp)
             return res.status(200).json({ message: `Device validity succesfully endend` })
         } catch (error) {
             console.log(`Failed disabling device: ${error.message}`)

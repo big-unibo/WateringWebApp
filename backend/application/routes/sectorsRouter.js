@@ -451,6 +451,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
         }
 
         try {
+            const userId = requestUserData.userId
             const sectorId = req.params.sectorId
         
             if (!(await authorizationService.isUserAuthorizedById(requestUserData.userId, 'EDIT_ADVICE', 'sectors', sectorId)))
@@ -464,7 +465,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
                 return res.status(400).json({ message: "Total weight must be exactly 1" });
             }
 
-            await fieldService.setThesesContributions(sectorId, thesesContributions, validFrom, validTo)
+            await fieldService.setThesesContributions(userId, sectorId, thesesContributions, validFrom, validTo)
 
             return res.status(200).json({message: `Theses contributions updated with success`})
 

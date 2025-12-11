@@ -125,14 +125,35 @@ class DeviceService {
         return await this.deviceRepository.getProviders();
     }
 
-    async disableDevice(deviceId, timestamp) {
+    async disableDevice(userId, deviceId, timestamp) {
         try {
-            await this.fieldRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp)
+            const optimalProfileAssignmentId = await this.fieldRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp);
+            if (optimalProfileAssignmentId) {
+                await this.userActionService.logDisabling(userId, OPTIMAL_PROFILES_LOG_TABLE, optimalProfileAssignmentId, null);
+            }
 
             const device = await this.getDevice(deviceId, timestamp);
-            device.signals.forEach(signal => {
-                this.signalRepository.disableSignal(signal.signalId, timestamp)
-            });
+            await Promise.all(device.signals.map(async (signal) => {
+
+                // 1. Thesis
+                const thesisSigId = await this.signalsRepository.disableSignalInThesis(signal.signalId, timestamp);
+                if (thesisSigId) {
+                    await this.userActionService.logDisabling(userId, THESES_SIGNALS_LOG_TABLE, thesisSigId, null);
+                }
+
+                // 2. Sector
+                const sectorSigId = await this.signalsRepository.disableSignalInSector(signal.signalId, timestamp);
+                if (sectorSigId) {
+                    await this.userActionService.logDisabling(userId, SECTORS_SIGNALS_LOG_TABLE, sectorSigId, null);
+                }
+
+                // 3. Field
+                const fieldSigId = await this.signalsRepository.disableSignalInField(signal.signalId, timestamp);
+                if (fieldSigId) {
+                    await this.userActionService.logDisabling(userId, FIELDS_SIGNALS_LOG_TABLE, fieldSigId, null);
+                }
+            }));
+
         } catch (error) {
             console.error(`Error disabling device: ${error.message}`);
             throw error;

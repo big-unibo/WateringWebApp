@@ -250,7 +250,7 @@ class FieldService {
         return await this.interpolatedProfileRepository.getInterpolatedProfiles(thesisId, timeFilterFrom, timeFilterTo);
     }
 
-    async setThesesContributions(sectorId, thesesContributions, validFrom, validTo) {
+    async setThesesContributions(userId, sectorId, thesesContributions, validFrom, validTo) {
         const thesesIds = new Set((await this.getSectorDetails(sectorId, validFrom)).theses.map(t => t.id))
         const paramThesisIds = new Set(thesesContributions.map(t => t.id))
 
@@ -261,12 +261,25 @@ class FieldService {
         }
 
         await thesesContributions.forEach(async t => {
-            await this.fieldRepository.disableThesisInSector(sectorId, t.id, validFrom)
-            await this.fieldRepository.assignThesisToSector(t.id, sectorId, t.weight, validFrom, validTo)
+            const sectorAssignmentsIds = await this.fieldRepository.disableThesisInSector(sectorId, t.id, validFrom)
+            if (sectorAssignmentsIds) {
+                await this.userActionService.logDisabling(userId, THESES_IN_SECTORS_LOG_TABLE, sectorAssignmentsIds, null);
+            }
+
+            const assignmentId = await this.fieldRepository.assignThesisToSector(t.id, sectorId, t.weight, validFrom, validTo)
+            if (assignmentId) {
+                await this.userActionService.logCreation(userId, THESES_IN_SECTORS_LOG_TABLE, assignmentId, null);
+            }
         })
         await [...thesesIds].filter(id => !paramThesisIds.has(id)).forEach(async id => {
-            await this.fieldRepository.disableThesisInSector(sectorId, id, validFrom)
-            await this.fieldRepository.assignThesisToSector(id, sectorId, 0, validFrom, validTo)
+            const sectorAssignmentsIds = await this.fieldRepository.disableThesisInSector(sectorId, id, validFrom)
+            if (sectorAssignmentsIds) {
+                await this.userActionService.logDisabling(userId, THESES_IN_SECTORS_LOG_TABLE, sectorAssignmentsIds, null);
+            }
+            const assignmentId = await this.fieldRepository.assignThesisToSector(id, sectorId, 0, validFrom, validTo)
+            if (assignmentId) {
+                await this.userActionService.logCreation(userId, THESES_IN_SECTORS_LOG_TABLE, assignmentId, null);
+            }
         })
     }
 
