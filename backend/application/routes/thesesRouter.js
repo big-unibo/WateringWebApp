@@ -1,9 +1,9 @@
 import { Router } from 'express'
-import { HUMIDITY_DEVICE_TYPE } from '../commons/constants.js'
+import { HUMIDITY_DEVICE_TYPE, WATERING_ALGORITHM_LOG_TABLE } from '../commons/constants.js'
 import { GridOptimalProfiles } from '../dtos/optStateDto.js'
 import { WateringParams } from '../dtos/wateringParamsDto.js'
 
-const thesesRouter = ({ userService, authenticationService, authorizationService, fieldService, wateringAdviceService }) => {
+const thesesRouter = ({ userService, authenticationService, authorizationService, fieldService, wateringAdviceService, userActionService }) => {
     const router = Router();
 
     /**
@@ -1032,6 +1032,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         const thesisId = req.params.thesisId;
 
         try {
+            const userId = requestUserData.userId
             // const sectorId = fieldService.getThesisDetails(thesisId).sectorId
             // if (!(await authorizationService.isUserAuthorizedById(requestUserData.userId, 'EDIT_ADVICE', 'sectors', sectorId)))
             //     return res.status(403).json({ message: 'Unauthorized request' });
@@ -1061,8 +1062,10 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
                 description
             );
 
-            await wateringAdviceService.setWateringAlgorithmParams(thesisId, wateringParams, validFrom, validTo)
-
+            const algorithmId = await wateringAdviceService.setWateringAlgorithmParams(thesisId, wateringParams, validFrom, validTo)
+            if(algorithmId){
+                userActionService.logCreation(userId, WATERING_ALGORITHM_LOG_TABLE, algorithmId, null);
+            }
             return res.status(200).json({ message: `Watering Parameters updated with success` })
         } catch (error) {
             console.log(`Fail updating watering parameters caused by: ${error.message}`)

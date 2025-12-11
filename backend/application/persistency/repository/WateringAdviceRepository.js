@@ -99,7 +99,7 @@ class WateringAdviceRepository {
                 }
             )
 
-            const model = this.WateringAlgorithmParams.create({
+            const model = await this.WateringAlgorithmParams.create({
                 thesisId: thesisId,
                 validFrom: validFrom,
                 validTo: validTo,
@@ -112,6 +112,8 @@ class WateringAdviceRepository {
                 errorFunction: wateringParams.errorFunction ?? oldParams.errorFunction,
                 description: wateringParams.description
             });
+
+            return model.id;
         } catch (error) {
             throw new Error(`Error setting watering algorithm parameters: ${error.message}`);
         }

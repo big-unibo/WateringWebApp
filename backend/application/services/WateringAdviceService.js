@@ -149,7 +149,7 @@ export class WateringAdviceService {
     }
 
     async setWateringAlgorithmParams(thesisId, wateringParams, validFrom, validTo) {
-        await this.wateringAdviceRepository.setWateringAlgorithmParams(thesisId, wateringParams, validFrom, validTo)
+        return await this.wateringAdviceRepository.setWateringAlgorithmParams(thesisId, wateringParams, validFrom, validTo)
     }
 
     async getWateringAlgorithmParams(thesisId, timestamp){
