@@ -74,9 +74,9 @@ class DeviceService {
             const signals = await this.deviceRepository.getSignals(signalAssociation.sourceId);
 
             const assingFunctions = {
-                [SignalTargetType.FIELD]: async (args) => await this.signalRepository.assignSignalToField(userId, args),
-                [SignalTargetType.SECTOR]: async (args) => await this.signalRepository.assignSignalToSector(userId, args),
-                [SignalTargetType.THESIS]: async (args) => await this.signalRepository.assignSignalToThesis(userId, args)
+                [SignalTargetType.FIELD]: async (args) => await this.signalRepository.assignSignalToField(args),
+                [SignalTargetType.SECTOR]: async (args) => await this.signalRepository.assignSignalToSector(args),
+                [SignalTargetType.THESIS]: async (args) => await this.signalRepository.assignSignalToThesis(args)
             }
 
             const logTables = {

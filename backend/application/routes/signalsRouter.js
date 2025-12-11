@@ -223,8 +223,8 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
             const targetId = req.body.targetId
             const validFrom = req.body.validFrom
 
-            const signalAssociation = new SignalAssociation(signalId, targetType, targetId, validFrom);
-
+            const signalAssociation = new SignalAssociation(signalId, targetType, targetId, validFrom);    
+                  
             await signalService.assignSignal(userId, signalAssociation);
             return res.status(200).json({ message: 'Signals successfully associated' });
         } catch (error) {
