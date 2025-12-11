@@ -311,6 +311,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
         } catch (error) {
             return res.status(403).json({ message: 'Authentication failed' });
         }
+        const userId = requestUserData.userId;
 
         const fieldId = req.params.fieldId;
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
@@ -318,7 +319,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
         //[TO DO]: Authorization
 
         try{
-            await fieldService.disableField(fieldId, timestamp)
+            await fieldService.disableField(userId, fieldId, timestamp)
             return res.status(200).json({ message: `Field validity succesfully endend` })
         } catch (error) {
             console.log(`Failed disabling field: ${error.message}`)

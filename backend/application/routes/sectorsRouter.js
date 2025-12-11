@@ -573,6 +573,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
         } catch (error) {
             return res.status(403).json({ message: 'Authentication failed' });
         }
+        const userId = requestUserData.userId
 
         const sectorId = req.params.sectorId;
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
@@ -580,7 +581,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
         //[TO DO]: Authorization
 
         try{
-            await fieldService.disableSector(sectorId, timestamp)
+            await fieldService.disableSector(userId, sectorId, timestamp)
             return res.status(200).json({ message: `Sector validity succesfully endend` })
         } catch (error) {
             console.log(`Failed disabling Sector: ${error.message}`)

@@ -1,4 +1,4 @@
-import { FIELDS_LOG_TABLE, OPTIMAL_PROFILES_LOG_TABLE, SECTORS_LOG_TABLE, THESES_IN_SECTORS_LOG_TABLE, THESES_LOG_TABLE, THESES_SIGNALS_LOG_TABLE, WATERING_ALGORITHM_LOG_TABLE } from '../commons/constants.js';
+import { FIELDS_LOG_TABLE, FIELDS_SIGNALS_LOG_TABLE, OPTIMAL_PROFILES_LOG_TABLE, SECTORS_LOG_TABLE, SECTORS_SIGNALS_LOG_TABLE, THESES_IN_SECTORS_LOG_TABLE, THESES_LOG_TABLE, THESES_SIGNALS_LOG_TABLE, WATERING_ALGORITHM_LOG_TABLE, WATERING_EVENTS_LOG_TABLE } from '../commons/constants.js';
 import { OptimalStateData } from '../dtos/optStateDto.js';
 import DtoConverter from './DtoConverter.js';
 
@@ -301,28 +301,34 @@ class FieldService {
     }
 
 
-    async disableSector(sectorId, timestamp) {
+    async disableSector(userId, sectorId, timestamp) {
         try {
+            //Signals disabling
             const signals = await this.signalsRepository.getSectorAssociatedSignals(sectorId, timestamp);
-            if (signals && signals.length > 0) {
-                await Promise.all(signals.map(signal =>
-                    this.signalRepository.disableSignalInSector(signal.id, timestamp)
-                ));
-            }
+            await Promise.all(signals.map(async (signal) => {
+                const signalAssignmentId = await this.signalsRepository.disableSignalInSector(signal.id, timestamp);
+                if (signalAssignmentId) {
+                    await this.userActionService.logDisabling(userId, SECTORS_SIGNALS_LOG_TABLE, signalAssignmentId, null);
+                }
+            }));
 
             try {
+                //Thesis disabling
                 const sectorData = await this.getSectorDetails(sectorId, timestamp);
-
                 if (sectorData && sectorData.theses && Array.isArray(sectorData.theses)) {
                     await Promise.all(sectorData.theses.map(thesis =>
-                        this.disableThesis(thesis.id, timestamp)
+                        this.disableThesis(userId, thesis.id, timestamp)
                     ));
                 }
             } catch (innerError) {
                 console.warn(`Skipping thesis disable for sector ${sectorId}: ${innerError.message}`);
             }
 
-            await this.wateringScheduleRepository.deleteWateringEvents(sectorId, timestamp);
+            //Deletion of scheduled events for the sector
+            const deletedEventsIds = await this.wateringScheduleRepository.deleteWateringEvents(sectorId, timestamp)
+            if (deletedEventsIds) {
+                await this.userActionService.logDeletion(userId, WATERING_EVENTS_LOG_TABLE, deletedEventsIds, null);
+            }
 
         } catch (error) {
             console.error(`Error disabling sector ${sectorId}: ${error.message}`);
@@ -330,19 +336,20 @@ class FieldService {
         }
     }
 
-    async disableField(fieldId, timestamp) {
+    async disableField(userId, fieldId, timestamp) {
         try {
             const signals = await this.signalsRepository.getFieldAssociatedSignals(fieldId, timestamp);
-            if (signals && signals.length > 0) {
-                await Promise.all(signals.map(signal =>
-                    this.signalRepository.disableSignalInField(signal.id, timestamp)
-                ));
-            }
+            await Promise.all(signals.map(async (signal) => {
+                const signalAssignmentId = await this.signalsRepository.disableSignalInField(signal.id, timestamp);
+                if (signalAssignmentId) {
+                    await this.userActionService.logDisabling(userId, FIELDS_SIGNALS_LOG_TABLE, signalAssignmentId, null);
+                }
+            }));
             const fieldData = await this.fieldRepository.getFieldDetails(fieldId);
 
             if (fieldData && fieldData.sectors && Array.isArray(fieldData.sectors)) {
                 await Promise.all(fieldData.sectors.map(sector => {
-                    return this.disableSector(sector.id, timestamp).catch(err => {
+                    return this.disableSector(userId, sector.id, timestamp).catch(err => {
                         console.error(`Failed to disable sector ${sector.id} inside field disable: ${err.message}`);
                     });
                 }));
