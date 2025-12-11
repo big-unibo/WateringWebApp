@@ -41,9 +41,9 @@ class SignalService {
             const validFrom = signalAssociation.validFrom ?? Date.now() / 1000;
 
             const assingFunctions = {
-                [SignalTargetType.FIELD]: async (args) => await this.signalRepository.assignSignalToField(args),
-                [SignalTargetType.SECTOR]: async (args) => await this.signalRepository.assignSignalToSector(args),
-                [SignalTargetType.THESIS]: async (args) => await this.signalRepository.assignSignalToThesis(args)
+                [SignalTargetType.FIELD]: async (args) => await this.signalRepository.assignSignalToField(userId, args),
+                [SignalTargetType.SECTOR]: async (args) => await this.signalRepository.assignSignalToSector(userId, args),
+                [SignalTargetType.THESIS]: async (args) => await this.signalRepository.assignSignalToThesis(userId, args)
             }
 
             const logTables = {
