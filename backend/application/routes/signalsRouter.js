@@ -325,6 +325,8 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
             return res.status(401).json({message: 'Authentication failed'});
         }
 
+        const userId = requestUserData.userId;
+
         //[TO DO]: Authorization
         const signalId = Number(req.params.signalId);
 
@@ -335,7 +337,7 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
         try{
             const signalUpdateData = new SignalUpdate(signalId, description, idOnProvider, sensorTechnology)
 
-            await signalService.updateSignal(signalUpdateData);
+            await signalService.updateSignal(userId, signalUpdateData);
             return res.status(200).json({ message: 'Signal successfully updated' });
         }
         catch (error) {
@@ -435,6 +437,7 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
         } catch (error) {
             return res.status(401).json({message: 'Authentication failed'});
         }
+        const userId = requestUserData.userId
 
         //[TO DO]: Authorization
         const signalId = Number(req.params.signalId);
@@ -445,7 +448,7 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
             if (validTo < currentTimestamp){
                 return res.status(400).json({message: 'Invalid validTo timestamp provided. It must be a future timestamp'})
             }
-            await signalService.disableSignal(signalId, validTo);
+            await signalService.disableSignal(userId, signalId, validTo);
             return res.status(200).json({ message: 'Signal disabled successfully' });
         }
         catch (error) {

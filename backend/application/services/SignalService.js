@@ -64,7 +64,7 @@ class SignalService {
         }
     }
 
-    async updateSignal(signalUpdateData) {
+    async updateSignal(userId, signalUpdateData) {
         try {
             const { id, ...fields } = signalUpdateData;
 
@@ -72,6 +72,8 @@ class SignalService {
                 id,
                 Object.fromEntries(Object.entries(fields).filter(([_, v]) => v !== undefined))
             )
+
+            this.userActionService.logUpdate(userId, SIGNALS_LOG_TABLE, id, null)
         } catch (error) {
             console.error(`Error updating signal: ${error.message}`);
             throw error;
@@ -103,8 +105,29 @@ class SignalService {
         }
     }
 
-    async disableSignal(signalId, validTo) {
-        await this.signalRepository.disableSignal(signalId, validTo)
+    async disableSignal(userId, signalId, validTo) {
+        try {
+            // 1. Thesis
+            const thesisSigId = await this.signalRepository.disableSignalInThesis(signalId, validTo);
+            if (thesisSigId) {
+                await this.userActionService.logDisabling(userId, THESES_SIGNALS_LOG_TABLE, thesisSigId, null);
+            }
+
+            // 2. Sector
+            const sectorSigId = await this.signalRepository.disableSignalInSector(signalId, validTo);
+            if (sectorSigId) {
+                await this.userActionService.logDisabling(userId, SECTORS_SIGNALS_LOG_TABLE, sectorSigId, null);
+            }
+
+            // 3. Field
+            const fieldSigId = await this.signalRepository.disableSignalInField(signalId, validTo);
+            if (fieldSigId) {
+                await this.userActionService.logDisabling(userId, FIELDS_SIGNALS_LOG_TABLE, fieldSigId, null);
+            }
+        }
+        catch (error) {
+            throw error;
+        }
     }
 
     async getSignalInfo(signalId, timestamp) {
