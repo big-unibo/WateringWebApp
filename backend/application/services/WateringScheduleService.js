@@ -1,4 +1,4 @@
-import { SCHEDULE_SAFE_INTERVAL } from "../commons/constants.js";
+import { SCHEDULE_SAFE_INTERVAL, WATERING_EVENTS_LOG_TABLE } from "../commons/constants.js";
 import { WateringEvent, WateringScheduleResponse } from "../dtos/wateringScheduleDto.js";
 import DtoConverter from "./DtoConverter.js";
 
@@ -19,8 +19,12 @@ class WateringScheduleService {
         return dtoConverter.convertCalendarWrapper(results);
     }
 
-    async updateWateringEvent(eventId, fieldsToUpdate) {
-        return await this.wateringScheduleRepository.updateWateringEvent(eventId, fieldsToUpdate)
+    async updateWateringEvent(userId, eventId, fieldsToUpdate) {
+        const result = await this.wateringScheduleRepository.updateWateringEvent(eventId, fieldsToUpdate)
+        if (result) {
+            await this.userActionService.logUpdate(userId, WATERING_EVENTS_LOG_TABLE, eventId, null);
+        }
+        return result
     }
 
     async isEventUpdateAllowed(eventId, newWateringStart) {
@@ -31,11 +35,15 @@ class WateringScheduleService {
         return false
     }
 
-    async createWateringEvent(event) {
-        return await this.wateringScheduleRepository.createWateringEvent(event)
+    async createWateringEvent(userId, event) {
+        const newEventId = await this.wateringScheduleRepository.createWateringEvent(event)
+        if (newEventId) {
+            await this.userActionService.logCreation(userId, WATERING_EVENTS_LOG_TABLE, newEventId, null);
+        }
+        return newEventId
     }
 
-    async createPeriodicWateringEvent(sectorId, timestampFrom, timestampTo) {
+    async createPeriodicWateringEvent(userId, sectorId, timestampFrom, timestampTo) {
 
         let wateringFrequenciesList = await this.wateringAdviceRepository.getSectorWateringFrequency(sectorId, timestampFrom, timestampTo);
         wateringFrequenciesList.sort((a, b) => (a.validFrom || 0) - (b.validFrom || 0));
@@ -67,7 +75,7 @@ class WateringScheduleService {
             const currentParam = wateringFrequenciesList[paramIndex];
             const currentFrequency = currentParam.wateringFrequency * 3600;
 
-            const newEventId = await this.createWateringEvent({
+            const newEventId = await this.createWateringEvent(userId, {
                 sectorId,
                 wateringStart: wateringTimestamp,
             });
@@ -76,11 +84,15 @@ class WateringScheduleService {
             wateringTimestamp += currentFrequency;
         }
 
-        return eventIds; 
+        return eventIds;
     }
 
-    async deleteWateringEvents(sectorId, timestamp) {
-        return await this.wateringScheduleRepository.deleteWateringEvents(sectorId,timestamp)
+    async deleteWateringEvents(userId, sectorId, timestamp) {
+        const deletedEventsIds = await this.wateringScheduleRepository.deleteWateringEvents(sectorId, timestamp)
+        if (deletedEventsIds) {
+            await this.userActionService.logDeletion(userId, WATERING_EVENTS_LOG_TABLE, deletedEventsIds, null);
+        }
+        return deletedEventsIds
     }
 }
 

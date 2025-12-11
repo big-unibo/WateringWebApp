@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { WateringEvent } from '../dtos/wateringScheduleDto.js';
-import { SCHEDULE_SAFE_INTERVAL, WATERING_EVENTS_LOG_TABLE } from '../commons/constants.js';
+import { SCHEDULE_SAFE_INTERVAL } from '../commons/constants.js';
 
-const wateringScheduleRouter = ({ authenticationService, authorizationService, wateringScheduleService, userActionService }) => {
+const wateringScheduleRouter = ({ authenticationService, authorizationService, wateringScheduleService}) => {
     const router = Router();
 
     /**
@@ -237,11 +237,10 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
                 }
             }
 
-            const result = await wateringScheduleService.updateWateringEvent(eventId, fieldsToUpdate);
+            const result = await wateringScheduleService.updateWateringEvent(userId, eventId, fieldsToUpdate);
             if (!result) {
                 return res.status(404).json({ message: "No event found with the given id" });
             }    
-            userActionService.logUpdate(userId, WATERING_EVENTS_LOG_TABLE, eventId, null);
             return res.status(200).json({ message: "Event successfully updated" });
         } catch (error) {
             console.log(`Failed retrieving calendar caused by: ${error.message}`);
@@ -357,10 +356,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
                 enabled: req.body.enabled ?? true
             });
 
-            const newEventId = await wateringScheduleService.createWateringEvent(event);
-            if(newEventId){
-                userActionService.logCreation(userId, WATERING_EVENTS_LOG_TABLE, newEventId, null);
-            }
+            const newEventId = await wateringScheduleService.createWateringEvent(userId, event);
             res.status(200).json({ message: 'Watering event created successfully', eventId: newEventId });
         } catch (error) {
             console.error(`Error creating watering event: ${error.message}`);
@@ -490,11 +486,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             const timestampFrom = req.query.timestampFrom;
             const timestampTo = req.query.timestampTo;
 
-
-            const newEventIds = await wateringScheduleService.createPeriodicWateringEvent(sectorId, timestampFrom, timestampTo);
-            if(newEventIds){
-                userActionService.logCreation(userId, WATERING_EVENTS_LOG_TABLE, newEventIds, null);
-            }
+            const newEventIds = await wateringScheduleService.createPeriodicWateringEvent(userId, sectorId, timestampFrom, timestampTo);
             res.status(200).json({ message: 'Watering events created successfully', eventIds: newEventIds });
         } catch (error) {
             console.error(`Error creating watering events: ${error.message}`);
@@ -605,11 +597,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
                 return res.status(400).json({ message: "End timestamp is too soon" });
             }
 
-            const deletedEventsIds = await wateringScheduleService.deleteWateringEvents(sectorId, timestamp);
-
-            if(deletedEventsIds){
-                userActionService.logDeletion(userId, WATERING_EVENTS_LOG_TABLE, deletedEventsIds, null);
-            }
+            const deletedEventsIds = await wateringScheduleService.deleteWateringEvents(userId, sectorId, timestamp);
             res.status(200).json({ message: 'Irrigation season ended successfully'});
         } catch (error) {
             console.log(`Failed ending watering seasons caused by: ${error.message}`);
