@@ -340,39 +340,6 @@ class FieldService {
             throw error;
         }
     }
-
-    // async updateWateringSectorDetails(sectorDetails, timestampFrom) {
-    //     await this.fieldRepository.updateWateringSectorDetails(sectorDetails, timestampFrom || Math.floor(Date.now()/1000))
-    // }
-
-    // async getDripperInfo(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp) {
-    //     return this.fieldRepository.getDripperInfo(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp)
-    // }
-
-    // async findThesisPoints(refStructureName, companyName, fieldName, sectorName, thesisName) {
-    //     return this.dataInterpolatedRepository.findThesisPoints(refStructureName, companyName, fieldName, sectorName, thesisName)
-    // }
-
-    // async disableWateringBaseline(refStructureName, companyName, fieldName, sectorName, timestamp) {
-    //     await this.fieldRepository.disableWateringBaseline(refStructureName, companyName, fieldName, sectorName, timestamp)
-    // }
-
-    // async disableOptimalState(refStructureName, companyName, fieldName, sectorName, timestamp){
-    //     await this.fieldRepository.disableOptimalState(refStructureName, companyName, fieldName, sectorName, timestamp)
-    // }
-
-    // async disableMonitoringThesis(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp) {
-    //     await this.fieldRepository.disableMonitoringThesis(refStructureName, companyName, fieldName, sectorName, thesisName, timestamp)
-    // }
-
-    // async disableSector(refStructureName, companyName, fieldName, sectorName, timestamp) {
-    //     await this.fieldRepository.disableSector(refStructureName, companyName, fieldName, sectorName, timestamp)
-    // }
-
-    // async disableNode(refStructureName, companyName, fieldName, sectorName, thesisName, nodeId, timestamp) {
-    //     await this.fieldRepository.disableNode(refStructureName, companyName, fieldName, sectorName, thesisName, nodeId, timestamp)
-    // }
-
 }
 
 export default FieldService;
