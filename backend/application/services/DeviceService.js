@@ -136,19 +136,19 @@ class DeviceService {
             await Promise.all(device.signals.map(async (signal) => {
 
                 // 1. Thesis
-                const thesisSigId = await this.signalsRepository.disableSignalInThesis(signal.signalId, timestamp);
+                const thesisSigId = await this.signalRepository.disableSignalInThesis(signal.signalId, timestamp);
                 if (thesisSigId) {
                     await this.userActionService.logDisabling(userId, THESES_SIGNALS_LOG_TABLE, thesisSigId, null);
                 }
 
                 // 2. Sector
-                const sectorSigId = await this.signalsRepository.disableSignalInSector(signal.signalId, timestamp);
+                const sectorSigId = await this.signalRepository.disableSignalInSector(signal.signalId, timestamp);
                 if (sectorSigId) {
                     await this.userActionService.logDisabling(userId, SECTORS_SIGNALS_LOG_TABLE, sectorSigId, null);
                 }
 
                 // 3. Field
-                const fieldSigId = await this.signalsRepository.disableSignalInField(signal.signalId, timestamp);
+                const fieldSigId = await this.signalRepository.disableSignalInField(signal.signalId, timestamp);
                 if (fieldSigId) {
                     await this.userActionService.logDisabling(userId, FIELDS_SIGNALS_LOG_TABLE, fieldSigId, null);
                 }

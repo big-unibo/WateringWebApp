@@ -1,3 +1,4 @@
+import { USERS_LOG_TABLE } from "../commons/constants.js";
 import { User, UserData } from "../dtos/userDto.js";
 import { UserPermit, UserPermits } from "../dtos/userPermitsDto.js";
 
@@ -17,33 +18,41 @@ class UserService {
         return await this.userRepository.findUserByEmail(email);
     }
 
-    async createUsers(request) {
+    async createUsers(userId, request) {
         try {
             const results = await Promise.all(
-                request.users.map(user =>
-                    this.userRepository.createUser(
+                request.users.map(async (user) => {
+                    const newUser = await this.userRepository.createUser(
                         user.email,
                         user.password,
                         user.name,
-                        user.role 
-                    ).catch(error => {
-                        console.error(`Error creating user ${user.name}: ${error.message}`);
-                        throw error; 
-                    })
-                )
+                        user.role
+                    );
+
+                    if (newUser && newUser.id) {
+                        await this.userActionService.logCreation(
+                            userId,
+                            USERS_LOG_TABLE,
+                            newUser.id,
+                            null
+                        );
+                    }
+
+                    return newUser;
+                })
             );
 
-            return results; 
+            return results;
         } catch (error) {
-            console.error(`Error creating user ${error.message}`);
+            console.error(`Error creating users: ${error.message}`);
             throw error;
         }
     }
 
-    async findUserPermits(userId){
-        try{
+    async findUserPermits(userId) {
+        try {
             const user = (await this.findUser(userId));
-            if(!user){
+            if (!user) {
                 throw new Error("User does not exist");
             }
 
@@ -54,8 +63,8 @@ class UserService {
             } else {
                 throw new Error("Invalid result")
             }
-        }catch(error){
-            console.error(`Errore while searching for user permits: `,error);
+        } catch (error) {
+            console.error(`Errore while searching for user permits: `, error);
             throw error;
         }
     }
@@ -74,7 +83,7 @@ class UserService {
                     });
                 } else {
                     if (p.id_key !== null) {
-                        map.get(key).idKeys.add(p.idKey); 
+                        map.get(key).idKeys.add(p.idKey);
                     }
                 }
             });
@@ -92,15 +101,15 @@ class UserService {
         }
     }
 
-    async getUserData(userId){
+    async getUserData(userId) {
         const rawUserData = await this.findUser(userId);
-        if(rawUserData){
+        if (rawUserData) {
             return new UserData(
                 rawUserData.email,
                 rawUserData.name,
                 rawUserData.role
             )
-        }else{
+        } else {
             return null
         }
     }

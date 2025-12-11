@@ -167,8 +167,8 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
         try {
             const userId = requestUserData.userId;
 
-            if (!(await authorizationService.isUserAuthorized(userId, 'create', 'users')))
-            return res.status(403).json({ message: 'Unauthorized request' });
+            // if (!(await authorizationService.isUserAuthorized(userId, 'create', 'users')))
+            // return res.status(403).json({ message: 'Unauthorized request' });
 
             if (req.body.users.length === 0)
                 return res.status(400).json({ message: 'Insert at  least onew user' });
@@ -185,7 +185,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
             )
             );
 
-            await userService.createUsers(request);
+            await userService.createUsers(userId, request);
             return res.status(200).json({ message: 'Users created successfully' });
         } catch (error) {
             console.error(`Fail creating user caused by: ${error.message}`);
