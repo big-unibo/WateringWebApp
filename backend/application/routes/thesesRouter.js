@@ -1,9 +1,9 @@
 import { Router } from 'express'
-import { HUMIDITY_DEVICE_TYPE, OPTIMAL_PROFILES_LOG_TABLE, WATERING_ALGORITHM_LOG_TABLE } from '../commons/constants.js'
+import { HUMIDITY_DEVICE_TYPE } from '../commons/constants.js'
 import { GridOptimalProfiles } from '../dtos/optStateDto.js'
 import { WateringParams } from '../dtos/wateringParamsDto.js'
 
-const thesesRouter = ({ userService, authenticationService, authorizationService, fieldService, wateringAdviceService, userActionService }) => {
+const thesesRouter = ({ userService, authenticationService, authorizationService, fieldService, wateringAdviceService }) => {
     const router = Router();
 
     /**
@@ -773,7 +773,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
 
             if (req.query.optimalProfileId !== undefined) {
                 const optimalProfileId = Number(req.query.optimalProfileId);
-                optimalProfileAssignmentId = await fieldService.setOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound, optimalDryBound, optimalProfileId)
+                optimalProfileAssignmentId = await fieldService.setOptimalState(userId, gridId, validFrom, validTo, stopPercentage, optimalWetBound, optimalDryBound, optimalProfileId)
             }
             else if (req.query.thesisId !== undefined && req.query.imageTimestamp !== undefined) {
                 const sourceThesisId = Number(req.query.thesisId);
@@ -794,7 +794,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
                 }))
 
                 const gridOptimalProfiles = new GridOptimalProfiles(gridId, validFrom, validTo, stopPercentage, optimalDryBound, optimalWetBound, optimalState)
-                optimalProfileAssignmentId = await fieldService.createMatrixOptimalState(gridOptimalProfiles)
+                optimalProfileAssignmentId = await fieldService.createMatrixOptimalState(userId, gridOptimalProfiles)
             }
             else {
                 const optimalState = req.body.optimalState
@@ -808,10 +808,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
                     return res.status(400).json({ error: "Optimal state matrix does not match" })
 
                 const gridOptimalProfiles = new GridOptimalProfiles(gridId, validFrom, validTo, stopPercentage, optimalDryBound, optimalWetBound, optimalState)
-                optimalProfileAssignmentId =  await fieldService.createMatrixOptimalState(gridOptimalProfiles)  
-            }
-            if(optimalProfileAssignmentId){
-                userActionService.logCreation(userId, OPTIMAL_PROFILES_LOG_TABLE, optimalProfileAssignmentId, null)
+                optimalProfileAssignmentId =  await fieldService.createMatrixOptimalState(userId, gridOptimalProfiles)  
             }
             return res.status(200).json({ message: 'Optimal state set successfully' });
         } catch (error) {
@@ -1063,10 +1060,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
                 description
             );
 
-            const algorithmId = await wateringAdviceService.setWateringAlgorithmParams(thesisId, wateringParams, validFrom, validTo)
-            if(algorithmId){
-                userActionService.logCreation(userId, WATERING_ALGORITHM_LOG_TABLE, algorithmId, null);
-            }
+            const algorithmId = await wateringAdviceService.setWateringAlgorithmParams(userId, thesisId, wateringParams, validFrom, validTo)
             return res.status(200).json({ message: `Watering Parameters updated with success` })
         } catch (error) {
             console.log(`Fail updating watering parameters caused by: ${error.message}`)

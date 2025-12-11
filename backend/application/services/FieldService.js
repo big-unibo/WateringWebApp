@@ -1,4 +1,4 @@
-import { FIELDS_LOG_TABLE, SECTORS_LOG_TABLE, THESES_IN_SECTORS_LOG_TABLE, THESES_LOG_TABLE } from '../commons/constants.js';
+import { FIELDS_LOG_TABLE, OPTIMAL_PROFILES_LOG_TABLE, SECTORS_LOG_TABLE, THESES_IN_SECTORS_LOG_TABLE, THESES_LOG_TABLE } from '../commons/constants.js';
 import { OptimalStateData } from '../dtos/optStateDto.js';
 import DtoConverter from './DtoConverter.js';
 
@@ -65,7 +65,7 @@ class FieldService {
         const newThesisId = await this.fieldRepository.createThesis(thesis.thesisName);
         if (!newThesisId) {
             throw Error("Impossible to create thesis")
-        } 
+        }
         await this.userActionService.logCreation(userId, THESES_LOG_TABLE, newThesisId, null);
         const assignmentId = await this.fieldRepository.assignThesisToSector(newThesisId, thesis.sectorId, undefined, thesis.validFrom || Math.floor(Date.now() / 1000));
         await this.userActionService.logCreation(userId, THESES_IN_SECTORS_LOG_TABLE, assignmentId, null);
@@ -215,7 +215,7 @@ class FieldService {
         return this.interpolatedProfileRepository.findThesisPoints(gridId)
     }
 
-    async createMatrixOptimalState(gridOptimalProfiles) {
+    async createMatrixOptimalState(userId, gridOptimalProfiles) {
         const matrixData = await this.fieldRepository.createMatrixOptimalState(
             gridOptimalProfiles.gridId,
             gridOptimalProfiles.validFrom,
@@ -233,15 +233,16 @@ class FieldService {
         for (const optimalProfile of gridOptimalProfiles.optimalState) {
             await this.fieldRepository.createMatrixProfile(matrixId, optimalProfile.x, optimalProfile.y, optimalProfile.z, optimalProfile.value, optimalProfile.weight)
         }
-
+        await this.userActionService.logCreation(userId, OPTIMAL_PROFILES_LOG_TABLE, matrixData.optimalProfileAssignmentId, null)
         return matrixData.optimalProfileAssignmentId
     }
 
-    async setOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound, optimalDryBound, profileId) {
+    async setOptimalState(userId, gridId, validFrom, validTo, stopPercentage, optimalWetBound, optimalDryBound, profileId) {
         const matrixData = await this.fieldRepository.createMatrixOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound, optimalDryBound, profileId)
         if (!matrixData.matrixId || !matrixData.optimalProfileAssignmentId) {
             throw Error("Impossible to create optimal matrix for this thesis")
         }
+        await this.userActionService.logCreation(userId, OPTIMAL_PROFILES_LOG_TABLE, matrixData.optimalProfileAssignmentId, null)
         return matrixData.optimalProfileAssignmentId
     }
 

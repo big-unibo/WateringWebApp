@@ -1,3 +1,4 @@
+import { WATERING_ALGORITHM_LOG_TABLE } from '../commons/constants.js';
 import { WateringAdvice } from '../dtos/wateringAdviceDto.js';
 
 
@@ -55,7 +56,7 @@ const computeIrrigation = (advice, sectorDetails, maxWatering, expectedWater) =>
 
 export class WateringAdviceService {
 
-    constructor(wateringAdviceRepository, fieldRepository, interpolatedProfileRepository, optimalDistanceRepository, thesesAllSignalsRepository, userActionService){
+    constructor(wateringAdviceRepository, fieldRepository, interpolatedProfileRepository, optimalDistanceRepository, thesesAllSignalsRepository, userActionService) {
         this.wateringAdviceRepository = wateringAdviceRepository
         this.fieldRepository = fieldRepository
         this.interpolatedProfileRepository = interpolatedProfileRepository
@@ -66,16 +67,16 @@ export class WateringAdviceService {
 
     async getThesisLastWateringAdvice(thesisId, timestamp) {
         const result = await this.wateringAdviceRepository.getThesisLastWateringAdvice(thesisId, timestamp)
-        if (result){
+        if (result) {
             return dtoConverter.convertWateringAdviceWrapper(result)
         }
     }
 
     async getWateringAdvice(thesisId, expectedWater, timestamp) {
-        try{
+        try {
 
             let r
-            
+
             const thesisDetails = await this.fieldRepository.getThesisDetails(thesisId, timestamp)
             const algorithmParams = await this.wateringAdviceRepository.getWateringAlgorithmParams(thesisId, timestamp)
             if (!thesisDetails || !algorithmParams) {
@@ -83,7 +84,7 @@ export class WateringAdviceService {
                 throw new Error("Thesis details or algorithm params not found");
             }
             const sectorDetails = await this.fieldRepository.getSectorDetails(thesisDetails.sector.id, timestamp)
-            if (!sectorDetails){
+            if (!sectorDetails) {
                 console.warn("Sector details not found, returning empty advice");
                 throw new Error("Sector details not found");
             }
@@ -94,15 +95,15 @@ export class WateringAdviceService {
 
                 const differences = await this.optimalDistanceRepository.findPunctualDistance(thesisId, lastImageTimestamp)
 
-                if(differences.length > 0){
+                if (differences.length > 0) {
 
                     r = differences.reduce((acc, curr) => acc + curr.distance, 0) / differences.reduce((acc, curr) => acc + curr.weight, 0)
-                    const oldParams = await this.wateringAdviceRepository.getThesisLastWateringAdvice(thesisId, Math.min(timestamp - (algorithmParams.wateringFrequency/2 * 3600), lastImageTimestamp));
+                    const oldParams = await this.wateringAdviceRepository.getThesisLastWateringAdvice(thesisId, Math.min(timestamp - (algorithmParams.wateringFrequency / 2 * 3600), lastImageTimestamp));
 
                     if (oldParams.advice != null && oldParams.r != null && oldParams.imageTimestamp != null) {
                         let advicePID = oldParams.advice + algorithmParams.kp * (r - oldParams.r) + algorithmParams.ki * r
 
-                        const {advice, duration} = computeIrrigation(advicePID, sectorDetails, algorithmParams.maxWatering, expectedWater)
+                        const { advice, duration } = computeIrrigation(advicePID, sectorDetails, algorithmParams.maxWatering, expectedWater)
 
                         const lastWatering = (await this.thesesAllSignalsRepository.getMeasurementsByThesis(
                             thesisId,
@@ -113,19 +114,19 @@ export class WateringAdviceService {
                             (lastImageTimestamp - oldParams.imageTimestamp + 2) * 2
                         ))[0]?.value || 0;
 
-                        return new WateringAdvice( 
-                            thesisDetails.thesisName, 
+                        return new WateringAdvice(
+                            thesisDetails.thesisName,
                             advice,
-                            duration, 
-                            Number(lastImageTimestamp), 
-                            Number(timestamp), 
-                            r,  
-                            lastWatering, 
+                            duration,
+                            Number(lastImageTimestamp),
+                            Number(timestamp),
+                            r,
+                            lastWatering,
                             false)
 
                     } else {
                         console.warn("No old params found, using baseline");
-                    }            
+                    }
                 }
                 else {
                     console.warn("No optimal image found, using baseline");
@@ -134,7 +135,7 @@ export class WateringAdviceService {
                 console.warn("No observed profile found during last irrigation period, using baseline")
             }
 
-            const {advice, duration} = computeIrrigation(algorithmParams.wateringBaseline, sectorDetails, algorithmParams.maxWatering, expectedWater)
+            const { advice, duration } = computeIrrigation(algorithmParams.wateringBaseline, sectorDetails, algorithmParams.maxWatering, expectedWater)
             return new WateringAdvice(
                 thesisDetails.thesisName,
                 advice,
@@ -149,13 +150,16 @@ export class WateringAdviceService {
         }
     }
 
-    async setWateringAlgorithmParams(thesisId, wateringParams, validFrom, validTo) {
-        return await this.wateringAdviceRepository.setWateringAlgorithmParams(thesisId, wateringParams, validFrom, validTo)
+    async setWateringAlgorithmParams(userId, thesisId, wateringParams, validFrom, validTo) {
+        const algorithmId = await this.wateringAdviceRepository.setWateringAlgorithmParams(thesisId, wateringParams, validFrom, validTo)
+        if (algorithmId) {
+            this.userActionService.logCreation(userId, WATERING_ALGORITHM_LOG_TABLE, algorithmId, null);
+        }
     }
 
-    async getWateringAlgorithmParams(thesisId, timestamp){
+    async getWateringAlgorithmParams(thesisId, timestamp) {
         const result = await this.wateringAdviceRepository.getWateringAlgorithmParams(thesisId, timestamp)
-        if (result){
+        if (result) {
             return dtoConverter.convertWateringAlgorithmParamsWrapper(result)
         }
     }
