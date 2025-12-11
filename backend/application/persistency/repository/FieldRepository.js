@@ -196,9 +196,9 @@ class FieldRepository {
         });
         return model.id;
     }
-    
+
     async disableThesisInSector(sectorId, thesisId, timestamp) {
-        return await this.ThesisInSector.update(
+        const [updatedCount, updatedRecords] = await this.ThesisInSector.update(
             {
                 validTo: timestamp
             },
@@ -215,8 +215,16 @@ class FieldRepository {
                             [Op.gt]: timestamp
                         },
                     }
-                }
-            })
+                },
+                returning: true
+            }
+        );
+
+        if (updatedRecords && updatedRecords.length > 0) {
+            return updatedRecords[0].id;
+        }
+
+        return null;
     }
 
     async getThesisDetails(thesisId, timestamp) {
@@ -452,9 +460,9 @@ class FieldRepository {
         return await model.save()
     }
 
-    async disableThesisFromSector(thesisId, timestamp) {
+    async disableThesisFromSectors(thesisId, timestamp) {
         try {
-            await this.ThesisInSector.update(
+            const [updatedCount, updatedRecords] = await this.ThesisInSector.update(
                 {
                     validTo: timestamp
                 },
@@ -467,9 +475,15 @@ class FieldRepository {
                         validTo: {
                             [Op.is]: null
                         },
-                    }
+                    },
+                    returning: true
                 }
             )
+
+            if (updatedRecords && updatedRecords.length > 0) {
+                return updatedRecords.map(record => record.id);
+            }
+            return null;
         } catch (error) {
             throw new Error(`Error disabling thesis from sector: ${error.message}`);
         }
@@ -477,7 +491,7 @@ class FieldRepository {
 
     async setOptimalProfileAssignmentEndDate(gridId, timestamp) {
         try {
-            await this.GridOptimalProfileAssignment.update(
+            const [updatedCount, updatedRecords] = await this.GridOptimalProfileAssignment.update(
                 {
                     validTo: timestamp
                 },
@@ -490,13 +504,22 @@ class FieldRepository {
                         validTo: {
                             [Op.is]: null
                         },
-                    }
+                    },
+                    returning: true,
                 }
-            )
+            );
+
+            if (updatedRecords && updatedRecords.length > 0) {
+                return updatedRecords[0].id;
+            }
+
+            return null;
+
         } catch (error) {
             throw new Error(`Error setting validty end of the optimal profie: ${error.message}`);
         }
     }
+
     // async updateWateringSectorDetails(sectorDetails, timestampFrom){
     //     this.WateringSector.removeAttribute('id')
     //     this.WateringSector.update(

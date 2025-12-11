@@ -1,4 +1,4 @@
-import { FIELDS_LOG_TABLE, OPTIMAL_PROFILES_LOG_TABLE, SECTORS_LOG_TABLE, THESES_IN_SECTORS_LOG_TABLE, THESES_LOG_TABLE } from '../commons/constants.js';
+import { FIELDS_LOG_TABLE, OPTIMAL_PROFILES_LOG_TABLE, SECTORS_LOG_TABLE, THESES_IN_SECTORS_LOG_TABLE, THESES_LOG_TABLE, THESES_SIGNALS_LOG_TABLE, WATERING_ALGORITHM_LOG_TABLE } from '../commons/constants.js';
 import { OptimalStateData } from '../dtos/optStateDto.js';
 import DtoConverter from './DtoConverter.js';
 
@@ -270,17 +270,30 @@ class FieldService {
         })
     }
 
-    async disableThesis(thesisId, timestamp) {
+    async disableThesis(userId, thesisId, timestamp) {
         try {
             const deviceId = await this.thesesAllSignalsRepository.getGridDeviceByThesis(thesisId, timestamp, timestamp)
-            await this.fieldRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp)
-            await this.wateringAdviceRepository.setWateringAlgorithmParamsEndDate(thesisId, timestamp)
+            const optimalProfileAssignmentId = await this.fieldRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp)
+            if (optimalProfileAssignmentId) {
+                this.userActionService.logDisabling(userId, OPTIMAL_PROFILES_LOG_TABLE, optimalProfileAssignmentId, null)
+            }
+            const algorithmId = await this.wateringAdviceRepository.setWateringAlgorithmParamsEndDate(thesisId, timestamp)
+            if (algorithmId) {
+                this.userActionService.logDisabling(userId, WATERING_ALGORITHM_LOG_TABLE, algorithmId, null)
+            }
 
             const signals = await this.signalsRepository.getThesisAssociatedSignals(thesisId, timestamp)
-            await Promise.all(signals.map(signal =>
-                this.signalsRepository.disableSignalInThesis(signal.id, timestamp)
-            ));
-            await this.fieldRepository.disableThesisFromSector(thesisId, timestamp)
+            await Promise.all(signals.map(async (signal) => {
+                const signalAssignmentId = await this.signalsRepository.disableSignalInThesis(signal.id, timestamp);
+                if (signalAssignmentId) {
+                    await this.userActionService.logDisabling(userId, THESES_SIGNALS_LOG_TABLE, signalAssignmentId, null);
+                }
+            }));
+
+            const sectorAssignmentsIds = await this.fieldRepository.disableThesisFromSectors(thesisId, timestamp)
+            if (sectorAssignmentsIds) {
+                await this.userActionService.logDisabling(userId, THESES_IN_SECTORS_LOG_TABLE, sectorAssignmentsIds, null);
+            }
         } catch (error) {
             console.error(`Error disabling Thesis: ${error.message}`);
             throw error;

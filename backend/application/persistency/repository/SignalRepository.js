@@ -208,10 +208,18 @@ class SignalRepository {
 
     async disableSignalInThesis(signalId, validTo) {
         try {
-            return await this.SignalInThesis.update(
+            const [updatedCount, updatedRecords] = await this.SignalInThesis.update(
                 { validTo: validTo },
-                { where: this._getValidityConditions(signalId, validTo) }
+                {
+                    where: this._getValidityConditions(signalId, validTo),
+                    returning: true
+                }
             );
+
+            if (updatedRecords && updatedRecords.length > 0) {
+                return updatedRecords[0].id;
+            }
+            return null;
         } catch (error) {
             throw new Error(`Error disabling signal in Thesis: ${error.message}`);
         }
@@ -219,10 +227,18 @@ class SignalRepository {
 
     async disableSignalInSector(signalId, validTo) {
         try {
-            return await this.SignalInSector.update(
+            const [updatedCount, updatedRecords] = await this.SignalInSector.update(
                 { validTo: validTo },
-                { where: this._getValidityConditions(signalId, validTo) }
+                {
+                    where: this._getValidityConditions(signalId, validTo),
+                    returning: true
+                }
             );
+
+            if (updatedRecords && updatedRecords.length > 0) {
+                return updatedRecords[0].id;
+            }
+            return null;
         } catch (error) {
             throw new Error(`Error disabling signal in Sector: ${error.message}`);
         }
@@ -230,28 +246,20 @@ class SignalRepository {
 
     async disableSignalInField(signalId, validTo) {
         try {
-            return await this.SignalInField.update(
+            const [updatedCount, updatedRecords] = await this.SignalInField.update(
                 { validTo: validTo },
-                { where: this._getValidityConditions(signalId, validTo) }
+                {
+                    where: this._getValidityConditions(signalId, validTo),
+                    returning: true
+                }
             );
+
+            if (updatedRecords && updatedRecords.length > 0) {
+                return updatedRecords[0].id;
+            }
+            return null;
         } catch (error) {
             throw new Error(`Error disabling signal in Field: ${error.message}`);
-        }
-    }
-
-    async disableSignal(signalId, validTo) {
-        try {
-            const signal = await this.Signal.findByPk(signalId);
-            if (!signal) throw new Error("Signal not found");
-
-            await Promise.all([
-                this.disableSignalInThesis(signalId, validTo),
-                this.disableSignalInSector(signalId, validTo),
-                this.disableSignalInField(signalId, validTo)
-            ]);
-
-        } catch (error) {
-            throw error;
         }
     }
 

@@ -1,7 +1,8 @@
 const ActionTypes = {
     CREATE: 'CREATE',
     UPDATE: 'UPDATE',
-    DELETE: 'DELETE'
+    DELETE: 'DELETE',
+    DISABLE: 'DISABLE'
 };
 
 class UserActionService {
@@ -28,8 +29,12 @@ class UserActionService {
         return this._saveLog(userId, ActionTypes.UPDATE, table, ids, description )
     }
  
-    async logDeletion(userId, table, ids,description) {
+    async logDeletion(userId, table, ids, description) {
         return this._saveLog(userId, ActionTypes.DELETE, table, ids, description )
+    }
+
+    async logDisabling(userId, table, ids, description) {
+        return this._saveLog(userId, ActionTypes.DISABLE, table, ids, description )
     }
 }
 

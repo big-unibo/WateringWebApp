@@ -1167,13 +1167,13 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         } catch (error) {
             return res.status(403).json({ message: 'Authentication failed' });
         }
-
+        const userId = requestUserData.userId;
         const thesisId = req.params.thesisId;
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
 
         try{
             //[TO DO]: Authorization
-            await fieldService.disableThesis(thesisId, timestamp)
+            await fieldService.disableThesis(userId, thesisId, timestamp)
             return res.status(200).json({ message: `Thesis validity succesfully endend` })
         } catch (error) {
             console.log(`Failed disabling thesis: ${error.message}`)

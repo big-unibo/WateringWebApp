@@ -121,7 +121,7 @@ class WateringAdviceRepository {
 
     async setWateringAlgorithmParamsEndDate(thesisId, timestamp) {
         try {
-            await this.WateringAlgorithmParams.update(
+            const [updatedCount, updatedRecords] = await this.WateringAlgorithmParams.update(
                 {
                     validTo: timestamp
                 },
@@ -134,9 +134,17 @@ class WateringAdviceRepository {
                         validTo: {
                             [Op.is]: null
                         },
-                    }
+                    },
+                    returning: true 
                 }
-            )
+            );
+
+            if (updatedRecords && updatedRecords.length > 0) {
+                return updatedRecords[0].id;
+            }
+
+            return null;
+
         } catch (error) {
             throw new Error(`Error ending watering algorithm params validity: ${error.message}`);
         }
