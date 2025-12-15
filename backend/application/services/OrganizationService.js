@@ -12,6 +12,7 @@ class OrganizationService {
             const organizationId =  organizationCreated.id;
             if(organizationId){
                 this.userActionService.logCreation(userId, ORGANIZATIONS_LOG_TABLE, organizationId, null);
+                return organizationId
             }
         } catch (error) {
             console.error(`Error creating organization ${organizationName}: ${error.message}`);
