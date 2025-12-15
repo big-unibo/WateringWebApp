@@ -107,7 +107,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *     tags: [Sectors]
      *     description: |
      *        Returns all sector information given its ID. User must have monitoring permits for the requested sector.
-     *        If timestamp is not specified, sector data is returned despite it not having any associaterd thesis.              
+     *        If timestamp is not specified, sector data is returned despite it not having any associated theses.              
      *     parameters:
      *       - in: path
      *         name: sectorId
