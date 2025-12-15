@@ -1,7 +1,7 @@
-import {Router} from 'express';
-import { AddMeasurementsRequest,CreateSignal,SignalUpdate, SignalAssociation } from '../dtos/signalDto.js';
+import { Router } from 'express';
+import { AddMeasurementsRequest, CreateSignal, SignalUpdate, SignalAssociation } from '../dtos/signalDto.js';
 
-const signalsRouter = ({authenticationService, authorizationService, signalService }) => {
+const signalsRouter = ({ authenticationService, authorizationService, signalService }) => {
     const router = Router();
 
     /**
@@ -90,24 +90,24 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      *                 error:
      *                   type: string
      */
-    router.post('/create', async(req, res) => {
+    router.post('/create', async (req, res) => {
         let requestUserData;
-        try{
+        try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization)
         } catch (error) {
-            return res.status(401).json({message: 'Authentication failed'})
+            return res.status(401).json({ message: 'Authentication failed' })
         }
         const userId = requestUserData.userId
         //[TO DO]: Authorization
-        try{
+        try {
             const signal = new CreateSignal(req.body)
             const deviceId = req.query.deviceId
             const signalId = await signalService.createSignal(userId, deviceId, signal)
-            return res.status(200).json({ message: 'Signal successfully created' , id: signalId })
+            return res.status(200).json({ message: 'Signal successfully created', id: signalId })
         }
         catch (error) {
             console.log(`Fail updating signal caused by: ${error.message}`)
-            return res.status(500).json({error: "Error while creating signal"})
+            return res.status(500).json({ error: "Error while creating signal" })
         }
     });
 
@@ -195,6 +195,15 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      *               properties:
      *                 message:
      *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error – unexpected error while assigning signal
      *         content:
@@ -219,12 +228,17 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
         try {
 
             const signalId = req.params.signalId
+            const exists = await signalService.signalExists(signalId);
+            if (!exists) {
+                return res.status(404).json({ message: 'Signal not found' });
+            }
+
             const targetType = req.body.targetType
             const targetId = req.body.targetId
             const validFrom = req.body.validFrom
 
-            const signalAssociation = new SignalAssociation(signalId, targetType, targetId, validFrom);    
-                  
+            const signalAssociation = new SignalAssociation(signalId, targetType, targetId, validFrom);
+
             await signalService.assignSignal(userId, signalAssociation);
             return res.status(200).json({ message: 'Signals successfully associated' });
         } catch (error) {
@@ -306,6 +320,15 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      *               properties:
      *                 message:
      *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error – unexpected error while updating the signal
      *         content:
@@ -317,24 +340,28 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      *                   type: string
      */
 
-    router.put('/:signalId/update', async(req, res) => {
+    router.put('/:signalId/update', async (req, res) => {
         let requestUserData;
-        try{
+        try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(401).json({message: 'Authentication failed'});
+            return res.status(401).json({ message: 'Authentication failed' });
         }
 
         const userId = requestUserData.userId;
 
         //[TO DO]: Authorization
         const signalId = Number(req.params.signalId);
+        const exists = await signalService.signalExists(signalId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Signal not found' });
+        }
 
         const description = req.body.description;
         const idOnProvider = req.body.idOnProvider;
         const sensorTechnology = req.body.sensorTechnology;
 
-        try{
+        try {
             const signalUpdateData = new SignalUpdate(signalId, description, idOnProvider, sensorTechnology)
 
             await signalService.updateSignal(userId, signalUpdateData);
@@ -342,11 +369,11 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
         }
         catch (error) {
             console.log(`Fail updating signal caused by: ${error.message}`)
-            return res.status(500).json({error: "Error on updating signal"})
+            return res.status(500).json({ error: "Error on updating signal" })
         }
     });
 
-    
+
     /**
      * @swagger
      * /signals/{signalId}/disable:
@@ -362,8 +389,8 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      *         schema:
      *           type: integer
      *         description: ID of the signal to update
-	 *       - in: query
-	 *         name: validTo
+     *       - in: query
+     *         name: validTo
      *         schema:
      *           type: number
      *         description: The timestamp to use as end of validity for the signal. It must be a future timestamp.
@@ -419,6 +446,15 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      *               properties:
      *                 message:
      *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error – unexpected error while updating the signal
      *         content:
@@ -430,30 +466,34 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      *                   type: string
      */
 
-    router.post('/:signalId/disable', async(req, res) => {
+    router.post('/:signalId/disable', async (req, res) => {
         let requestUserData;
-        try{
+        try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(401).json({message: 'Authentication failed'});
+            return res.status(401).json({ message: 'Authentication failed' });
         }
         const userId = requestUserData.userId
 
         //[TO DO]: Authorization
         const signalId = Number(req.params.signalId);
+        const exists = await signalService.signalExists(signalId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Signal not found' });
+        }
 
-        const currentTimestamp = Date.now()/1000
+        const currentTimestamp = Date.now() / 1000
         const validTo = req.query.validTo ?? currentTimestamp;
-        try{
-            if (validTo < currentTimestamp){
-                return res.status(400).json({message: 'Invalid validTo timestamp provided. It must be a future timestamp'})
+        try {
+            if (validTo < currentTimestamp) {
+                return res.status(400).json({ message: 'Invalid validTo timestamp provided. It must be a future timestamp' })
             }
             await signalService.disableSignal(userId, signalId, validTo);
             return res.status(200).json({ message: 'Signal disabled successfully' });
         }
         catch (error) {
             console.log(`Fail disabling signal caused by: ${error.message}`)
-            return res.status(500).json({error: "Error on disabling signal"})
+            return res.status(500).json({ error: "Error on disabling signal" })
         }
     });
 
@@ -532,6 +572,15 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      *               properties:
      *                 message:
      *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error – unexpected error while creating measurments
      *         content:
@@ -543,28 +592,32 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
      *                   type: string
      *                   example: Error creating measurements
      */
-    router.post('/:signalId/addMeasurements', async(req, res) => {
+    router.post('/:signalId/addMeasurements', async (req, res) => {
         let requestUserData;
-        try{
+        try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(401).json({message: 'Authentication failed'});
+            return res.status(401).json({ message: 'Authentication failed' });
         }
         //[TO DO]: Authorization
 
         const signalId = Number(req.params.signalId);
+        const exists = await signalService.signalExists(signalId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Signal not found' });
+        }
 
         const measurements = req.body;
-        if (measurements.length === 0){
+        if (measurements.length === 0) {
             return res.status(400).json({ message: 'No measurements provided' });
         }
 
-        try{
+        try {
             const measurementsData = new AddMeasurementsRequest(signalId, measurements)
 
             await signalService.addMeasurements(measurementsData);
-            return res.status(200).json({  
-                message: `Added ${measurements.length} measurement(s) to signal ${signalId}`  
+            return res.status(200).json({
+                message: `Added ${measurements.length} measurement(s) to signal ${signalId}`
             });
         }
         catch (error) {
@@ -675,10 +728,10 @@ const signalsRouter = ({authenticationService, authorizationService, signalServi
         try {
 
             const signalId = req.params.signalId
-            const timestamp = req.query.timestamp ?? Date.now()/1000
+            const timestamp = req.query.timestamp ?? Date.now() / 1000
 
             const result = await signalService.getSignalInfo(signalId, timestamp)
-            if (result){
+            if (result) {
                 return res.status(200).json(result)
             }
             return res.status(404).json({ message: 'Signal not found' })

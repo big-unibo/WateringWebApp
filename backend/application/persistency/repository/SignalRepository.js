@@ -297,6 +297,13 @@ class SignalRepository {
             throw new Error(`Error while finding signals associations: ${error.message}`);
         }
     }
+
+    async signalExists(signalId) {
+        const count = await this.Signal.count({
+            where: { id: signalId }
+        });
+        return count > 0;
+    }
 }
 
 export default SignalRepository;

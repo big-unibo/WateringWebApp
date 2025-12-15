@@ -136,6 +136,10 @@ class SignalService {
             return dtoConverter.convertSignalAssociationsEntries(signalAssociations)
         }
     }
+
+    async signalExists(signalId) {
+        return await this.signalRepository.signalExists(signalId);
+    }
 }
 
 export default SignalService;
