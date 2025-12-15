@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 
-const logsRouter = ({authenticationService, authorizationService, logService}) => {
+const logsRouter = ({ authenticationService, authorizationService, logService, fieldService }) => {
     const router = Router()
 
     /**
@@ -83,6 +83,15 @@ const logsRouter = ({authenticationService, authorizationService, logService}) =
      *               properties:
      *                 message:
      *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error
      *         content:
@@ -94,10 +103,6 @@ const logsRouter = ({authenticationService, authorizationService, logService}) =
      *                   type: string
      */
     router.get("/:thesisId/anomalies", async (req, res) => {
-        const thesisId = req.params.thesisId;
-        const timeFilterFrom = req.query.timeFilterFrom;
-        const timeFilterTo = req.query.timeFilterTo;
-
         try {
             const user = await authenticationService.validateJwt(req.headers.authorization);
             // if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userId, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
@@ -105,6 +110,14 @@ const logsRouter = ({authenticationService, authorizationService, logService}) =
         } catch (error) {
             return res.status(403).json({ message: 'Authentication failed' });
         }
+
+        const thesisId = req.params.thesisId;
+        const exists = await fieldService.thesisExists(thesisId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Thesis not found' });
+        }
+        const timeFilterFrom = req.query.timeFilterFrom;
+        const timeFilterTo = req.query.timeFilterTo;
 
         try {
             const result = await logService.getThesisLogs(thesisId, timeFilterFrom, timeFilterTo);

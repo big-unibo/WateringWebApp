@@ -191,7 +191,7 @@ app.use(
 
 app.use(
   '/logs',
-  logsRouter({ authenticationService, authorizationService, logService })
+  logsRouter({ authenticationService, authorizationService, logService, fieldService })
 )
 
 app.use((err, req, res, next) => {
