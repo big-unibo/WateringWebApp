@@ -590,14 +590,12 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
 
         try {
             // TODO authorization 
-            //if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userId, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
-            //     return res.status(403).json({message: 'Unauthorized request'});
 
             const result = await wateringAdviceService.getWateringAdvice(thesisId, expectedWater, timestamp)
 
             return res.status(200).json(result)
         } catch (error) {
-            console.log(`Fail compute watering advice caused by: ${error.message}`)
+            console.log(`Failed to compute watering advice caused by: ${error.message}`)
             return res.status(500).json({ error: "Error computing watering advice" })
         }
     });
