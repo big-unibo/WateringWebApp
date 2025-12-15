@@ -46,7 +46,6 @@ async function setOptimal() {
 
   try {
     if (updateWithMatrixId.value) {
-      console.log(matrixId.value)
       await communicationService.setOptimalStateByMatrixId(parsed.environment, endpoint, parsed.paths, matrixId.value)
     } else {
       await communicationService.setOptimalStateByTimestamp(parsed.environment, endpoint, parsed.paths, props.selectedTimestamp)
