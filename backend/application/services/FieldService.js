@@ -30,6 +30,10 @@ class FieldService {
         return await this.fieldRepository.fieldExists(fieldId)
     }
 
+    async sectorExists(sectorId) {
+        return await this.fieldRepository.sectorExists(sectorId)
+    }
+
     async createField(userId, field) {
         try {
             const fieldCreated = await this.fieldRepository.createField(field.fieldName, field.companyId, field.location);
