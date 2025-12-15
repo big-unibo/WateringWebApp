@@ -298,7 +298,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *               properties:
      *                 message:
      *                   type: string
-     *       '403':
+     *       '404':
      *         description: Resource not found
      *         content:
      *           application/json:

@@ -186,7 +186,7 @@ app.use(
 
 app.use(
   '/wateringSchedule',
-  wateringScheduleRouter({ authenticationService, authorizationService, wateringScheduleService })
+  wateringScheduleRouter({ authenticationService, authorizationService, wateringScheduleService, fieldService })
 )
 
 app.use(

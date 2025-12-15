@@ -2,14 +2,14 @@ import { Router } from 'express';
 import { WateringEvent } from '../dtos/wateringScheduleDto.js';
 import { SCHEDULE_SAFE_INTERVAL } from '../commons/constants.js';
 
-const wateringScheduleRouter = ({ authenticationService, authorizationService, wateringScheduleService}) => {
+const wateringScheduleRouter = ({ authenticationService, authorizationService, wateringScheduleService, fieldService }) => {
     const router = Router();
 
     /**
      * @swagger
      * /wateringSchedule/{sectorId}/calendar:
      *   get:
-     *     summary: Retrivies calendar data for a given secotr within a time range
+     *     summary: Retrivies calendar data for a given sector within a time range
      *     tags: [Watering Schedule Operation]
      *     description: Returns every watering event for a given sector and within a given time range, also including the contribution of every thesis for the event. Requires authentication and proper authorization
      *     parameters:
@@ -80,6 +80,15 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
      *               properties:
      *                 message:
      *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error
      *         content:
@@ -103,6 +112,10 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             //     return res.status(403).json({ message: 'Unauthorized request' });
 
             const sectorId = parseInt(req.params.sectorId);
+            const exists = await fieldService.sectorExists(sectorId);
+            if (!exists) {
+                return res.status(404).json({ message: 'Sector not found' });
+            }
 
             const timeFilterFrom = Number(req.query.timeFilterFrom)
             const timeFilterTo = Number(req.query.timeFilterTo)
@@ -231,8 +244,8 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             )
 
             /*Cheking validity of new watering start in relation to the following event */
-            if(Object.hasOwn(fieldsToUpdate, 'wateringStart')){
-                if(!await wateringScheduleService.isEventUpdateAllowed(eventId, fieldsToUpdate.wateringStart)){
+            if (Object.hasOwn(fieldsToUpdate, 'wateringStart')) {
+                if (!await wateringScheduleService.isEventUpdateAllowed(eventId, fieldsToUpdate.wateringStart)) {
                     return res.status(400).json({ message: "Watering start not allowed for this event" });
                 }
             }
@@ -240,7 +253,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             const result = await wateringScheduleService.updateWateringEvent(userId, eventId, fieldsToUpdate);
             if (!result) {
                 return res.status(404).json({ message: "No event found with the given id" });
-            }    
+            }
             return res.status(200).json({ message: "Event successfully updated" });
         } catch (error) {
             console.log(`Failed retrieving calendar caused by: ${error.message}`);
@@ -323,6 +336,15 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
      *               properties:
      *                 message:
      *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error
      *         content:
@@ -348,8 +370,14 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             // if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'watering_events')))
             //     return res.status(403).json({ message: 'Unauthorized request' });
 
+            const sectorId = req.params.sectorId
+            const exists = await fieldService.sectorExists(sectorId);
+            if (!exists) {
+                return res.status(404).json({ message: 'Sector not found' });
+            }
+
             const event = new WateringEvent({
-                sectorId: req.params.sectorId,
+                sectorId: sectorId,
                 wateringStart: req.body.wateringStart,
                 expectedWater: req.body.expectedWater,
                 note: req.body.note,
@@ -456,6 +484,15 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
      *                 message:
      *                   type: string
      *                   example: Unauthorized request
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error
      *         content:
@@ -483,6 +520,10 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             //     return res.status(403).json({ message: 'Unauthorized request' });
 
             const sectorId = req.params.sectorId;
+            const exists = await fieldService.sectorExists(sectorId);
+            if (!exists) {
+                return res.status(404).json({ message: 'Sector not found' });
+            }
             const timestampFrom = req.query.timestampFrom;
             const timestampTo = req.query.timestampTo;
 
@@ -566,6 +607,15 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
      *               properties:
      *                 message:
      *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error
      *         content:
@@ -589,16 +639,20 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             // if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'companies')))
             //     return res.status(403).json({ message: 'Unauthorized request' });
 
-            const now = Date.now()/1000
+            const now = Date.now() / 1000
             const sectorId = parseInt(req.params.sectorId);
+            const exists = await fieldService.sectorExists(sectorId);
+            if (!exists) {
+                return res.status(404).json({ message: 'Sector not found' });
+            }
 
             const timestamp = req.query.timestamp || now + SCHEDULE_SAFE_INTERVAL
-            if(req.query.timestamp < now + SCHEDULE_SAFE_INTERVAL ){
+            if (req.query.timestamp < now + SCHEDULE_SAFE_INTERVAL) {
                 return res.status(400).json({ message: "End timestamp is too soon" });
             }
 
             const deletedEventsIds = await wateringScheduleService.deleteWateringEvents(userId, sectorId, timestamp);
-            res.status(200).json({ message: 'Irrigation season ended successfully'});
+            res.status(200).json({ message: 'Irrigation season ended successfully' });
         } catch (error) {
             console.log(`Failed ending watering seasons caused by: ${error.message}`);
             return res.status(500).json({ message: "Error while trying to end watering season" });
