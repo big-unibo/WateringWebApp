@@ -39,26 +39,6 @@ class AuthService {
         else return undefined;
     }
 
-    // async retrieveUserFieldPermissions(token, timeFilterFrom, timeFilterTo) {
-    //     let params = undefined
-    //     if (timeFilterFrom && timeFilterTo) {
-    //         params = { timeFilterFrom: timeFilterFrom, timeFilterTo: timeFilterTo }
-    //     }
-    //     return axiosInstance.get('/userFields', {
-    //         headers: {
-    //             'Authorization': 'Bearer ' + token
-    //         },
-    //         params: params
-    //     }).then(response => {
-    //         if(response.data)
-    //             return response.data
-    //     }).catch(error => {
-    //         console.log(error)
-    //         console.error(`Get fields request failed: ${error.message}`)
-    //         this.logout()
-    //     });
-    // }
-
     async retrieveUserSectors(token, timeFilterFrom = null, timeFilterTo = null) {
         let params = undefined
         if (timeFilterFrom && timeFilterTo) {
