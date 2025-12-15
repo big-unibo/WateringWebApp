@@ -111,6 +111,15 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *               properties:
      *                 message:
      *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error
      *         content:
@@ -130,6 +139,10 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         }
         // [TO DO]: Authorization
         const thesisId = Number(req.params.thesisId)
+        const exists = await fieldService.thesisExists(thesisId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Thesis not found' });
+        }
 
         const timeFilterFrom = Number(req.query.timeFilterFrom)
         const timeFilterTo = Number(req.query.timeFilterTo)
@@ -230,6 +243,15 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *               properties:
      *                 message:
      *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error
      *         content:
@@ -250,10 +272,14 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
 
         // [TO DO]: Authorization
         const thesisId = Number(req.params.thesisId)
+        const exists = await fieldService.thesisExists(thesisId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Thesis not found' });
+        }
 
         const timeFilterFrom = Number(req.query.timeFilterFrom)
         const timeFilterTo = Number(req.query.timeFilterTo)
-        
+
         try {
             const results = await fieldService.getHeatmapByThesis(
                 thesisId,
@@ -342,6 +368,15 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *               properties:
      *                 message:
      *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error
      *         content:
@@ -361,6 +396,10 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         }
         // [TO DO]: Authorization
         const thesisId = Number(req.params.thesisId)
+        const exists = await fieldService.thesisExists(thesisId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Thesis not found' });
+        }
 
         const timeFilterFrom = Number(req.query.timeFilterFrom)
         const timeFilterTo = Number(req.query.timeFilterTo)
@@ -454,6 +493,15 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *               properties:
      *                 message:
      *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error
      *         content:
@@ -473,6 +521,10 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         }
         // [TO DO]: Authorization
         const thesisId = Number(req.params.thesisId)
+        const exists = await fieldService.thesisExists(thesisId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Thesis not found' });
+        }
 
         const timeFilterFrom = Number(req.query.timeFilterFrom)
         const timeFilterTo = Number(req.query.timeFilterTo)
@@ -558,6 +610,15 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *               properties:
      *                 message:
      *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error
      *         content:
@@ -580,6 +641,10 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         //     return res.status(403).json({ message: 'Unauthorized request' });
 
         const thesisId = Number(req.params.thesisId)
+        const exists = await fieldService.thesisExists(thesisId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Thesis not found' });
+        }
         const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000;
 
         try {
@@ -659,15 +724,24 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *               properties:
      *                 message:
      *                   type: string
-    *       500:
-    *         description: Internal server error
-    *         content:
-    *           application/json:
-    *             schema:
-    *               type: object
-    *               properties:
-    *                 message:
-    *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
     */
     router.get('/:thesisId/optimalState', async (req, res) => {
         try {
@@ -681,6 +755,10 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         //     return res.status(403).json({ message: 'Unauthorized request' });
 
         const thesisId = Number(req.params.thesisId)
+        const exists = await fieldService.thesisExists(thesisId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Thesis not found' });
+        }
         const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000;
 
         try {
@@ -766,6 +844,15 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *               properties:
      *                 message:
      *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error
      *         content:
@@ -788,6 +875,10 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         //     return res.status(403).json({ message: 'Unauthorized request' });
 
         const thesisId = Number(req.params.thesisId)
+        const exists = await fieldService.thesisExists(thesisId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Thesis not found' });
+        }
 
         const timeFilterFrom = Number(req.query.timeFilterFrom)
         const timeFilterTo = Number(req.query.timeFilterTo)
@@ -800,91 +891,100 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         }
     })
 
-        /**
-     * @swagger
-     * /fieldCharts/{thesisId}/profileStatistics:
-     *   get:
-     *     summary: Retrieves statistics data of profile, specifically the mean and std for each chell. (Requires proper authorization and authentication).
-     *     tags: [Field Chart Data]
-     *     description: Retrieves statistics data of profile, specifically the mean and std for each chell. (Requires proper authorization and authentication).
-     *     parameters:
-     *       - in: path
-     *         name: thesisId
-     *         required: true
-     *         schema:
-     *           type: integer
-     *         description: Id of the Thesis
-     *       - in: query
-     *         name: timeFilterFrom
-     *         required: true
-     *         schema:
-     *           type: number
-     *         description: Time filter start (timestamp in seconds since 01/01/1970)
-     *       - in: query
-     *         name: timeFilterTo
-     *         required: true
-     *         schema:
-     *           type: number
-     *         description: Time filter end (timestamp in seconds since 01/01/1970)
-     *     responses:
-     *       200:
-     *         description: Successfully retrieved profile statistics
-     *         content:
-     *           application/json:
-     *             schema:
-     *               $ref: '#/components/schemas/InterpolatedMeansDataResponse'
-     *       '400':
-     *         description: Input validation error (Bad Request)
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               required:
-     *                 - message
-     *               properties:
-     *                 message:
-     *                   type: string
-     *                   example: Input validation failed against OpenAPI schema
-     *                 errors:
-     *                   type: array
-     *                   description: Details of the OpenAPI schema violation.
-     *                   items:
-     *                     type: object
-     *                     properties:
-     *                       path:
-     *                         type: string
-     *                         description: Field or path that failed validation.
-     *                       message:
-     *                         type: string
-     *                         description: Description of the error.
-     *       '401':
-     *         description: Authentication failed (invalid or missing JWT)
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       '403':
-     *         description: Unauthorized (user not allowed to retrieve profile statistics for the given thesis)
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       500:
-     *         description: Internal server error
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     */
+    /**
+ * @swagger
+ * /fieldCharts/{thesisId}/profileStatistics:
+ *   get:
+ *     summary: Retrieves statistics data of profile, specifically the mean and std for each chell. (Requires proper authorization and authentication).
+ *     tags: [Field Chart Data]
+ *     description: Retrieves statistics data of profile, specifically the mean and std for each chell. (Requires proper authorization and authentication).
+ *     parameters:
+ *       - in: path
+ *         name: thesisId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Id of the Thesis
+ *       - in: query
+ *         name: timeFilterFrom
+ *         required: true
+ *         schema:
+ *           type: number
+ *         description: Time filter start (timestamp in seconds since 01/01/1970)
+ *       - in: query
+ *         name: timeFilterTo
+ *         required: true
+ *         schema:
+ *           type: number
+ *         description: Time filter end (timestamp in seconds since 01/01/1970)
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved profile statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InterpolatedMeansDataResponse'
+ *       '400':
+ *         description: Input validation error (Bad Request)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               required:
+ *                 - message
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Input validation failed against OpenAPI schema
+ *                 errors:
+ *                   type: array
+ *                   description: Details of the OpenAPI schema violation.
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       path:
+ *                         type: string
+ *                         description: Field or path that failed validation.
+ *                       message:
+ *                         type: string
+ *                         description: Description of the error.
+ *       '401':
+ *         description: Authentication failed (invalid or missing JWT)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       '403':
+ *         description: Unauthorized (user not allowed to retrieve profile statistics for the given thesis)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       '404':
+ *         description: Resource not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ */
     router.get('/:thesisId/profileStatistics', async (req, res) => {
         try {
             const user = await authenticationService.validateJwt(req.headers.authorization);
@@ -897,6 +997,10 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         //     return res.status(403).json({ message: 'Unauthorized request' });
 
         const thesisId = Number(req.params.thesisId)
+        const exists = await fieldService.thesisExists(thesisId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Thesis not found' });
+        }
         const timeFilterFrom = Number(req.query.timeFilterFrom)
         const timeFilterTo = Number(req.query.timeFilterTo)
 
