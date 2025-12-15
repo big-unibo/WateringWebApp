@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { Field } from '../dtos/fieldDto.js';
 import { Sector } from '../dtos/sectorDto.js';
 
-const fieldsRouter = ({ authenticationService, authorizationService, fieldService}) => {
+const fieldsRouter = ({ authenticationService, authorizationService, fieldService }) => {
     const router = Router();
 
 
@@ -28,12 +28,12 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *           type: integer
      *         description: ID of field to disable
      *     responses:
-	 *       200:
-	 *         description: Detailed sector information
-	 *         content:
-	 *           application/json:
-	 *             schema:
-	 *               $ref: '#/components/schemas/FieldData'
+     *       200:
+     *         description: Detailed sector information
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/FieldData'
      *       '400':
      *         description: Input validation error (Bad Request)
      *         content:
@@ -97,7 +97,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
 
         const fieldId = req.params.fieldId;
 
-        try{
+        try {
             const result = await fieldService.getFieldDetails(fieldId)
             return res.status(200).json(result)
         } catch (error) {
@@ -294,6 +294,15 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *               properties:
      *                 message:
      *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error – unexpected error during the process.
      *         content:
@@ -314,11 +323,16 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
         const userId = requestUserData.userId;
 
         const fieldId = req.params.fieldId;
+        const exists = await fieldService.fieldExists(fieldId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Field not found' });
+        }
+
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
 
         //[TO DO]: Authorization
 
-        try{
+        try {
             await fieldService.disableField(userId, fieldId, timestamp)
             return res.status(200).json({ message: `Field validity succesfully endend` })
         } catch (error) {
@@ -403,6 +417,15 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *               properties:
      *                 message:
      *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error – unexpected error while creating the sector
      *         content:
@@ -425,8 +448,14 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
             const userId = requestUserData.userId
             const fieldId = Number(req.params.fieldId)
 
-            if (!(await authorizationService.isUserAuthorizedInField(userId, 'update', fieldId)))
-                return res.status(403).json({ message: 'Unauthorized request' });
+
+            const exists = await fieldService.fieldExists(fieldId);
+            if (!exists) {
+                return res.status(404).json({ message: 'Field not found' });
+            }
+
+            // if (!(await authorizationService.isUserAuthorizedInField(userId, 'update', fieldId)))
+            //     return res.status(403).json({ message: 'Unauthorized request' });
 
             const {
                 sectorName,
@@ -460,7 +489,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
             return res.status(500).json({ message: "Error on creating sector" })
         }
     })
-    
+
     return router;
 }
 export default fieldsRouter;

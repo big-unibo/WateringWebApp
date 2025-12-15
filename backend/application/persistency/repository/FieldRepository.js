@@ -32,6 +32,14 @@ class FieldRepository {
     //     Field.belongsTo(Company, {foreignKey: 'company_id'});
     // }
 
+    async fieldExists(fieldId) {
+        const count = await this.Field.count({
+            where: { id: fieldId }
+        });
+        return count > 0;
+    }
+
+
     async thesisExists(thesisId) {
         const count = await this.Thesis.count({
             where: { id: thesisId }

@@ -26,6 +26,10 @@ class FieldService {
         return await this.fieldRepository.thesisExists(thesisId)
     }
 
+    async fieldExists(fieldId) {
+        return await this.fieldRepository.fieldExists(fieldId)
+    }
+
     async createField(userId, field) {
         try {
             const fieldCreated = await this.fieldRepository.createField(field.fieldName, field.companyId, field.location);
