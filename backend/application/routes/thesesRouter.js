@@ -192,6 +192,15 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *               properties:
      *                 message:
      *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error – unexpected error while retrieving devices info
      *         content:
@@ -211,6 +220,10 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         }
 
         const thesisId = Number(req.params.thesisId)
+        const exists = await fieldService.thesisExists(thesisId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Thesis not found' });
+        }
 
         try {
             // TODO Authorization
@@ -307,6 +320,15 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *               properties:
      *                 message:
      *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error — unexpected error while retrieving signals data.
      *         content:
@@ -326,6 +348,10 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         }
 
         const thesisId = Number(req.params.thesisId)
+        const exists = await fieldService.thesisExists(thesisId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Thesis not found' });
+        }
 
         let signalTypes = req.query.signalTypes;
         const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000;
@@ -724,7 +750,15 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *               properties:
      *                 message:
      *                   type: string
-     *
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error – unexpected error during the process.
      *         content:
@@ -744,6 +778,11 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         }
 
         const thesisId = Number(req.params.thesisId)
+        const exists = await fieldService.thesisExists(thesisId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Thesis not found' });
+        }
+
         const validFrom = req.query.validFrom ? Number(req.query.validFrom) : Math.floor(Date.now() / 1000);
         const validTo = req.query.validTo
 
@@ -808,7 +847,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
                     return res.status(400).json({ error: "Optimal state matrix does not match" })
 
                 const gridOptimalProfiles = new GridOptimalProfiles(gridId, validFrom, validTo, stopPercentage, optimalDryBound, optimalWetBound, optimalState)
-                optimalProfileAssignmentId =  await fieldService.createMatrixOptimalState(userId, gridOptimalProfiles)  
+                optimalProfileAssignmentId = await fieldService.createMatrixOptimalState(userId, gridOptimalProfiles)
             }
             return res.status(200).json({ message: 'Optimal state set successfully' });
         } catch (error) {
@@ -1009,6 +1048,15 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *               properties:
      *                 message:
      *                   type: string
+     *       404:
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error – unexpected error during the process.
      *         content:
@@ -1028,6 +1076,10 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         }
 
         const thesisId = req.params.thesisId;
+        const exists = await fieldService.thesisExists(thesisId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Thesis not found' });
+        }
 
         try {
             const userId = requestUserData.userId
@@ -1150,6 +1202,15 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *               properties:
      *                 message:
      *                   type: string
+     *       404:
+     *         description: Resource not found.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error – unexpected error during the process.
      *         content:
@@ -1169,9 +1230,13 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         }
         const userId = requestUserData.userId;
         const thesisId = req.params.thesisId;
+        const exists = await fieldService.thesisExists(thesisId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Thesis not found' });
+        }
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
 
-        try{
+        try {
             //[TO DO]: Authorization
             await fieldService.disableThesis(userId, thesisId, timestamp)
             return res.status(200).json({ message: `Thesis validity succesfully endend` })
