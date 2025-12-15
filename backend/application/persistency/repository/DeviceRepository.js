@@ -6,6 +6,13 @@ class DeviceRepository {
         this.sequelize = sequelize;
     }
 
+    async deviceExists(deviceId) {
+        const count = await this.Device.count({
+            where: { id: deviceId }
+        });
+        return count > 0;
+    }
+
     async createDevice(deviceData) {
         try {
             const device = await this.Device.create({
@@ -47,7 +54,7 @@ class DeviceRepository {
         WHERE ts.device_id = :deviceId
         AND valid_from < :timestamp
         AND COALESCE(valid_to, 'infinity') > :timestamp`
-        
+
 
         try {
             const results = await this.sequelize.query(query, {

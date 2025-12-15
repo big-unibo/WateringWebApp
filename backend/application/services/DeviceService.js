@@ -57,6 +57,10 @@ class DeviceService {
         }
     }
 
+    async deviceExists(deviceId) {
+        return await this.deviceRepository.deviceExists(deviceId)
+    }
+
     async assignSignals(userId, signalAssociation) {
         try {
 

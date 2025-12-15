@@ -346,6 +346,15 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *               properties:
      *                 message:
      *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error – unexpected error while assigning signals
      *         content:
@@ -370,9 +379,14 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         try {
 
             const deviceId = req.params.deviceId
+            const exists = await deviceService.deviceExists(deviceId);
+            if (!exists) {
+                return res.status(404).json({ message: 'Device not found' });
+            }
+
             const targetType = req.body.targetType
             const targetId = req.body.targetId
-            const validFrom = req.body.validFrom
+            const validFrom = req.body.validFrom ?? Date.now() / 1000;
 
             const signalAssociation = new SignalAssociation(deviceId, targetType, targetId, validFrom);
 
@@ -551,6 +565,15 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *               properties:
      *                 message:
      *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
      *       500:
      *         description: Internal server error – unexpected error during the process.
      *         content:
@@ -570,8 +593,13 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         }
 
         const userId = requestUserData.userId
-
         const deviceId = req.params.deviceId;
+
+        const exists = await deviceService.deviceExists(deviceId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Device not found' });
+        }
+
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
 
         //[TO DO]: Authorization
@@ -653,14 +681,14 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *               properties:
      *                 message:
      *                   type: string
-     *       404:
-     *         description: Device not found
+     *       '404':
+     *         description: Resource not found
      *         content:
      *           application/json:
      *             schema:
      *               type: object
      *               properties:
-     *                 error:
+     *                 message:
      *                   type: string
      *       500:
      *         description: Internal server error – unexpected error while retrieving devices
@@ -683,7 +711,6 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         const deviceId = req.params.deviceId
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
 
-        console.log(deviceId)
         try {
             const devices = await deviceService.getDevice(deviceId, timestamp);
             if (!devices) {
