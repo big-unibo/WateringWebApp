@@ -57,14 +57,14 @@ export default function initModels(sequelize) {
   models.Field.belongsTo(models.Company, { foreignKey: "companyId" , as: "company"});
   models.Company.hasMany(models.Field, { foreignKey: "companyId" , as: "fields"});
 
-  models.User.hasMany(models.Permit, {foreignKey: "user_id", as: "permits" });
-  models.Permit.belongsTo(models.User, {foreignKey: "user_id", as: "user" });
+  models.User.hasMany(models.Permit, {foreignKey: "userId", as: "permits" });
+  models.Permit.belongsTo(models.User, {foreignKey: "userId", as: "user" });
 
-  models.User.hasMany(models.UserAction, {foreignKey: "user_id", as: "userActions" });
-  models.UserAction.belongsTo(models.User, {foreignKey: "user_id", as: "user" });
+  models.User.hasMany(models.UserAction, {foreignKey: "userId", as: "userActions" });
+  models.UserAction.belongsTo(models.User, {foreignKey: "userId", as: "user" });
 
-  models.Field.hasMany(models.Sector, {foreignKey: "field_id", as: "sectors"});
-  models.Sector.belongsTo(models.Field, {foreignKey: "field_id", as: 'field'});
+  models.Field.hasMany(models.Sector, {foreignKey: "fieldId", as: "sectors"});
+  models.Sector.belongsTo(models.Field, {foreignKey: "fieldId", as: 'field'});
 
   models.Thesis.hasMany(models.ThesisInSector, { foreignKey: "thesisId",  as: "thesisInSector"});
   models.ThesisInSector.belongsTo(models.Thesis, { foreignKey: "thesisId", as: "thesis" });
@@ -72,40 +72,38 @@ export default function initModels(sequelize) {
   models.Sector.hasMany(models.ThesisInSector, { foreignKey: "sectorId", as: "thesisInSector" });
   models.ThesisInSector.belongsTo(models.Sector, { foreignKey: "sectorId", as: "sector" });
 
-  models.Device.hasMany(models.Signal, {foreignKey: "device_id", as: "signals"});
-  models.Signal.belongsTo(models.Device, {foreignKey: "device_id", as: "device"});
+  models.Device.hasMany(models.Signal, {foreignKey: "deviceId", as: "signals"});
+  models.Signal.belongsTo(models.Device, {foreignKey: "deviceId", as: "device"});
 
-  models.Provider.hasMany(models.Device, {foreignKey: "provider_id", as: "devices"});
-  models.Device.belongsTo(models.Provider, {foreignKey: "provider_id", as: "provider"});
+  models.Provider.hasMany(models.Device, {foreignKey: "providerId", as: "devices"});
+  models.Device.belongsTo(models.Provider, {foreignKey: "providerId", as: "provider"});
 
-  models.Field.hasMany(models.SignalInField, {foreignKey: "field_id", as: "signals"});
-  models.SignalInField.belongsTo(models.Field, {foreignKey: "field_id", as: "field"});
-  models.Signal.hasMany(models.SignalInField, {foreignKey: "signal_id", as: "signalsInFields"});
-  models.SignalInField.belongsTo(models.Signal, {foreignKey: "signal_id", as: "signal"});
+  models.Field.hasMany(models.SignalInField, {foreignKey: "fieldId", as: "signals"});
+  models.SignalInField.belongsTo(models.Field, {foreignKey: "fieldId", as: "field"});
+  models.Signal.hasMany(models.SignalInField, {foreignKey: "signalId", as: "signalsInFields"});
+  models.SignalInField.belongsTo(models.Signal, {foreignKey: "signalId", as: "signal"});
 
-  models.Sector.hasMany(models.SignalInSector, {foreignKey: "sector_id", as: "signals"});
-  models.SignalInSector.belongsTo(models.Sector, {foreignKey: "sector_id", as: "sector"});
-  models.Signal.hasMany(models.SignalInSector, {foreignKey: "signal_id", as: "signalsInSectors"});
-  models.SignalInSector.belongsTo(models.Signal, {foreignKey: "signal_id", as: "signal"});
+  models.Sector.hasMany(models.SignalInSector, {foreignKey: "sectorId", as: "signals"});
+  models.SignalInSector.belongsTo(models.Sector, {foreignKey: "sectorId", as: "sector"});
+  models.Signal.hasMany(models.SignalInSector, {foreignKey: "signalId", as: "signalsInSectors"});
+  models.SignalInSector.belongsTo(models.Signal, {foreignKey: "signalId", as: "signal"});
 
-  models.Thesis.hasMany(models.SignalInThesis, {foreignKey: "thesis_id", as: "signals"});
-  models.SignalInThesis.belongsTo(models.Thesis, {foreignKey: "thesis_id", as: "thesis"});
-  models.Signal.hasMany(models.SignalInThesis, {foreignKey: "signal_id", as: "signalsInTheses"});
-  models.SignalInThesis.belongsTo(models.Signal, {foreignKey: "signal_id", as: "signal"});
+  models.Thesis.hasMany(models.SignalInThesis, {foreignKey: "thesisId", as: "signals"});
+  models.SignalInThesis.belongsTo(models.Thesis, {foreignKey: "thesisId", as: "thesis"});
+  models.Signal.hasMany(models.SignalInThesis, {foreignKey: "signalId", as: "signalsInTheses"});
+  models.SignalInThesis.belongsTo(models.Signal, {foreignKey: "signalId", as: "signal"});
 
-  models.Signal.hasMany(models.Measurement, {foreignKey: "signal_id", as: "measurements"});
-  models.Measurement.belongsTo(models.Signal, {foreignKey: "signal_id", as: "signal"});
+  models.Signal.hasMany(models.Measurement, {foreignKey: "signalId", as: "measurements"});
+  models.Measurement.belongsTo(models.Signal, {foreignKey: "signalId", as: "signal"});
 
-  models.Thesis.hasMany(models.Advice, {foreignKey: "thesis_id", as: "advices"})
-  models.Advice.belongsTo(models.Thesis, {foreignKey: "thesis_id", as: "thesis"})
+  models.Thesis.hasMany(models.Advice, {foreignKey: "thesisId", as: "advices"})
+  models.Advice.belongsTo(models.Thesis, {foreignKey: "thesisId", as: "thesis"})
   
-  models.Thesis.hasMany(models.WateringAlgorithmParams, {foreignKey: "thesis_id", as: "algorithmParams"})
-  models.WateringAlgorithmParams.belongsTo(models.Thesis, {foreignKey: "thesis_id", as: "thesis"})
+  models.Thesis.hasMany(models.WateringAlgorithmParams, {foreignKey: "thesisId", as: "algorithmParams"})
+  models.WateringAlgorithmParams.belongsTo(models.Thesis, {foreignKey: "thesisId", as: "thesis"})
 
-  models.GridOptimalProfileAssignment.belongsTo(models.Device, {foreignKey: "grid_id", as: "device" })
-  models.Device.hasMany(models.GridOptimalProfileAssignment,{foreignKey: "grid_id", as: "gridOptimalProfileAssignments" })
+  models.GridOptimalProfileAssignment.belongsTo(models.Device, {foreignKey: "gridId", as: "device" })
+  models.Device.hasMany(models.GridOptimalProfileAssignment,{foreignKey: "gridId", as: "gridOptimalProfileAssignments" })
 
-  
-  //[TO DO]: il resto....
   return models;
 }
