@@ -454,6 +454,18 @@ components:
         organization:
             $ref: "#/components/schemas/Organization"
             description: Organization the company belongs to
+        sectors:
+          type: array
+          description: List of sectors belonging to the field
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+                description: Id of the sector
+              name:
+                type: string
+                description: Name of the sector
 
     
     SectorData:

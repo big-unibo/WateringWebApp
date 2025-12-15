@@ -7,7 +7,7 @@ import { WateringAdvice } from "../dtos/wateringAdviceDto.js";
 import { SectorCompact, SectorData } from "../dtos/sectorDto.js";
 import { Device } from "../dtos/deviceDto.js";
 import { Signal, SignalInfo, SignalTargetType } from "../dtos/signalDto.js";
-import { Thesis,ThesisData,ThesisRef} from "../dtos/thesisDto.js";
+import { Thesis, ThesisData, ThesisRef } from "../dtos/thesisDto.js";
 import { WateringParams } from "../dtos/wateringParamsDto.js";
 import { FieldData } from "../dtos/fieldDto.js";
 
@@ -44,7 +44,7 @@ class DtoConverter {
             }
         ));
     }
-    
+
 
 
     convertSectorDataWrapper(sectorData) {
@@ -92,7 +92,7 @@ class DtoConverter {
     }
 
 
-     convertFieldDataWrapper(fieldData) {
+    convertFieldDataWrapper(fieldData) {
         const organization = {
             id: fieldData.company.organization.id,
             name: fieldData.company.organization.organizationName
@@ -103,12 +103,18 @@ class DtoConverter {
             name: fieldData.company.companyName
         };
 
+        const sectors = (fieldData.sectors || []).map(sector => ({
+            id: sector.id,
+            name: sector.sectorName
+        }));
+
         return new FieldData(
             fieldData.id,
             fieldData.fieldName,
             fieldData.location,
             organization,
-            company    
+            company,
+            sectors
         );
     }
 
@@ -335,7 +341,7 @@ class DtoConverter {
         return signalTypeDataArray;
     }
 
-    convertSignalAssociationsEntries(signalAssociations){
+    convertSignalAssociationsEntries(signalAssociations) {
 
         const s = signalAssociations[0]
         console.log(s)
@@ -361,26 +367,26 @@ class DtoConverter {
         const theses = [
             ...new Map(
                 signalAssociations
-                .filter(s => s.associationType === SignalTargetType.THESIS)
-                .map(t => [t.thesisId, { id: t.thesisId, name: t.thesisName }])
+                    .filter(s => s.associationType === SignalTargetType.THESIS)
+                    .map(t => [t.thesisId, { id: t.thesisId, name: t.thesisName }])
             ).values()
         ]
         const sectors = [
             ...new Map(
                 signalAssociations
-                .filter(s => s.associationType === SignalTargetType.SECTOR)
-                .map(t => [t.sectorId, { id: t.sectorId, name: t.sectorName }])
+                    .filter(s => s.associationType === SignalTargetType.SECTOR)
+                    .map(t => [t.sectorId, { id: t.sectorId, name: t.sectorName }])
             ).values()
         ]
         const fields = [
             ...new Map(
                 signalAssociations
-                .filter(s => s.associationType === SignalTargetType.FIELD)
-                .map(t => [t.fieldId, { id: t.fieldId, name: t.fieldName }])
+                    .filter(s => s.associationType === SignalTargetType.FIELD)
+                    .map(t => [t.fieldId, { id: t.fieldId, name: t.fieldName }])
             ).values()
         ]
 
-        return new SignalInfo({...signal, theses, sectors, fields})
+        return new SignalInfo({ ...signal, theses, sectors, fields })
     }
 
     convertCalendarWrapper(wrappers) {

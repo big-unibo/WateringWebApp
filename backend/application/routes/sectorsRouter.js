@@ -13,8 +13,10 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *   get:
      *     summary: Retrieve all sectors available for the user
      *     tags: [Sectors]
-     *     description: Retrieve all sectors available for the user, filtered by a time range of active theses.
-     *       Time filter is optional. Requires Authentication and proper authorization
+     *     description: | 
+     *       Retrieve all sectors available for the user, filtered by a time range of active theses.
+     *       Time filter is optional, if not used, every sector is returned despite it being inactive. 
+     *       Requires Authentication and proper authorization
      *     parameters:
      *       - in: query
      *         name: timeFilterFrom
@@ -103,7 +105,9 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *   get:
      *     summary: Returns detailed information for a sector by its ID
      *     tags: [Sectors]
-     *     description: Returns all sector information given its ID. User must have monitoring permits for the requested sector.
+     *     description: |
+     *        Returns all sector information given its ID. User must have monitoring permits for the requested sector.
+     *        If timestamp is not specified, sector data is returned despite it not having any associaterd thesis.              
      *     parameters:
      *       - in: path
      *         name: sectorId
@@ -194,10 +198,11 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
         }
 
         const sectorId = Number(req.params.sectorId)
-        const timestamp = req.params.timestamp ?? Date.now() / 1000
+        const timestamp = req.query.timestamp ?? null
+        
 
-        if (!authorizationService.isUserAuthorizedById(requestUserData.userId, 'monitoring', 'sectors', sectorId))
-            return res.status(403).json({ message: 'Unauthorized request' })
+        // if (!authorizationService.isUserAuthorizedById(requestUserData.userId, 'monitoring', 'sectors', sectorId))
+        //     return res.status(403).json({ message: 'Unauthorized request' })
 
         try {
             const sectorData = await fieldService.getSectorDetails(sectorId, timestamp)

@@ -17,7 +17,8 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *       Retrives data about a field including:
      *       
      *       - Info about the company owning it
-     *       -  Info about the organization owning it
+     *       - Info about the organization owning it
+     *       - Names and ids of its sectors
      * 
      *       Requires authentication and proper authorization.
      *     parameters:

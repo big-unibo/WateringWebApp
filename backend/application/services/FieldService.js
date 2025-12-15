@@ -69,7 +69,6 @@ class FieldService {
         if (!result || !result.field || !result.field.company) {
             throw new Error(`Company not found for sector ${sectorId}`);
         }
-
         return dtoConverter.convertCompany(result.field.company);
     }
 
@@ -94,7 +93,7 @@ class FieldService {
 
     async getFieldDetails(fieldId) {
         const result = await this.fieldRepository.getFieldDetails(fieldId);
-        return dtoConverter.convertFieldDataWrapper(result);;
+        return dtoConverter.convertFieldDataWrapper(result);
     }
 
     async getMeasurementsByThesis(thesisId, signalTypes, timeFilterFrom, timeFilterTo, aggregationType, aggregationPeriod = null) {

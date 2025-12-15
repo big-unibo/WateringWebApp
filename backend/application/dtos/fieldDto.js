@@ -17,12 +17,14 @@ export class FieldData{
         fieldName,
         location,
         organization,
-        company
+        company,
+        sectors
     ) {
         this.fieldId = fieldId
         this.fieldName = fieldName
         this.location = location
         this.organization = organization
-        this.company = company
+        this.company = company,
+        this.sectors = sectors
     }
 }

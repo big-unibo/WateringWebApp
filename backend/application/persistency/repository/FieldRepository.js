@@ -119,8 +119,9 @@ class FieldRepository {
                 },
                 {
                     model: this.ThesisInSector,
-                    atributes: ['thesisId'],
                     as: 'thesisInSector',
+                    attributes: ['thesisId'],
+                    required: timestamp ? true : false,
                     include: [
                         {
                             model: this.Thesis,
@@ -128,17 +129,15 @@ class FieldRepository {
                             attributes: ['thesisName']
                         }
                     ],
-                    where: {
-                        validFrom: {
-                            [Op.lt]: timestamp
-                        },
+                    where: timestamp ? {
+                        validFrom: { [Op.lt]: timestamp },
                         validTo: {
-                            [Op.or]: {
-                                [Op.is]: null,
-                                [Op.gt]: timestamp
-                            },
+                            [Op.or]: [
+                                { [Op.is]: null },
+                                { [Op.gt]: timestamp }
+                            ]
                         }
-                    }
+                    } : undefined 
                 }
             ]
         });
@@ -328,7 +327,7 @@ class FieldRepository {
             LEFT JOIN permits p
                 ON p.id_key = s.id 
                 AND p.table = 'sectors'
-            JOIN theses_in_sectors ts
+            LEFT JOIN theses_in_sectors ts
                 ON ts.sector_id = s.id
             WHERE 
                 (
