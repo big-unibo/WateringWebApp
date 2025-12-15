@@ -1,5 +1,3 @@
-import { QueryTypes, Op } from "sequelize";
-
 class UserRepository {
 
     constructor(models, sequelize) {
@@ -36,76 +34,6 @@ class UserRepository {
             console.error('Error searching for permits: ', error);
         }
     }
-
-    // async findAdminPermissions() {
-    //     try {
-    //         this.TranscodingField.removeAttribute('id')
-    //         const res = (await this.TranscodingField.findAll({
-    //             attributes: ['source', 'refStructureName', 'companyName', 'fieldName', 'sectorName', 'thesisName'],
-    //             group: ['source', 'refStructureName', 'companyName', 'fieldName', 'sectorName', 'thesisName']
-    //         })).map(el => el.dataValues);
-
-
-    //         return res
-    //     } catch (error) {
-    //         console.error('Error on find admin permissions:', error);
-    //     }
-    // }
-
-    // async findUserPermissionsInPeriod(userid, timestamp_from, timestamp_to) {
-    //     try {
-    //         const query = `
-    //             SELECT DISTINCT permit.userid, permit."source", permit."refStructureName", permit."companyName", permit."fieldName", permit."sectorName", permit."thesisName", permit.permit
-    //                 FROM public.permit_fields AS permit
-    //                 JOIN public.transcoding_field AS transcoding
-    //                     ON permit."refStructureName" = transcoding."refStructureName"
-    //                         AND permit."companyName" = transcoding."companyName"
-    //                         AND permit."fieldName" = transcoding."fieldName"
-    //                         AND permit."sectorName" = transcoding."sectorName"
-    //                         AND permit."thesisName" = transcoding."thesisName"
-    //                 WHERE (permit.userid = '${userid}') 
-    //                     AND transcoding.valid_from < '${timestamp_to}' 
-    //                     AND (transcoding.valid_to > '${timestamp_from}' OR transcoding.valid_to IS NULL)
-    //                 ORDER BY permit."refStructureName", permit."companyName", permit."fieldName", permit."sectorName", permit."thesisName"`
-
-    //         return await this.sequelize.query(query, {
-    //             type: QueryTypes.SELECT,
-    //             bind: {
-    //                 userid,
-    //                 timestamp_from,
-    //                 timestamp_to
-    //             }
-    //         });
-    //     } catch (error) {
-    //         console.error('Error on find user permissions:', error);
-    //     }
-    // }
-
-    // async findAdminPermissionsInPeriod(timestamp_from, timestamp_to) {
-    //     try {
-    //         this.TranscodingField.removeAttribute('id')
-    //         const res = (await this.TranscodingField.findAll({
-    //             attributes: ['source', 'refStructureName', 'companyName', 'fieldName', 'sectorName', 'thesisName'],
-    //             group: ['source', 'refStructureName', 'companyName', 'fieldName', 'sectorName', 'thesisName'],
-    //             where: {
-    //                 valid_from: {
-    //                     [Op.lt]: Number(timestamp_to)
-    //                 },
-    //                 valid_to: {
-    //                     [Op.or]:{
-    //                         [Op.gt]: Number(timestamp_from),
-    //                         [Op.is]: null
-    //                     }
-    //                 }
-    //             },
-    //             order: ['refStructureName', 'companyName', 'fieldName', 'sectorName', 'thesisName']
-    //         })).map(el => el.dataValues);
-    //         return res
-    //     } catch (error) {
-    //         console.error('Error on find user permissions:', error);
-    //     }
-    // }
-
 
     async createUser(email, password, name, role) {
         try {

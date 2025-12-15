@@ -156,18 +156,6 @@ class DtoConverter {
         );
     }
 
-    // convertHumidityBinWrapper(wrappers) {
-    //     const map = this.#buildGenericReferenceMap(wrappers);
-
-    //     const dataValues = Array.from(map, ([key, values]) => {
-    //         const keyObject = JSON.parse(key);
-    //         const measures = values.map(value => new HumidityBinMeasureData(value.humidity_bin, value.timestamp, value.count));
-    //         return new DataValue(keyObject.refStructureName, keyObject.companyName, keyObject.fieldName, keyObject.sectorName, keyObject.thesisName, undefined, measures);
-    //     });
-
-    //     return new DataResponse(dataValues);
-    // }
-
     convertMeasurementsDataWrapper(wrappers) {
         const grouped = wrappers.reduce((acc, curr) => {
             const typeKey = `${curr.thesisName}_${curr.signalType}_${curr.signalTypeDescription}`;
@@ -470,76 +458,6 @@ class DtoConverter {
         return finalResponse.length > 0 ? finalResponse[0] : null;
     }
 
-    // convertViewDataOriginalWrapper(wrappers) {
-    //     const map = wrappers.reduce((accumulator, currentValue) => {
-    //         const key = {
-    //             refStructureName: currentValue.refStructureName,
-    //             companyName: currentValue.companyName,
-    //             fieldName: currentValue.fieldName,
-    //             sectorName: currentValue.sectorName,
-    //             thesisName: currentValue.thesisName,
-    //             colture: currentValue.colture,
-    //             coltureType: currentValue.coltureType
-    //         };
-    //         if (accumulator.has(JSON.stringify(key)))
-    //             accumulator.get(JSON.stringify(key)).push(currentValue);
-    //         else {
-    //             accumulator.set(JSON.stringify(key), []);
-    //             accumulator.get(JSON.stringify(key)).push(currentValue);
-    //         }
-    //         return accumulator;
-    //     }, new Map());
-
-    //     const dataValues = Array.from(map, ([key, values]) => {
-    //         const keyObject = JSON.parse(key);
-    //         const colture = new ColtureDto(keyObject.colture, keyObject.coltureType);
-    //         const measures = values.map(value => new MeasureData(value.detectedValueTypeDescription, value.timestamp, value.value));
-    //         return new DataValue(keyObject.refStructureName, keyObject.companyName, keyObject.fieldName, keyObject.sectorName, keyObject.thesisName, colture, measures);
-    //     });
-
-    //     return new DataResponse(dataValues);
-    // }
-
-    // convertOptimalDistanceWrapper(wrappers) {
-    //     return this.#convertGenericReferenceData(wrappers);
-    // }
-
-    // convertWateringScheduleWrapper(wrappers) {
-    //     const schedules = wrappers.reduce((accumulator, currentValue) => {
-    //         const key = {
-    //             source: currentValue.source,
-    //             refStructureName: currentValue.refStructureName,
-    //             companyName: currentValue.companyName,
-    //             fieldName: currentValue.fieldName,
-    //             sectorName: currentValue.sectorName
-    //         };
-    //         if (!accumulator.has(JSON.stringify(key)))
-    //             accumulator.set(JSON.stringify(key), []);
-    //         accumulator.get(JSON.stringify(key)).push(currentValue);
-    //         return accumulator;
-    //     }, new Map())
-
-    //     if (schedules.size > 0) {
-    //         const [key, events] = schedules.entries().next().value
-    //         const { source, refStructureName, companyName, fieldName, sectorName } = JSON.parse(key);
-    //         const eventsRes = events.map(event => new WateringEventDto(
-    //             event.thesisName,
-    //             event.date,
-    //             event.wateringStart,
-    //             event.wateringEnd,
-    //             event.duration,
-    //             event.enabled,
-    //             event.expectedWater,
-    //             event.advice,
-    //             event.adviceTimestamp,
-    //             event.user !== null ? event.user.dataValues.updatedBy : null,
-    //             event.updateTimestamp,
-    //             event.note
-    //         ));
-    //         return new WateringScheduleResponse(source, refStructureName, companyName, fieldName, sectorName, eventsRes)
-    //     }
-    // }
-
     convertWateringAlgorithmParamsWrapper(results) {
         const {
             maxWatering,
@@ -611,39 +529,6 @@ class DtoConverter {
         const measures = results.map(v => new InterpolatedMeanMeasureData(v.x, v.y, v.z, v.std, v.mean))
         return new InterpolatedMeansData(results[0].thesisName, results[0].deviceId, results[0].binningId, measures)
     }
-
-    // #buildGenericReferenceMap(wrappers) {
-    //     return wrappers.reduce((accumulator, currentValue) => {
-    //         const key = {
-    //             source: currentValue.source,
-    //             refStructureName: currentValue.refStructureName,
-    //             companyName: currentValue.companyName,
-    //             fieldName: currentValue.fieldName,
-    //             sectorName: currentValue.sectorName,
-    //             thesisName: currentValue.thesisName
-    //         };
-    //         if (accumulator.has(JSON.stringify(key)))
-    //             accumulator.get(JSON.stringify(key)).push(currentValue);
-    //         else {
-    //             accumulator.set(JSON.stringify(key), []);
-    //             accumulator.get(JSON.stringify(key)).push(currentValue);
-    //         }
-    //         return accumulator;
-    //     }, new Map());
-    // }
-
-    // #convertGenericReferenceData(wrappers) {
-    //     const map = this.#buildGenericReferenceMap(wrappers);
-
-    //     const dataValues = Array.from(map, ([key, values]) => {
-    //         const keyObject = JSON.parse(key);
-    //         const measures = values.map(value => new MeasureData(value.detectedValueTypeDescription, value.timestamp, value.value));
-    //         return new DataValue(keyObject.refStructureName, keyObject.companyName, keyObject.fieldName, keyObject.sectorName, keyObject.thesisName, undefined, measures);
-    //     });
-
-    //     return new DataResponse(dataValues);
-    // }
-
 }
 
 export default DtoConverter;
