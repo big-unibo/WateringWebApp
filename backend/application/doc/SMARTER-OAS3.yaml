@@ -198,7 +198,6 @@ components:
       required:
         - type
         - providerId
-        - location
         - signals
       properties:
         type:
