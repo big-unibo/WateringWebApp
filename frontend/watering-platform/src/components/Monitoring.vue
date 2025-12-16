@@ -14,11 +14,11 @@ const props = defineProps(['token', 'user'])
 
 let showCustomizeInput = ref(false)
 
-let selectedTimestampFrom = ref(getCurrentTimestampMinusDays(37))
-let selectedTimestampTo = ref(getCurrentTimestampMinusDays(30))
+let selectedTimestampFrom = ref(getCurrentTimestampMinusDays(7))
+let selectedTimestampTo = ref(getCurrentTimestampMinusDays(0))
 
-let customSelectedTimestampFrom = ref(getCurrentTimestampMinusDays(37))
-let customSelectedTimestampTo = ref(getCurrentTimestampMinusDays(30))
+let customSelectedTimestampFrom = ref(getCurrentTimestampMinusDays(7))
+let customSelectedTimestampTo = ref(getCurrentTimestampMinusDays(0))
 
 let selectedSectorName = ref("Seleziona un settore")
 let selectedThesisName = ref("Seleziona una tesi")
@@ -119,8 +119,8 @@ function selectTimePeriod(timeFilter) {
   }
 
   if (timeFilter != 'customize_day') {
-    //updateUserPermission()
     updateConnectionParams()
+    updateUserSectors()
   }
 }
 
@@ -140,6 +140,7 @@ function updateCustomTimestamps() {
   selectedTimestampFrom.value = customSelectedTimestampFrom.value
   selectedTimestampTo.value = customSelectedTimestampTo.value
   updateConnectionParams()
+  updateUserSectors()
 }
 
 function selectThesis(thesis) {

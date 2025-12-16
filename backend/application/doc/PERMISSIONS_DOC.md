@@ -1,5 +1,5 @@
 # 🔐 System Permissions Reference
-> **Generato automaticamente il:** 2025-12-15
+> **Generato automaticamente il:** 2025-12-16
 
 Questo documento elenca tutte le regole di autorizzazione definite nel sistema.
 
