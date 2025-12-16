@@ -96,30 +96,40 @@ class HumidityBinsRepository {
                 bp.humidity_bin_description,
                 bp.upper_bound,
                 bp.lower_bound
+        ),
+        calculated_results AS (
+            SELECT
+                device_id, 
+                timestamp,
+                humidity_bin_description,
+                humidity_bin,
+                COUNT(CASE 
+                    WHEN value >= lower_bound AND value < upper_bound THEN 1 
+                    ELSE NULL 
+                END) AS bin_count
+            FROM value_bins
+            GROUP BY
+                thesis_name, device_id, timestamp, humidity_bin_description, humidity_bin
+        ),
+        unique_devices_header AS (
+            SELECT DISTINCT 
+                thesis_name, 
+                device_id 
+            FROM validity_table
         )
         SELECT
-            thesis_name AS "thesisName",
-            device_id AS "deviceId",
-            timestamp AS "timestamp",
-            humidity_bin_description as "humidityBinDescription",
-            humidity_bin as "humidityBin",
-            COUNT(CASE 
-                WHEN value  >= lower_bound 
-                AND value < upper_bound 
-                THEN 1 
-                ELSE NULL 
-            END) AS "count"
-        FROM value_bins
-        GROUP BY
-            thesis_name,
-            device_id,
-            timestamp,
-            humidity_bin_description,
-            humidity_bin
+            ud.thesis_name AS "thesisName",
+            ud.device_id AS "deviceId",
+            res.timestamp AS "timestamp",
+            res.humidity_bin_description AS "humidityBinDescription",
+            res.humidity_bin AS "humidityBin",
+            COALESCE(res.bin_count, 0) AS "count"
+        FROM unique_devices_header ud 
+        LEFT JOIN calculated_results res 
+            ON ud.device_id = res.device_id
         ORDER BY
-            timestamp ASC;
+            res.timestamp ASC;
         `;
-
 
         const results = await this.sequelize.query(query, {
             replacements: {

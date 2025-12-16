@@ -252,9 +252,15 @@ class DtoConverter {
         }
 
         const { thesisName, deviceId } = wrappers[0];
+        const validRows = wrappers.filter(w => w.timestamp != null);
 
-        const measures = wrappers.map(curr =>
-            new HumidityBinMeasureData(curr.humidityBin, curr.humidityBinDescription, curr.timestamp, curr.count)
+        const measures = validRows.map(curr =>
+            new HumidityBinMeasureData(
+                curr.humidityBin,
+                curr.humidityBinDescription,
+                curr.timestamp,
+                curr.count
+            )
         );
 
         return new HumidityBinsDataResponse(thesisName, deviceId, measures);
