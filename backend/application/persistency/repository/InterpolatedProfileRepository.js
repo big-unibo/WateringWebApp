@@ -78,12 +78,12 @@ class InterpolatedProfileRepository {
                 AVG(ic.value)::numeric AS mean, 
                 STDDEV(ic.value) ::numeric AS std
             FROM validity_table v
-            JOIN interpolated_profiles ip 
+            LEFT JOIN interpolated_profiles ip 
                 ON ip.grid_id = v.device_id
                 AND ip.timestamp BETWEEN 
                     GREATEST(v.valid_from, :timeFilterFrom)
                     AND LEAST(COALESCE(v.valid_to, 'infinity'), :timeFilterTo)
-            JOIN interpolated_cells ic
+            LEFT JOIN interpolated_cells ic
                 ON ip.id = ic.profile_id
             GROUP BY v.thesis_name, v.device_id , v.device_binning_id, ic.x, ic.y, ic.z
             ORDER BY ic.z, ic.y, ic.x

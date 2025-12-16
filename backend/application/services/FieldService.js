@@ -215,11 +215,7 @@ class FieldService {
 
     async getInterpolatedMeans(thesisId, timeFilterFrom, timeFilterTo) {
         const result = await this.interpolatedProfileRepository.getInterpolatedMeans(thesisId, timeFilterFrom, timeFilterTo)
-        if (result.length > 0) {
-            return dtoConverter.convertInterpolatedMeansWrapper(result)
-        } else {
-            return null
-        }
+        return dtoConverter.convertInterpolatedMeansWrapper(result)
     }
 
     async findThesisPoints(gridId) {

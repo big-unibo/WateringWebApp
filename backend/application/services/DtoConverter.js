@@ -541,9 +541,19 @@ class DtoConverter {
     }
 
     convertInterpolatedMeansWrapper(results) {
-        const measures = results.map(v => new InterpolatedMeanMeasureData(v.x, v.y, v.z, v.std, v.mean))
-        return new InterpolatedMeansData(results[0].thesisName, results[0].deviceId, results[0].binningId, measures)
+    if (!results || results.length === 0) {
+        return null;
     }
+
+    const { thesisName, deviceId, binningId } = results[0];
+    const validRows = results.filter(v => v.mean != null);
+
+    const measures = validRows.map(v => 
+        new InterpolatedMeanMeasureData(v.x, v.y, v.z, v.std, v.mean)
+    );
+
+    return new InterpolatedMeansData(thesisName, deviceId, binningId, measures);
+}
 }
 
 export default DtoConverter;
