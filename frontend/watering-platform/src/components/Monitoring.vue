@@ -46,8 +46,9 @@ onMounted(async () => {
 
 watch(token, async (newToken) => {
   if (newToken) {
-    await updateUserSectors();
     updateConnectionParams();
+    await updateUserSectors();
+    resetSectorSelection();
   }
 }, { immediate: true });
 
@@ -161,13 +162,13 @@ async function selectSector(sector) {
 }
 
 function createSectorName(item) {
-	if (!item) return ''
-	return `${item.organization.name}; ${item.company.name}; ${item.field.name}; ${item.name}`
+  if (!item) return ''
+  return `${item.organization.name}; ${item.company.name}; ${item.field.name}; ${item.name}`
 }
 
 function createThesisName(item) {
-	if (!item) return ''
-	return `Tesi ${item.name}`
+  if (!item) return ''
+  return `Tesi ${item.name}`
 }
 
 function isLabelSelected(value) {
@@ -178,13 +179,16 @@ async function updateUserSectors() {
   if (token.value) {
     try {
       sectors.value = await authService.retrieveUserSectors(token.value, selectedTimestampFrom.value, selectedTimestampTo.value)
-      if (sectors.value && sectors.value.length > 0) {
-        selectSector(sectors.value[0])
-      }
     }
     catch {
       console.log("Errore recuperando i settori")
     }
+  }
+}
+
+function resetSectorSelection() {
+  if (sectors.value && sectors.value.length > 0) {
+    selectSector(sectors.value[0])
   }
 }
 
@@ -273,165 +277,165 @@ function selectedTime(time) {
     </div>
 
     <div class="m-2 col-md-12 d-flex flex-row justify-content-center flex-wrap">
-			<div v-if="sectors.length > 0" class="d-flex align-items-center flex-wrap">
-				<p class="px-2 m-0">Settore:</p>
-				<button class="btn btn-secondary dropdown-toggle my-1 px-2" type="button" id="dropdownMenuSector"
-					data-bs-toggle="dropdown" aria-expanded="false">
-					{{ selectedSectorName }}
-				</button>
-				<ul class="dropdown-menu" aria-labelledby="dropdownMenuSector">
-					<li v-for="(item, index) in sectors" :key="index">
-						<a class="dropdown-item" href="#" @click.prevent="selectSector(item)">
-							{{ createSectorName(item) }}
-						</a>
-					</li>
-				</ul>
-			</div>
+      <div class="d-flex align-items-center flex-wrap">
+        <p class="px-2 m-0">Settore:</p>
+        <button class="btn btn-secondary dropdown-toggle my-1 px-2" type="button" id="dropdownMenuSector"
+          data-bs-toggle="dropdown" aria-expanded="false">
+          {{ selectedSectorName }}
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenuSector">
+          <li v-for="(item, index) in sectors" :key="index">
+            <a class="dropdown-item" href="#" @click.prevent="selectSector(item)">
+              {{ createSectorName(item) }}
+            </a>
+          </li>
+        </ul>
+      </div>
 
-			<div v-if="theses.length > 0" class="d-flex align-items-center flex-wrap">
-				<p class="px-2 mb-0">Tesi: </p>
-				<button class="btn btn-secondary dropdown-toggle my-1 px-2" type="button" id="dropdownMenuThesis"
-					data-bs-toggle="dropdown" aria-expanded="false">
-					{{ selectedThesisName }}
-				</button>
+      <div v-if="theses.length > 0" class="d-flex align-items-center flex-wrap">
+        <p class="px-2 mb-0">Tesi: </p>
+        <button class="btn btn-secondary dropdown-toggle my-1 px-2" type="button" id="dropdownMenuThesis"
+          data-bs-toggle="dropdown" aria-expanded="false">
+          {{ selectedThesisName }}
+        </button>
 
-				<ul class="dropdown-menu" aria-labelledby="dropdownMenuThesis">
-					<li v-for="(item, index) in theses" :key="index">
-						<a class="dropdown-item" href="#" @click.prevent="selectThesis(item)">
-							{{ createThesisName(item) }}
-						</a>
-					</li>
-				</ul>
-			</div>
-		</div>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenuThesis">
+          <li v-for="(item, index) in theses" :key="index">
+            <a class="dropdown-item" href="#" @click.prevent="selectThesis(item)">
+              {{ createThesisName(item) }}
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
 
     <div v-if="selectedThesis.thesisId" class="my-3 container col-md-12">
-			<div class="humidity-card card">
-				<div class="card-header d-flex justify-content-between align-items-center">
-					<span>Matrice dell'umidità</span>
-					<div>
-						<WateringAdviceSimulatorComponent v-if="true"
-							:config="baseConnectionParams" :selectedTimestamp="selectedTimestamp" />
-						<UpdateOptimalStateComponent v-if="true"
-							:config="baseConnectionParams" :selectedTimestamp="selectedTimestamp" /> 
-						<button class="btn btn-sm btn-secondary m-1" type="button" @click="enableOptimalMatrix"
-							id="optimal-heatmap-button">Mostra ottimo</button>
-						<button class="btn btn-sm btn-secondary m-1" type="button" @click="enableDynamicHeatmap"
-							id="dynamic-heatmap-button">Mostra evoluzione</button>
-					</div>
-				</div>
-				<div class="card-body">
-					<div class="row">
-						<span>Seleziona un istante temporale nel grafico di sinistra per mostrare la relativa matrice di
-							umidità (Con "<strong>G</strong>"
-							si denota la posizione del gocciolatore):</span>
-						<div class="col-lg-6 align-content-center">
-							<humiditymultiline-chart-smarter :config="baseConnectionParams"
-								@selectTimestamp="selectedTime"></humiditymultiline-chart-smarter>
-						</div>
-						<div class="col-lg-6">
-							<humiditymap-smarter :config="baseConnectionParams"
-								:selectedTimestamp="selectedTimestamp"></humiditymap-smarter>
-						</div>
-					</div>
-					<optimal-humidity-heatmap-smarter v-if="showOptimalMatrix" :config="baseConnectionParams"
-						:selectedTimestamp="selectedTimestamp" :showDistance="true"></optimal-humidity-heatmap-smarter>
-				</div>
-			</div>
-		</div>
+      <div class="humidity-card card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>Matrice dell'umidità</span>
+          <div>
+            <WateringAdviceSimulatorComponent v-if="true" :config="baseConnectionParams"
+              :selectedTimestamp="selectedTimestamp" />
+            <UpdateOptimalStateComponent v-if="true" :config="baseConnectionParams"
+              :selectedTimestamp="selectedTimestamp" />
+            <button class="btn btn-sm btn-secondary m-1" type="button" @click="enableOptimalMatrix"
+              id="optimal-heatmap-button">Mostra ottimo</button>
+            <button class="btn btn-sm btn-secondary m-1" type="button" @click="enableDynamicHeatmap"
+              id="dynamic-heatmap-button">Mostra evoluzione</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <span>Seleziona un istante temporale nel grafico di sinistra per mostrare la relativa matrice di
+              umidità (Con "<strong>G</strong>"
+              si denota la posizione del gocciolatore):</span>
+            <div class="col-lg-6 align-content-center">
+              <humiditymultiline-chart-smarter :config="baseConnectionParams"
+                @selectTimestamp="selectedTime"></humiditymultiline-chart-smarter>
+            </div>
+            <div class="col-lg-6">
+              <humiditymap-smarter :config="baseConnectionParams"
+                :selectedTimestamp="selectedTimestamp"></humiditymap-smarter>
+            </div>
+          </div>
+          <optimal-humidity-heatmap-smarter v-if="showOptimalMatrix" :config="baseConnectionParams"
+            :selectedTimestamp="selectedTimestamp" :showDistance="true"></optimal-humidity-heatmap-smarter>
+        </div>
+      </div>
+    </div>
 
 
     <div v-if="showDynamicHeatmap" class="my-3 container col-md-12">
-			<div class="dynamicheatmap-card card">
-				<div class="card-header d-flex justify-content-between align-items-center">
-					<span>Evoluzione matrice dell'umidità</span>
-				</div>
-				<div class="card-body">
-					<heatmap-animation-smarter v-if="true" :config="baseConnectionParams"></heatmap-animation-smarter>
-				</div>
-			</div>
-		</div>
+      <div class="dynamicheatmap-card card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>Evoluzione matrice dell'umidità</span>
+        </div>
+        <div class="card-body">
+          <heatmap-animation-smarter v-if="true" :config="baseConnectionParams"></heatmap-animation-smarter>
+        </div>
+      </div>
+    </div>
 
     <div v-if="selectedThesis.thesisId" class="my-3 container col-md-12">
-			<div class="groundwaterpot-card card">
-				<div class="card-header">Potenziale idrico</div>
-				<div class="card-body">
-					<groundwaterpot-chart-smarter style="height: 320px" :config="baseConnectionParams" :extraParams="JSON.stringify({
-						signalTypes: ['SOIL_WATER_CONTENT', 'SOIL_WATER_POTENTIAL'],
-						aggregationType: 'AVG'
-					})" />
-				</div>
-			</div>
-		</div>
+      <div class="groundwaterpot-card card">
+        <div class="card-header">Potenziale idrico</div>
+        <div class="card-body">
+          <groundwaterpot-chart-smarter style="height: 320px" :config="baseConnectionParams" :extraParams="JSON.stringify({
+            signalTypes: ['SOIL_WATER_CONTENT', 'SOIL_WATER_POTENTIAL'],
+            aggregationType: 'AVG'
+          })" />
+        </div>
+      </div>
+    </div>
 
     <div v-if="selectedThesis.thesisId" class="my-3 container col-md-12">
-			<div class="card">
-				<div class="card-header d-flex justify-content-between align-items-center">
-					<span>Consiglio Irriguo, Irrigazione e Precipitazioni</span>
-					<button class="btn btn-sm btn-secondary" type="button" @click="enableDetailedAggregate"
-						id="dynamic-heatmap-button">{{ detailedWateringButton }}</button>
-				</div>
-				<div v-if="!showDetailedWatering">
-					<water-aggregate-chart-smarter :config="baseConnectionParams"></water-aggregate-chart-smarter>
-				</div>
-				<div v-else>
-					<dripperandpluv-chart-smarter :config="baseConnectionParams" :extraParams="JSON.stringify({
-						signalTypes: ['DRIPPER', 'PLUV_CURR', 'SPRINKLER'],
-						aggregationType: 'SUM'
-					})">
-					</dripperandpluv-chart-smarter>
-				</div>
-			</div>
-		</div>
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>Consiglio Irriguo, Irrigazione e Precipitazioni</span>
+          <button class="btn btn-sm btn-secondary" type="button" @click="enableDetailedAggregate"
+            id="dynamic-heatmap-button">{{ detailedWateringButton }}</button>
+        </div>
+        <div v-if="!showDetailedWatering">
+          <water-aggregate-chart-smarter :config="baseConnectionParams"></water-aggregate-chart-smarter>
+        </div>
+        <div v-else>
+          <dripperandpluv-chart-smarter :config="baseConnectionParams" :extraParams="JSON.stringify({
+            signalTypes: ['DRIPPER', 'PLUV_CURR', 'SPRINKLER'],
+            aggregationType: 'SUM'
+          })">
+          </dripperandpluv-chart-smarter>
+        </div>
+      </div>
+    </div>
 
     <div v-if="selectedThesis.sectorId" class="my-3 container col-md-12">
-			<div class="card">
-				<div class="card-header d-flex justify-content-between align-items-center">
-					<span>Calendario Irrigazione</span>
-				</div>
-				<div class="card-body p-1">
-					<calendar-smarter :config="baseConnectionParams"></calendar-smarter>
-				</div>
-			</div>
-		</div>
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>Calendario Irrigazione</span>
+        </div>
+        <div class="card-body p-1">
+          <calendar-smarter :config="baseConnectionParams"></calendar-smarter>
+        </div>
+      </div>
+    </div>
 
     <div v-if="true" class="my-3 container col-md-12">
-			<div class=" card">
-				<div class="card-header">Potenziale Idrico Ottimale e Potenziale Idrico Medio Giornaliero</div>
-				<div class="card-body">
-					<optimal-distance-chart-smarter style="height: 300px"
-						:config="baseConnectionParams"></optimal-distance-chart-smarter>
-				</div>
-			</div>
-		</div>
+      <div class=" card">
+        <div class="card-header">Potenziale Idrico Ottimale e Potenziale Idrico Medio Giornaliero</div>
+        <div class="card-body">
+          <optimal-distance-chart-smarter style="height: 300px"
+            :config="baseConnectionParams"></optimal-distance-chart-smarter>
+        </div>
+      </div>
+    </div>
 
     <div v-if="true" class="my-3 container">
-			<div class="countors-card card">
-				<div class="card-header">Matrici di media e varianza</div>
-				<div class="card-body row">
-					<div class="col-lg-6">
-						<p>Matrice dell'umidità <strong>media</strong> lungo il periodo:</p>
-						<meancountor-chart-smarter :config="baseConnectionParams"></meancountor-chart-smarter>
-					</div>
-					<div class="col-lg-6">
-						<p>Matrice di <strong>varianza</strong> dell'umidità lungo il periodo:</p>
-						<stdcountor-chart-smarter :config="baseConnectionParams"></stdcountor-chart-smarter>
-					</div>
-				</div>
-			</div>
-		</div>
+      <div class="countors-card card">
+        <div class="card-header">Matrici di media e varianza</div>
+        <div class="card-body row">
+          <div class="col-lg-6">
+            <p>Matrice dell'umidità <strong>media</strong> lungo il periodo:</p>
+            <meancountor-chart-smarter :config="baseConnectionParams"></meancountor-chart-smarter>
+          </div>
+          <div class="col-lg-6">
+            <p>Matrice di <strong>varianza</strong> dell'umidità lungo il periodo:</p>
+            <stdcountor-chart-smarter :config="baseConnectionParams"></stdcountor-chart-smarter>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div v-if="selectedThesis.thesisId" class="my-3 container col-md-12">
-			<div class="card">
-				<div class="card-header">Temperatura dell'aria</div>
-				<div class="card-body">
-					<airtemperature-chart-smarter style="height: 300px" :config="baseConnectionParams" :extraParams="JSON.stringify({
-						signalTypes: ['AIR_TEMP'],
-						aggregationType: 'AVG'
-					})"></airtemperature-chart-smarter>
-				</div>
-			</div>
-		</div>
+      <div class="card">
+        <div class="card-header">Temperatura dell'aria</div>
+        <div class="card-body">
+          <airtemperature-chart-smarter style="height: 300px" :config="baseConnectionParams" :extraParams="JSON.stringify({
+            signalTypes: ['AIR_TEMP'],
+            aggregationType: 'AVG'
+          })"></airtemperature-chart-smarter>
+        </div>
+      </div>
+    </div>
 
     <div v-if="true" class="my-3 container col-md-12">
       <div class="card">
