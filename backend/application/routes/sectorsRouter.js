@@ -337,7 +337,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
             return res.status(404).json({ message: 'Sector not found' });
         }
 
-        const thesis = new Thesis(req.body.name, sectorId, req.query.validFrom);
+        const thesis = new Thesis(req.body.name, sectorId, undefined, req.body.validFrom ?? Date.now()/1000);
 
         // if (!(await authorizationService.isUserAuthorizedInSector(userId, 'update', sectorId)))
         // 		return res.status(403).json({message: 'Unauthorized request'});
