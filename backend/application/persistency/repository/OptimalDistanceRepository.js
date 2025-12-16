@@ -29,6 +29,10 @@ class OptimalDistanceRepository {
             raw: true
         })
 
+        if(!errorFunction){
+            throw new Error("Watering algorithm params not defined")
+        }
+
         let queryString = ` 
             WITH validity_table AS (
                 SELECT 
@@ -167,6 +171,11 @@ class OptimalDistanceRepository {
             },
             raw: true
         })
+
+        if(!errorFunction){
+            throw new Error("Watering algorithm params not defined")
+        }
+
 
         const queryString = `
             SELECT grid."thesisName", ip.timestamp, ic.x, ic.y, ic.z, optimal."weight", 
