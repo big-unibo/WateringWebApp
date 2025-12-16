@@ -314,9 +314,9 @@ function selectedTime(time) {
         <div class="card-header d-flex justify-content-between align-items-center">
           <span>Matrice dell'umidità</span>
           <div>
-            <WateringAdviceSimulatorComponent v-if="true" :config="baseConnectionParams"
+            <WateringAdviceSimulatorComponent :config="baseConnectionParams"
               :selectedTimestamp="selectedTimestamp" />
-            <UpdateOptimalStateComponent v-if="true" :config="baseConnectionParams"
+            <UpdateOptimalStateComponent :config="baseConnectionParams"
               :selectedTimestamp="selectedTimestamp" />
             <button class="btn btn-sm btn-secondary m-1" type="button" @click="enableOptimalMatrix"
               id="optimal-heatmap-button">Mostra ottimo</button>
@@ -351,7 +351,7 @@ function selectedTime(time) {
           <span>Evoluzione matrice dell'umidità</span>
         </div>
         <div class="card-body">
-          <heatmap-animation-smarter v-if="true" :config="baseConnectionParams"></heatmap-animation-smarter>
+          <heatmap-animation-smarter :config="baseConnectionParams"></heatmap-animation-smarter>
         </div>
       </div>
     </div>
@@ -399,7 +399,7 @@ function selectedTime(time) {
       </div>
     </div>
 
-    <div v-if="true" class="my-3 container col-md-12">
+    <div v-if="selectedThesis.thesisId" class="my-3 container col-md-12">
       <div class=" card">
         <div class="card-header">Potenziale Idrico Ottimale e Potenziale Idrico Medio Giornaliero</div>
         <div class="card-body">
@@ -409,7 +409,7 @@ function selectedTime(time) {
       </div>
     </div>
 
-    <div v-if="true" class="my-3 container">
+    <div v-if="selectedThesis.thesisId" class="my-3 container">
       <div class="countors-card card">
         <div class="card-header">Matrici di media e varianza</div>
         <div class="card-body row">
@@ -437,7 +437,7 @@ function selectedTime(time) {
       </div>
     </div>
 
-    <div v-if="true" class="my-3 container col-md-12">
+    <div v-if="selectedThesis.thesisId" class="my-3 container col-md-12">
       <div class="card">
         <div class="card-header">Anomalie riscontrate</div>
         <div class="card-body">
