@@ -31,12 +31,12 @@ class InterpolatedProfileRepository {
                 ic.z AS "z",
                 ic.value AS "value"
             FROM validity_table v
-            JOIN interpolated_profiles ip 
+            LEFT JOIN interpolated_profiles ip 
                 ON ip.grid_id = v.device_id
                 AND ip.timestamp BETWEEN 
                     GREATEST(v.valid_from, :timeFilterFrom)
                     AND LEAST(COALESCE(v.valid_to, 'infinity'), :timeFilterTo)
-            JOIN interpolated_cells ic
+            LEFT JOIN interpolated_cells ic
                 ON ip.id = ic.profile_id
             ORDER BY ip.timestamp ASC;
         `;

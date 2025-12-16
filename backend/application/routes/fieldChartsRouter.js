@@ -286,6 +286,11 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
                 timeFilterFrom,
                 timeFilterTo,
             );
+
+            if (!results) {
+                return res.status(404).json({ message: "Couldn't find heatmap data" });
+            }
+
             return res.status(200).json(results);
         } catch (error) {
             console.error(`Failed retrieving thesis heatmap caused by: ${error.message}`);
