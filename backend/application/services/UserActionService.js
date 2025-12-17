@@ -11,30 +11,48 @@ class UserActionService {
         this.userActionRepository = userActionRepository;
     }
 
-    async _saveLog(userId, action, table, ids, description) {
-        const timestamp = Date.now()/1000;
+    async _saveLog(userId, action, table, ids, description, payload = null) {
+        const timestamp = Date.now() / 1000;
         const idKeys = Array.isArray(ids) ? ids : [ids];
-        try{
-            return await this.userActionRepository.saveLog(userId, action, table, idKeys, timestamp, description)
+
+        let payloadList;
+        if (Array.isArray(payload) && payload.length === idKeys.length) {
+            payloadList = payload;
+        } else {
+            payloadList = new Array(idKeys.length).fill(payload);
+        }
+
+        const logEntries = idKeys.map((id, index) => ({
+            userId,
+            action,
+            table,
+            idKey: id, 
+            timestamp,
+            description,
+            payload: payloadList[index]
+        }));
+
+        try {
+            return await this.userActionRepository.saveLogs(logEntries);
         } catch (error) {
-            throw new Error(`Error loggin user action casued by by: ${error}`);
+            throw new Error(`Error logging user action caused by: ${error.message}`);
         }
     }
-
-    async logCreation(userId, table, ids, description) {
-        return this._saveLog(userId, ActionTypes.CREATE, table, ids, description )
+    
+    async logCreation(userId, table, ids, description, payload = null) {
+        return this._saveLog(userId, ActionTypes.CREATE, table, ids, description, payload  )
     }
 
-    async logUpdate(userId, table, ids, description) {
-        return this._saveLog(userId, ActionTypes.UPDATE, table, ids, description )
+    async logUpdate(userId, table, ids, description, payload = null) {
+        return this._saveLog(userId, ActionTypes.UPDATE, table, ids, description, payload  )
     }
  
-    async logDeletion(userId, table, ids, description) {
-        return this._saveLog(userId, ActionTypes.DELETE, table, ids, description )
+    async logDeletion(userId, table, ids, description, payload = null) {
+        return this._saveLog(userId, ActionTypes.DELETE, table, ids, description, payload  )
     }
 
-    async logDisabling(userId, table, ids, description) {
-        return this._saveLog(userId, ActionTypes.DISABLE, table, ids, description )
+    async logDisabling(userId, table, ids, description, payload = null) {
+        return this._saveLog(userId, ActionTypes.DISABLE, table, ids, description, payload )
     }
 }
 

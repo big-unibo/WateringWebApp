@@ -54,6 +54,11 @@ function initWateringEvent(sequelize) {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             field: "enabled"
+        },
+        scheduled: {
+            type: DataTypes.BOOLEAN,
+            allowNull: true,
+            field: "scheduled"
         }
     }, {
         modelName: 'watering_events',

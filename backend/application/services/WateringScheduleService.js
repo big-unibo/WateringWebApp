@@ -20,11 +20,20 @@ class WateringScheduleService {
     }
 
     async updateWateringEvent(userId, eventId, fieldsToUpdate) {
-        const result = await this.wateringScheduleRepository.updateWateringEvent(eventId, fieldsToUpdate)
-        if (result) {
-            await this.userActionService.logUpdate(userId, WATERING_EVENTS_LOG_TABLE, eventId, null);
+        const updatedEventInstance = await this.wateringScheduleRepository.updateWateringEvent(eventId, fieldsToUpdate);
+        if (updatedEventInstance) {
+            const eventData = updatedEventInstance.get({ plain: true });
+            await this.userActionService.logUpdate(userId, WATERING_EVENTS_LOG_TABLE, eventId, null, eventData);
+            return eventId;
         }
-        return result
+        return null;
+    }
+
+    async scheduleWateringEvent(userId, eventId) {
+        const update = {
+            scheduled: true
+        }
+        return await this.updateWateringEvent(userId, eventId, update)
     }
 
     async isEventUpdateAllowed(eventId, newWateringStart) {
@@ -33,6 +42,22 @@ class WateringScheduleService {
             return followingEvent.wateringStart - SCHEDULE_SAFE_INTERVAL > newWateringStart;
         }
         return false
+    }
+
+    async validateEventForScheduling(eventId) {
+        const event = await this.wateringScheduleRepository.findEvent(eventId);
+
+        if (!event) {
+            const error = new Error("Event not found");
+            error.code = "EVENT_NOT_FOUND"; 
+            throw error;
+        }
+
+        if (event.advice === null) {
+            const error = new Error("Event has not yet been computed");
+            error.code = "EVENT_NOT_COMPUTED";
+            throw error;
+        }
     }
 
     async createWateringEvent(userId, event) {

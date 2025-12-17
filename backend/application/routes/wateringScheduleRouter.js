@@ -230,9 +230,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
         }
         try {
             const userId = requestUserData.userId
-            //[TO DO]: Authorzation
-            // if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'companies')))
-            //     return res.status(403).json({ message: 'Unauthorized request' });
+            //[TO DO]: Authorization
 
             const eventId = req.params.eventId;
 
@@ -256,8 +254,8 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             }
             return res.status(200).json({ message: "Event successfully updated" });
         } catch (error) {
-            console.log(`Failed retrieving calendar caused by: ${error.message}`);
-            return res.status(500).json({ message: "Error while retrieving calendar" });
+            console.log(`Failed updating event, cause: ${error.message}`);
+            return res.status(500).json({ message: "Error while updating event" });
         }
     })
 
@@ -656,6 +654,125 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
         } catch (error) {
             console.log(`Failed ending watering seasons caused by: ${error.message}`);
             return res.status(500).json({ message: "Error while trying to end watering season" });
+        }
+    })
+
+    /**
+     * @swagger
+     * /wateringSchedule/{eventId}/schedule:
+     *   put:
+     *     summary: Updates a watering event by scheduling it
+     *     tags: [Watering Schedule Operation]
+     *     description: Schedules a specific event Requires authentication and proper authorization.
+     *     parameters:
+     *       - in: path
+     *         name: eventId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: Id of the watering event to schedule
+     *     responses:
+     *       200:
+     *         description: Event successfully scheduled
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Event successfully scheduled
+     *       400:
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error
+     *       401:
+     *         description: Authentication failed – invalid or missing JWT token
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized – user does not have permission to schedule the event
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       404:
+     *         description: Event not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+
+    router.put('/:eventId/schedule', async (req, res) => {
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+
+        const userId = requestUserData.userId
+        const eventId = req.params.eventId;
+        //[TO DO]: Authorization
+
+        try {
+            const event = await wateringScheduleService.validateEventForScheduling(eventId);
+            await wateringScheduleService.scheduleWateringEvent(userId, eventId);
+            return res.status(200).json({ message: "Event successfully scheduled" });
+
+        } catch (error) {
+            if (error.code === "EVENT_NOT_FOUND") {
+                return res.status(404).json({ message: "No event found with the given id" });
+            }
+
+            if (error.code === "EVENT_NOT_COMPUTED") {
+                return res.status(400).json({ message: "Event has not yet been computed" });
+            }
+
+            console.error(error);
+            return res.status(500).json({ message: "Internal Server Error" });
         }
     })
 

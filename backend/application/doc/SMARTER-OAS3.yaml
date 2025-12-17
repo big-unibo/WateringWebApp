@@ -810,6 +810,9 @@ components:
         enabled:
           type: boolean
           description: Indicates if the watering event is currently enabled or planned to run.
+        scheduled:
+          type: boolean
+          description: Indicates if the watering event is scheduled or not.
         advice:
           type: number
           description: General advice or recommendation for the event.

@@ -431,6 +431,7 @@ class DtoConverter {
                     note: curr.note,
                     updatedBy: curr.updatedBy,
                     enabled: curr.enabled ?? false,
+                    scheduled: curr.scheduled ?? false,
                     theses: []
                 };
                 sector.events.push(existingEvent);
@@ -455,6 +456,7 @@ class DtoConverter {
                     event.wateringEnd,
                     event.duration,
                     event.enabled,
+                    event.scheduled,
                     event.advice,
                     event.expectedWater,
                     event.note,

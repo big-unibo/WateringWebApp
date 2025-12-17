@@ -7,25 +7,16 @@ class UserActionRepository {
         this.sequelize = sequelize
     }
 
-    async saveLog(userId, action, table, idKeys, timestamp, description) {
+
+    async saveLogs(logEntries) {
         try {
-            if (idKeys.length === 0) {
-                return; 
+            if (!logEntries || logEntries.length === 0) {
+                return;
             }
+            return await this.UserAction.bulkCreate(logEntries);
 
-            const logRecords = idKeys.map(idKey => ({
-                userId: userId,         
-                action: action,
-                table: table,             
-                idKey: idKey,      
-                timestamp: timestamp,
-                description: description 
-            }));
-
-            await this.UserAction.bulkCreate(logRecords);
-            
         } catch (error) {
-            console.error('Error while writing log:', error);
+            console.error('Error while writing logs to DB:', error);
             throw new Error(`Error while recording user action caused by: ${error.message}`);
         }
     }
