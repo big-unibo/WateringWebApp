@@ -82,7 +82,7 @@ class OptimalDistanceRepository {
                 wd.thesis_name as "thesisName",
                 wd.device_id as "deviceId",
                 ${errorFunctionsUnits[errorFunction.errorFunction]("wd.unit")} as unit,  
-                ROUND(AVG(${errorFunctionsSQLWrapper[errorFunction.errorFunction]("ic.value")} * fd.weight)::numeric,6) as value, 
+                ROUND((SUM(${errorFunctionsSQLWrapper[errorFunction.errorFunction]("ic.value")} * fd.weight)/SUM(fd.weight))::numeric,6) as value, 
                 EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd.watering_start)))::INT  as timestamp, 
                 'Media giornaliera' as "valueType"
             FROM watering_data wd 
@@ -105,7 +105,7 @@ class OptimalDistanceRepository {
                     wd.thesis_name as "thesisName", 
                     wd.device_id as "deviceId",
                     ${errorFunctionsUnits[errorFunction.errorFunction]("wd.unit")} as unit, 
-                    ROUND(AVG(${errorFunctionsSQLWrapper[errorFunction.errorFunction]("fd.value")} * fd.weight)::numeric,6) as value,
+                    ROUND((SUM(${errorFunctionsSQLWrapper[errorFunction.errorFunction]("fd.value")} * fd.weight)/SUM(fd.weight))::numeric,6) as value,
                     EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd.watering_start)))::INT  as timestamp, 
                     'Media ottimale' as "valueType"
                 FROM watering_data wd 
