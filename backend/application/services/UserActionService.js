@@ -2,7 +2,8 @@ const ActionTypes = {
     CREATE: 'CREATE',
     UPDATE: 'UPDATE',
     DELETE: 'DELETE',
-    DISABLE: 'DISABLE'
+    DISABLE: 'DISABLE',
+    SCHEDULE: 'SCHEDULE'
 };
 
 class UserActionService {
@@ -53,6 +54,10 @@ class UserActionService {
 
     async logDisabling(userId, table, ids, description, payload = null) {
         return this._saveLog(userId, ActionTypes.DISABLE, table, ids, description, payload )
+    }
+
+    async logScheduling(userId, table, ids, description, payload = null) {
+        return this._saveLog(userId, ActionTypes.SCHEDULE, table, ids, description, payload )
     }
 }
 

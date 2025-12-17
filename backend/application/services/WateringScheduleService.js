@@ -30,10 +30,12 @@ class WateringScheduleService {
     }
 
     async scheduleWateringEvent(userId, eventId) {
-        const update = {
-            scheduled: true
+        const updatedEventInstance = await this.wateringScheduleRepository.updateWateringEvent(eventId, {scheduled: true});
+        if (updatedEventInstance) {
+            await this.userActionService.logScheduling(userId, WATERING_EVENTS_LOG_TABLE, eventId, null);
+            return eventId;
         }
-        return await this.updateWateringEvent(userId, eventId, update)
+        return null;
     }
 
     async isEventUpdateAllowed(eventId, newWateringStart) {
