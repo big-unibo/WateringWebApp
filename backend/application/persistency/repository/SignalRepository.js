@@ -175,7 +175,7 @@ class SignalRepository {
         try {
             const signal = await this.Signal.findByPk(signalId);
             if (!signal) throw new Error("Signal not found");
-            await signal.update(updates);
+            return await signal.update(updates);
         } catch (error) {
             throw new Error(`Error while updating signal caused by: ${error.message}`);
         }
