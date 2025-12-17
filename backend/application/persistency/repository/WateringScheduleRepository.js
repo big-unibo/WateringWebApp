@@ -13,7 +13,7 @@ class WateringScheduleRepository {
     async getSchedule(sectorId, timeFilterFrom, timeFilterTo) {
         try {
             const query = `
-                SELECT 
+                SELECT
                     we.sector_id as "sectorId",
                     we.date as "date",
                     we.watering_start as "wateringStart",
@@ -33,10 +33,13 @@ class WateringScheduleRepository {
                     tis.weight as "weight",
                     a.image_timestamp as "imageTimestamp"
                 FROM public.watering_events we
-                LEFT JOIN public.users_actions ua 
-                    ON we.id = ua.id_key
-                    AND ua.table = 'watering_events'
-                    AND ua.action = 'UPDATE'
+                LEFT JOIN (
+                    SELECT DISTINCT ON (id_key) id_key, user_id, timestamp
+                    FROM public.users_actions
+                    WHERE "table" = 'watering_events' 
+                    AND action = 'UPDATE'
+                    ORDER BY id_key, timestamp DESC
+                ) ua ON we.id = ua.id_key
                 LEFT JOIN users u
                     ON ua.user_id = u.id
                 JOIN theses_in_sectors tis 

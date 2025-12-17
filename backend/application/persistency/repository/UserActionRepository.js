@@ -1,5 +1,3 @@
-import { QueryTypes } from 'sequelize'
-
 class UserActionRepository {
 
     constructor(models, sequelize) {
