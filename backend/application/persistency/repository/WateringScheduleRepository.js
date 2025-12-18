@@ -1,4 +1,4 @@
-import { Op, Sequelize } from "sequelize";
+import { Op } from "sequelize";
 
 class WateringScheduleRepository {
     constructor(models, sequelize) {
@@ -10,7 +10,7 @@ class WateringScheduleRepository {
         this.sequelize = sequelize;
     }
 
-    async getSchedule(sectorId, timeFilterFrom, timeFilterTo) {
+    async getSectorSchedules(sectorId, timeFilterFrom, timeFilterTo) {
         try {
             const query = `
                 SELECT
@@ -33,13 +33,13 @@ class WateringScheduleRepository {
                     tis.weight as "weight",
                     a.image_timestamp as "imageTimestamp"
                 FROM public.watering_events we
-                LEFT JOIN (
-                    SELECT DISTINCT ON (id_key) id_key, user_id, timestamp
-                    FROM public.users_actions
-                    WHERE "table" = 'watering_events' 
-                    AND action = 'UPDATE'
-                    ORDER BY id_key, timestamp DESC
-                ) ua ON we.id = ua.id_key
+                LEFT JOIN LATERAL (SELECT * FROM public.users_actions
+                        WHERE "table" = 'watering_events' 
+                        AND action = 'UPDATE' 
+                        AND id_key = we.id 
+                        ORDER BY timestamp DESC LIMIT 1
+                    ) ua 
+                    ON true
                 LEFT JOIN users u
                     ON ua.user_id = u.id
                 JOIN theses_in_sectors tis 
@@ -60,13 +60,86 @@ class WateringScheduleRepository {
             `;
 
             const results = await this.sequelize.query(query, {
-                replacements: {
-                    sectorId: sectorId,
-                    timeFilterFrom: timeFilterFrom,
-                    timeFilterTo: timeFilterTo
+                replacements: { 
+                    sectorId: sectorId, 
+                    timeFilterFrom: timeFilterFrom, 
+                    timeFilterTo: timeFilterTo 
                 },
                 type: this.sequelize.QueryTypes.SELECT
             });
+
+            return results;
+
+        } catch (error) {
+            throw new Error(`Error while retrieving watering events caused by: ${error.message}`);
+        }
+    }
+
+    async getUserWateringEvents(userId, timeFilterFrom, timeFilterTo){
+        try {
+            const query = `
+                SELECT DISTINCT
+                    we.sector_id as "sectorId",
+                    we.date as "date",
+                    we.watering_start as "wateringStart",
+                    we.watering_end as "wateringEnd",
+                    we.advice as "advice",
+                    we.duration as "duration",
+                    we.enabled as "enabled",
+                    we.scheduled as "scheduled",
+                    we.expected_water as "expectedWater",
+                    we.id as "eventId",
+                    we.note as "note",
+                    ua.timestamp as "updateTimestamp",
+                    u.email as "updatedBy",
+                    tis.thesis_id as "thesisId",
+                    t.thesis_name as "thesisName",
+                    s.sector_name as "sectorName",
+                    tis.weight as "weight",
+                    a.image_timestamp as "imageTimestamp"
+                FROM public.watering_events we
+                LEFT JOIN LATERAL (SELECT * FROM public.users_actions
+                        WHERE "table" = 'watering_events' 
+                        AND action = 'UPDATE' 
+                        AND id_key = we.id 
+                        ORDER BY timestamp DESC LIMIT 1
+                    ) ua 
+                    ON true
+                LEFT JOIN users u
+                    ON ua.user_id = u.id
+                JOIN theses_in_sectors tis 
+                    ON tis.sector_id = we.sector_id
+                    AND tis.valid_from <= we.watering_start
+                    AND (tis.valid_to IS NULL OR tis.valid_to >= we.watering_start) 
+                    AND tis.valid_from <= :timeFilterTo
+                    AND (tis.valid_to IS NULL OR tis.valid_to >= :timeFilterFrom)  
+                LEFT JOIN advices a
+                    ON tis.thesis_id = a.thesis_id
+                    AND we.watering_start = a.watering_start
+                JOIN theses t 
+                    ON t.id = tis.thesis_id
+                JOIN sectors s 
+                    ON s.id = tis.sector_id
+                JOIN users usr
+                    ON usr.id = :userId
+                LEFT JOIN permits p
+                    ON (usr.role = 'admin' OR p.user_id = usr.id)
+                    AND p.id_key = s.id 
+                    AND p.table = 'sectors'
+                    AND p.permit = 'READ_ADVICE'
+                WHERE 
+                    we.watering_start BETWEEN :timeFilterFrom AND :timeFilterTo
+            `;
+
+            const results = await this.sequelize.query(query, {
+                replacements: { 
+                    userId: userId, 
+                    timeFilterFrom: timeFilterFrom, 
+                    timeFilterTo: timeFilterTo 
+                },
+                type: this.sequelize.QueryTypes.SELECT
+            });
+
             return results;
 
         } catch (error) {
@@ -143,12 +216,11 @@ class WateringScheduleRepository {
 
 
     async createWateringEvent({
-        sectorId,
-        wateringStart,
-        expectedWater = null,
-        note = null,
-        enabled = true,
-        scheduled = false
+        sectorId, 
+        wateringStart, 
+        expectedWater, 
+        note, 
+        enabled = true
     }) {
         try {
             let date = null;

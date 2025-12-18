@@ -50,7 +50,7 @@ class UserRepository {
         }
     }
 
-    async createPermit(userId, table, permit_type, id_key = null) {
+    async createPermit(userId, table, permit_type, id_key) {
         try {
                 const user = await this.User.findByPk(userId);
                     if (!user) {

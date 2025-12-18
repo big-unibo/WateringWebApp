@@ -62,13 +62,13 @@ class FieldRepository {
         sectorName,
         fieldId,
         culture,
-        cultureType = null,
-        location = null,
-        prescriptive = null,
-        advice = null,
-        dripperCapacity = null,
-        sprinklerCapacity = null,
-        doubleWing = null
+        cultureType,
+        location,
+        prescriptive,
+        advice,
+        dripperCapacity,
+        sprinklerCapacity,
+        doubleWing
     }) {
         try {
             const field = await this.Field.findByPk(fieldId);
@@ -396,7 +396,7 @@ class FieldRepository {
         return (results);
     }
 
-    async createMatrixOptimalState(gridId, validFrom, validTo, stopPercentage, optimalDryBound, optimalWetBound, profileId = null) {
+    async createMatrixOptimalState(gridId, validFrom, validTo, stopPercentage, optimalDryBound, optimalWetBound, profileId) {
         try {
             let newMatrixId
             if (profileId) {

@@ -1,6 +1,6 @@
 export class WateringScheduleResponse {
 
-    constructor(sectorId, events, sectorName = null) {
+    constructor(sectorId, events, sectorName) {
         this.sectorId = sectorId
         this.sectorName = sectorName
         this.events = events
@@ -45,7 +45,7 @@ export class WateringEvent {
      * @param {string} [note] - Optional note for the event
      * @param {boolean} [enabled] - Whether the event is enabled (default: true)
      */
-    constructor({ sectorId, wateringStart, expectedWater = null, note = null, enabled = true }) {
+    constructor({ sectorId, wateringStart, expectedWater, note, enabled = true }) {
         this.sectorId = sectorId;
         this.wateringStart = wateringStart;
         this.expectedWater = expectedWater;

@@ -122,7 +122,6 @@ class DeviceService {
         if (Array.isArray(deviceData) && deviceData.length > 0) {
             return dtoConverter.convertDevicesDataWrapper(deviceData)[0]
         }
-        return null;
     }
 
     async getProviders() {

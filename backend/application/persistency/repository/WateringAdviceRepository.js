@@ -143,8 +143,6 @@ class WateringAdviceRepository {
                 return updatedRecords[0].id;
             }
 
-            return null;
-
         } catch (error) {
             throw new Error(`Error ending watering algorithm params validity: ${error.message}`);
         }

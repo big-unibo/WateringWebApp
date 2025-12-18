@@ -447,7 +447,7 @@ class DtoConverter {
             return acc;
         }, {});
 
-        const finalResponse = Object.values(groupedMap).map(sectorGroup => {
+        const response = Object.values(groupedMap).map(sectorGroup => {
             const eventsData = sectorGroup.events.map(event => {
                 return new WateringEventData(
                     event.eventId,
@@ -472,7 +472,7 @@ class DtoConverter {
             );
         });
 
-        return finalResponse.length > 0 ? finalResponse[0] : null;
+        return response
     }
 
     convertWateringAlgorithmParamsWrapper(results) {
