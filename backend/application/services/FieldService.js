@@ -181,8 +181,8 @@ class FieldService {
         }
     }
 
-    async getDevicesByThesis(thesisId, timestamp) {
-        const result = await this.thesesAllSignalsRepository.getDevicesByThesis(thesisId, timestamp);
+    async getDevicesByThesis(thesisId, timestamp, deviceTypes) {
+        const result = await this.thesesAllSignalsRepository.getDevicesByThesis(thesisId, timestamp, deviceTypes);
         return dtoConverter.convertDevicesDataWrapper(result);
     }
 
@@ -190,8 +190,8 @@ class FieldService {
         return this.humidityBinsRepository.getBinningInfo(binningId);
     }
 
-    async getSignalsByThesis(thesisId, signalTypes, timestamp) {
-        const result = await this.thesesAllSignalsRepository.getSignalsByThesis(thesisId, signalTypes, timestamp);
+    async getSignalsByThesis(thesisId, timestamp, signalTypes) {
+        const result = await this.thesesAllSignalsRepository.getSignalsByThesis(thesisId, timestamp, signalTypes);
         return dtoConverter.convertSignalsDataWrapper(result);
     }
 

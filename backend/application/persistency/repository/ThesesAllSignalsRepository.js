@@ -192,7 +192,7 @@ class ThesesAllSignalsRepository {
         return results;
     }
 
-    async getDevicesByThesis(thesisId, timestamp) {
+    async getDevicesByThesis(thesisId, timestamp, deviceTypes) {
         const query = `
             SELECT DISTINCT 
                 device_id AS "deviceId",
@@ -216,11 +216,12 @@ class ThesesAllSignalsRepository {
             ) m ON true
             WHERE thesis_id = :thesisId
                 AND :timestamp BETWEEN valid_from AND COALESCE(valid_to, 'infinity') 
+                ${deviceTypes?.length > 0 ? "AND tas.device_type = ANY(ARRAY[:deviceTypes])" : "" }
         `;
 
         try {
             const results = await this.sequelize.query(query, {
-                replacements: { thesisId, timestamp },
+                replacements: { thesisId, timestamp, deviceTypes },
                 type: this.sequelize.QueryTypes.SELECT
             });
             return results;
@@ -230,7 +231,7 @@ class ThesesAllSignalsRepository {
         }
     }
 
-    async getSignalsByThesis(thesisId, signalTypes, timestamp) {
+    async getSignalsByThesis(thesisId, timestamp, signalTypes) {
         const query = `
             SELECT DISTINCT
                 tas.device_id AS "deviceId",

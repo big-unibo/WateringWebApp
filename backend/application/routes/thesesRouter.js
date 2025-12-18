@@ -141,6 +141,14 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *         schema:
      *           type: number
      *         description: Timestamp in which find the information
+     *       - in: query
+     *         name: deviceTypes
+     *         required: false
+     *         schema:
+     *           type: array
+     *           items:
+     *             type: string
+     *         description: Array of device types to filter the response
      *     responses:
      *       200:
      *         description: Informations about devices and signals assigned to the given thesis
@@ -231,7 +239,8 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
             //     return res.status(403).json({message: 'Unauthorized request'});
 
             const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000
-            const results = await fieldService.getDevicesByThesis(thesisId, timestamp);
+            const deviceTypes = req.query.deviceTypes;
+            const results = await fieldService.getDevicesByThesis(thesisId, timestamp, deviceTypes);
             return res.status(200).json(results)
         } catch (error) {
             console.log(`Fail retrieving devices data: ${error.message}`);
@@ -361,7 +370,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
             // if (!(await authorizationService.isUserAuthorizedInSector(requestUserData.userId, 'update', thesisId)))
             //     return res.status(403).json({message: 'Unauthorized request'});
 
-            const results = await fieldService.getSignalsByThesis(thesisId, signalTypes, timestamp);
+            const results = await fieldService.getSignalsByThesis(thesisId, timestamp, signalTypes);
             return res.status(200).json(results)
         } catch (error) {
             console.log(`Fail retrieving devices data: ${error.message}`);
