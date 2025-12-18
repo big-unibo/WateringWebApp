@@ -11,11 +11,16 @@ class WateringScheduleService {
         this.userActionService = userActionService
     }
 
-    async getSchedule(sectorId, timeFilterFrom, timeFilterTo) {
-        const results = await this.wateringScheduleRepository.getSchedule(sectorId, timeFilterFrom, timeFilterTo)
+    async getSectorSchedules(sectorId, timeFilterFrom, timeFilterTo) {
+        const results = await this.wateringScheduleRepository.getSectorSchedules(sectorId, timeFilterFrom, timeFilterTo)
         if (results.length == 0) {
             return new WateringScheduleResponse(sectorId, [])
         }
+        return dtoConverter.convertCalendarWrapper(results)[0];
+    }
+
+    async getUserWateringEvents(userId, timeFilterFrom, timeFilterTo) {
+        const results = await this.wateringScheduleRepository.getUserWateringEvents(userId, timeFilterFrom, timeFilterTo);
         return dtoConverter.convertCalendarWrapper(results);
     }
 
