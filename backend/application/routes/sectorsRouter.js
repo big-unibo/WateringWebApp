@@ -622,6 +622,132 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
         }
     })
 
+    /**
+     * @swagger
+     * /sectors/{sectorId}/devices:
+     *   get:
+     *     summary: Gets all the devices info for a given sector
+     *     tags: [Sectors]
+     *     description: Endpoint to get all devices and signals info for a given sector. Requires authentication and proper authorization
+     *     parameters:
+     *       - in: path
+     *         name: sectorId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of the sector
+     *       - in: query
+     *         name: timestamp
+     *         schema:
+     *           type: number
+     *         description: Timestamp in which find the information
+     *       - in: query
+     *         name: deviceTypes
+     *         required: false
+     *         schema:
+     *           type: array
+     *           items:
+     *             type: string
+     *         description: Array of device types to filter the response
+     *     responses:
+     *       200:
+     *         description: Informations about devices and signals assigned to the given thesis
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                  $ref: '#/components/schemas/Device'
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to get devices info for this thesis)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while retrieving devices info
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+    */
+    router.get('/:sectorId/devices', async (req, res) => {
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        const sectorId = Number(req.params.sectorId)
+        const exists = await fieldService.sectorExists(sectorId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Sector not found' });
+        }
+
+        try {
+            // TODO Authorization
+            // if (!(await authorizationService.isUserAuthorizedInSector(user.id, 'update', sectorId)))
+            //     return res.status(403).json({message: 'Unauthorized request'});
+
+            const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000
+            const deviceTypes = req.query.deviceTypes;
+            const results = await fieldService.getDevicesBySector(sectorId, timestamp, deviceTypes);
+            return res.status(200).json(results)
+        } catch (error) {
+            console.log(`Fail retrieving devices data: ${error.message}`);
+            return res.status(500).json({ error: "Error while retrieving devices data" });
+        }
+    });
+
     return router;
 }
 export default sectorsRouter;

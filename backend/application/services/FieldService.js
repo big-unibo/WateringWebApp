@@ -186,6 +186,25 @@ class FieldService {
         return dtoConverter.convertDevicesDataWrapper(result);
     }
 
+    async getDevicesBySector(sectorId, timestamp, deviceTypes) {
+        const thesesIds = [...new Set((await this.getSectorDetails(sectorId, timestamp)).theses.map(t => t.id))]
+
+        const results = await Promise.all(
+            thesesIds.map(async id =>
+                dtoConverter.convertDevicesDataWrapper(
+                await this.thesesAllSignalsRepository.getDevicesByThesis(
+                    id,
+                    timestamp,
+                    deviceTypes
+                )
+                )
+            )
+        )
+        return [
+        ...new Map(results.flat().map(d => [d.deviceId, d])).values()
+        ];
+    }
+
     async getBinningInfo(binningId) {
         return this.humidityBinsRepository.getBinningInfo(binningId);
     }
