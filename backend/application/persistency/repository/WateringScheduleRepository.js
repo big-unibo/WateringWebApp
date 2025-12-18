@@ -78,7 +78,7 @@ class WateringScheduleRepository {
     async getUserWateringEvents(userId, timeFilterFrom, timeFilterTo){
         try {
             const query = `
-                SELECT
+                SELECT DISTINCT
                     we.sector_id as "sectorId",
                     we.date as "date",
                     we.watering_start as "wateringStart",
@@ -98,10 +98,13 @@ class WateringScheduleRepository {
                     tis.weight as "weight",
                     a.image_timestamp as "imageTimestamp"
                 FROM public.watering_events we
-                LEFT JOIN public.users_actions ua 
-                    ON we.id = ua.id_key
-                    AND ua.table = 'watering_events'
-                    AND ua.action = 'UPDATE'
+                LEFT JOIN LATERAL (SELECT * FROM public.users_actions
+                        WHERE "table" = 'watering_events' 
+                        AND action = 'UPDATE' 
+                        AND id_key = we.id 
+                        ORDER BY timestamp DESC LIMIT 1
+                    ) ua 
+                    ON true
                 LEFT JOIN users u
                     ON ua.user_id = u.id
                 JOIN theses_in_sectors tis 
@@ -117,18 +120,26 @@ class WateringScheduleRepository {
                     ON t.id = tis.thesis_id
                 JOIN sectors s 
                     ON s.id = tis.sector_id
-                WHERE we.sector_id = :sectorId
-                    AND we.watering_start BETWEEN :timeFilterFrom AND :timeFilterTo
+                JOIN users usr
+                    ON usr.id = :userId
+                LEFT JOIN permits p
+                    ON (usr.role = 'admin' OR p.user_id = usr.id)
+                    AND p.id_key = s.id 
+                    AND p.table = 'sectors'
+                    AND p.permit = 'READ_ADVICE'
+                WHERE 
+                    we.watering_start BETWEEN :timeFilterFrom AND :timeFilterTo
             `;
 
             const results = await this.sequelize.query(query, {
-                replacements: {
-                    sectorId: sectorId,
-                    timeFilterFrom: timeFilterFrom,
-                    timeFilterTo: timeFilterTo
+                replacements: { 
+                    userId: userId, 
+                    timeFilterFrom: timeFilterFrom, 
+                    timeFilterTo: timeFilterTo 
                 },
                 type: this.sequelize.QueryTypes.SELECT
             });
+
             return results;
 
         } catch (error) {
