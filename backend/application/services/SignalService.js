@@ -68,12 +68,15 @@ class SignalService {
         try {
             const { id, ...fields } = signalUpdateData;
 
-            await this.signalRepository.updateSignal(
+            const updatedSignalInstance = await this.signalRepository.updateSignal(
                 id,
                 Object.fromEntries(Object.entries(fields).filter(([_, v]) => v !== undefined))
             )
 
-            this.userActionService.logUpdate(userId, SIGNALS_LOG_TABLE, id, null)
+            if (updatedSignalInstance) {
+                const signalData = updatedSignalInstance.get({ plain: true });
+                await this.userActionService.logUpdate(userId, SIGNALS_LOG_TABLE, id, null, signalData)
+            }
         } catch (error) {
             console.error(`Error updating signal: ${error.message}`);
             throw error;

@@ -37,7 +37,11 @@ function initUserAction(sequelize) {
         },
         description: {
             type: DataTypes.TEXT,
-            allowNull: false
+            allowNull: true
+        },
+        payload: {
+            type: DataTypes.JSONB,
+            allowNull: true
         }
     }, {
         tableName : 'users_actions',

@@ -363,7 +363,6 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
 
         try {
             const signalUpdateData = new SignalUpdate(signalId, description, idOnProvider, sensorTechnology)
-
             await signalService.updateSignal(userId, signalUpdateData);
             return res.status(200).json({ message: 'Signal successfully updated' });
         }

@@ -1,7 +1,7 @@
 import { Op } from "sequelize";
 
 class WateringScheduleRepository {
-    constructor(models, sequelize){
+    constructor(models, sequelize) {
         this.Thesis = models.Thesis;
         this.ThesisInSector = models.ThesisInSector;
         this.WateringEvent = models.WateringEvent;
@@ -13,7 +13,7 @@ class WateringScheduleRepository {
     async getSectorSchedules(sectorId, timeFilterFrom, timeFilterTo) {
         try {
             const query = `
-                SELECT 
+                SELECT
                     we.sector_id as "sectorId",
                     we.date as "date",
                     we.watering_start as "wateringStart",
@@ -21,6 +21,7 @@ class WateringScheduleRepository {
                     we.advice as "advice",
                     we.duration as "duration",
                     we.enabled as "enabled",
+                    we.scheduled as "scheduled",
                     we.expected_water as "expectedWater",
                     we.id as "eventId",
                     we.note as "note",
@@ -77,7 +78,7 @@ class WateringScheduleRepository {
     async getUserWateringEvents(userId, timeFilterFrom, timeFilterTo){
         try {
             const query = `
-                SELECT 
+                SELECT
                     we.sector_id as "sectorId",
                     we.date as "date",
                     we.watering_start as "wateringStart",
@@ -85,6 +86,7 @@ class WateringScheduleRepository {
                     we.advice as "advice",
                     we.duration as "duration",
                     we.enabled as "enabled",
+                    we.scheduled as "scheduled",
                     we.expected_water as "expectedWater",
                     we.id as "eventId",
                     we.note as "note",
@@ -96,13 +98,10 @@ class WateringScheduleRepository {
                     tis.weight as "weight",
                     a.image_timestamp as "imageTimestamp"
                 FROM public.watering_events we
-                LEFT JOIN LATERAL (SELECT * FROM public.users_actions
-                        WHERE "table" = 'watering_events' 
-                        AND action = 'UPDATE' 
-                        AND id_key = we.id 
-                        ORDER BY timestamp DESC LIMIT 1
-                    ) ua 
-                    ON true
+                LEFT JOIN public.users_actions ua 
+                    ON we.id = ua.id_key
+                    AND ua.table = 'watering_events'
+                    AND ua.action = 'UPDATE'
                 LEFT JOIN users u
                     ON ua.user_id = u.id
                 JOIN theses_in_sectors tis 
@@ -123,14 +122,13 @@ class WateringScheduleRepository {
             `;
 
             const results = await this.sequelize.query(query, {
-                replacements: { 
-                    sectorId: sectorId, 
-                    timeFilterFrom: timeFilterFrom, 
-                    timeFilterTo: timeFilterTo 
+                replacements: {
+                    sectorId: sectorId,
+                    timeFilterFrom: timeFilterFrom,
+                    timeFilterTo: timeFilterTo
                 },
                 type: this.sequelize.QueryTypes.SELECT
             });
-
             return results;
 
         } catch (error) {
@@ -142,19 +140,27 @@ class WateringScheduleRepository {
         if (fieldsToUpdate.hasOwnProperty('wateringStart') && fieldsToUpdate.wateringStart !== null) {
             const unixSeconds = fieldsToUpdate.wateringStart;
             const dateObj = new Date(unixSeconds * 1000);
-            const formattedDate = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2,'0')}-${String(dateObj.getDate()).padStart(2,'0')}`;
+            const formattedDate = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
             fieldsToUpdate.date = formattedDate;
         }
-        try{
+        try {
             const event = await this.WateringEvent.findByPk(eventId);
-            if(!event) return null;
-            return await event.update(fieldsToUpdate);      
-        }catch (error){
-           throw new Error(`Error while updating watering event caused by: ${error.message}`);
+            if (!event) return null;
+            return await event.update(fieldsToUpdate);
+        } catch (error) {
+            throw new Error(`Error while updating watering event caused by: ${error.message}`);
         }
     }
 
-    async findFollowingEvent(eventId){
+    async findEvent(eventId) {
+        try {
+            return await this.WateringEvent.findByPk(eventId, { raw: true });
+        } catch (error) {
+            throw new Error(`Error while searching following caused by: ${error.message}`);
+        }
+    }
+
+    async findFollowingEvent(eventId) {
         const query = `
             WITH reference_event AS (
                 SELECT sector_id, watering_start
@@ -171,7 +177,8 @@ class WateringScheduleRepository {
                 w.duration,
                 w.expected_water as expectedWater,
                 w.note,
-                w.enabled
+                w.enabled,
+                w.scheduled
             FROM watering_events w
             JOIN reference_event r ON w.sector_id = r.sector_id
             WHERE w.watering_start > r.watering_start
@@ -179,9 +186,9 @@ class WateringScheduleRepository {
             LIMIT 1;
         `
 
-        try{
+        try {
             const result = await this.sequelize.query(query, {
-                replacements: { 
+                replacements: {
                     eventId: eventId
                 },
                 type: this.sequelize.QueryTypes.SELECT,
@@ -208,7 +215,7 @@ class WateringScheduleRepository {
             let date = null;
             if (wateringStart !== null && wateringStart !== undefined) {
                 const dateObj = new Date(wateringStart * 1000);
-                date = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2,'0')}-${String(dateObj.getDate()).padStart(2,'0')}`;
+                date = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
             }
 
             const newEvent = await this.WateringEvent.create({
@@ -217,6 +224,7 @@ class WateringScheduleRepository {
                 expectedWater,
                 note,
                 enabled,
+                scheduled,
                 date
             });
 
@@ -227,7 +235,7 @@ class WateringScheduleRepository {
         }
     }
 
-    async deleteWateringEvents(sectorId, timestamp){
+    async deleteWateringEvents(sectorId, timestamp) {
         try {
             const events = await this.WateringEvent.findAll({
                 attributes: ['id'],
