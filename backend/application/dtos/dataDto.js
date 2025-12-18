@@ -1,9 +1,9 @@
 export class SignalTypeData {
-  constructor(signalType, signalTypeDescription, signals, thesisName = null) {
+  constructor(signalType, signalTypeDescription, signals, thesisName) {
     this.signalType = signalType;
     this.signalTypeDescription = signalTypeDescription;
     this.signals = signals;
-    if (thesisName !== null) this.thesisName = thesisName;
+    this.thesisName = thesisName;
   }
 }
 

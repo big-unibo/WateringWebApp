@@ -15,13 +15,13 @@ export class Sector {
     sectorName,
     fieldId,
     culture,
-    cultureType = null,
-    location = null,
-    prescriptive = null,
-    advice = null,
-    dripperCapacity = null,
-    sprinklerCapacity = null,
-    doubleWing = null
+    cultureType,
+    location,
+    prescriptive,
+    advice,
+    dripperCapacity,
+    sprinklerCapacity,
+    doubleWing
   ) {
     this.sectorName = sectorName;
     this.fieldId = fieldId;

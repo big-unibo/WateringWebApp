@@ -109,8 +109,6 @@ class UserService {
                 rawUserData.name,
                 rawUserData.role
             )
-        } else {
-            return null
         }
     }
 }

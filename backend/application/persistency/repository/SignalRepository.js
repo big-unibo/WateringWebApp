@@ -219,7 +219,6 @@ class SignalRepository {
             if (updatedRecords && updatedRecords.length > 0) {
                 return updatedRecords[0].id;
             }
-            return null;
         } catch (error) {
             throw new Error(`Error disabling signal in Thesis: ${error.message}`);
         }
@@ -238,7 +237,6 @@ class SignalRepository {
             if (updatedRecords && updatedRecords.length > 0) {
                 return updatedRecords[0].id;
             }
-            return null;
         } catch (error) {
             throw new Error(`Error disabling signal in Sector: ${error.message}`);
         }
@@ -257,7 +255,6 @@ class SignalRepository {
             if (updatedRecords && updatedRecords.length > 0) {
                 return updatedRecords[0].id;
             }
-            return null;
         } catch (error) {
             throw new Error(`Error disabling signal in Field: ${error.message}`);
         }
