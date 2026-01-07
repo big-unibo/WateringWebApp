@@ -39,7 +39,7 @@ class DeltaRepository {
                 ROUND((SUM(CASE WHEN iq."value" > -300 THEN LN(ABS(iq."value")) * iq."weight"
                             ELSE LN(ABS(-300)) * iq."weight" END) / SUM(iq."weight"))::numeric,6) AS "value",
                 EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(iq."timestamp")))::INT AS "timestamp",
-                'Optimal Avg. Water Pot.' AS "detectedValueTypeDescription"
+                'Daily Avg. Water Pot.' AS "detectedValueTypeDescription"
             FROM (
                 SELECT di."source", di."refStructureName", di."companyName", di."fieldName", di."sectorName", di."plantRow", 
                     di."timestamp", di."value", fd."weight" 
@@ -67,7 +67,7 @@ class DeltaRepository {
                 ROUND((SUM(CASE WHEN fd."optValue" > -300 THEN LN(ABS(fd."optValue")) * fd."weight"
                             ELSE LN(ABS(-300)) * fd."weight" END)/SUM(fd."weight"))::numeric,6) AS "value",
                 EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd."watering_start")))::INT AS "timestamp",
-                'Daily Avg. Water Pot.' AS "detectedValueTypeDescription"       
+                'Optimal Avg. Water Pot.' AS "detectedValueTypeDescription"       
                 FROM field_data AS fd
                 JOIN watering_data AS wd ON wd."timestamp" > fd."timestamp_from" AND (wd."timestamp" < fd."timestamp_to" OR fd."timestamp_to" IS NULL)
                 WHERE (fd.xx, fd.yy) IN (
