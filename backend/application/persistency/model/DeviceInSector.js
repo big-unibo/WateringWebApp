@@ -1,23 +1,23 @@
 import { Model, DataTypes } from 'sequelize';
 
-class SignalInField extends Model {}
+class DeviceInSector extends Model {}
 
-function initSignalInField(sequelize) {
-    SignalInField.init({
+function initDeviceInSector(sequelize) {
+    DeviceInSector.init({
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true,
             field: "id"
         },
-        fieldId: {
+        deviceId: {
             type: DataTypes.INTEGER,
-            field: "field_id",
+            field: "device_id",
             allowNull: false
         },
-        signalId: {
+        sectorId: {
             type: DataTypes.INTEGER,
-            field: "signal_id",
+            field: "sector_id",
             allowNull: false
         },
         validFrom: {
@@ -31,13 +31,13 @@ function initSignalInField(sequelize) {
             field: "valid_to"
         },
     }, {
-        tableName : 'fields_signals',
-        modelName : 'SignalInField',
+        tableName : 'sectors_devices',
+        modelName : 'DeviceInSector',
         timestamps : false,
         sequelize
     });
 
-    return SignalInField;
+    return DeviceInSector;
 }
 
-export default initSignalInField;
+export default initDeviceInSector;

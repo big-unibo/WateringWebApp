@@ -1,7 +1,6 @@
 import { Router } from 'express';
 
-import { CreateDevice } from '../dtos/deviceDto.js';
-import { CreateSignal, SignalAssociation } from '../dtos/signalDto.js';
+import { CreateDevice, DeviceAssociation } from '../dtos/deviceDto.js';
 
 const devicesRouter = ({ authenticationService, authorizationService, userService, deviceService }) => {
     const router = Router();
@@ -161,8 +160,8 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      * @swagger
      * /devices/create:
      *   post:
-     *     summary: Create a new device with its signals
-     *     description: Receives a device object with a list of signals and creates the device along with its signals.  Requires authentication and proper authorization.
+     *     summary: Create a new device
+     *     description: Creates a new device.  Requires authentication and proper authorization.
      *     tags:
      *       - Devices
      *     requestBody:
@@ -249,13 +248,10 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
             if (!(await authorizationService.isUserAuthorized(userId, 'create', 'devices')))
                 return res.status(403).json({ message: 'Unauthorized request' });
 
-            const signalsArray = req.body.signals
+            const device = new CreateDevice(req.body.type, req.body.description, req.body.location, req.body.binningId);
 
-            const device = new CreateDevice(req.body.type, Number(req.body.providerId), req.body.description,
-                req.body.location, req.body.binningId, (signalsArray || []).map(sig => new CreateSignal(sig)));
-
-            const deviceData = await deviceService.createDevice(userId, device);
-            return res.status(200).json({ message: `Device created with success`, id: deviceData.deviceId });
+            const deviceId = await deviceService.createDevice(userId, device);
+            return res.status(200).json({ message: `Device created with success`, id: deviceId });
         } catch (error) {
             console.log(`Failed creating Device caused by: ${error.message}`);
             return res.status(500).json({ message: "Error on creating device" });
@@ -264,11 +260,121 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
 
     /**
      * @swagger
+     * /devices/{deviceId}/signals:
+     *   post:
+     *     summary: Attach signals to a device
+     *     description: Attaches signals to a device.  Requires authentication and proper authorization.
+     *     tags:
+     *       - Devices
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - signalIds
+     *             properties:
+     *               signalIds:
+     *                 description: List of signal IDs to attach to the device
+     *                 type: array
+     *                 items:
+     *                   type: integer
+     *               timestamp:
+     *                 type: number
+     *                 description: Timestamp indicating when the attachment is made (in seconds since 01/01/1970)
+     *     responses:
+     *       200:
+     *         description: Signals attached successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to attach signals to devices)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while attaching signals to the device
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *
+     */
+    router.post('/:deviceId/signals', async (req, res) => {
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+        try {
+            const userId = requestUserData.userId
+            if (!(await authorizationService.isUserAuthorized(userId, 'create', 'devices')))
+                return res.status(403).json({ message: 'Unauthorized request' });
+
+            const validFrom = req.body.timestamp ?? Date.now() / 1000;
+
+            await deviceService.attachSignalsToDevice(userId, req.params.deviceId, req.body.signalIds, validFrom);
+            return res.status(200).json({ message: `Signals attached to device with success` });
+        } catch (error) {
+            console.log(`Failed attaching signals to Device caused by: ${error.message}`);
+            return res.status(500).json({ message: "Error on attaching signals to device" });
+        }
+    });
+
+    /**
+     * @swagger
      * /devices/{deviceId}/assign:
      *   post:
-     *     summary: Assigns all the signals of a device to a given field, sector, or thesis
+     *     summary: Assigns device to a given field, sector, or thesis
      *     description: |
-     *       Assigns all the signals of a device to a given field, sector, or thesis.
+     *       Assigns a device with its signals to a given field, sector, or thesis.
      *       
      *       **Required request parameters:**
      *       - **targetId** (*integer*): ID of the target entity
@@ -388,111 +494,26 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
             const targetId = req.body.targetId
             const validFrom = req.body.validFrom ?? Date.now() / 1000;
 
-            const signalAssociation = new SignalAssociation(deviceId, targetType, targetId, validFrom);
+            const deviceAssociation = new DeviceAssociation(deviceId, targetType, targetId, validFrom);
 
-            await deviceService.assignSignals(userId, signalAssociation);
-            return res.status(200).json({ message: 'Signals successfully associated' });
+            await deviceService.assignDevice(userId, deviceAssociation);
+            return res.status(200).json({ message: 'Device successfully associated' });
         } catch (error) {
-            console.log(`Failed assigning signals caused by: ${error.message}`);
-            return res.status(500).json({ message: "Error assigning signals" });
+            console.log(`Failed assigning device caused by: ${error.message}`);
+            return res.status(500).json({ message: "Error assigning device" });
         }
     });
 
     /**
      * @swagger
-     * /devices/providers:
-     *   get:
-     *     summary: Retrieve info about all of the known providers
-     *     tags: 
-     *       - Devices
-     *     description: Retrieves all providers, requires authentication and proper authorization
-     *     responses:
-     *       '200':
-     *         description: List of the known providers
-     *         content:
-     *           application/json:
-     *             schema:
-     *               $ref: '#/components/schemas/ProvidersData'
-     *       '400':
-     *         description: Input validation error (Bad Request)
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               required:
-     *                 - message
-     *               properties:
-     *                 message:
-     *                   type: string
-     *                   example: Input validation failed against OpenAPI schema
-     *                 errors:
-     *                   type: array
-     *                   description: Details of the OpenAPI schema violation.
-     *                   items:
-     *                     type: object
-     *                     properties:
-     *                       path:
-     *                         type: string
-     *                         description: Field or path that failed validation.
-     *                       message:
-     *                         type: string
-     *                         description: Description of the error.
-     *       '401':
-     *         description: Authentication failed (invalid or missing JWT)
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       '403':
-     *         description: Unauthorized (user not allowed to view providers)
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       500:
-     *         description: Internal server error – unexpected error while retrieving devices
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 error:
-     *                   type: string
-     */
-    router.get('/providers', async (req, res) => {
-        let requestUserData;
-        try {
-            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-        } catch (error) {
-            return res.status(401).json({ message: 'Authentication failed' });
-        }
-
-        //[TO DO]: Authorization
-
-        try {
-            const providers = await deviceService.getProviders();
-            return res.status(200).json(providers)
-        } catch (error) {
-            console.log(`Failed retrieving providers caused by: ${error.message}`);
-            return res.status(500).json({ message: "Error retrieving providers" });
-        }
-    })
-
-    /**
-     * @swagger
      * /devices/{deviceId}/disable:
      *   post:
-     *     summary: Disables alla of the signals for a given device
+     *     summary: Disables all of the signals for a given device
      *     tags: [Devices]
      *     description: |
      *       Disables a device by:
      *       
+     *       - Ending the validity period of device in field associations.
      *       - Ending validity period of the signals associated with the device.
      *       - Ending optimal profile assignment.
      * 

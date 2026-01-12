@@ -1,51 +1,11 @@
 import { Model, DataTypes } from 'sequelize';
 
-class ThesesAllSignals extends Model {
+class SignalsDenormalized extends Model {
 
 }
 
-function initThesesAllSignals(sequelize) {
-    ThesesAllSignals.init({
-        organizationId: {
-            type: DataTypes.INTEGER,
-            field: "organization_id"
-        },
-        organizationName: {
-            type: DataTypes.STRING,
-            field: "organization_name"
-        },
-        companyId: {
-            type: DataTypes.INTEGER,
-            field: "company_id"
-        },
-        companyName: {
-            type: DataTypes.TEXT,
-            field: "company_name"
-        },
-        fieldId: {
-            type: DataTypes.INTEGER,
-            field: "field_id"
-        },
-        fieldName: {
-            type: DataTypes.TEXT,
-            field: "field_name"
-        },
-        sectorId: {
-            type: DataTypes.INTEGER,
-            field: "sector_id"
-        },
-        sectorName: {
-            type: DataTypes.TEXT,
-            field: "sector_name"
-        },
-        thesisId: {
-            type: DataTypes.INTEGER,
-            field: "thesis_id"
-        },
-        thesisName: {
-            type: DataTypes.TEXT,
-            field: "thesis_name"
-        },
+function initSignalsDenormalized(sequelize) {
+    SignalsDenormalized.init({
         signalId: {
             type: DataTypes.INTEGER,
             field: "signal_id"
@@ -106,6 +66,10 @@ function initThesesAllSignals(sequelize) {
             type: DataTypes.TEXT,
             field: "signal_id_on_provider"
         },
+        providerId: {
+            type: DataTypes.INTEGER,
+            field: "provider_id"
+        },
         validFrom: {
             type: DataTypes.DOUBLE,
             field: "valid_from"
@@ -113,21 +77,16 @@ function initThesesAllSignals(sequelize) {
         validTo: {
             type: DataTypes.DOUBLE,
             field: "valid_to"
-        },
-        associationType: {
-            type: DataTypes.TEXT,
-            field: "association_type"
         }
-
     }, {
-        modelName: 'ThesesAllSignals',
-        tableName: 'theses_all_signals',
+        modelName: 'SignalsDenormalized',
+        tableName: 'devices_signals_denormalized',
         timestamps: false,
         primaryKey: false,
         sequelize
     });
 
-    return ThesesAllSignals
+    return SignalsDenormalized
 }
 
-export default initThesesAllSignals;
+export default initSignalsDenormalized;

@@ -504,7 +504,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *     description: |
      *       Disables a sector by:
      *       
-     *       - Ending validity period of the signals associated with the sector.
+     *       - Ending validity period of the devices associated with the sector.
      *       - Disabling all of the theses associated with the sector.
      *       - Ending the irrigation season (Deleting the scheduled watering event).
      * 

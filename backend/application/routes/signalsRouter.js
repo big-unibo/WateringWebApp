@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { AddMeasurementsRequest, CreateSignal, SignalUpdate, SignalAssociation } from '../dtos/signalDto.js';
+import { AddMeasurementsRequest, CreateSignal, SignalUpdate} from '../dtos/signalDto.js';
 
 const signalsRouter = ({ authenticationService, authorizationService, signalService }) => {
     const router = Router();
@@ -9,16 +9,9 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
      * /signals/create:
      *   post:
      *     summary: Create a signal
-     *     description: Create a new signal in a specified device. Requires authentication and proper authorization.
+     *     description: Create a new signal. Requires authentication and proper authorization.
      *     tags:
      *       - Signals
-     *     parameters:
-     *       - in: query
-     *         name: deviceId
-     *         required: true
-     *         schema:
-     *           type: integer
-     *         description: ID of the device in which create signal
      *     requestBody:
      *       required: true
      *       content:
@@ -101,149 +94,12 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
         //[TO DO]: Authorization
         try {
             const signal = new CreateSignal(req.body)
-            const deviceId = req.query.deviceId
-            const signalId = await signalService.createSignal(userId, deviceId, signal)
+            const signalId = await signalService.createSignal(userId, signal)
             return res.status(200).json({ message: 'Signal successfully created', id: signalId })
         }
         catch (error) {
             console.log(`Fail updating signal caused by: ${error.message}`)
             return res.status(500).json({ error: "Error while creating signal" })
-        }
-    });
-
-    /**
-     * @swagger
-     * /signals/{signalId}/assign:
-     *   post:
-     *     summary: Assigns signal to a given field, sector, or thesis
-     *     description: |
-     *       Assigns signal to a given field, sector, or thesis.
-     *       
-     *       **Required request parameters:**
-     *       - **targetId** (*integer*): ID of the target entity
-     *       - **targetType** (*string*): One of the following values:
-     *         - `field`
-     *         - `sector`
-     *         - `thesis`
-     *       - **validFrom** (*number*, optional): Timestamp (in seconds since 01/01/1970) indicating when the association becomes valid
-     *       
-     *       Requires authentication and appropriate authorization.
-     *     tags:
-     *       - Signals
-     *     parameters:
-     *       - in: path
-     *         name: signalId
-     *         required: true
-     *         schema:
-     *           type: integer
-     *         description: ID of the signal
-     *     requestBody:
-     *       required: true
-     *       content:
-     *         application/json:
-     *           schema:
-     *             $ref: '#/components/schemas/SignalAssociation'
-     *     responses:
-     *       200:
-     *         description: Signal successfully associated
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       '400':
-     *         description: Input validation error (Bad Request)
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               required:
-     *                 - message
-     *               properties:
-     *                 message:
-     *                   type: string
-     *                   example: Input validation failed against OpenAPI schema
-     *                 errors:
-     *                   type: array
-     *                   description: Details of the OpenAPI schema violation.
-     *                   items:
-     *                     type: object
-     *                     properties:
-     *                       path:
-     *                         type: string
-     *                         description: Field or path that failed validation.
-     *                       message:
-     *                         type: string
-     *                         description: Description of the error.
-     *       '401':
-     *         description: Authentication failed (invalid or missing JWT)
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       '403':
-     *         description: Unauthorized (user not allowed to assign signals)
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       '404':
-     *         description: Resource not found
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     *       500:
-     *         description: Internal server error – unexpected error while assigning signal
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
-     */
-    router.post('/:signalId/assign', async (req, res) => {
-        let requestUserData;
-        try {
-            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-        } catch (error) {
-            return res.status(401).json({ message: 'Authentication failed' });
-        }
-        const userId = requestUserData.userId
-
-        //[TO DO]: Authorization
-
-        try {
-
-            const signalId = req.params.signalId
-            const exists = await signalService.signalExists(signalId);
-            if (!exists) {
-                return res.status(404).json({ message: 'Signal not found' });
-            }
-
-            const targetType = req.body.targetType
-            const targetId = req.body.targetId
-            const validFrom = req.body.validFrom
-
-            const signalAssociation = new SignalAssociation(signalId, targetType, targetId, validFrom);
-
-            await signalService.assignSignal(userId, signalAssociation);
-            return res.status(200).json({ message: 'Signals successfully associated' });
-        } catch (error) {
-            console.log(`Failed assigning signals caused by: ${error.message}`);
-            return res.status(500).json({ message: "Error assigning signals" });
         }
     });
 
@@ -378,7 +234,7 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
      * /signals/{signalId}/disable:
      *   post:
      *     summary: Disable a signal
-     *     description: Disable the assignment of a signal considering it no longer available. Requires authentication and proper authorization.
+     *     description: Disable the assignment of a signal in a device. Requires authentication and proper authorization.
      *     tags:
      *       - Signals
      *     parameters:
@@ -729,14 +585,101 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
             const signalId = req.params.signalId
             const timestamp = req.query.timestamp ?? Date.now() / 1000
 
-            const result = await signalService.getSignalInfo(signalId, timestamp)
-            if (result) {
-                return res.status(200).json(result)
+            const signalInfo = await signalService.getSignalInfo(signalId, timestamp)
+            if (signalInfo) {
+                const signalAssociations = await signalService.getSignalAssociations(signalId, timestamp)
+                return res.status(200).json({...signalInfo, ...signalAssociations})
             }
             return res.status(404).json({ message: 'Signal not found' })
         } catch (error) {
             console.log(`Failed finding signal info caused by: ${error.message}`)
             return res.status(500).json({ message: "Error finding signal info" })
+        }
+    })
+
+    /**
+     * @swagger
+     * /signals/providers:
+     *   get:
+     *     summary: Retrieve info about all of the known providers
+     *     tags: 
+     *       - Signals
+     *     description: Retrieves all providers, requires authentication and proper authorization
+     *     responses:
+     *       '200':
+     *         description: List of the known providers
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ProvidersData'
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to view providers)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while retrieving devices
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     */
+    router.get('/providers', async (req, res) => {
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        //[TO DO]: Authorization
+
+        try {
+            const providers = await signalService.getProviders();
+            return res.status(200).json(providers)
+        } catch (error) {
+            console.log(`Failed retrieving providers caused by: ${error.message}`);
+            return res.status(500).json({ message: "Error retrieving providers" });
         }
     })
 

@@ -132,7 +132,10 @@ components:
           description: True if it's virtual
         unit:
           type: string
-          description: Measurement unit of the signal 
+          description: Measurement unit of the signal
+        providerId:
+          type: integer
+          description: ID of the signal provider
         idOnProvider:
           type: string
           description: Id on provider
@@ -197,15 +200,10 @@ components:
       type: object
       required:
         - type
-        - providerId
-        - signals
       properties:
         type:
           type: string
           description: Type of the device
-        providerId:
-          type: integer
-          description: ID of the provider
         description:
           type: string
           description: Description of the device
@@ -214,11 +212,6 @@ components:
         binningId:
           type: integer
           description: ID for the device's binning profile
-        signals:
-          type: array
-          description: Array of signals associated with the device
-          items:
-            $ref: '#/components/schemas/CreateSignal'
 
     SignalAssociation:
       type: object
@@ -676,8 +669,10 @@ components:
       - $ref: "#/components/schemas/Signal"
       - type: object
         properties:
-          device:
-            $ref: "#/components/schemas/DeviceData"
+          devices:
+            type: array
+            items:
+              $ref: "#/components/schemas/DeviceData"
           fields:
             type: array
             items:

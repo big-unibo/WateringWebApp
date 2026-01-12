@@ -1,43 +1,45 @@
 import { Model, DataTypes } from 'sequelize';
 
-class SignalInSector extends Model {}
+class DevicesSignals extends Model {
 
-function initSignalInSector(sequelize) {
-    SignalInSector.init({
+}
+
+function initDevicesSignals(sequelize) {
+    DevicesSignals.init({
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true,
             field: "id"
         },
+        deviceId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            field: "device_id"
+        },
         signalId: {
             type: DataTypes.INTEGER,
-            field: "signal_id",
-            allowNull: false
-        },
-        sectorId: {
-            type: DataTypes.INTEGER,
-            field: "sector_id",
-            allowNull: false
+            allowNull: false,
+            field: "signal_id"
         },
         validFrom: {
             type: DataTypes.DOUBLE,
-            allowNull: false,
+            allowNull: true,
             field: "valid_from"
         },
         validTo: {
             type: DataTypes.DOUBLE,
             allowNull: true,
             field: "valid_to"
-        },
+        }
     }, {
-        tableName : 'sectors_signals',
-        modelName : 'SignalInSector',
+        tableName : 'devices_signals',
+        modelName : 'DevicesSignals',
         timestamps : false,
         sequelize
     });
 
-    return SignalInSector;
+    return DevicesSignals;
 }
 
-export default initSignalInSector;
+export default initDevicesSignals;

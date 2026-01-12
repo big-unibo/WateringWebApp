@@ -1,18 +1,18 @@
 import { Model, DataTypes } from 'sequelize';
 
-class SignalInThesis extends Model {}
+class DeviceInThesis extends Model {}
 
-function initSignalInThesis(sequelize) {
-    SignalInThesis.init({
+function initDeviceInThesis(sequelize) {
+    DeviceInThesis.init({
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true,
             field: "id"
         },
-        signalId: {
+        deviceId: {
             type: DataTypes.INTEGER,
-            field: "signal_id",
+            field: "device_id",
             allowNull: false
         },
         thesisId: {
@@ -31,13 +31,13 @@ function initSignalInThesis(sequelize) {
             field: "valid_to"
         },
     }, {
-        tableName : 'theses_signals',
-        modelName : 'SignalInThesis',
+        tableName : 'theses_devices',
+        modelName : 'DeviceInThesis',
         timestamps : false,
         sequelize
     });
 
-    return SignalInThesis;
+    return DeviceInThesis;
 }
 
-export default initSignalInThesis;
+export default initDeviceInThesis;

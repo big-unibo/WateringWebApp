@@ -1,6 +1,6 @@
 
 export class Signal {
-    constructor({signalId, signalDescription, signalType, signalTypeDescription, x, y, z, virtual, unit, lastMeasurementTimestamp, idOnProvider, sensorTechnology}) {
+    constructor({signalId, signalDescription, signalType, signalTypeDescription, x, y, z, virtual, unit, lastMeasurementTimestamp, providerId, idOnProvider, sensorTechnology}) {
         this.signalId = signalId
         this.signalDescription = signalDescription
         this.signalType = signalType
@@ -11,32 +11,11 @@ export class Signal {
         this.virtual = virtual
         this.unit = unit
         this.lastMeasurementTimestamp = lastMeasurementTimestamp
+        this.providerId = providerId
         this.idOnProvider = idOnProvider
         this.sensorTechnology = sensorTechnology
     }
 }
-
-export class SignalAssociation {
-    /**
-     * 
-     * @param {number} sourceId - Id of the device owning the signals
-     * @param {SignalTargetType} targetType - Type of the target of the signal association
-     * @param {number} targetId - Id of the association target
-     * @param {validFrom} - Start of the validy period of the association
-     */
-    constructor(sourceId, targetType, targetId, validFrom) {
-    this.sourceId = sourceId;
-    this.targetType = targetType; 
-    this.targetId = targetId;
-    this.validFrom = validFrom;
-  }
-}
-
-export const SignalTargetType = {
-  FIELD: "field",
-  SECTOR: "sector",
-  THESIS: "thesis"
-};
 
 export class SignalUpdate{
     /**
@@ -89,7 +68,7 @@ export class CreateSignal {
      * @param {string} idOnProvider  - Signal id for the provider
      * @param {string} sensorTechnology - Sensor technology
      */
-    constructor({typeId, description, x, y, z, virtual, unit, idOnProvider, sensorTechnology}) {
+    constructor({typeId, description, x, y, z, virtual, unit, providerId, idOnProvider, sensorTechnology}) {
         this.typeId = typeId;
         this.description = description;
         this.x = x;
@@ -97,13 +76,14 @@ export class CreateSignal {
         this.z = z;
         this.virtual = virtual;
         this.unit = unit;
+        this.providerId = providerId;
         this.idOnProvider = idOnProvider;
         this.sensorTechnology = sensorTechnology;
     }
 }
 
 export class SignalInfo {
-    constructor({signalId, signalDescription, signalType, signalTypeDescription, x, y, z, virtual, unit, lastMeasurementTimestamp, idOnProvider, device, fields, sectors, theses}) {
+    constructor({signalId, signalDescription, signalType, signalTypeDescription, x, y, z, virtual, unit, lastMeasurementTimestamp, providerId, idOnProvider, devices}) {
         this.signalId = signalId
         this.signalDescription = signalDescription
         this.signalType = signalType
@@ -114,10 +94,8 @@ export class SignalInfo {
         this.virtual = virtual
         this.unit = unit
         this.lastMeasurementTimestamp = lastMeasurementTimestamp
+        this.providerId = providerId
         this.idOnProvider = idOnProvider
-        this.device = device
-        this.fields = fields
-        this.sectors = sectors
-        this.theses = theses
+        this.devices = devices
     }
 }

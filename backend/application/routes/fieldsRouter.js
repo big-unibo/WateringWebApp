@@ -225,7 +225,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *     description: |
      *       Disables a field by:
      *       
-     *       - Ending validity period of the signals associated with the field.
+     *       - Ending validity period of the devices associated with the field.
      *       - Disabling all of the sectors associated with the field.
      * 
      *       Requires authentication and proper authorization.

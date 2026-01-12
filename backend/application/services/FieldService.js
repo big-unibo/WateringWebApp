@@ -1,4 +1,4 @@
-import { FIELDS_LOG_TABLE, FIELDS_SIGNALS_LOG_TABLE, OPTIMAL_PROFILES_LOG_TABLE, SECTORS_LOG_TABLE, SECTORS_SIGNALS_LOG_TABLE, THESES_IN_SECTORS_LOG_TABLE, THESES_LOG_TABLE, THESES_SIGNALS_LOG_TABLE, WATERING_ALGORITHM_LOG_TABLE, WATERING_EVENTS_LOG_TABLE } from '../commons/constants.js';
+import { FIELDS_LOG_TABLE, FIELDS_DEVICES_LOG_TABLE, OPTIMAL_PROFILES_LOG_TABLE, SECTORS_LOG_TABLE, SECTORS_DEVICES_LOG_TABLE, THESES_IN_SECTORS_LOG_TABLE, THESES_LOG_TABLE, THESES_DEVICES_LOG_TABLE, WATERING_ALGORITHM_LOG_TABLE, WATERING_EVENTS_LOG_TABLE } from '../commons/constants.js';
 import { OptimalStateData } from '../dtos/optStateDto.js';
 import DtoConverter from './DtoConverter.js';
 
@@ -9,7 +9,7 @@ const MONTH_TO_SECONDS = MINUTE_TO_SECONDS * 60 * 24 * 30
 
 class FieldService {
 
-    constructor(fieldRepository, companyRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, signalsRepository, wateringScheduleRepository, userActionService) {
+    constructor(fieldRepository, companyRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, deviceRepository, wateringScheduleRepository, userActionService) {
         this.fieldRepository = fieldRepository
         this.companyRepository = companyRepository
         this.thesesAllSignalsRepository = thesesAllSignalsRepository
@@ -17,7 +17,7 @@ class FieldService {
         this.humidityBinsRepository = humidityBinsRepository
         this.optimalDistanceRepository = optimalDistanceRepository
         this.wateringAdviceRepository = wateringAdviceRepository
-        this.signalsRepository = signalsRepository
+        this.deviceRepository = deviceRepository
         this.wateringScheduleRepository = wateringScheduleRepository
         this.userActionService = userActionService
     }
@@ -321,11 +321,11 @@ class FieldService {
                 this.userActionService.logDisabling(userId, WATERING_ALGORITHM_LOG_TABLE, algorithmId, null)
             }
 
-            const signals = await this.signalsRepository.getThesisAssociatedSignals(thesisId, timestamp)
-            await Promise.all(signals.map(async (signal) => {
-                const signalAssignmentId = await this.signalsRepository.disableSignalInThesis(signal.id, timestamp);
-                if (signalAssignmentId) {
-                    await this.userActionService.logDisabling(userId, THESES_SIGNALS_LOG_TABLE, signalAssignmentId, null);
+            const devices = await this.deviceRepository.getThesisAssociatedDevices(thesisId, timestamp)
+            await Promise.all(devices.map(async (device) => {
+                const deviceAssignmentId = await this.deviceRepository.disableDeviceInThesis(device.id, timestamp);
+                if (deviceAssignmentId) {
+                    await this.userActionService.logDisabling(userId, THESES_DEVICES_LOG_TABLE, deviceAssignmentId, null);
                 }
             }));
 
@@ -342,12 +342,12 @@ class FieldService {
 
     async disableSector(userId, sectorId, timestamp) {
         try {
-            //Signals disabling
-            const signals = await this.signalsRepository.getSectorAssociatedSignals(sectorId, timestamp);
-            await Promise.all(signals.map(async (signal) => {
-                const signalAssignmentId = await this.signalsRepository.disableSignalInSector(signal.id, timestamp);
-                if (signalAssignmentId) {
-                    await this.userActionService.logDisabling(userId, SECTORS_SIGNALS_LOG_TABLE, signalAssignmentId, null);
+            //Devices disabling
+            const devices = await this.deviceRepository.getSectorAssociatedDevices(sectorId, timestamp);
+            await Promise.all(devices.map(async (device) => {
+                const deviceAssignmentId = await this.deviceRepository.disableDeviceInSector(device.id, timestamp);
+                if (deviceAssignmentId) {
+                    await this.userActionService.logDisabling(userId, SECTORS_DEVICES_LOG_TABLE, deviceAssignmentId, null);
                 }
             }));
 
@@ -377,20 +377,22 @@ class FieldService {
 
     async disableField(userId, fieldId, timestamp) {
         try {
-            const signals = await this.signalsRepository.getFieldAssociatedSignals(fieldId, timestamp);
-            await Promise.all(signals.map(async (signal) => {
-                const signalAssignmentId = await this.signalsRepository.disableSignalInField(signal.id, timestamp);
-                if (signalAssignmentId) {
-                    await this.userActionService.logDisabling(userId, FIELDS_SIGNALS_LOG_TABLE, signalAssignmentId, null);
+            const devices = await this.deviceRepository.getFieldAssociatedDevices(fieldId, timestamp);
+            await Promise.all(devices.map(async (device) => {
+                const deviceAssignmentId = await this.deviceRepository.disableDeviceInField(device.id, timestamp);
+                if (deviceAssignmentId) {
+                    await this.userActionService.logDisabling(userId, FIELDS_DEVICES_LOG_TABLE, deviceAssignmentId, null);
                 }
             }));
             const fieldData = await this.fieldRepository.getFieldDetails(fieldId);
 
             if (fieldData && fieldData.sectors && Array.isArray(fieldData.sectors)) {
-                await Promise.all(fieldData.sectors.map(sector => {
-                    return this.disableSector(userId, sector.id, timestamp).catch(err => {
+                await Promise.all(fieldData.sectors.map(async sector => {
+                    try {
+                        return await this.disableSector(userId, sector.id, timestamp);
+                    } catch (err) {
                         console.error(`Failed to disable sector ${sector.id} inside field disable: ${err.message}`);
-                    });
+                    }
                 }));
             }
 

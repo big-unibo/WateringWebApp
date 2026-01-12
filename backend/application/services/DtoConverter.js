@@ -5,9 +5,9 @@ import { WateringScheduleResponse, WateringEventData, ThesisContributionData } f
 import { DistanceValue, OptimalDistanceData, DistanceProfile, OptimalProfileData, OptimalStateData } from "../dtos/optStateDto.js";
 import { WateringAdvice } from "../dtos/wateringAdviceDto.js";
 import { SectorCompact, SectorData } from "../dtos/sectorDto.js";
-import { Device } from "../dtos/deviceDto.js";
-import { Signal, SignalInfo, SignalTargetType } from "../dtos/signalDto.js";
-import { Thesis, ThesisData, ThesisRef } from "../dtos/thesisDto.js";
+import { Device, DeviceTargetType } from "../dtos/deviceDto.js";
+import { Signal, SignalInfo } from "../dtos/signalDto.js";
+import { ThesisData, ThesisRef } from "../dtos/thesisDto.js";
 import { WateringParams } from "../dtos/wateringParamsDto.js";
 import { FieldData } from "../dtos/fieldDto.js";
 
@@ -277,7 +277,6 @@ class DtoConverter {
                     deviceId: curr.deviceId,
                     deviceType: curr.deviceType,
                     deviceDescription: curr.deviceDescription,
-                    providerId: curr.providerId,
                     signals: {}
                 };
             }
@@ -296,6 +295,7 @@ class DtoConverter {
                     virtual: curr.virtual,
                     unit: curr.unit,
                     lastMeasurementTimestamp: curr.lastMeasurementTimestamp,
+                    providerId: curr.providerId,
                     idOnProvider: curr.idOnProvider
                 };
             }
@@ -311,12 +311,39 @@ class DtoConverter {
                 deviceId: deviceGroup.deviceId,
                 deviceType: deviceGroup.deviceType,
                 deviceDescription: deviceGroup.deviceDescription,
-                providerId: deviceGroup.providerId,
                 signals: signalsArray
             });
         });
 
         return devicesArray;
+    }
+
+    convertSignalInfoEntries(signalInfo) {
+        const signals = signalInfo.reduce((acc, curr) => {
+            if (!acc[curr.signalId]) {
+                acc[curr.signalId] = {
+                    signalId: curr.signalId,
+                    signalDescription: curr.signalDescription,
+                    signalType: curr.signalType,
+                    signalTypeDescription: curr.signalTypeDescription,
+                    x: curr.x,
+                    y: curr.y,
+                    z: curr.z,
+                    virtual: curr.virtual,
+                    unit: curr.unit,
+                    sensorTechnology: curr.sensorTechnology,
+                    idOnProvider: curr.idOnProvider,
+                    lastMeasurementTimestamp: curr.lastMeasurementTimestamp,
+                    devices: []
+                };
+            }
+
+            acc[curr.signalId].devices.push({deviceId: curr.deviceId, deviceType: curr.deviceType, deviceDescription: curr.deviceDescription});
+
+            return acc;
+        }, {});
+
+        return Object.values(signals).map(s => new SignalInfo(s));
     }
 
     convertSignalsDataWrapper(wrappers) {
@@ -351,51 +378,29 @@ class DtoConverter {
     }
 
     convertSignalAssociationsEntries(signalAssociations) {
-
-        const s = signalAssociations[0]
-        console.log(s)
-        const signal = {
-            signalId: s.signalId,
-            signalDescription: s.signalDescription,
-            signalType: s.signalType,
-            signalTypeDescription: s.signalTypeDescription,
-            x: s.x,
-            y: s.y,
-            z: s.z,
-            virtual: s.virtual,
-            unit: s.unit,
-            idOnProvider: s.idOnProvider,
-            lastMeasurementTimestamp: s.lastMeasurementTimestamp,
-            device: {
-                deviceId: s.deviceId,
-                deviceType: s.deviceType,
-                deviceDescription: s.deviceDescription
-            }
-        }
-
         const theses = [
             ...new Map(
                 signalAssociations
-                    .filter(s => s.associationType === SignalTargetType.THESIS)
+                    .filter(s => s.associationType === DeviceTargetType.THESIS)
                     .map(t => [t.thesisId, { id: t.thesisId, name: t.thesisName }])
             ).values()
         ]
         const sectors = [
             ...new Map(
                 signalAssociations
-                    .filter(s => s.associationType === SignalTargetType.SECTOR)
+                    .filter(s => s.associationType === DeviceTargetType.SECTOR)
                     .map(t => [t.sectorId, { id: t.sectorId, name: t.sectorName }])
             ).values()
         ]
         const fields = [
             ...new Map(
                 signalAssociations
-                    .filter(s => s.associationType === SignalTargetType.FIELD)
+                    .filter(s => s.associationType === DeviceTargetType.FIELD)
                     .map(t => [t.fieldId, { id: t.fieldId, name: t.fieldName }])
             ).values()
         ]
 
-        return new SignalInfo({ ...signal, theses, sectors, fields })
+        return { theses: theses, sectors: sectors, fields: fields }
     }
 
     convertCalendarWrapper(wrappers) {

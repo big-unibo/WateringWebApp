@@ -1,5 +1,4 @@
-import { FIELDS_SIGNALS_LOG_TABLE, SECTORS_SIGNALS_LOG_TABLE, SIGNALS_LOG_TABLE, THESES_SIGNALS_LOG_TABLE } from "../commons/constants.js";
-import { SignalTargetType } from "../dtos/signalDto.js";
+import { SIGNALS_LOG_TABLE, DEVICES_SIGNALS_LOG_TABLE } from "../commons/constants.js";
 import DtoConverter from './DtoConverter.js';
 
 const dtoConverter = new DtoConverter();
@@ -10,56 +9,15 @@ class SignalService {
         this.userActionService = userActionService;
     }
 
-    async createSignal(userId, deviceId, signal) {
+    async createSignal(userId, signal) {
         try {
-            const signalIds = await this.signalRepository.createSignals(deviceId, [signal]);
-            if (Array.isArray(signalIds) && signalIds.length > 0) {
-                const signalId = signalIds[0]
-                if (signalId) {
-                    this.userActionService.logCreation(userId, SIGNALS_LOG_TABLE, signalId, null);
-                    return signalId
-                }
+            const signalId = await this.signalRepository.createSignal(signal);
+            if (signalId) {
+                this.userActionService.logCreation(userId, SIGNALS_LOG_TABLE, signalId, null);
+                return signalId
             }
         } catch (error) {
             console.error(`Error creating signal: ${error.message}`);
-            throw error;
-        }
-    }
-
-    async assignSignal(userId, signalAssociation) {
-        try {
-            if (!signalAssociation.sourceId) {
-                throw new Error("signalId is required");
-            }
-            if (!signalAssociation.targetId) {
-                throw new Error("targetId is required");
-            }
-            if (!Object.values(SignalTargetType).includes(signalAssociation.targetType)) {
-                throw new Error(`Invalid targetType: ${signalAssociation.targetType}`);
-            }
-
-            const validFrom = signalAssociation.validFrom ?? Date.now() / 1000;
-
-            const assingFunctions = {
-                [SignalTargetType.FIELD]: async (args) => await this.signalRepository.assignSignalToField(args),
-                [SignalTargetType.SECTOR]: async (args) => await this.signalRepository.assignSignalToSector(args),
-                [SignalTargetType.THESIS]: async (args) => await this.signalRepository.assignSignalToThesis(args)
-            }
-
-            const logTables = {
-                [SignalTargetType.FIELD]: FIELDS_SIGNALS_LOG_TABLE,
-                [SignalTargetType.SECTOR]: SECTORS_SIGNALS_LOG_TABLE,
-                [SignalTargetType.THESIS]: THESES_SIGNALS_LOG_TABLE
-            }
-
-            const assignmentId = await assingFunctions[signalAssociation.targetType]({
-                signalId: signalAssociation.sourceId,
-                [signalAssociation.targetType + "Id"]: signalAssociation.targetId,
-                validFrom
-            })
-            await this.userActionService.logCreation(userId, logTables[signalAssociation.targetType], assignmentId, null)
-        } catch (error) {
-            console.error(`Error assigning signal: ${error.message}`);
             throw error;
         }
     }
@@ -110,22 +68,11 @@ class SignalService {
 
     async disableSignal(userId, signalId, validTo) {
         try {
-            // 1. Thesis
-            const thesisSigId = await this.signalRepository.disableSignalInThesis(signalId, validTo);
-            if (thesisSigId) {
-                await this.userActionService.logDisabling(userId, THESES_SIGNALS_LOG_TABLE, thesisSigId, null);
-            }
-
-            // 2. Sector
-            const sectorSigId = await this.signalRepository.disableSignalInSector(signalId, validTo);
-            if (sectorSigId) {
-                await this.userActionService.logDisabling(userId, SECTORS_SIGNALS_LOG_TABLE, sectorSigId, null);
-            }
-
-            // 3. Field
-            const fieldSigId = await this.signalRepository.disableSignalInField(signalId, validTo);
-            if (fieldSigId) {
-                await this.userActionService.logDisabling(userId, FIELDS_SIGNALS_LOG_TABLE, fieldSigId, null);
+            const disabledDeviceSignalIds = await this.signalRepository.disableSignalInDevices(signalId, validTo);
+            if (disabledDeviceSignalIds.length > 0) {
+                await disabledDeviceSignalIds.map(async (dsId) => {
+                    await this.userActionService.logDisabling(userId, DEVICES_SIGNALS_LOG_TABLE, dsId, null);
+                })
             }
         }
         catch (error) {
@@ -134,14 +81,25 @@ class SignalService {
     }
 
     async getSignalInfo(signalId, timestamp) {
-        const signalAssociations = await this.signalRepository.getSignalAssociationEntries(signalId, timestamp)
-        if (signalAssociations?.length > 0) {
-            return dtoConverter.convertSignalAssociationsEntries(signalAssociations)
+        const signalInfo = await this.signalRepository.getSignalInfo(signalId, timestamp)
+        if (signalInfo?.length > 0) {
+            return dtoConverter.convertSignalInfoEntries(signalInfo)[0]
         }
     }
 
+    async getSignalAssociations(signalId, timestamp) {
+        const signalAssociations = await this.signalRepository.getSignalAssociationEntries(signalId, timestamp)
+        if (signalAssociations?.length > 0) {
+            return dtoConverter.convertSignalAssociationsEntries(signalAssociations)
+        } 
+    } 
+
     async signalExists(signalId) {
         return await this.signalRepository.signalExists(signalId);
+    }
+
+    async getProviders() {
+        return await this.signalRepository.getProviders();
     }
 }
 
