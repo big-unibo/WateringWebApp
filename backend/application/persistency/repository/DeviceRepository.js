@@ -1,9 +1,12 @@
 class DeviceRepository {
     constructor(models, sequelize) {
-        this.Device = models.Device;
-        this.Signal = models.Signal;
-        this.DevicesSignals = models.DevicesSignals;
-        this.sequelize = sequelize;
+        this.Device = models.Device
+        this.Signal = models.Signal
+        this.DevicesSignals = models.DevicesSignals
+        this.DeviceInField = models.DeviceInField
+        this.DeviceInSector = models.DeviceInSector
+        this.DeviceInThesis = models.DeviceInThesis
+        this.sequelize = sequelize
     }
 
     async deviceExists(deviceId) {
@@ -166,40 +169,41 @@ class DeviceRepository {
 
     async assignDeviceToField(associationData) {
         try {
-            const model = await this.SignalInField.create({
+            const model = await this.DeviceInField.create({
                 deviceId: associationData.deviceId,
                 fieldId: associationData.fieldId,
                 validFrom: associationData.validFrom
             });
             return model.id;
         } catch (error) {
-            throw new Error(`Error creating association between signal and field: ${error.message}`);
+            throw new Error(`Error creating association between device and field: ${error.message}`);
         }
     }
 
     async assignDeviceToSector(associationData) {
         try {
-            const model = await this.SignalInSector.create({
+            const model = await this.DeviceInSector.create({
                 deviceId: associationData.deviceId,
                 sectorId: associationData.sectorId,
                 validFrom: associationData.validFrom
             });
             return model.id;
         } catch (error) {
-            throw new Error(`Error creating association between signal and sector: ${error.message}`);
+            throw new Error(`Error creating association between device and sector: ${error.message}`);
         }
     }
 
     async assignDeviceToThesis(associationData) {
         try {
-            const model = await this.SignalInThesis.create({
+            console.log(associationData)
+            const model = await this.DeviceInThesis.create({
                 deviceId: associationData.deviceId,
                 thesisId: associationData.thesisId,
                 validFrom: associationData.validFrom
             });
             return model.id;
         } catch (error) {
-            throw new Error(`Error creating association between signal and thesis: ${error.message}`);
+            throw new Error(`Error creating association between device and thesis: ${error.message}`);
         }
     }
 

@@ -75,19 +75,19 @@ class DeviceService {
             const validFrom = deviceAssociation.validFrom ?? Date.now() / 1000;
 
             const assingFunctions = {
-                [SignalTargetType.FIELD]: async (args) => await this.deviceRepository.assignDeviceToField(args),
-                [SignalTargetType.SECTOR]: async (args) => await this.deviceRepository.assignDeviceToSector(args),
-                [SignalTargetType.THESIS]: async (args) => await this.deviceRepository.assignDeviceToThesis(args)
+                [DeviceTargetType.FIELD]: async (args) => await this.deviceRepository.assignDeviceToField(args),
+                [DeviceTargetType.SECTOR]: async (args) => await this.deviceRepository.assignDeviceToSector(args),
+                [DeviceTargetType.THESIS]: async (args) => await this.deviceRepository.assignDeviceToThesis(args)
             }
 
             const logTables = {
-                [SignalTargetType.FIELD]: FIELDS_DEVICES_LOG_TABLE,
-                [SignalTargetType.SECTOR]: SECTORS_DEVICES_LOG_TABLE,
-                [SignalTargetType.THESIS]: THESES_DEVICES_LOG_TABLE
+                [DeviceTargetType.FIELD]: FIELDS_DEVICES_LOG_TABLE,
+                [DeviceTargetType.SECTOR]: SECTORS_DEVICES_LOG_TABLE,
+                [DeviceTargetType.THESIS]: THESES_DEVICES_LOG_TABLE
             }
 
             const assignmentId = await assingFunctions[deviceAssociation.targetType]({
-                    deviceId: deviceAssociation.deviceId,
+                    deviceId: deviceAssociation.sourceId,
                     [deviceAssociation.targetType + "Id"]: deviceAssociation.targetId,
                     validFrom
             })

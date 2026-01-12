@@ -17,11 +17,6 @@ function initDevice(sequelize) {
             allowNull: false,
             field: "type"
         },
-        providerId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: "provider_id"
-        },
         description: {
             type: DataTypes.TEXT,
             allowNull: true,

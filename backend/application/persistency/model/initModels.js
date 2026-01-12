@@ -86,18 +86,18 @@ export default function initModels(sequelize) {
 
   models.Field.hasMany(models.DeviceInField, {foreignKey: "fieldId", as: "signals"});
   models.DeviceInField.belongsTo(models.Field, {foreignKey: "fieldId", as: "field"});
-  models.Signal.hasMany(models.DeviceInField, {foreignKey: "signalId", as: "signalsInFields"});
-  models.DeviceInField.belongsTo(models.Signal, {foreignKey: "signalId", as: "signal"});
+  models.Device.hasMany(models.DeviceInField, {foreignKey: "deviceId", as: "signalsInFields"});
+  models.DeviceInField.belongsTo(models.Device, {foreignKey: "deviceId", as: "device"});
 
   models.Sector.hasMany(models.DeviceInSector, {foreignKey: "sectorId", as: "signals"});
   models.DeviceInSector.belongsTo(models.Sector, {foreignKey: "sectorId", as: "sector"});
-  models.Signal.hasMany(models.DeviceInSector, {foreignKey: "signalId", as: "signalsInSectors"});
-  models.DeviceInSector.belongsTo(models.Signal, {foreignKey: "signalId", as: "signal"});
+  models.Device.hasMany(models.DeviceInSector, {foreignKey: "deviceId", as: "signalsInSectors"});
+  models.DeviceInSector.belongsTo(models.Device, {foreignKey: "deviceId", as: "device"});
 
   models.Thesis.hasMany(models.DeviceInThesis, {foreignKey: "thesisId", as: "signals"});
   models.DeviceInThesis.belongsTo(models.Thesis, {foreignKey: "thesisId", as: "thesis"});
-  models.Signal.hasMany(models.DeviceInThesis, {foreignKey: "signalId", as: "signalsInTheses"});
-  models.DeviceInThesis.belongsTo(models.Signal, {foreignKey: "signalId", as: "signal"});
+  models.Device.hasMany(models.DeviceInThesis, {foreignKey: "deviceId", as: "signalsInTheses"});
+  models.DeviceInThesis.belongsTo(models.Device, {foreignKey: "deviceId", as: "device"});
 
   models.Signal.hasMany(models.Measurement, {foreignKey: "signalId", as: "measurements"});
   models.Measurement.belongsTo(models.Signal, {foreignKey: "signalId", as: "signal"});

@@ -9,6 +9,7 @@ class SignalRepository {
         this.SignalsDenormalized = models.SignalsDenormalized
         this.ThesesAllSignals = models.ThesesAllSignals
         this.ThesesAllSignals.removeAttribute('id')
+        this.SignalsDenormalized.removeAttribute('id')
         this.sequelize = sequelize
     }
 
@@ -79,10 +80,9 @@ class SignalRepository {
 
     async getSignalInfo(signalId, timestamp) {
         try {
-
-            const signalInfo = await this.SignalsDenormalized.find({
+            const signalInfo = await this.SignalsDenormalized.findAll({
                 where: {
-                    id: signalId,
+                    signalId: signalId,
                     validFrom: { [Op.lt]: timestamp },
                     [Op.or]: [
                         { validTo: { [Op.gt]: timestamp } },

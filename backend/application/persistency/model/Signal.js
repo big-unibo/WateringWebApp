@@ -17,54 +17,46 @@ function initSignal(sequelize) {
             allowNull: false,
             field: "type_id"
         },
-        deviceId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: "device_id"
-        },
-
         description: {
             type: DataTypes.TEXT,
             allowNull: true,
             field: "description"
         },
-
         x: {
             type: DataTypes.DOUBLE,
             allowNull: true,
             field: "x"
         },
-
         y: {
             type: DataTypes.DOUBLE,
             allowNull: true,
             field: "y"
         },
-
         z: {
             type: DataTypes.DOUBLE,
             allowNull: true,
             field: "z"
         },
-
         virtual: {
             type: DataTypes.BOOLEAN,
             allowNull: true,
             field: "virtual"
         },
-
         unit: {
             type: DataTypes.TEXT,
             allowNull: true,
             field: "unit"
-        }, 
-
+        },
+        providerId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            field: "provider_id"
+        },
         idOnProvider: {
             type: DataTypes.TEXT,
             allowNull: true,
             field: "id_on_provider"
         }, 
-
         sensorTechnology: {
             type: DataTypes.TEXT,
             allowNull: true,
