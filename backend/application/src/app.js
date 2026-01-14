@@ -50,7 +50,7 @@ import UserActionService from './services/UserActionService.js';
 
 dotenv.config()
 
-const app = express()
+export const app = express()
 const port = 8081
 
 const swaggerOptions = {

@@ -1,0 +1,2010 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 17.5 (Debian 17.5-1.pgdg110+1)
+-- Dumped by pg_dump version 17.5 (Debian 17.5-1.pgdg110+1)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: postgis; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION postgis; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION postgis IS 'PostGIS geometry and geography spatial types and functions';
+
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: advices; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.advices (
+    thesis_id integer NOT NULL,
+    watering_start double precision NOT NULL,
+    image_timestamp double precision,
+    advice double precision NOT NULL,
+    duration double precision,
+    r double precision,
+    evapotranspiration double precision,
+    pluv double precision,
+    last_watering double precision
+);
+
+
+ALTER TABLE public.advices OWNER TO postgres;
+
+--
+-- Name: anomalies_logs; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.anomalies_logs (
+    "table" text,
+    id_key integer,
+    "timestamp" double precision,
+    agent text,
+    type text,
+    description text
+);
+
+
+ALTER TABLE public.anomalies_logs OWNER TO postgres;
+
+--
+-- Name: companies; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.companies (
+    id integer NOT NULL,
+    company_name text NOT NULL,
+    organization_id integer NOT NULL
+);
+
+
+ALTER TABLE public.companies OWNER TO postgres;
+
+--
+-- Name: companies_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.companies_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.companies_id_seq OWNER TO postgres;
+
+--
+-- Name: companies_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.companies_id_seq OWNED BY public.companies.id;
+
+
+--
+-- Name: devices; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.devices (
+    id integer NOT NULL,
+    type text,
+    description text,
+    location public.geometry,
+    binning_id integer
+);
+
+
+ALTER TABLE public.devices OWNER TO postgres;
+
+--
+-- Name: devices_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.devices_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.devices_id_seq OWNER TO postgres;
+
+--
+-- Name: devices_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.devices_id_seq OWNED BY public.devices.id;
+
+
+--
+-- Name: devices_signals; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.devices_signals (
+    id integer NOT NULL,
+    device_id integer NOT NULL,
+    signal_id integer NOT NULL,
+    valid_from double precision NOT NULL,
+    valid_to double precision
+);
+
+
+ALTER TABLE public.devices_signals OWNER TO postgres;
+
+--
+-- Name: signal_types; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.signal_types (
+    id integer NOT NULL,
+    type text NOT NULL,
+    type_description text NOT NULL
+);
+
+
+ALTER TABLE public.signal_types OWNER TO postgres;
+
+--
+-- Name: signals; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.signals (
+    id integer NOT NULL,
+    type_id integer NOT NULL,
+    description text,
+    x double precision,
+    y double precision,
+    z double precision,
+    virtual boolean DEFAULT false,
+    unit text,
+    id_on_provider text,
+    sensor_technology text,
+    provider_id integer
+);
+
+
+ALTER TABLE public.signals OWNER TO postgres;
+
+--
+-- Name: devices_signals_denormalized; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.devices_signals_denormalized AS
+ SELECT sig.id AS signal_id,
+    sig.description AS signal_description,
+    d.id AS device_id,
+    d.description AS device_description,
+    d.type AS device_type,
+    d.binning_id AS device_binning_id,
+    st.type AS signal_type,
+    st.type_description AS signal_type_description,
+    sig.x,
+    sig.y,
+    sig.z,
+    sig.virtual,
+    sig.unit,
+    sig.id_on_provider AS signal_id_on_provider,
+    sig.provider_id,
+    sig.sensor_technology,
+    ds.valid_from,
+    ds.valid_to
+   FROM (((public.signals sig
+     JOIN public.devices_signals ds ON ((ds.signal_id = sig.id)))
+     JOIN public.devices d ON ((ds.device_id = d.id)))
+     JOIN public.signal_types st ON ((sig.type_id = st.id)));
+
+
+ALTER VIEW public.devices_signals_denormalized OWNER TO postgres;
+
+--
+-- Name: devices_signals_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.devices_signals_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.devices_signals_id_seq OWNER TO postgres;
+
+--
+-- Name: devices_signals_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.devices_signals_id_seq OWNED BY public.devices_signals.id;
+
+
+--
+-- Name: fields; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.fields (
+    id integer NOT NULL,
+    field_name text NOT NULL,
+    company_id integer NOT NULL,
+    location public.geometry
+);
+
+
+ALTER TABLE public.fields OWNER TO postgres;
+
+--
+-- Name: fields_devices; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.fields_devices (
+    field_id integer NOT NULL,
+    device_id integer NOT NULL,
+    valid_from double precision NOT NULL,
+    valid_to double precision,
+    id integer NOT NULL
+);
+
+
+ALTER TABLE public.fields_devices OWNER TO postgres;
+
+--
+-- Name: fields_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.fields_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.fields_id_seq OWNER TO postgres;
+
+--
+-- Name: fields_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.fields_id_seq OWNED BY public.fields.id;
+
+
+--
+-- Name: fields_signals_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.fields_signals_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.fields_signals_id_seq OWNER TO postgres;
+
+--
+-- Name: fields_signals_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.fields_signals_id_seq OWNED BY public.fields_devices.id;
+
+
+--
+-- Name: grid_optimal_profile_assignment; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.grid_optimal_profile_assignment (
+    optimal_profile_id integer NOT NULL,
+    grid_id integer NOT NULL,
+    valid_from double precision NOT NULL,
+    valid_to double precision,
+    id integer NOT NULL,
+    stop_percentage double precision,
+    optimal_wet_bound double precision,
+    optimal_dry_bound double precision
+);
+
+
+ALTER TABLE public.grid_optimal_profile_assignment OWNER TO postgres;
+
+--
+-- Name: grid_optimal_profile_assignment_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.grid_optimal_profile_assignment_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.grid_optimal_profile_assignment_id_seq OWNER TO postgres;
+
+--
+-- Name: grid_optimal_profile_assignment_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.grid_optimal_profile_assignment_id_seq OWNED BY public.grid_optimal_profile_assignment.id;
+
+
+--
+-- Name: interpolated_cells; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.interpolated_cells (
+    profile_id integer NOT NULL,
+    x double precision NOT NULL,
+    y double precision NOT NULL,
+    z double precision DEFAULT 0 NOT NULL,
+    value double precision NOT NULL,
+    value_source text
+);
+
+
+ALTER TABLE public.interpolated_cells OWNER TO postgres;
+
+--
+-- Name: interpolated_profiles; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.interpolated_profiles (
+    id integer NOT NULL,
+    grid_id integer NOT NULL,
+    "timestamp" double precision NOT NULL,
+    true_sensor_number integer
+);
+
+
+ALTER TABLE public.interpolated_profiles OWNER TO postgres;
+
+--
+-- Name: interpolated_profiles_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.interpolated_profiles_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.interpolated_profiles_id_seq OWNER TO postgres;
+
+--
+-- Name: interpolated_profiles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.interpolated_profiles_id_seq OWNED BY public.interpolated_profiles.id;
+
+
+--
+-- Name: measurements; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.measurements (
+    signal_id integer NOT NULL,
+    "timestamp" double precision NOT NULL,
+    computed boolean DEFAULT false,
+    date date,
+    "time" time without time zone,
+    value double precision,
+    raw_value text
+);
+
+
+ALTER TABLE public.measurements OWNER TO postgres;
+
+--
+-- Name: optimal_profiles; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.optimal_profiles (
+    profile_id integer NOT NULL,
+    x double precision NOT NULL,
+    y double precision NOT NULL,
+    z double precision NOT NULL,
+    value double precision NOT NULL,
+    weight double precision
+);
+
+
+ALTER TABLE public.optimal_profiles OWNER TO postgres;
+
+--
+-- Name: organizations; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.organizations (
+    id integer NOT NULL,
+    organization_name text NOT NULL
+);
+
+
+ALTER TABLE public.organizations OWNER TO postgres;
+
+--
+-- Name: organizations_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.organizations_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.organizations_id_seq OWNER TO postgres;
+
+--
+-- Name: organizations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.organizations_id_seq OWNED BY public.organizations.id;
+
+
+--
+-- Name: permits; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.permits (
+    id integer NOT NULL,
+    "table" text NOT NULL,
+    permit text NOT NULL,
+    id_key integer,
+    user_id integer NOT NULL
+);
+
+
+ALTER TABLE public.permits OWNER TO postgres;
+
+--
+-- Name: permits_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.permits_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.permits_id_seq OWNER TO postgres;
+
+--
+-- Name: permits_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.permits_id_seq OWNED BY public.permits.id;
+
+
+--
+-- Name: profiles_bins; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.profiles_bins (
+    id integer NOT NULL,
+    bound_0 double precision,
+    bound_1 double precision,
+    bound_2 double precision,
+    bound_3 double precision,
+    bound_4 double precision,
+    bound_5 double precision,
+    bound_6 double precision,
+    description text
+);
+
+
+ALTER TABLE public.profiles_bins OWNER TO postgres;
+
+--
+-- Name: profiles_bins_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.profiles_bins_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.profiles_bins_id_seq OWNER TO postgres;
+
+--
+-- Name: profiles_bins_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.profiles_bins_id_seq OWNED BY public.profiles_bins.id;
+
+
+--
+-- Name: providers; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.providers (
+    id integer NOT NULL,
+    provider_name text NOT NULL
+);
+
+
+ALTER TABLE public.providers OWNER TO postgres;
+
+--
+-- Name: providers_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.providers_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.providers_id_seq OWNER TO postgres;
+
+--
+-- Name: providers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.providers_id_seq OWNED BY public.providers.id;
+
+
+--
+-- Name: sectors; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.sectors (
+    id integer NOT NULL,
+    sector_name text NOT NULL,
+    field_id integer NOT NULL,
+    culture text NOT NULL,
+    culture_type text,
+    location public.geometry,
+    prescriptive boolean,
+    advice boolean,
+    dripper_capacity double precision,
+    sprinkler_capacity double precision,
+    double_wing boolean
+);
+
+
+ALTER TABLE public.sectors OWNER TO postgres;
+
+--
+-- Name: sectors_devices; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.sectors_devices (
+    sector_id integer NOT NULL,
+    device_id integer NOT NULL,
+    valid_from double precision NOT NULL,
+    valid_to double precision,
+    id integer NOT NULL
+);
+
+
+ALTER TABLE public.sectors_devices OWNER TO postgres;
+
+--
+-- Name: sectors_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.sectors_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.sectors_id_seq OWNER TO postgres;
+
+--
+-- Name: sectors_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.sectors_id_seq OWNED BY public.sectors.id;
+
+
+--
+-- Name: sectors_signals_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.sectors_signals_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.sectors_signals_id_seq OWNER TO postgres;
+
+--
+-- Name: sectors_signals_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.sectors_signals_id_seq OWNED BY public.sectors_devices.id;
+
+
+--
+-- Name: signal_types_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.signal_types_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.signal_types_id_seq OWNER TO postgres;
+
+--
+-- Name: signal_types_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.signal_types_id_seq OWNED BY public.signal_types.id;
+
+
+--
+-- Name: signals_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.signals_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.signals_id_seq OWNER TO postgres;
+
+--
+-- Name: signals_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.signals_id_seq OWNED BY public.signals.id;
+
+
+--
+-- Name: theses; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.theses (
+    id integer NOT NULL,
+    thesis_name text NOT NULL
+);
+
+
+ALTER TABLE public.theses OWNER TO postgres;
+
+--
+-- Name: theses_devices; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.theses_devices (
+    thesis_id integer NOT NULL,
+    device_id integer NOT NULL,
+    valid_from double precision NOT NULL,
+    valid_to double precision,
+    id integer NOT NULL
+);
+
+
+ALTER TABLE public.theses_devices OWNER TO postgres;
+
+--
+-- Name: theses_in_sectors; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.theses_in_sectors (
+    id integer NOT NULL,
+    thesis_id integer NOT NULL,
+    sector_id integer NOT NULL,
+    valid_from double precision NOT NULL,
+    valid_to double precision,
+    weight double precision
+);
+
+
+ALTER TABLE public.theses_in_sectors OWNER TO postgres;
+
+--
+-- Name: theses_all_signals; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.theses_all_signals AS
+ WITH thesis_denorm AS (
+         SELECT o.id AS organization_id,
+            o.organization_name,
+            c.id AS company_id,
+            c.company_name,
+            f.id AS field_id,
+            f.field_name,
+            sec.id AS sector_id,
+            sec.sector_name,
+            t.id AS thesis_id,
+            t.thesis_name
+           FROM (((((public.organizations o
+             JOIN public.companies c ON ((c.organization_id = o.id)))
+             JOIN public.fields f ON ((f.company_id = c.id)))
+             JOIN public.sectors sec ON ((sec.field_id = f.id)))
+             JOIN ( SELECT DISTINCT theses_in_sectors.thesis_id,
+                    theses_in_sectors.sector_id
+                   FROM public.theses_in_sectors) tsec ON ((tsec.sector_id = sec.id)))
+             JOIN public.theses t ON ((tsec.thesis_id = t.id)))
+        )
+ SELECT td.organization_id,
+    td.organization_name,
+    td.company_id,
+    td.company_name,
+    td.field_id,
+    td.field_name,
+    td.sector_id,
+    td.sector_name,
+    td.thesis_id,
+    td.thesis_name,
+    dd.signal_id,
+    dd.signal_description,
+    dd.device_id,
+    dd.signal_type,
+    dd.signal_type_description,
+    dd.device_description,
+    dd.device_type,
+    dd.device_binning_id,
+    dd.x,
+    dd.y,
+    dd.z,
+    dd.virtual,
+    dd.unit,
+    dd.provider_id,
+    dd.signal_id_on_provider,
+    dd.sensor_technology,
+    GREATEST(tdev.valid_from, dd.valid_from) AS valid_from,
+    LEAST(COALESCE(tdev.valid_to, 'Infinity'::double precision), COALESCE(dd.valid_to, 'Infinity'::double precision)) AS valid_to,
+    'thesis'::text AS association_type
+   FROM ((thesis_denorm td
+     JOIN public.theses_devices tdev ON ((td.thesis_id = tdev.thesis_id)))
+     JOIN public.devices_signals_denormalized dd ON ((tdev.device_id = dd.device_id)))
+  WHERE ((dd.valid_from < COALESCE(tdev.valid_to, 'Infinity'::double precision)) AND (COALESCE(dd.valid_to, 'Infinity'::double precision) > tdev.valid_from))
+UNION ALL
+ SELECT td.organization_id,
+    td.organization_name,
+    td.company_id,
+    td.company_name,
+    td.field_id,
+    td.field_name,
+    td.sector_id,
+    td.sector_name,
+    td.thesis_id,
+    td.thesis_name,
+    dd.signal_id,
+    dd.signal_description,
+    dd.device_id,
+    dd.signal_type,
+    dd.signal_type_description,
+    dd.device_description,
+    dd.device_type,
+    dd.device_binning_id,
+    dd.x,
+    dd.y,
+    dd.z,
+    dd.virtual,
+    dd.unit,
+    dd.provider_id,
+    dd.signal_id_on_provider,
+    dd.sensor_technology,
+    GREATEST(sdev.valid_from, dd.valid_from) AS valid_from,
+    LEAST(COALESCE(sdev.valid_to, 'Infinity'::double precision), COALESCE(dd.valid_to, 'Infinity'::double precision)) AS valid_to,
+    'sector'::text AS association_type
+   FROM ((thesis_denorm td
+     JOIN public.sectors_devices sdev ON ((td.sector_id = sdev.sector_id)))
+     JOIN public.devices_signals_denormalized dd ON ((sdev.device_id = dd.device_id)))
+  WHERE ((dd.valid_from < COALESCE(sdev.valid_to, 'Infinity'::double precision)) AND (COALESCE(dd.valid_to, 'Infinity'::double precision) > sdev.valid_from))
+UNION ALL
+ SELECT td.organization_id,
+    td.organization_name,
+    td.company_id,
+    td.company_name,
+    td.field_id,
+    td.field_name,
+    td.sector_id,
+    td.sector_name,
+    td.thesis_id,
+    td.thesis_name,
+    dd.signal_id,
+    dd.signal_description,
+    dd.device_id,
+    dd.signal_type,
+    dd.signal_type_description,
+    dd.device_description,
+    dd.device_type,
+    dd.device_binning_id,
+    dd.x,
+    dd.y,
+    dd.z,
+    dd.virtual,
+    dd.unit,
+    dd.provider_id,
+    dd.signal_id_on_provider,
+    dd.sensor_technology,
+    GREATEST(fdev.valid_from, dd.valid_from) AS valid_from,
+    LEAST(COALESCE(fdev.valid_to, 'Infinity'::double precision), COALESCE(dd.valid_to, 'Infinity'::double precision)) AS valid_to,
+    'field'::text AS association_type
+   FROM ((thesis_denorm td
+     JOIN public.fields_devices fdev ON ((td.field_id = fdev.field_id)))
+     JOIN public.devices_signals_denormalized dd ON ((fdev.device_id = dd.device_id)))
+  WHERE ((dd.valid_from < COALESCE(fdev.valid_to, 'Infinity'::double precision)) AND (COALESCE(dd.valid_to, 'Infinity'::double precision) > fdev.valid_from));
+
+
+ALTER VIEW public.theses_all_signals OWNER TO postgres;
+
+--
+-- Name: theses_denormalized; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.theses_denormalized AS
+ SELECT o.id AS organization_id,
+    o.organization_name,
+    c.id AS company_id,
+    c.company_name,
+    f.id AS field_id,
+    f.field_name,
+    sec.id AS sector_id,
+    sec.sector_name,
+    t.id AS thesis_id,
+    t.thesis_name,
+    tsec.valid_from,
+    tsec.valid_to
+   FROM (((((public.organizations o
+     JOIN public.companies c ON ((c.organization_id = o.id)))
+     JOIN public.fields f ON ((f.company_id = c.id)))
+     JOIN public.sectors sec ON ((sec.field_id = f.id)))
+     JOIN ( SELECT ts.thesis_id,
+            ts.sector_id,
+            min(ts.valid_from) AS valid_from,
+                CASE
+                    WHEN bool_or((ts.valid_to IS NULL)) THEN NULL::double precision
+                    ELSE max(ts.valid_to)
+                END AS valid_to
+           FROM public.theses_in_sectors ts
+          GROUP BY ts.thesis_id, ts.sector_id) tsec ON ((tsec.sector_id = sec.id)))
+     JOIN public.theses t ON ((tsec.thesis_id = t.id)));
+
+
+ALTER VIEW public.theses_denormalized OWNER TO postgres;
+
+--
+-- Name: theses_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.theses_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.theses_id_seq OWNER TO postgres;
+
+--
+-- Name: theses_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.theses_id_seq OWNED BY public.theses.id;
+
+
+--
+-- Name: theses_in_sectors_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.theses_in_sectors_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.theses_in_sectors_id_seq OWNER TO postgres;
+
+--
+-- Name: theses_in_sectors_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.theses_in_sectors_id_seq OWNED BY public.theses_in_sectors.id;
+
+
+--
+-- Name: theses_signals_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.theses_signals_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.theses_signals_id_seq OWNER TO postgres;
+
+--
+-- Name: theses_signals_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.theses_signals_id_seq OWNED BY public.theses_devices.id;
+
+
+--
+-- Name: users; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.users (
+    id integer NOT NULL,
+    email text NOT NULL,
+    password text NOT NULL,
+    name text,
+    role text
+);
+
+
+ALTER TABLE public.users OWNER TO postgres;
+
+--
+-- Name: users_actions; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.users_actions (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    action text NOT NULL,
+    "table" text NOT NULL,
+    id_key integer NOT NULL,
+    "timestamp" double precision NOT NULL,
+    description text,
+    payload jsonb
+);
+
+
+ALTER TABLE public.users_actions OWNER TO postgres;
+
+--
+-- Name: users_actions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.users_actions_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.users_actions_id_seq OWNER TO postgres;
+
+--
+-- Name: users_actions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.users_actions_id_seq OWNED BY public.users_actions.id;
+
+
+--
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.users_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.users_id_seq OWNER TO postgres;
+
+--
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
+
+
+--
+-- Name: watering_algorithm_params; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.watering_algorithm_params (
+    id integer NOT NULL,
+    thesis_id integer NOT NULL,
+    min_watering double precision,
+    max_watering double precision,
+    watering_baseline double precision,
+    ki double precision,
+    kp double precision,
+    description text,
+    valid_from double precision NOT NULL,
+    valid_to double precision,
+    error_function text,
+    watering_frequency double precision
+);
+
+
+ALTER TABLE public.watering_algorithm_params OWNER TO postgres;
+
+--
+-- Name: watering_algorithm_params_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.watering_algorithm_params_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.watering_algorithm_params_id_seq OWNER TO postgres;
+
+--
+-- Name: watering_algorithm_params_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.watering_algorithm_params_id_seq OWNED BY public.watering_algorithm_params.id;
+
+
+--
+-- Name: watering_events; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.watering_events (
+    id integer NOT NULL,
+    sector_id integer NOT NULL,
+    date date NOT NULL,
+    watering_start double precision NOT NULL,
+    watering_end double precision,
+    advice double precision,
+    duration double precision,
+    expected_water double precision,
+    note text,
+    enabled boolean DEFAULT true NOT NULL,
+    scheduled boolean
+);
+
+
+ALTER TABLE public.watering_events OWNER TO postgres;
+
+--
+-- Name: watering_events_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.watering_events_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.watering_events_id_seq OWNER TO postgres;
+
+--
+-- Name: watering_events_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.watering_events_id_seq OWNED BY public.watering_events.id;
+
+
+--
+-- Name: companies id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.companies ALTER COLUMN id SET DEFAULT nextval('public.companies_id_seq'::regclass);
+
+
+--
+-- Name: devices id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.devices ALTER COLUMN id SET DEFAULT nextval('public.devices_id_seq'::regclass);
+
+
+--
+-- Name: devices_signals id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.devices_signals ALTER COLUMN id SET DEFAULT nextval('public.devices_signals_id_seq'::regclass);
+
+
+--
+-- Name: fields id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.fields ALTER COLUMN id SET DEFAULT nextval('public.fields_id_seq'::regclass);
+
+
+--
+-- Name: fields_devices id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.fields_devices ALTER COLUMN id SET DEFAULT nextval('public.fields_signals_id_seq'::regclass);
+
+
+--
+-- Name: grid_optimal_profile_assignment id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.grid_optimal_profile_assignment ALTER COLUMN id SET DEFAULT nextval('public.grid_optimal_profile_assignment_id_seq'::regclass);
+
+
+--
+-- Name: interpolated_profiles id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.interpolated_profiles ALTER COLUMN id SET DEFAULT nextval('public.interpolated_profiles_id_seq'::regclass);
+
+
+--
+-- Name: organizations id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.organizations ALTER COLUMN id SET DEFAULT nextval('public.organizations_id_seq'::regclass);
+
+
+--
+-- Name: permits id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.permits ALTER COLUMN id SET DEFAULT nextval('public.permits_id_seq'::regclass);
+
+
+--
+-- Name: profiles_bins id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.profiles_bins ALTER COLUMN id SET DEFAULT nextval('public.profiles_bins_id_seq'::regclass);
+
+
+--
+-- Name: providers id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.providers ALTER COLUMN id SET DEFAULT nextval('public.providers_id_seq'::regclass);
+
+
+--
+-- Name: sectors id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sectors ALTER COLUMN id SET DEFAULT nextval('public.sectors_id_seq'::regclass);
+
+
+--
+-- Name: sectors_devices id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sectors_devices ALTER COLUMN id SET DEFAULT nextval('public.sectors_signals_id_seq'::regclass);
+
+
+--
+-- Name: signal_types id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.signal_types ALTER COLUMN id SET DEFAULT nextval('public.signal_types_id_seq'::regclass);
+
+
+--
+-- Name: signals id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.signals ALTER COLUMN id SET DEFAULT nextval('public.signals_id_seq'::regclass);
+
+
+--
+-- Name: theses id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.theses ALTER COLUMN id SET DEFAULT nextval('public.theses_id_seq'::regclass);
+
+
+--
+-- Name: theses_devices id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.theses_devices ALTER COLUMN id SET DEFAULT nextval('public.theses_signals_id_seq'::regclass);
+
+
+--
+-- Name: theses_in_sectors id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.theses_in_sectors ALTER COLUMN id SET DEFAULT nextval('public.theses_in_sectors_id_seq'::regclass);
+
+
+--
+-- Name: users id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
+
+
+--
+-- Name: users_actions id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users_actions ALTER COLUMN id SET DEFAULT nextval('public.users_actions_id_seq'::regclass);
+
+
+--
+-- Name: watering_algorithm_params id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.watering_algorithm_params ALTER COLUMN id SET DEFAULT nextval('public.watering_algorithm_params_id_seq'::regclass);
+
+
+--
+-- Name: watering_events id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.watering_events ALTER COLUMN id SET DEFAULT nextval('public.watering_events_id_seq'::regclass);
+
+--
+-- Data for Name: profiles_bins; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.profiles_bins (id, bound_0, bound_1, bound_2, bound_3, bound_4, bound_5, bound_6, description)
+VALUES (1, -10000, -1500, -300, -200, -100, -30, 0, 'Soil water potential'),
+(2, 0, 12.5, 15.625, 18.75, 21.875, 25, 100, 'Soil water content - Loam soil'),
+(3, 0, 10, 13.125, 16.25, 19.375, 22.5, 100, 'Soil water content - Sandy soil');
+
+--
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.users (id, email, password, name, role)
+VALUES (
+  1,
+  'test-admin-user@example.com',
+  'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86',
+  'Test Admin',
+  'admin'
+);
+
+
+--
+-- Name: companies_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.companies_id_seq', 1, true);
+
+
+--
+-- Name: devices_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.devices_id_seq', 1, true);
+
+
+--
+-- Name: devices_signals_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.devices_signals_id_seq', 1, false);
+
+
+--
+-- Name: fields_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.fields_id_seq', 1, true);
+
+
+--
+-- Name: fields_signals_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.fields_signals_id_seq', 1, true);
+
+
+--
+-- Name: grid_optimal_profile_assignment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.grid_optimal_profile_assignment_id_seq', 1, false);
+
+
+--
+-- Name: interpolated_profiles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.interpolated_profiles_id_seq', 1, false);
+
+
+--
+-- Name: organizations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.organizations_id_seq', 1, true);
+
+
+--
+-- Name: permits_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.permits_id_seq', 1, false);
+
+
+--
+-- Name: profiles_bins_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.profiles_bins_id_seq', 4, false);
+
+
+--
+-- Name: providers_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.providers_id_seq', 1, false);
+
+
+--
+-- Name: sectors_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.sectors_id_seq', 1, true);
+
+
+--
+-- Name: sectors_signals_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.sectors_signals_id_seq', 1, true);
+
+
+--
+-- Name: signal_types_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.signal_types_id_seq', 1, false);
+
+
+--
+-- Name: signals_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.signals_id_seq', 1, true);
+
+
+--
+-- Name: theses_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.theses_id_seq', 1, true);
+
+
+--
+-- Name: theses_in_sectors_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.theses_in_sectors_id_seq', 1, true);
+
+
+--
+-- Name: theses_signals_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.theses_signals_id_seq', 1, true);
+
+
+--
+-- Name: users_actions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.users_actions_id_seq', 1, false);
+
+
+--
+-- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.users_id_seq', 2, false);
+
+
+--
+-- Name: watering_algorithm_params_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.watering_algorithm_params_id_seq', 1, false);
+
+
+--
+-- Name: watering_events_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.watering_events_id_seq', 1, true);
+
+
+--
+-- Name: advices advices_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.advices
+    ADD CONSTRAINT advices_pkey PRIMARY KEY (thesis_id, watering_start);
+
+
+--
+-- Name: companies companies_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.companies
+    ADD CONSTRAINT companies_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: devices devices_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.devices
+    ADD CONSTRAINT devices_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: devices_signals devices_signals_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.devices_signals
+    ADD CONSTRAINT devices_signals_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: devices_signals devices_signals_valid_from_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.devices_signals
+    ADD CONSTRAINT devices_signals_valid_from_key UNIQUE (device_id, signal_id, valid_from);
+
+
+--
+-- Name: fields_devices fields_devices_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.fields_devices
+    ADD CONSTRAINT fields_devices_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: fields fields_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.fields
+    ADD CONSTRAINT fields_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: fields_devices fields_signals_field_id_signal_id_valid_from_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.fields_devices
+    ADD CONSTRAINT fields_signals_field_id_signal_id_valid_from_key UNIQUE (field_id, device_id, valid_from);
+
+
+--
+-- Name: grid_optimal_profile_assignment grid_optimal_profile_assignme_optimal_profile_id_grid_id_va_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.grid_optimal_profile_assignment
+    ADD CONSTRAINT grid_optimal_profile_assignme_optimal_profile_id_grid_id_va_key UNIQUE (optimal_profile_id, grid_id, valid_from);
+
+
+--
+-- Name: grid_optimal_profile_assignment grid_optimal_profile_assignment_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.grid_optimal_profile_assignment
+    ADD CONSTRAINT grid_optimal_profile_assignment_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: interpolated_cells interpolated_cells_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.interpolated_cells
+    ADD CONSTRAINT interpolated_cells_pkey PRIMARY KEY (profile_id, x, y, z);
+
+
+--
+-- Name: interpolated_profiles interpolated_profiles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.interpolated_profiles
+    ADD CONSTRAINT interpolated_profiles_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: measurements measurements_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.measurements
+    ADD CONSTRAINT measurements_pkey PRIMARY KEY (signal_id, "timestamp");
+
+
+--
+-- Name: optimal_profiles optimal_profiles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.optimal_profiles
+    ADD CONSTRAINT optimal_profiles_pkey PRIMARY KEY (profile_id, x, y, z);
+
+
+--
+-- Name: organizations organizations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.organizations
+    ADD CONSTRAINT organizations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: permits permits_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.permits
+    ADD CONSTRAINT permits_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: profiles_bins profiles_bins_check; Type: CHECK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.profiles_bins
+    ADD CONSTRAINT profiles_bins_check CHECK ((bound_0 < bound_1)) NOT VALID;
+
+
+--
+-- Name: profiles_bins profiles_bins_check1; Type: CHECK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.profiles_bins
+    ADD CONSTRAINT profiles_bins_check1 CHECK ((bound_1 < bound_2)) NOT VALID;
+
+
+--
+-- Name: profiles_bins profiles_bins_check2; Type: CHECK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.profiles_bins
+    ADD CONSTRAINT profiles_bins_check2 CHECK ((bound_2 < bound_3)) NOT VALID;
+
+
+--
+-- Name: profiles_bins profiles_bins_check3; Type: CHECK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.profiles_bins
+    ADD CONSTRAINT profiles_bins_check3 CHECK ((bound_3 < bound_4)) NOT VALID;
+
+
+--
+-- Name: profiles_bins profiles_bins_check4; Type: CHECK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.profiles_bins
+    ADD CONSTRAINT profiles_bins_check4 CHECK ((bound_4 < bound_5)) NOT VALID;
+
+
+--
+-- Name: profiles_bins profiles_bins_check5; Type: CHECK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.profiles_bins
+    ADD CONSTRAINT profiles_bins_check5 CHECK ((bound_5 < bound_6)) NOT VALID;
+
+
+--
+-- Name: profiles_bins profiles_bins_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.profiles_bins
+    ADD CONSTRAINT profiles_bins_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: providers providers_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.providers
+    ADD CONSTRAINT providers_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sectors_devices sectors_devices_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sectors_devices
+    ADD CONSTRAINT sectors_devices_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sectors sectors_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sectors
+    ADD CONSTRAINT sectors_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sectors_devices sectors_signals_sector_id_signal_id_valid_from_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sectors_devices
+    ADD CONSTRAINT sectors_signals_sector_id_signal_id_valid_from_key UNIQUE (sector_id, device_id, valid_from);
+
+
+--
+-- Name: signal_types signal_types_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.signal_types
+    ADD CONSTRAINT signal_types_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: signal_types signal_types_type_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.signal_types
+    ADD CONSTRAINT signal_types_type_id_key UNIQUE (type);
+
+
+--
+-- Name: signals signals_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.signals
+    ADD CONSTRAINT signals_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: theses_devices theses_devices_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.theses_devices
+    ADD CONSTRAINT theses_devices_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: theses_in_sectors theses_in_sectors_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.theses_in_sectors
+    ADD CONSTRAINT theses_in_sectors_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: theses_in_sectors theses_in_sectors_thesis_sector_valid_from_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.theses_in_sectors
+    ADD CONSTRAINT theses_in_sectors_thesis_sector_valid_from_key UNIQUE (thesis_id, sector_id, valid_from);
+
+
+--
+-- Name: theses theses_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.theses
+    ADD CONSTRAINT theses_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: theses_devices theses_signals_thesis_id_signal_id_valid_from_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.theses_devices
+    ADD CONSTRAINT theses_signals_thesis_id_signal_id_valid_from_key UNIQUE (thesis_id, device_id, valid_from);
+
+
+--
+-- Name: users_actions users_actions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users_actions
+    ADD CONSTRAINT users_actions_pkey PRIMARY KEY (id, id_key);
+
+
+--
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: watering_algorithm_params watering_algorithm_params_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.watering_algorithm_params
+    ADD CONSTRAINT watering_algorithm_params_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: watering_events watering_events_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.watering_events
+    ADD CONSTRAINT watering_events_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: watering_events watering_events_sector_id_watering_start_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.watering_events
+    ADD CONSTRAINT watering_events_sector_id_watering_start_key UNIQUE (sector_id, watering_start);
+
+
+--
+-- Name: idx_cells_profile_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_cells_profile_id ON public.interpolated_cells USING btree (profile_id);
+
+
+--
+-- Name: idx_profiles_grid_id_timestamp; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_profiles_grid_id_timestamp ON public.interpolated_profiles USING btree (grid_id, "timestamp");
+
+
+--
+-- Name: fields company_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.fields
+    ADD CONSTRAINT company_fk FOREIGN KEY (company_id) REFERENCES public.companies(id);
+
+
+--
+-- Name: devices_signals device_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.devices_signals
+    ADD CONSTRAINT device_fk FOREIGN KEY (device_id) REFERENCES public.devices(id);
+
+
+--
+-- Name: devices devices_binning_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.devices
+    ADD CONSTRAINT devices_binning_id_fkey FOREIGN KEY (binning_id) REFERENCES public.profiles_bins(id) NOT VALID;
+
+
+--
+-- Name: sectors field_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sectors
+    ADD CONSTRAINT field_fk FOREIGN KEY (field_id) REFERENCES public.fields(id);
+
+
+--
+-- Name: fields_devices fields_devices_device_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.fields_devices
+    ADD CONSTRAINT fields_devices_device_id_fkey FOREIGN KEY (device_id) REFERENCES public.devices(id) NOT VALID;
+
+
+--
+-- Name: fields_devices fields_devices_field_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.fields_devices
+    ADD CONSTRAINT fields_devices_field_id_fkey FOREIGN KEY (field_id) REFERENCES public.fields(id);
+
+
+--
+-- Name: grid_optimal_profile_assignment grid_optimal_profile_assignment_grid_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.grid_optimal_profile_assignment
+    ADD CONSTRAINT grid_optimal_profile_assignment_grid_id_fkey FOREIGN KEY (grid_id) REFERENCES public.devices(id);
+
+
+--
+-- Name: interpolated_cells interpolated_cells_profile_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.interpolated_cells
+    ADD CONSTRAINT interpolated_cells_profile_id_fkey FOREIGN KEY (profile_id) REFERENCES public.interpolated_profiles(id) NOT VALID;
+
+
+--
+-- Name: interpolated_profiles interpolated_profiles_grid_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.interpolated_profiles
+    ADD CONSTRAINT interpolated_profiles_grid_id_fkey FOREIGN KEY (grid_id) REFERENCES public.devices(id);
+
+
+--
+-- Name: measurements measurements_signal_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.measurements
+    ADD CONSTRAINT measurements_signal_id_fkey FOREIGN KEY (signal_id) REFERENCES public.signals(id);
+
+
+--
+-- Name: companies organization_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.companies
+    ADD CONSTRAINT organization_fk FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
+
+
+--
+-- Name: watering_events sector_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.watering_events
+    ADD CONSTRAINT sector_fk FOREIGN KEY (sector_id) REFERENCES public.sectors(id);
+
+
+--
+-- Name: theses_in_sectors sector_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.theses_in_sectors
+    ADD CONSTRAINT sector_fk FOREIGN KEY (sector_id) REFERENCES public.sectors(id);
+
+
+--
+-- Name: sectors_devices sectors_devices_device_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sectors_devices
+    ADD CONSTRAINT sectors_devices_device_id_fkey FOREIGN KEY (device_id) REFERENCES public.devices(id) NOT VALID;
+
+
+--
+-- Name: sectors_devices sectors_devices_sector_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sectors_devices
+    ADD CONSTRAINT sectors_devices_sector_id_fkey FOREIGN KEY (sector_id) REFERENCES public.sectors(id);
+
+
+--
+-- Name: devices_signals signal_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.devices_signals
+    ADD CONSTRAINT signal_fk FOREIGN KEY (signal_id) REFERENCES public.signals(id);
+
+
+--
+-- Name: signals signals_provider_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.signals
+    ADD CONSTRAINT signals_provider_id_fkey FOREIGN KEY (provider_id) REFERENCES public.providers(id) NOT VALID;
+
+
+--
+-- Name: signals signals_type_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.signals
+    ADD CONSTRAINT signals_type_fkey FOREIGN KEY (type_id) REFERENCES public.signal_types(id);
+
+
+--
+-- Name: theses_devices theses_devices_devices_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.theses_devices
+    ADD CONSTRAINT theses_devices_devices_id_fkey FOREIGN KEY (device_id) REFERENCES public.devices(id) NOT VALID;
+
+
+--
+-- Name: theses_devices theses_devices_thesis_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.theses_devices
+    ADD CONSTRAINT theses_devices_thesis_id_fkey FOREIGN KEY (thesis_id) REFERENCES public.theses(id);
+
+
+--
+-- Name: theses_in_sectors thesis_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.theses_in_sectors
+    ADD CONSTRAINT thesis_fk FOREIGN KEY (thesis_id) REFERENCES public.theses(id);
+
+
+--
+-- Name: permits user_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.permits
+    ADD CONSTRAINT user_fk FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: users_actions users_actions_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users_actions
+    ADD CONSTRAINT users_actions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: watering_algorithm_params watering_algorithm_params_thesis_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.watering_algorithm_params
+    ADD CONSTRAINT watering_algorithm_params_thesis_fkey FOREIGN KEY (thesis_id) REFERENCES public.theses(id);
+
+--
+-- PostgreSQL database dump complete
+--
