@@ -1303,9 +1303,6 @@ ALTER TABLE ONLY public.watering_algorithm_params ALTER COLUMN id SET DEFAULT ne
 
 ALTER TABLE ONLY public.watering_events ALTER COLUMN id SET DEFAULT nextval('public.watering_events_id_seq'::regclass);
 
---
--- Data for Name: signal_types; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
 INSERT INTO public.signal_types (id, type, type_description)
 VALUES (1, 'SOIL_WATER_CONTENT', 'Soil water content'),
@@ -1316,27 +1313,60 @@ VALUES (1, 'SOIL_WATER_CONTENT', 'Soil water content'),
        (6, 'SOLAR_RADIATION', 'Solar radiation'),
        (7, 'RAIN_FALL', 'Rain fall'),
        (8, 'WIND_SPEED', 'Wind speed'),
-       (9, 'WIND_DIRECTION', 'Wind direction');
-
---
--- Data for Name: providers; Type: TABLE DATA; Schema: public; Owner: postgres
---
+       (9, 'WIND_DIRECTION', 'Wind direction'),
+       (10, 'DRIPPER', 'Dripper');
 
 INSERT INTO public.providers (id, provider_name)
 VALUES (1, 'Provider A'), (2, 'Provider B');
-
---
--- Data for Name: profiles_bins; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
 INSERT INTO public.profiles_bins (id, bound_0, bound_1, bound_2, bound_3, bound_4, bound_5, bound_6, description)
 VALUES (1, -10000, -1500, -300, -200, -100, -30, 0, 'Soil water potential'),
 (2, 0, 12.5, 15.625, 18.75, 21.875, 25, 100, 'Soil water content - Loam soil'),
 (3, 0, 10, 13.125, 16.25, 19.375, 22.5, 100, 'Soil water content - Sandy soil');
 
---
--- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
---
+INSERT INTO public.organizations (id, organization_name) 
+VALUES (1, 'Test Organization 1');
+
+INSERT INTO public.companies (id, company_name, organization_id) 
+VALUES (1, 'Test Company 1', 1);
+
+INSERT INTO public.fields (id, field_name, company_id, location) 
+VALUES (1, 'Test Field 1', 1, public.ST_GeomFromText('POLYGON((10 45, 10.1 45, 10.1 45.1, 10 45.1, 10 45))', 4326));
+
+INSERT INTO public.sectors (id, sector_name, field_id, culture, location) 
+VALUES (1, 'Test Sector 1', 1, 'Kiwi', public.ST_GeomFromText('POLYGON((10.01 45.01, 10.05 45.01, 10.05 45.05, 10.01 45.05, 10.01 45.01))', 4326));
+
+INSERT INTO public.theses (id, thesis_name) 
+VALUES (1, 'Thesis 1');
+
+INSERT INTO public.theses_in_sectors (thesis_id, sector_id, valid_from) 
+VALUES (1, 1, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-20 7:00:00'));
+
+INSERT INTO public.devices (id, type, description, binning_id, location)
+VALUES
+(1, 'WEATHER_STATION', 'Field 1 Station', NULL, public.ST_GeomFromText('POINT(10.05 45.05)', 4326)),
+(2, 'FLOW_METER', 'Sector 1 Pressure Switch',  NULL, public.ST_GeomFromText('POINT(10.02 45.02)', 4326)),
+(3, 'SOIL_MOISTURE_GRID', 'Thesis 1 Grid',   1, public.ST_GeomFromText('POINT(10.03 45.03)', 4326));
+
+INSERT INTO public.signals (id, type_id, provider_id, id_on_provider, unit, description, x, y, z, virtual, sensor_technology)
+VALUES
+(1, 4, 2, 'WS-TEMP-001', '°C', 'Station 1 Air Temp', 0, 200, 0, false, 'RTD'),
+(2, 5, 2, 'WS-HUM-001',  '%',  'Station 1 Humidity', NULL, NULL, NULL, false, 'Resistive'),
+(3, 1, 1, 'DRIP-SWC-01', 'L',  'Computed liter NPRESS01', 0, 0, 0, false, 'Pressure Sensor'),
+(4, 2, 1, 'GRID-GES-0-20', 'cbar', 'Grid 3 Ges 20>0', 0, 20, 0, false, 'Gypsum Block'),
+(5, 2, 1, 'GRID-GES-0-60', 'cbar', 'Grid 3 Ges 60>0', 0, 60, 0, false, 'Gypsum Block'),
+(6, 2, 1, 'GRID-GES-40-20', 'cbar', 'Grid 3 Ges 20>40', 40, 20, 0, false, 'Gypsum Block'),
+(7, 2, 1, 'GRID-GES-40-60', 'cbar', 'Grid 3 Ges 60>40', 40, 60, 0, false, 'Gypsum Block');
+
+INSERT INTO public.devices_signals (device_id, signal_id, valid_from)
+VALUES
+(1, 1, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-20 10:00:00')),
+(1, 2, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-20 10:00:00')),
+(2, 3, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-20 10:00:00')),
+(3, 4, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 10:00:00')),
+(3, 5, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 10:00:00')),
+(3, 6, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 10:00:00')),
+(3, 7, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 10:00:00'));
 
 INSERT INTO public.users (id, email, password, name, role)
 VALUES (
@@ -1352,28 +1382,28 @@ VALUES (
 -- Name: companies_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.companies_id_seq', 1, true);
+SELECT pg_catalog.setval('public.companies_id_seq', 2, true);
 
 
 --
 -- Name: devices_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.devices_id_seq', 1, true);
+SELECT pg_catalog.setval('public.devices_id_seq', 4, true);
 
 
 --
 -- Name: devices_signals_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.devices_signals_id_seq', 1, false);
+SELECT pg_catalog.setval('public.devices_signals_id_seq', 8, false);
 
 
 --
 -- Name: fields_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.fields_id_seq', 1, true);
+SELECT pg_catalog.setval('public.fields_id_seq', 2, true);
 
 
 --
@@ -1401,7 +1431,7 @@ SELECT pg_catalog.setval('public.interpolated_profiles_id_seq', 1, false);
 -- Name: organizations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.organizations_id_seq', 1, true);
+SELECT pg_catalog.setval('public.organizations_id_seq', 2, true);
 
 
 --
@@ -1429,7 +1459,7 @@ SELECT pg_catalog.setval('public.providers_id_seq', 3, false);
 -- Name: sectors_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.sectors_id_seq', 1, true);
+SELECT pg_catalog.setval('public.sectors_id_seq', 2, true);
 
 
 --
@@ -1443,28 +1473,28 @@ SELECT pg_catalog.setval('public.sectors_signals_id_seq', 1, true);
 -- Name: signal_types_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.signal_types_id_seq', 10, false);
+SELECT pg_catalog.setval('public.signal_types_id_seq', 11, false);
 
 
 --
 -- Name: signals_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.signals_id_seq', 1, true);
+SELECT pg_catalog.setval('public.signals_id_seq', 8, true);
 
 
 --
 -- Name: theses_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.theses_id_seq', 1, true);
+SELECT pg_catalog.setval('public.theses_id_seq', 2, true);
 
 
 --
 -- Name: theses_in_sectors_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.theses_in_sectors_id_seq', 1, true);
+SELECT pg_catalog.setval('public.theses_in_sectors_id_seq', 2, true);
 
 
 --
