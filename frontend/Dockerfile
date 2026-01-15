@@ -1,6 +1,6 @@
 # Fase 1: Costruzione della build
 # Utilizza un'immagine di base Node.js
-FROM node:22.3-slim AS build
+FROM node:25.3-slim AS build
 
 # Imposta la directory di lavoro
 WORKDIR /app
