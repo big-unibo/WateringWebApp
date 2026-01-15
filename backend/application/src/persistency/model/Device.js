@@ -20,7 +20,7 @@ function initDevice(sequelize) {
         description: {
             type: DataTypes.TEXT,
             allowNull: true,
-            field: "type"
+            field: "description"
         },
         location: {
             type: DataTypes.GEOMETRY,
