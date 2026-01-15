@@ -51,7 +51,6 @@ import UserActionService from './services/UserActionService.js';
 dotenv.config()
 
 export const app = express()
-const port = 8081
 
 const swaggerOptions = {
   definition: {
@@ -87,10 +86,6 @@ const swaggerOptions = {
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions)
-
-app.listen(port, () => {
-  console.log(`Server is running at ${process.env.BACKEND_ADDRESS}`)
-});
 
 const models = initModels(sequelize)
 
