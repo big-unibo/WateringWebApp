@@ -3,7 +3,7 @@ import request from 'supertest';
 import { loginUser, setupDb, table } from '../utils';
 import { ADMIN_EMAIL, ADMIN_PASSWORD } from '../const';
 
-describe('Field Hierarchy Integration Test', () => {
+describe('Field Setup Creation Integration Test', () => {
     let db
     let container
     let authToken

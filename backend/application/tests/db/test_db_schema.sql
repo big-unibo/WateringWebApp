@@ -1304,6 +1304,28 @@ ALTER TABLE ONLY public.watering_algorithm_params ALTER COLUMN id SET DEFAULT ne
 ALTER TABLE ONLY public.watering_events ALTER COLUMN id SET DEFAULT nextval('public.watering_events_id_seq'::regclass);
 
 --
+-- Data for Name: signal_types; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.signal_types (id, type, type_description)
+VALUES (1, 'SOIL_WATER_CONTENT', 'Soil water content'),
+       (2, 'SOIL_WATER_POTENTIAL', 'Soil water potential'),
+       (3, 'SOIL_TEMPERATURE', 'Soil temperature'),
+       (4, 'AIR_TEMPERATURE', 'Air temperature'),
+       (5, 'AIR_HUMIDITY', 'Air humidity'),
+       (6, 'SOLAR_RADIATION', 'Solar radiation'),
+       (7, 'RAIN_FALL', 'Rain fall'),
+       (8, 'WIND_SPEED', 'Wind speed'),
+       (9, 'WIND_DIRECTION', 'Wind direction');
+
+--
+-- Data for Name: providers; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+INSERT INTO public.providers (id, provider_name)
+VALUES (1, 'Provider A'), (2, 'Provider B');
+
+--
 -- Data for Name: profiles_bins; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -1400,7 +1422,7 @@ SELECT pg_catalog.setval('public.profiles_bins_id_seq', 4, false);
 -- Name: providers_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.providers_id_seq', 1, false);
+SELECT pg_catalog.setval('public.providers_id_seq', 3, false);
 
 
 --
@@ -1421,7 +1443,7 @@ SELECT pg_catalog.setval('public.sectors_signals_id_seq', 1, true);
 -- Name: signal_types_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.signal_types_id_seq', 1, false);
+SELECT pg_catalog.setval('public.signal_types_id_seq', 10, false);
 
 
 --
