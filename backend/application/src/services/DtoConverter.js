@@ -1,4 +1,5 @@
 import { HumidityBinMeasureData, HumidityBinsDataResponse, InterpolatedDataResponse, InterpolatedImageData, InterpolatedMeanMeasureData, InterpolatedMeansData, InterpolatedMeasureData } from "../dtos/interpolatedDataDto.js";
+import { Organization } from "../dtos/organizationDto.js";
 import { Company } from "../dtos/companyDto.js";
 import { SignalData, MeasureData, SignalTypeData } from '../dtos/dataDto.js';
 import { WateringScheduleResponse, WateringEventData, ThesisContributionData } from "../dtos/wateringScheduleDto.js";
@@ -12,6 +13,11 @@ import { WateringParams } from "../dtos/wateringParamsDto.js";
 import { FieldData } from "../dtos/fieldDto.js";
 
 class DtoConverter {
+
+    convertOrganizationsDataWrapper(organizationsData) {
+        if (!Array.isArray(organizationsData)) return [];
+        return organizationsData.map(o => new Organization(o.organizationName, o.id));
+    }
 
     convertCompany(company) {
         return new Company(

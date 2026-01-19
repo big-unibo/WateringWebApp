@@ -6,6 +6,84 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
 
     /**
      * @swagger
+     * /organizations:
+     *   get:
+     *     summary: Retrieve all organizations available for the user
+     *     tags: [Organizations]
+     *     description: | 
+     *       Retrieve all organizations available for the user.
+     *       Requires Authentication and proper authorization
+     *     responses:
+     *       200:
+     *         description: List of organizations for the user
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 $ref: '#/components/schemas/Organization'
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while retrieving sectors
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     */
+    router.get('/', async (req, res) => {
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        try {
+            const organizations = await organizationService.getOrganizations(requestUserData.userId);
+            return res.status(200).json(organizations || []);
+        } catch (error) {
+            console.log(`Fail retrieving organizations caused by: ${error.message}`);
+            return res.status(500).json({ error: "Error while retrieving organizations" });
+        }
+    });
+
+    /**
+     * @swagger
      * /organizations/create:
      *   post:
      *     summary: Create a new organization

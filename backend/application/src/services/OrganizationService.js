@@ -1,4 +1,7 @@
 import { ORGANIZATIONS_LOG_TABLE } from "../commons/constants.js";
+import DtoConverter from "./DtoConverter.js";
+
+const dtoConverter = new DtoConverter();
 
 class OrganizationService {
     constructor(organizationRepository, userActionService ) {
@@ -19,6 +22,12 @@ class OrganizationService {
             throw error;
         }    
     }
+
+    async getOrganizations(userId) {
+        const result = await this.organizationRepository.getOrganizations();
+        return dtoConverter.convertOrganizationsDataWrapper(result);
+    }
+
 }
 
 export default OrganizationService

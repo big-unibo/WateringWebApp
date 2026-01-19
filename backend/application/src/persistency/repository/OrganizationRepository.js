@@ -14,6 +14,15 @@ class OrganizationRepository {
             throw new Error(`Error creating new organization caused by: ${error.message}`);
         }
     }
+
+    async getOrganizations() {
+        try {
+            const organizations = await this.Organization.findAll()
+            return organizations;
+        } catch (error) {
+            throw new Error(`Error retrieving organizations caused by: ${error.message}`);
+        }
+    }
 }
 
 
