@@ -10,3 +10,16 @@ export class Organization{
         this.id = id;
     }
 }
+
+export class OrganizationData{
+    /**
+     * @param {number} organizationId 
+     * @param {string} organizationName 
+     * @param {Array<Company>} companies 
+     */
+    constructor(organizationId, organizationName, companies){
+        this.organizationId = organizationId;
+        this.organizationName = organizationName;
+        this.companies = companies;
+    }
+}

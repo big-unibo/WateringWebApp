@@ -1,6 +1,7 @@
 class OrganizationRepository {
     constructor(models, sequelize) {
         this.Organization = models.Organization;
+        this.Company = models.Company;
         this.sequelize = sequelize;
     }
 
@@ -21,6 +22,24 @@ class OrganizationRepository {
             return organizations;
         } catch (error) {
             throw new Error(`Error retrieving organizations caused by: ${error.message}`);
+        }
+    }
+
+    async getOrganizationDetails(organizationId) {
+        try {
+            const organization = await this.Organization.findOne({
+                where: { id: organizationId },
+                include: [
+                        {
+                            model: this.Company,
+                            as: 'companies',
+                            required: false
+                        }
+                    ],
+            });
+            return organization;
+        } catch (error) {
+            throw new Error(`Error retrieving organization details caused by: ${error.message}`);
         }
     }
 }

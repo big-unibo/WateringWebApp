@@ -10,7 +10,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      *   post:
      *     security: []
      *     summary: Authenticate user and generate token
-     *     tags: [User route]
+     *     tags: [Users]
      *     requestBody:
      *       required: true
      *       content:
@@ -82,7 +82,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      * /users/register:
      *   post:
      *     summary: Register one or more new users
-     *     tags: [User route]
+     *     tags: [Users]
      *     description: |
      *       Creates one or more new users in the system.  
      *       Requires a valid JWT token and appropriate permissions to create users.
@@ -198,7 +198,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      * /users/me:
      *   get:
      *     summary: Finds info about the logged user
-     *     tags: [User route]
+     *     tags: [Users]
      *     description: |
      *       Return data about the user currenlty logged by using the token
      *     responses:

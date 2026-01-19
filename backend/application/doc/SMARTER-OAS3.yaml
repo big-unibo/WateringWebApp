@@ -567,6 +567,22 @@ components:
         name:
           type: string
           description: Name of the company
+    
+    CompanyData:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Company"
+        - type: object
+          properties:
+            organization:
+              $ref: "#/components/schemas/Organization"
+              description: Organization the company belongs to
+            fields:
+              type: array
+              description: List of fields belonging to the company
+              items:
+                $ref: "#/components/schemas/Field"
+            
 
     Organization:
       type: object
@@ -577,6 +593,18 @@ components:
         name:
           type: string
           description: Name of the organization
+    
+    OrganizationData:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Organization"
+        - type: object
+          properties:
+            companies:
+              type: array
+              description: List of companies belonging to the organization
+              items:
+                $ref: "#/components/schemas/Company"
 
     SectorIdentifier:
       type: object
@@ -610,17 +638,14 @@ components:
             $ref: '#/components/schemas/GeometryElement'
             description: Location of the field
           field:
-            allOf:
-            - $ref: "#/components/schemas/Field"
-            - description: Field the sector belongs to
+            $ref: "#/components/schemas/Field"
+            description: Field the sector belongs to
           company:
-            allOf:
-            - $ref: "#/components/schemas/Company"
-            - description: Company owning the field
+            $ref: "#/components/schemas/Company"
+            description: Company owning the field
           organization:
-            allOf:
-            - $ref: "#/components/schemas/Organization"
-            - description: Organization the company belongs to
+            $ref: "#/components/schemas/Organization"
+            description: Organization the company belongs to
       
     SectorsCompact:
         type: array

@@ -84,6 +84,114 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
 
     /**
      * @swagger
+     * /organizations/{organizationId}:
+     *   get:
+     *     summary: Retrives data about an organization.
+     *     tags: [Organizations]
+     *     description: |
+     *       Retrives data about an organization including names and ids of its companies
+     * 
+     *       Requires authentication and proper authorization.
+     *     parameters:
+     *       - in: path
+     *         name: organizationId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of organization to retrieve
+     *     responses:
+     *       200:
+     *         description: Detailed organization information
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/OrganizationData'
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       401:
+     *         description: Authentication failed (Invalid or missing JWT).
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized request – user not allowed view organization data
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       404:
+     *         description: No organization found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error during the process.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.get('/:organizationId', async (req, res) => {
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(403).json({ message: 'Authentication failed' });
+        }
+        //[TO DO]: Authorization
+
+        const organizationId = req.params.organizationId;
+
+        try {
+            const result = await organizationService.getOrganizationDetails(organizationId)
+            if (!result) {
+                return res.status(404).json({ error: "Organization not found" })
+            }
+            return res.status(200).json(result)
+        } catch (error) {
+            console.log(`Failed retrieving organization data: ${error.message}`)
+            return res.status(500).json({ error: "Internal error retrieving organization data" })
+        }
+    })
+
+    /**
+     * @swagger
      * /organizations/create:
      *   post:
      *     summary: Create a new organization

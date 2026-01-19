@@ -27,10 +27,10 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *         required: true
      *         schema:
      *           type: integer
-     *         description: ID of field to disable
+     *         description: ID of field to reterieve
      *     responses:
      *       200:
-     *         description: Detailed sector information
+     *         description: Detailed field information
      *         content:
      *           application/json:
      *             schema:
@@ -69,7 +69,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *                 message:
      *                   type: string
      *       403:
-     *         description: Unauthorized request – user not allowed view filed data
+     *         description: Unauthorized request – user not allowed view field data
      *         content:
      *           application/json:
      *             schema:

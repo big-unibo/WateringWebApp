@@ -2,6 +2,7 @@ class CompanyRepository {
     constructor(models, sequelize) {
         this.Company = models.Company;
         this.Organization = models.Organization;
+        this.Field = models.Field;
         this.sequelize = sequelize;
     }
 
@@ -20,6 +21,25 @@ class CompanyRepository {
             return companyCreated;
         } catch (error) {
             throw new Error(`Error creating new company caused by: ${error.message}`);
+        }
+    }
+
+    async getCompanyDetails(companyId) {
+        try {
+            const company = await this.Company.findByPk(companyId, {
+                include: [{
+                    model: this.Organization,
+                    as: 'organization'
+                },
+                {
+                    model: this.Field,
+                    as: 'fields',
+                    required: false
+                }],
+            });
+            return company;
+        } catch (error) {
+            throw new Error(`Error retrieving company details caused by: ${error.message}`);
         }
     }
 }

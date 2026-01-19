@@ -6,11 +6,118 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
 
     /**
      * @swagger
+     * /companies/{companyId}:
+     *   get:
+     *     summary: Retrives data about a company.
+     *     tags: [Companies]
+     *     description: |
+     *       Retrives data about a company including its fields.
+     *       Requires authentication and proper authorization.
+     *     parameters:
+     *       - in: path
+     *         name: companyId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of company to retrieve
+     *     responses:
+     *       200:
+     *         description: Detailed company information
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/CompanyData'
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       401:
+     *         description: Authentication failed (Invalid or missing JWT).
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized request – user not allowed view company data
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       404:
+     *         description: No company found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error during the process.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.get('/:companyId', async (req, res) => {
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(403).json({ message: 'Authentication failed' });
+        }
+        //[TO DO]: Authorization
+
+        const companyId = req.params.companyId;
+
+        try {
+            const result = await companyService.getCompanyDetails(companyId)
+            if (!result) {
+                return res.status(404).json({ error: "Company not found" })
+            }
+            return res.status(200).json(result)
+        } catch (error) {
+            console.log(`Failed retrieving company data: ${error.message}`)
+            return res.status(500).json({ error: "Internal error retrieving company data" })
+        }
+    })
+
+    /**
+     * @swagger
      * /companies/create:
      *   post:
      *     summary: Creates a new company and associate it with an organization
      *     description: Endpoint to register a new company under a specified organization. Requires authentication and proper authorization.
-     *     tags: [Company route]
+     *     tags: [Companies]
      *     requestBody:
      *       required: true
      *       content:

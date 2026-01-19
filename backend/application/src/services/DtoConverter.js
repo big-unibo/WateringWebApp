@@ -1,6 +1,6 @@
 import { HumidityBinMeasureData, HumidityBinsDataResponse, InterpolatedDataResponse, InterpolatedImageData, InterpolatedMeanMeasureData, InterpolatedMeansData, InterpolatedMeasureData } from "../dtos/interpolatedDataDto.js";
-import { Organization } from "../dtos/organizationDto.js";
-import { Company } from "../dtos/companyDto.js";
+import { Organization, OrganizationData } from "../dtos/organizationDto.js";
+import { Company, CompanyData } from "../dtos/companyDto.js";
 import { SignalData, MeasureData, SignalTypeData } from '../dtos/dataDto.js';
 import { WateringScheduleResponse, WateringEventData, ThesisContributionData } from "../dtos/wateringScheduleDto.js";
 import { DistanceValue, OptimalDistanceData, DistanceProfile, OptimalProfileData, OptimalStateData } from "../dtos/optStateDto.js";
@@ -15,8 +15,22 @@ import { FieldData } from "../dtos/fieldDto.js";
 class DtoConverter {
 
     convertOrganizationsDataWrapper(organizationsData) {
-        if (!Array.isArray(organizationsData)) return [];
-        return organizationsData.map(o => new Organization(o.organizationName, o.id));
+        if (!Array.isArray(organizationsData)) return []
+        return organizationsData.map(o => new Organization(o.organizationName, o.id))
+    }
+
+    convertOrganizationDataWrapper(organizationData) {
+        if (!organizationData) return null
+        const companies = (organizationData.companies || []).map(company => ({
+            id: company.id,
+            name: company.companyName
+        }))
+
+        return new OrganizationData(
+            organizationData.organizationName,
+            organizationData.id,
+            companies
+        )
     }
 
     convertCompany(company) {
@@ -24,6 +38,25 @@ class DtoConverter {
             company.companyName,
             company.organizationId,
             company.id
+        );
+    }
+
+    convertCompanyDataWrapper(companyData) {
+        if (!companyData) return null;
+
+        const organization = {
+            id: companyData.organization.id,
+            name: companyData.organization.organizationName
+        };
+        const fields = (companyData.fields || []).map(field => ({
+            id: field.id,
+            name: field.fieldName
+        }));
+        return new CompanyData(
+            companyData.id,
+            companyData.companyName,
+            organization,
+            fields
         );
     }
 

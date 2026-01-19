@@ -28,6 +28,11 @@ class OrganizationService {
         return dtoConverter.convertOrganizationsDataWrapper(result);
     }
 
+    async getOrganizationDetails(organizationId) {
+        const result = await this.organizationRepository.getOrganizationDetails(organizationId);
+        return dtoConverter.convertOrganizationDataWrapper(result);
+    }
+
 }
 
 export default OrganizationService
