@@ -192,7 +192,7 @@ class ThesesAllSignalsRepository {
         return results;
     }
 
-    async getDevicesByThesis(thesisId, timestamp, deviceTypes) {
+    async getDevicesByThesis(thesisId, timestamp, deviceTypes, includeAnchestors) {
         const query = `
             SELECT DISTINCT 
                 device_id AS "deviceId",
@@ -207,7 +207,8 @@ class ThesesAllSignalsRepository {
                 measurement_timestamp AS "lastMeasurementTimestamp",
                 virtual,
                 unit,
-                x, y, z
+                x, y, z,
+                association_type AS "associationType"
             FROM theses_all_signals tas
             JOIN LATERAL(
                 SELECT MAX(timestamp) AS measurement_timestamp
@@ -215,7 +216,8 @@ class ThesesAllSignalsRepository {
                 WHERE m.signal_id = tas.signal_id
             ) m ON true
             WHERE thesis_id = :thesisId
-                AND :timestamp BETWEEN valid_from AND COALESCE(valid_to, 'infinity') 
+                AND :timestamp BETWEEN valid_from AND COALESCE(valid_to, 'infinity')
+                AND association_type IN ('thesis' ${includeAnchestors ? ", 'sector', 'field'": ""})
                 ${deviceTypes?.length > 0 ? "AND tas.device_type = ANY(ARRAY[:deviceTypes])" : "" }
         `;
 
@@ -266,6 +268,88 @@ class ThesesAllSignalsRepository {
             type: QueryTypes.SELECT
         });
         return results;
+    }
+
+    async getDevicesByField(fieldId, timestamp, deviceTypes, includeDescendants){
+        const query = `
+            SELECT DISTINCT 
+                device_id AS "deviceId",
+                device_type AS "deviceType",
+                device_description AS "deviceDescription",
+                provider_id AS "providerId",
+                signal_id_on_provider AS "idOnProvider",
+                signal_id AS "signalId",
+                signal_description AS "signalDescription",
+                signal_type AS "signalType",
+                signal_type_description AS "signalTypeDescription",
+                measurement_timestamp AS "lastMeasurementTimestamp",
+                virtual,
+                unit,
+                x, y, z,
+                association_type AS "associationType"
+            FROM theses_all_signals tas
+            JOIN LATERAL(
+                SELECT MAX(timestamp) AS measurement_timestamp
+                FROM measurements m
+                WHERE m.signal_id = tas.signal_id
+            ) m ON true
+            WHERE field_id = :fieldId
+                AND :timestamp BETWEEN valid_from AND COALESCE(valid_to, 'infinity') 
+                AND association_type IN ('field' ${includeDescendants ? ", 'sector', 'thesis'": ""})
+                ${deviceTypes?.length > 0 ? "AND tas.device_type = ANY(ARRAY[:deviceTypes])" : "" }
+        `;
+
+        try {
+            const results = await this.sequelize.query(query, {
+                replacements: { fieldId, timestamp, deviceTypes },
+                type: this.sequelize.QueryTypes.SELECT
+            });
+            return results;
+        } catch (error) {
+            console.error(`Fail retrieving devices data: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async getDevicesBySector(sectorId, timestamp, deviceTypes, includeAnchestors, includeDescendants){
+        const query = `
+            SELECT DISTINCT 
+                device_id AS "deviceId",
+                device_type AS "deviceType",
+                device_description AS "deviceDescription",
+                provider_id AS "providerId",
+                signal_id_on_provider AS "idOnProvider",
+                signal_id AS "signalId",
+                signal_description AS "signalDescription",
+                signal_type AS "signalType",
+                signal_type_description AS "signalTypeDescription",
+                measurement_timestamp AS "lastMeasurementTimestamp",
+                virtual,
+                unit,
+                x, y, z,
+                association_type AS "associationType"
+            FROM theses_all_signals tas
+            JOIN LATERAL(
+                SELECT MAX(timestamp) AS measurement_timestamp
+                FROM measurements m
+                WHERE m.signal_id = tas.signal_id
+            ) m ON true
+            WHERE sector_id = :sectorId
+                AND :timestamp BETWEEN valid_from AND COALESCE(valid_to, 'infinity') 
+                AND association_type IN ('sector' ${includeDescendants ? ", 'thesis'": ""} ${includeAnchestors ? ", 'field'": ""})
+                ${deviceTypes?.length > 0 ? "AND tas.device_type = ANY(ARRAY[:deviceTypes])" : "" }
+        `;
+
+        try {
+            const results = await this.sequelize.query(query, {
+                replacements: { sectorId, timestamp, deviceTypes },
+                type: this.sequelize.QueryTypes.SELECT
+            });
+            return results;
+        } catch (error) {
+            console.error(`Fail retrieving devices data: ${error.message}`);
+            throw error;
+        }
     }
 }
 

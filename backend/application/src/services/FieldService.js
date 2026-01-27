@@ -181,28 +181,19 @@ class FieldService {
         }
     }
 
-    async getDevicesByThesis(thesisId, timestamp, deviceTypes) {
-        const result = await this.thesesAllSignalsRepository.getDevicesByThesis(thesisId, timestamp, deviceTypes);
+    async getDevicesByThesis(thesisId, timestamp, deviceTypes, includeAnchestors) {
+        const result = await this.thesesAllSignalsRepository.getDevicesByThesis(thesisId, timestamp, deviceTypes, includeAnchestors);
         return dtoConverter.convertDevicesDataWrapper(result);
     }
 
-    async getDevicesBySector(sectorId, timestamp, deviceTypes) {
-        const thesesIds = [...new Set((await this.getSectorDetails(sectorId, timestamp)).theses.map(t => t.id))]
+    async getDevicesBySector(sectorId, timestamp, deviceTypes, includeAnchestors, includeDescendants) {
+        const result = await this.thesesAllSignalsRepository.getDevicesBySector(sectorId, timestamp, deviceTypes, includeAnchestors, includeDescendants);
+        return dtoConverter.convertDevicesDataWrapper(result);
+    }
 
-        const results = await Promise.all(
-            thesesIds.map(async id =>
-                dtoConverter.convertDevicesDataWrapper(
-                await this.thesesAllSignalsRepository.getDevicesByThesis(
-                    id,
-                    timestamp,
-                    deviceTypes
-                )
-                )
-            )
-        )
-        return [
-        ...new Map(results.flat().map(d => [d.deviceId, d])).values()
-        ];
+    async getDevicesByField(fieldId, timestamp, deviceTypes, includeDescendants){
+        const result = await this.thesesAllSignalsRepository.getDevicesByField(fieldId, timestamp, deviceTypes, includeDescendants);
+        return dtoConverter.convertDevicesDataWrapper(result);
     }
 
     async getBinningInfo(binningId) {

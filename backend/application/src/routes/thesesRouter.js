@@ -126,9 +126,11 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      * @swagger
      * /theses/{thesisId}/devices:
      *   get:
-     *     summary: Gets all the devices info for a given thesis
+     *     summary: Gets devices info for a given thesis
      *     tags: [Theses]
-     *     description: Endpoint to get all devices and signals info for a given thesis. Requires authentication and proper authorization
+     *     description: Returns devices directly assigned to the thesis and, optionally, devices from anchestor entities
+     *       (e.g. sector or field). Inheritance behavior is controlled via the `includeAnchestors` parameter.
+     *       Requires authentication and proper authorization
      *     parameters:
      *       - in: path
      *         name: thesisId
@@ -141,6 +143,11 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *         schema:
      *           type: number
      *         description: Timestamp in which find the information
+     *       - in: query
+     *         name: includeAnchestors
+     *         schema:
+     *           type: boolean
+     *         description: Include devices assigned to parent entity (e.g. field)
      *       - in: query
      *         name: deviceTypes
      *         required: false
@@ -239,8 +246,9 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
             //     return res.status(403).json({message: 'Unauthorized request'});
 
             const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000
+            const includeAnchestors = req.query.includeAnchestors ?? false
             const deviceTypes = req.query.deviceTypes;
-            const results = await fieldService.getDevicesByThesis(thesisId, timestamp, deviceTypes);
+            const results = await fieldService.getDevicesByThesis(thesisId, timestamp, deviceTypes, includeAnchestors);
             return res.status(200).json(results)
         } catch (error) {
             console.log(`Fail retrieving devices data: ${error.message}`);

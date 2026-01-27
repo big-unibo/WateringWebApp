@@ -491,6 +491,139 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
         }
     })
 
+    /**
+     * @swagger
+     * /fields/{fieldId}/devices:
+     *   get:
+     *     summary: Gets all the devices info for a given field
+     *     tags: [Fields]
+     *     description: Returns devices directly assigned to the field and, optionally, devices from descendant entities
+     *       (e.g. thesis or sectors). Inheritance behavior is controlled via the `includeDescendants` parameter. Requires authentication and proper authorization
+     *     parameters:
+     *       - in: path
+     *         name: fieldId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of the sector
+     *       - in: query
+     *         name: timestamp
+     *         schema:
+     *           type: number
+     *         description: Timestamp in which find the information
+     *       - in: query
+     *         name: includeDescendants
+     *         schema:
+     *           type: boolean
+     *         description: Include devices assigned to child entities (e.g. sectors, theses)
+     *       - in: query
+     *         name: deviceTypes
+     *         required: false
+     *         schema:
+     *           type: array
+     *           items:
+     *             type: string
+     *         description: Array of device types to filter the response
+     *     responses:
+     *       200:
+     *         description: Informations about devices and signals assigned to the given thesis
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                  $ref: '#/components/schemas/Device'
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to get devices info for this thesis)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while retrieving devices info
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+    */
+    router.get('/:fieldId/devices', async (req, res) => {
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        const fieldId = Number(req.params.fieldId)
+        const exists = await fieldService.fieldExists(fieldId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Field not found' });
+        }
+
+        try {
+            // TODO Authorization
+            // if (!(await authorizationService.isUserAuthorizedInSector(user.id, 'update', fieldId)))
+            //     return res.status(403).json({message: 'Unauthorized request'});
+
+            const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000
+            const deviceTypes = req.query.deviceTypes;
+            const includeDescendants = req.query.includeDescendants ?? false
+            const results = await fieldService.getDevicesByField(fieldId, timestamp, deviceTypes, includeDescendants);
+            return res.status(200).json(results)
+        } catch (error) {
+            console.log(`Fail retrieving devices data: ${error.message}`);
+            return res.status(500).json({ error: "Error while retrieving devices data" });
+        }
+    })
+
     return router;
 }
 export default fieldsRouter;

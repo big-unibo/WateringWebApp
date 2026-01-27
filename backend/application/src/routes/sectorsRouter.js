@@ -625,9 +625,10 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      * @swagger
      * /sectors/{sectorId}/devices:
      *   get:
-     *     summary: Gets all the devices info for a given sector
+     *     summary: Get devices info for a given sector
      *     tags: [Sectors]
-     *     description: Endpoint to get all devices and signals info for a given sector. Requires authentication and proper authorization
+     *     description: Returns devices directly assigned to the sector and, optionally, devices from descendant or anchestor entities
+     *       (e.g. thesis or field). Inheritance behavior is controlled via the `includeDescendants` and `includeAnchestors` parameter. Requires authentication and proper authorization
      *     parameters:
      *       - in: path
      *         name: sectorId
@@ -640,6 +641,16 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *         schema:
      *           type: number
      *         description: Timestamp in which find the information
+     *       - in: query
+     *         name: includeDescendants
+     *         schema:
+     *           type: boolean
+     *         description: Include devices assigned to child entities (e.g. theses)
+     *       - in: query
+     *         name: includeAnchestors
+     *         schema:
+     *           type: boolean
+     *         description: Include devices assigned to parent entity (e.g. field)
      *       - in: query
      *         name: deviceTypes
      *         required: false
@@ -739,7 +750,9 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 
             const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000
             const deviceTypes = req.query.deviceTypes;
-            const results = await fieldService.getDevicesBySector(sectorId, timestamp, deviceTypes);
+            const includeDescendants = req.query.includeDescendants ?? false
+            const includeAnchestors = req.query.includeAnchestors ?? false
+            const results = await fieldService.getDevicesBySector(sectorId, timestamp, deviceTypes, includeAnchestors, includeDescendants);
             return res.status(200).json(results)
         } catch (error) {
             console.log(`Fail retrieving devices data: ${error.message}`);
