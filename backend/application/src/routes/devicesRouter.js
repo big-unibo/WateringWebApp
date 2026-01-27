@@ -642,7 +642,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *     summary: Retrieve data about a specific device and its signals at a specific timestamp
      *     tags: 
      *       - Devices
-     *     description: Retrieve data about a specific device and its signals at a specific timestamp. Rquires authentication and proper Authorization
+     *     description: Retrieve data about a specific device and its signals at a specific timestamp, include also the association for the device. Rquires authentication and proper Authorization
      *     parameters:
      *       - in: path
      *         name: deviceId
@@ -659,7 +659,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *         content:
      *           application/json:
      *             schema:
-     *                $ref: '#/components/schemas/Device'
+     *                $ref: '#/components/schemas/DeviceInfo'
      *       '400':
      *         description: Input validation error (Bad Request)
      *         content:
@@ -733,14 +733,16 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
 
         try {
-            const devices = await deviceService.getDevice(deviceId, timestamp);
-            if (!devices) {
+            const device = await deviceService.getDevice(deviceId, timestamp);
+            if (!device) {
                 return res.status(404).json({
                     error: "Information not found for the device at the given timestamp"
                 });
             }
 
-            return res.status(200).json(devices);
+            const deviceAssociations = await deviceService.getDeviceAssociations(deviceId, timestamp)
+
+            return res.status(200).json({...device, ...deviceAssociations});
         } catch (error) {
             console.log(`Fail retrieving devices caused by: ${error.message}`);
             return res.status(500).json({ error: "Error while retrieving devices" });

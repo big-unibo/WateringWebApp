@@ -1,3 +1,5 @@
+import { Op } from "sequelize";
+
 class DeviceRepository {
     constructor(models, sequelize) {
         this.Device = models.Device
@@ -6,6 +8,7 @@ class DeviceRepository {
         this.DeviceInField = models.DeviceInField
         this.DeviceInSector = models.DeviceInSector
         this.DeviceInThesis = models.DeviceInThesis
+        this.ThesesAllSignals = models.ThesesAllSignals
         this.sequelize = sequelize
     }
 
@@ -85,6 +88,32 @@ class DeviceRepository {
         } catch (error) {
             console.error(`Fail retrieving device data: ${error.message}`);
             throw error;
+        }
+    }
+
+    async getDeviceAssociationEntries(deviceId, timestamp){
+        try {
+            const deviceAssociations = await this.ThesesAllSignals.findAll({
+                attributes: ['deviceId', 'deviceDescription', 'fieldId', 'fieldName', 'sectorId', 'sectorName', 'thesisId', 'thesisName', 'associationType'],
+                where: {
+                    deviceId,
+                    validFrom: {
+                        [Op.lt]: timestamp
+                    },
+                    validTo: {
+                        [Op.or]: {
+                            [Op.is]: null,
+                            [Op.gt]: timestamp
+                        },
+                    }
+                },
+                distinct: true,                
+                raw: true
+            });
+
+            return deviceAssociations
+        } catch (error) {
+            throw new Error(`Error while finding device associations: ${error.message}`);
         }
     }
 

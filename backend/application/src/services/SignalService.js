@@ -90,7 +90,7 @@ class SignalService {
     async getSignalAssociations(signalId, timestamp) {
         const signalAssociations = await this.signalRepository.getSignalAssociationEntries(signalId, timestamp)
         if (signalAssociations?.length > 0) {
-            return dtoConverter.convertSignalAssociationsEntries(signalAssociations)
+            return dtoConverter.convertAssociationsEntries(signalAssociations)
         } 
     } 
 

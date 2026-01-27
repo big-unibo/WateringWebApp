@@ -120,6 +120,13 @@ class DeviceService {
         }
     }
 
+    async getDeviceAssociations(deviceId, timestamp) {
+        const deviceAssociations = await this.deviceRepository.getDeviceAssociationEntries(deviceId, timestamp)
+        if (deviceAssociations?.length > 0) {
+            return dtoConverter.convertAssociationsEntries(deviceAssociations)
+        } 
+    } 
+
     async disableDevice(userId, deviceId, timestamp) {
         try {
             const optimalProfileAssignmentId = await this.fieldRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp);

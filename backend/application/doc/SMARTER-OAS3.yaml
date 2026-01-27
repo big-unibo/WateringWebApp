@@ -736,6 +736,25 @@ components:
         - deviceId
         - deviceType
         - signals
+    
+    DeviceInfo:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/Device"
+      - type: object
+        properties:
+          fields:
+            type: array
+            items:
+              $ref: "#/components/schemas/Field"
+          sectors:
+            type: array
+            items:
+              $ref: "#/components/schemas/SectorIdentifier"
+          theses:
+            type: array
+            items:
+              $ref: "#/components/schemas/Thesis"
 
     BinInfoData:
       type: object

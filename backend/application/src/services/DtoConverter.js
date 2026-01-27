@@ -416,24 +416,24 @@ class DtoConverter {
         return signalTypeDataArray;
     }
 
-    convertSignalAssociationsEntries(signalAssociations) {
+    convertAssociationsEntries(associations) {
         const theses = [
             ...new Map(
-                signalAssociations
+                associations
                     .filter(s => s.associationType === DeviceTargetType.THESIS)
                     .map(t => [t.thesisId, { id: t.thesisId, name: t.thesisName }])
             ).values()
         ]
         const sectors = [
             ...new Map(
-                signalAssociations
+                associations
                     .filter(s => s.associationType === DeviceTargetType.SECTOR)
                     .map(t => [t.sectorId, { id: t.sectorId, name: t.sectorName }])
             ).values()
         ]
         const fields = [
             ...new Map(
-                signalAssociations
+                associations
                     .filter(s => s.associationType === DeviceTargetType.FIELD)
                     .map(t => [t.fieldId, { id: t.fieldId, name: t.fieldName }])
             ).values()
