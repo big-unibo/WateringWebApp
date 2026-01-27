@@ -95,7 +95,10 @@ describe('Device Assignment Integration Test', () => {
 
         const res = await request(app)
             .get(`/theses/${TEST_THESIS_ID}/devices`)
-            .query({ timestamp: queryTimestamp })
+            .query({ 
+                timestamp: queryTimestamp,
+                includeAnchestors: true
+            })
             .set('Authorization', `Bearer ${authToken}`)
             .expect(200);
 
