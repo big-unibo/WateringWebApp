@@ -42,6 +42,15 @@ class CompanyRepository {
             throw new Error(`Error retrieving company details caused by: ${error.message}`);
         }
     }
+
+    async getCompanies() {
+        try {
+            const companies = await this.Company.findAll()
+            return companies;
+        } catch (error) {
+            throw new Error(`Error retrieving companies caused by: ${error.message}`);
+        }
+    }
 }
 
 export default CompanyRepository

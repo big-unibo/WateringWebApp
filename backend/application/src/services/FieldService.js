@@ -48,6 +48,12 @@ class FieldService {
         }
     }
 
+    async getFields(userId) {
+        const result = await this.fieldRepository.getFields();
+        return dtoConverter.convertFields(result);
+    }
+
+
     async createSector(userId, sector) {
         try {
             const sectorCreated = await this.fieldRepository.createSector(sector);

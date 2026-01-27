@@ -2,8 +2,10 @@ export class Field{
     constructor(
         fieldName,
         companyId,
-        location
+        location,
+        fieldId,
     ) {
+        this.fieldId = fieldId;
         this.fieldName = fieldName;
         this.companyId = companyId;
         this.location = location

@@ -23,6 +23,11 @@ class CompanyService {
         }    
     }
 
+    async getCompanies(userId) {
+        const result = await this.companyRepository.getCompanies();
+        return dtoConverter.convertCompanies(result);
+    }
+
     async getCompanyDetails(companyId) {
         const result = await this.companyRepository.getCompanyDetails(companyId)
         return dtoConverter.convertCompanyDataWrapper(result)

@@ -6,6 +6,84 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
 
     /**
      * @swagger
+     * /companies:
+     *   get:
+     *     summary: Retrieve all companies available for the user
+     *     tags: [Companies]
+     *     description: | 
+     *       Retrieve all companies available for the user.
+     *       Requires Authentication and proper authorization
+     *     responses:
+     *       200:
+     *         description: List of companies for the user
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 $ref: '#/components/schemas/Company'
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while retrieving sectors
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     */
+    router.get('/', async (req, res) => {
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        try {
+            const companies = await companyService.getCompanies(requestUserData.userId);
+            return res.status(200).json(companies || []);
+        } catch (error) {
+            console.log(`Fail retrieving companies caused by: ${error.message}`);
+            return res.status(500).json({ error: "Error while retrieving companies" });
+        }
+    });
+
+    /**
+     * @swagger
      * /companies/{companyId}:
      *   get:
      *     summary: Retrives data about a company.

@@ -10,7 +10,7 @@ import { Device, DeviceTargetType } from "../dtos/deviceDto.js";
 import { Signal, SignalInfo } from "../dtos/signalDto.js";
 import { ThesisData, ThesisRef } from "../dtos/thesisDto.js";
 import { WateringParams } from "../dtos/wateringParamsDto.js";
-import { FieldData } from "../dtos/fieldDto.js";
+import { Field, FieldData } from "../dtos/fieldDto.js";
 
 class DtoConverter {
 
@@ -31,6 +31,10 @@ class DtoConverter {
             organizationData.id,
             companies
         )
+    }
+
+    convertCompanies(companiesData){
+        return companiesData.map(c => this.convertCompany(c))
     }
 
     convertCompany(company) {
@@ -130,6 +134,9 @@ class DtoConverter {
         );
     }
 
+    convertFields(fieldsData){
+        return fieldsData.map(field => new Field(field.fieldName, field.companyId, field.location, field.id))
+    }
 
     convertFieldDataWrapper(fieldData) {
         const organization = {

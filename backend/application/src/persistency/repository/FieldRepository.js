@@ -39,6 +39,15 @@ class FieldRepository {
         return count > 0;
     }
 
+    async getFields(){
+        try {
+            const fields = await this.Field.findAll()
+            return fields;
+        } catch (error) {
+            throw new Error(`Error retrieving fields caused by: ${error.message}`);
+        }
+    }
+
     async createField(fieldName, companyId, location) {
         try {
             const company = await this.Company.findByPk(companyId);
