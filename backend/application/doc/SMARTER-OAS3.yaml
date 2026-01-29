@@ -1093,7 +1093,7 @@ components:
           id:
             type: integer
             description: Identifier of the provider
-          providerName:
+          name:
             type: string
             description: Name of the provider
     

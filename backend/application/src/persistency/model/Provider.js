@@ -12,7 +12,7 @@ function initProvider(sequelize) {
             primaryKey: true,
             autoIncrement: true
         },
-        providerName: {
+        name: {
             type: DataTypes.TEXT,
             allowNull: false,
             field: "provider_name",
