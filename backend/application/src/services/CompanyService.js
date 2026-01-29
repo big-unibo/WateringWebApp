@@ -11,14 +11,14 @@ class CompanyService {
 
     async createCompany(userId,company){ 
         try {
-            const companyCreated = await this.companyRepository.createCompany(company.companyName,company.organizationId)
+            const companyCreated = await this.companyRepository.createCompany(company.name,company.organizationId)
             const companyId = companyCreated.id
             if (companyId) {
                 await this.userActionService.logCreation(userId, COMPANIES_LOG_TABLE, companyId, null)
                 return companyId
             }
         } catch (error) {
-            console.error(`Error creating Company ${company.companyName}: ${error.message}`)
+            console.error(`Error creating Company ${company.name}: ${error.message}`)
             throw error
         }    
     }

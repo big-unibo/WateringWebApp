@@ -34,14 +34,14 @@ class AuthorizationService {
 	/* User allowed if it has a permit of given type for the company owning the given sector*/ 
 	async isUserAuthorizedInSector(userId, permit, sectorId) {
 		const company = await this.fieldService.getSectorOwner(sectorId);
-		const companyId = company.companyId;
+		const companyId = company.id;
 		return this.isUserAuthorizedById(userId, permit, 'companies', companyId);
 	}
 
 	/* User allowed if it has a permit of given type for the company owning the given sector*/ 
 	async isUserAuthorizedInField(userId, permit, fieldId) {
 		const company = await this.fieldService.getFieldOwner(fieldId);
-		const companyId = company.companyId;
+		const companyId = company.id;
 		return this.isUserAuthorizedById(userId, permit, 'companies', companyId);
 	}
 }

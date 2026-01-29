@@ -5,8 +5,8 @@ export class Field{
         location,
         fieldId,
     ) {
-        this.fieldId = fieldId;
-        this.fieldName = fieldName;
+        this.id = fieldId;
+        this.name = fieldName;
         this.companyId = companyId;
         this.location = location
     }
@@ -22,8 +22,8 @@ export class FieldData{
         company,
         sectors
     ) {
-        this.fieldId = fieldId
-        this.fieldName = fieldName
+        this.id = fieldId
+        this.name = fieldName
         this.location = location
         this.organization = organization
         this.company = company,

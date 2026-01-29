@@ -23,7 +23,7 @@ export class Sector {
     sprinklerCapacity,
     doubleWing
   ) {
-    this.sectorName = sectorName;
+    this.name = sectorName;
     this.fieldId = fieldId;
     this.culture = culture;
     this.cultureType = cultureType;
@@ -68,8 +68,8 @@ export class SectorData {
         organization,
         theses
     ) {
-        this.sectorId = sectorId;
-        this.sectorName = sectorName;
+        this.id = sectorId;
+        this.name = sectorName;
         this.culture = culture;
         this.cultureType = cultureType;
         this.location = location;

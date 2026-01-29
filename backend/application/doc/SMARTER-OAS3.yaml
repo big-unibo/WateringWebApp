@@ -46,10 +46,10 @@ components:
     CreateCompany:
       type: object
       required:
-        - companyName
+        - name
         - organizationId
       properties:
-        companyName:
+        name:
           type: string
           description: Name of the company
         organizationId:
@@ -59,10 +59,10 @@ components:
     CreateField:
       type: object
       required:
-        - fieldName
+        - name
         - companyId
       properties:
-        fieldName:
+        name:
           type: string
           description: Name of the field
         companyId:
@@ -74,10 +74,10 @@ components:
     CreateSector:
       type: object
       required:
-        - sectorName
+        - name
         - culture
       properties:
-        sectorName:
+        name:
           type: string
           description: Name of the sector
         culture:
@@ -311,7 +311,7 @@ components:
     SignalDataBase:
       type: object
       properties: 
-        signalId:
+        id:
           type: number
           description: Signal id
         deviceId:
@@ -431,10 +431,10 @@ components:
     FieldData:
       type: object
       properties:
-        fieldId:
+        id:
           type: number
           description: Id of the field
-        fieldName:
+        name:
           type: string
           description: Name of the field
         location:
@@ -466,7 +466,7 @@ components:
         - $ref: "#/components/schemas/CreateSector" 
         - type: object
           properties:
-            sectorId:
+            id:
               type: number
               description: Id of the sector
             field:
@@ -510,10 +510,10 @@ components:
     ThesisData:
       type: object
       properties:
-        thesisId:
+        id:
           type: integer
           description: Id of the thesis
-        thesisName:
+        name:
           type: string
           description: Name of the thesis
         validFrom:
@@ -538,7 +538,7 @@ components:
             - $ref: "#/components/schemas/CreateSector" 
             - type: object
               properties:
-                sectorId:
+                id:
                   type: number
                   description: Id of the sector
     
@@ -655,7 +655,7 @@ components:
     Signal:
       type: object
       properties:
-        signalId:
+        id:
           type: integer
         signalDescription:
           type: string
@@ -714,11 +714,11 @@ components:
     DeviceData:
       type: object
       properties:
-        deviceId:
+        id:
           type: integer
         deviceType:
           type: string
-        deviceDescription:
+        description:
           type: string
           nullable: true
 
@@ -831,7 +831,7 @@ components:
       type: object
       description: Detailed information about a planned or recorded watering event.
       properties:
-        eventId:
+        id:
           type: integer
           description: id of the watering event.
         date:

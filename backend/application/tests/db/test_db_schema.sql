@@ -1333,8 +1333,8 @@ VALUES (1, 'Test Company 1', 1);
 INSERT INTO public.fields (id, field_name, company_id, location) 
 VALUES (1, 'Test Field 1', 1, public.ST_GeomFromText('POLYGON((10 45, 10.1 45, 10.1 45.1, 10 45.1, 10 45))', 4326));
 
-INSERT INTO public.sectors (id, sector_name, field_id, culture, location) 
-VALUES (1, 'Test Sector 1', 1, 'Kiwi', public.ST_GeomFromText('POLYGON((10.01 45.01, 10.05 45.01, 10.05 45.05, 10.01 45.05, 10.01 45.01))', 4326));
+INSERT INTO public.sectors (id, sector_name, field_id, culture, culture_type, location, prescriptive, advice, dripper_capacity, sprinkler_capacity, double_wing) 
+VALUES (1, 'Test Sector 1', 1, 'Kiwi', 'G3', public.ST_GeomFromText('POLYGON((10.01 45.01, 10.05 45.01, 10.05 45.05, 10.01 45.05, 10.01 45.01))', 4326), true, true, 4.0, NULL, false);
 
 INSERT INTO public.theses (id, thesis_name) 
 VALUES (1, 'Thesis 1');

@@ -283,7 +283,7 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
             //     return res.status(403).json({ message: 'Unauthorized request' });
 
             const organizationId = Number(req.body.organizationId)
-            const companyName = req.body.companyName;
+            const companyName = req.body.name;
             const company = new Company(companyName, organizationId);
 
             const companyId = await companyService.createCompany(userId, company);

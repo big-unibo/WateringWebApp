@@ -1,8 +1,8 @@
 export class Device {
     constructor({deviceId, deviceType, deviceDescription, signals, location}){
-        this.deviceId = deviceId
+        this.id = deviceId
         this.deviceType = deviceType
-        this.deviceDescription = deviceDescription
+        this.description = deviceDescription
         this.location = location,
         this.signals = signals
     }

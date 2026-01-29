@@ -6,7 +6,7 @@ export class Organization{
     constructor(
         organizationName, id
     ) {
-        this.organizationName = organizationName;
+        this.name = organizationName;
         this.id = id;
     }
 }
@@ -18,8 +18,8 @@ export class OrganizationData{
      * @param {Array<Company>} companies 
      */
     constructor(organizationId, organizationName, companies){
-        this.organizationId = organizationId;
-        this.organizationName = organizationName;
+        this.id = organizationId;
+        this.name = organizationName;
         this.companies = companies;
     }
 }

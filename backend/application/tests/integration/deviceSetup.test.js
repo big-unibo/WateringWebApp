@@ -180,14 +180,14 @@ describe('Device and Signal Setup Integration Test', () => {
             .expect(200)
 
         // Verify Device Data
-        expect(res.body.deviceId).toBe(deviceId)
+        expect(res.body.id).toBe(deviceId)
         expect(res.body.deviceType).toBe('WHEATER_STATION')
 
         // Verify Signals Array
         expect(res.body.signals).toBeDefined()
         
         // Extract IDs from response
-        const signalIds = res.body.signals.map(s => s.signalId)
+        const signalIds = res.body.signals.map(s => s.id)
         
         // Assertions
         expect(signalIds).toContain(tempSignalId)

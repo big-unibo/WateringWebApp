@@ -207,9 +207,9 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
      *           schema:
      *             type: object
      *             required:
-     *               - organizationName
+     *               - name
      *             properties:
-     *               organizationName:
+     *               name:
      *                 type: string
      *                 description: Name of the organization to create
      *     responses:
@@ -293,7 +293,7 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
             // if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'organizations')))
             //     return res.status(403).json({ message: 'Unauthorized request' });
 
-            const organizationName = req.body.organizationName;
+            const organizationName = req.body.name;
 
             const organizationId = await organizationService.createOrganization(userId, organizationName);
             return res.status(200).json({ message: 'Organization created successfully', id: organizationId });

@@ -1,8 +1,8 @@
 
 export class Signal {
     constructor({signalId, signalDescription, signalType, signalTypeDescription, x, y, z, virtual, unit, lastMeasurementTimestamp, providerId, idOnProvider, sensorTechnology}) {
-        this.signalId = signalId
-        this.signalDescription = signalDescription
+        this.id = signalId
+        this.description = signalDescription
         this.signalType = signalType
         this.signalTypeDescription = signalTypeDescription
         this.x = x
@@ -84,8 +84,8 @@ export class CreateSignal {
 
 export class SignalInfo {
     constructor({signalId, signalDescription, signalType, signalTypeDescription, x, y, z, virtual, unit, lastMeasurementTimestamp, providerId, idOnProvider, devices}) {
-        this.signalId = signalId
-        this.signalDescription = signalDescription
+        this.id = signalId
+        this.description = signalDescription
         this.signalType = signalType
         this.signalTypeDescription = signalTypeDescription
         this.x = x

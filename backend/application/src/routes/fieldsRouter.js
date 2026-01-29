@@ -204,7 +204,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
                 return res.status(403).json({ message: 'Unauthorized request' });
 
             const fieldLocation = req.body.location
-            const fieldName = req.body.fieldName
+            const fieldName = req.body.name
             const field = new Field(fieldName, companyId, fieldLocation);
 
             const fieldId = await fieldService.createField(userId, field);
@@ -459,7 +459,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
             //     return res.status(403).json({ message: 'Unauthorized request' });
 
             const {
-                sectorName,
+                name,
                 culture,
                 cultureType,
                 location,
@@ -471,7 +471,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
             } = req.body;
 
             const sector = new Sector(
-                sectorName,
+                name,
                 fieldId,
                 culture,
                 cultureType,

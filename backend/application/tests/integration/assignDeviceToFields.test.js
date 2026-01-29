@@ -105,13 +105,13 @@ describe('Device Assignment Integration Test', () => {
         expect(res.body).toBeDefined();
         expect(Array.isArray(res.body)).toBe(true);
 
-        const returnedDeviceIds = res.body.map(d => d.deviceId);
+        const returnedDeviceIds = res.body.map(d => d.id);
         expect(returnedDeviceIds).toHaveLength(3);
         expect(returnedDeviceIds).toContain(TEST_WEATHER_STATION_ID);
         expect(returnedDeviceIds).toContain(TEST_FLOW_METER_ID); 
         expect(returnedDeviceIds).toContain(TEST_SOIL_MOISTURE_GRID_ID);
 
-        const weatherStation = res.body.find(d => d.deviceId === TEST_SOIL_MOISTURE_GRID_ID);
+        const weatherStation = res.body.find(d => d.id === TEST_SOIL_MOISTURE_GRID_ID);
         expect(weatherStation.signals).toHaveLength(4);
     });
 })

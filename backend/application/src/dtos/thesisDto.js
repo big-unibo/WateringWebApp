@@ -13,7 +13,7 @@ export class Thesis {
             validFrom,
             validTo
     ) {
-        this.thesisName = thesisName
+        this.name = thesisName
         this.sectorId = sectorId
         this.validFrom = validFrom
         this.validTo = validTo
@@ -40,8 +40,8 @@ export class ThesisData{
         field,
         sector
     ) {
-        this.thesisId = thesisId
-        this.thesisName = thesisName
+        this.id = thesisId
+        this.name = thesisName
         this.validFrom = validFrom
         this.validTo = validTo
         this.weight = weight

@@ -68,7 +68,7 @@ class FieldRepository {
     }
 
     async createSector({
-        sectorName,
+        name,
         fieldId,
         culture,
         cultureType,
@@ -85,7 +85,7 @@ class FieldRepository {
                 throw new Error(`Field with ID ${fieldId} does not exist.`);
             }
             const sectorCreated = await this.Sector.create({
-                sectorName,
+                sectorName: name,
                 fieldId,
                 culture,
                 cultureType,

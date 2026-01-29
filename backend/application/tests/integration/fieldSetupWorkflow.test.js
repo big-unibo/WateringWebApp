@@ -51,7 +51,7 @@ describe('Field Setup Creation Integration Test', () => {
      * TEST 1: Organization
      */
     it('should create an Organization and persist it to DB', async () => {
-        const payload = { organizationName: 'Global Agro Op' }
+        const payload = { name: 'Global Agro Op' }
 
         const res = await request(app)
         .post('/organizations/create')
@@ -65,7 +65,7 @@ describe('Field Setup Creation Integration Test', () => {
         // DB Persistence Check
         const record = await table(db, 'organizations').where({ id: organizationId }).first()
         expect(record).toBeDefined()
-        expect(record.organization_name).toBe(payload.organizationName)
+        expect(record.organization_name).toBe(payload.name)
     })
 
     /**
@@ -73,7 +73,7 @@ describe('Field Setup Creation Integration Test', () => {
      */
     it('should create a Company linked to the Organization', async () => {
         const payload = {
-        companyName: 'Mario Rossi Agro Company',
+        name: 'Mario Rossi Agro Company',
         organizationId: organizationId
         }
 
@@ -89,7 +89,7 @@ describe('Field Setup Creation Integration Test', () => {
         // DB Persistence Check
         const record = await table(db, 'companies').where({ id: companyId }).first()
         expect(record).toBeDefined()
-        expect(record.company_name).toBe(payload.companyName)
+        expect(record.company_name).toBe(payload.name)
         expect(record.organization_id).toBe(organizationId)
     })
 
@@ -98,7 +98,7 @@ describe('Field Setup Creation Integration Test', () => {
      */
     it('should create a Field linked to the Company with GeoJSON', async () => {
         const payload = {
-        fieldName: 'Field North 01',
+        name: 'Field North 01',
         companyId: companyId,
         location: {
             type: 'Polygon',
@@ -125,7 +125,7 @@ describe('Field Setup Creation Integration Test', () => {
             .first()
 
         expect(record).toBeDefined()
-        expect(record.field_name).toBe(payload.fieldName)
+        expect(record.field_name).toBe(payload.name)
         expect(record.company_id).toBe(companyId)
 
         // Verify Geometry
@@ -139,7 +139,7 @@ describe('Field Setup Creation Integration Test', () => {
      */
     it('should create a Sector linked to the Field', async () => {
         const payload = {
-        sectorName: 'Sector T1',
+        name: 'Sector T1',
         culture: 'Kiwi',
         cultureType: 'G3',
         prescriptive: true,
@@ -166,7 +166,7 @@ describe('Field Setup Creation Integration Test', () => {
         // DB Persistence Check
         const record = await table(db, 'sectors').where({ id: sectorId }).first()
         expect(record).toBeDefined()
-        expect(record.sector_name).toBe(payload.sectorName)
+        expect(record.sector_name).toBe(payload.name)
         expect(record.field_id).toBe(fieldId)
         expect(record.culture).toBe('Kiwi')
     })
@@ -197,10 +197,10 @@ describe('Field Setup Creation Integration Test', () => {
             .andWhere('valid_from', '<', startTimestamp + 1)
             .whereNull('valid_to')
             .first()
-        expect(record).toBeDefined();
-        expect(record.thesis_name).toBe(payload.name);
-        expect(record.sector_id).toBe(sectorId);
-        expect(record.valid_from).toBeCloseTo(startTimestamp, 1); 
+        expect(record).toBeDefined()
+        expect(record.thesis_name).toBe(payload.name)
+        expect(record.sector_id).toBe(sectorId)
+        expect(record.valid_from).toBeCloseTo(startTimestamp, 1)
     });
 
     /**

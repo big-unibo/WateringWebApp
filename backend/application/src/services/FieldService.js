@@ -36,14 +36,14 @@ class FieldService {
 
     async createField(userId, field) {
         try {
-            const fieldCreated = await this.fieldRepository.createField(field.fieldName, field.companyId, field.location);
+            const fieldCreated = await this.fieldRepository.createField(field.name, field.companyId, field.location);
             const fieldId = fieldCreated.id;
             if (fieldId) {
                 this.userActionService.logCreation(userId, FIELDS_LOG_TABLE, fieldId, null)
                 return fieldId
             }
         } catch (error) {
-            console.error(`Error creating field ${field.fieldName}: ${error.message}`);
+            console.error(`Error creating field ${field.name}: ${error.message}`);
             throw error;
         }
     }
@@ -64,7 +64,7 @@ class FieldService {
                 return sectorId
             }
         } catch (error) {
-            console.error(`Error creating sector ${sector.sectorName}: ${error.message}`);
+            console.error(`Error creating sector ${sector.name}: ${error.message}`);
             throw error;
         }
     }
@@ -79,7 +79,7 @@ class FieldService {
     }
 
     async createThesis(userId, thesis) {
-        const newThesisId = await this.fieldRepository.createThesis(thesis.thesisName);
+        const newThesisId = await this.fieldRepository.createThesis(thesis.name);
         if (!newThesisId) {
             throw Error("Impossible to create thesis")
         }

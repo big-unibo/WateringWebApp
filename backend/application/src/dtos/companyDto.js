@@ -9,8 +9,8 @@ export class Company {
         organizationId,
         companyId = undefined
     ) {
-        this.companyId = companyId;
-        this.companyName = companyName;
+        this.id = companyId;
+        this.name = companyName;
         this.organizationId = organizationId;
     }
 }
@@ -23,8 +23,8 @@ export class CompanyData {
      * @param {Array<Fields>} fields - Array of fields associated with the company
      */
     constructor(companyId, companyName, organization, fields) {
-        this.companyId = companyId
-        this.companyName = companyName
+        this.id = companyId
+        this.name = companyName
         this.organization = organization
         this.fields = fields
     }
