@@ -12,7 +12,7 @@ describe('Device Assignment Integration Test', () => {
     const TEST_FLOW_METER_ID = 2
     const TEST_SOIL_MOISTURE_GRID_ID = 3
 
-    const TEST_FIELD_ID = 1
+    const TEST_FARM_ID = 1
     const TEST_SECTOR_ID = 1
     const TEST_THESIS_ID = 1
 
@@ -29,15 +29,15 @@ describe('Device Assignment Integration Test', () => {
         if (container) await container.stop()
     })
 
-    it('should assign WEATHER_STATION to the Field', async () => {
+    it('should assign WEATHER_STATION to the Farm', async () => {
         await request(app)
             .post(`/devices/${TEST_WEATHER_STATION_ID}/assign`)
             .set('Authorization', `Bearer ${authToken}`)
-            .send({ targetId: TEST_FIELD_ID, targetType: 'field', validFrom: validFrom })
+            .send({ targetId: TEST_FARM_ID, targetType: 'farm', validFrom: validFrom })
             .expect(200)
 
-        const record = await table(db, 'fields_devices')
-            .where({ device_id: TEST_WEATHER_STATION_ID, field_id: TEST_FIELD_ID }).first()
+        const record = await table(db, 'farms_devices')
+            .where({ device_id: TEST_WEATHER_STATION_ID, farm_id: TEST_FARM_ID }).first()
         expect(record).toBeDefined()
     })
 
@@ -73,7 +73,7 @@ describe('Device Assignment Integration Test', () => {
         const invalidId = 999999
         const payload = {
             targetId: invalidId,
-            targetType: 'field',
+            targetType: 'farm',
             validFrom: validFrom
         }
 

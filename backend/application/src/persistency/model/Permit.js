@@ -11,9 +11,9 @@ function initPermit(sequelize) {
     },
     table: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: true
     },
-    permit: {
+    role: {
       type: DataTypes.TEXT,
       allowNull: false
     },
@@ -26,6 +26,11 @@ function initPermit(sequelize) {
       type: DataTypes.INTEGER,
       allowNull: false,
       field: "user_id"
+    },
+    extraAttributes: {
+      type: DataTypes.JSONB,
+      allowNull: true,
+      field: "extra_attributes"
     }
   }, {
     tableName: 'permits',     

@@ -35,9 +35,8 @@ export class ThesisData{
         validFrom,
         validTo,
         weight,
-        organization,
         company,
-        field,
+        farm,
         sector
     ) {
         this.id = thesisId
@@ -45,9 +44,8 @@ export class ThesisData{
         this.validFrom = validFrom
         this.validTo = validTo
         this.weight = weight
-        this.organization = organization,
         this.company = company,
-        this.field = field,
+        this.farm = farm,
         this.sector = sector
     }
 }

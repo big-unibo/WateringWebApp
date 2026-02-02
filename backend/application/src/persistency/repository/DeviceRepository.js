@@ -5,7 +5,7 @@ class DeviceRepository {
         this.Device = models.Device
         this.Signal = models.Signal
         this.DevicesSignals = models.DevicesSignals
-        this.DeviceInField = models.DeviceInField
+        this.DeviceInFarm = models.DeviceInFarm
         this.DeviceInSector = models.DeviceInSector
         this.DeviceInThesis = models.DeviceInThesis
         this.ThesesAllSignals = models.ThesesAllSignals
@@ -94,7 +94,7 @@ class DeviceRepository {
     async getDeviceAssociationEntries(deviceId, timestamp){
         try {
             const deviceAssociations = await this.ThesesAllSignals.findAll({
-                attributes: ['deviceId', 'deviceDescription', 'fieldId', 'fieldName', 'sectorId', 'sectorName', 'thesisId', 'thesisName', 'associationType'],
+                attributes: ['deviceId', 'deviceDescription', 'farmId', 'farmName', 'sectorId', 'sectorName', 'thesisId', 'thesisName', 'associationType'],
                 where: {
                     deviceId,
                     validFrom: {
@@ -196,16 +196,16 @@ class DeviceRepository {
         }
     }
 
-    async assignDeviceToField(associationData) {
+    async assignDeviceToFarm(associationData) {
         try {
-            const model = await this.DeviceInField.create({
+            const model = await this.DeviceInFarm.create({
                 deviceId: associationData.deviceId,
-                fieldId: associationData.fieldId,
+                farmId: associationData.farmId,
                 validFrom: associationData.validFrom
             });
             return model.id;
         } catch (error) {
-            throw new Error(`Error creating association between device and field: ${error.message}`);
+            throw new Error(`Error creating association between device and farm: ${error.message}`);
         }
     }
 
@@ -224,7 +224,6 @@ class DeviceRepository {
 
     async assignDeviceToThesis(associationData) {
         try {
-            console.log(associationData)
             const model = await this.DeviceInThesis.create({
                 deviceId: associationData.deviceId,
                 thesisId: associationData.thesisId,
@@ -308,9 +307,9 @@ class DeviceRepository {
         }
     }
 
-    async disableDeviceInField(deviceId, validTo) {
+    async disableDeviceInFarm(deviceId, validTo) {
         try {
-            const [updatedCount, updatedRecords] = await this.DeviceInField.update(
+            const [updatedCount, updatedRecords] = await this.DeviceInFarm.update(
                 { validTo: validTo },
                 {
                     where: this._getValidityConditions(deviceId, validTo),
@@ -322,7 +321,7 @@ class DeviceRepository {
                 return updatedRecords[0].id;
             }
         } catch (error) {
-            throw new Error(`Error disabling device in Field: ${error.message}`);
+            throw new Error(`Error disabling device in Farm: ${error.message}`);
         }
     }
 
@@ -390,11 +389,11 @@ class DeviceRepository {
         }
     }
 
-    async getFieldAssociatedDevices(fieldId, timestamp) {
+    async getFarmAssociatedDevices(farmId, timestamp) {
         try {
-            const associations = await this.DeviceInField.findAll({
+            const associations = await this.DeviceInFarm.findAll({
                 where: {
-                    fieldId: fieldId,
+                    farmId: farmId,
                     validFrom: {
                         [Op.lte]: timestamp
                     },
@@ -418,7 +417,7 @@ class DeviceRepository {
             }).filter(s => s !== null);
 
         } catch (error) {
-            throw new Error(`Error while retrieving field devices: ${error.message}`);
+            throw new Error(`Error while retrieving farm devices: ${error.message}`);
         }
     }
 }

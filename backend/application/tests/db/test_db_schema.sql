@@ -77,7 +77,7 @@ ALTER TABLE public.anomalies_logs OWNER TO postgres;
 CREATE TABLE public.companies (
     id integer NOT NULL,
     company_name text NOT NULL,
-    organization_id integer NOT NULL
+    address text
 );
 
 
@@ -103,6 +103,41 @@ ALTER SEQUENCE public.companies_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.companies_id_seq OWNED BY public.companies.id;
+
+
+--
+-- Name: companies_organizations; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.companies_organizations (
+    id integer NOT NULL,
+    company_id integer NOT NULL,
+    organization_id integer NOT NULL
+);
+
+
+ALTER TABLE public.companies_organizations OWNER TO postgres;
+
+--
+-- Name: companies_organizations_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.companies_organizations_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.companies_organizations_id_seq OWNER TO postgres;
+
+--
+-- Name: companies_organizations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.companies_organizations_id_seq OWNED BY public.companies_organizations.id;
 
 
 --
@@ -245,25 +280,25 @@ ALTER SEQUENCE public.devices_signals_id_seq OWNED BY public.devices_signals.id;
 
 
 --
--- Name: fields; Type: TABLE; Schema: public; Owner: postgres
+-- Name: farms; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.fields (
+CREATE TABLE public.farms (
     id integer NOT NULL,
-    field_name text NOT NULL,
+    farm_name text NOT NULL,
     company_id integer NOT NULL,
     location public.geometry
 );
 
 
-ALTER TABLE public.fields OWNER TO postgres;
+ALTER TABLE public.farms OWNER TO postgres;
 
 --
--- Name: fields_devices; Type: TABLE; Schema: public; Owner: postgres
+-- Name: farms_devices; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.fields_devices (
-    field_id integer NOT NULL,
+CREATE TABLE public.farms_devices (
+    farm_id integer NOT NULL,
     device_id integer NOT NULL,
     valid_from double precision NOT NULL,
     valid_to double precision,
@@ -271,13 +306,13 @@ CREATE TABLE public.fields_devices (
 );
 
 
-ALTER TABLE public.fields_devices OWNER TO postgres;
+ALTER TABLE public.farms_devices OWNER TO postgres;
 
 --
--- Name: fields_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: farms_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public.fields_id_seq
+CREATE SEQUENCE public.farms_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -286,20 +321,20 @@ CREATE SEQUENCE public.fields_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.fields_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.farms_id_seq OWNER TO postgres;
 
 --
--- Name: fields_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: farms_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE public.fields_id_seq OWNED BY public.fields.id;
+ALTER SEQUENCE public.farms_id_seq OWNED BY public.farms.id;
 
 
 --
--- Name: fields_signals_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: farms_signals_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public.fields_signals_id_seq
+CREATE SEQUENCE public.farms_signals_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -308,13 +343,13 @@ CREATE SEQUENCE public.fields_signals_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.fields_signals_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.farms_signals_id_seq OWNER TO postgres;
 
 --
--- Name: fields_signals_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: farms_signals_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE public.fields_signals_id_seq OWNED BY public.fields_devices.id;
+ALTER SEQUENCE public.farms_signals_id_seq OWNED BY public.farms_devices.id;
 
 
 --
@@ -482,10 +517,11 @@ ALTER SEQUENCE public.organizations_id_seq OWNED BY public.organizations.id;
 
 CREATE TABLE public.permits (
     id integer NOT NULL,
-    "table" text NOT NULL,
-    permit text NOT NULL,
+    "table" text,
+    role text NOT NULL,
     id_key integer,
-    user_id integer NOT NULL
+    user_id integer NOT NULL,
+    extra_attributes jsonb
 );
 
 
@@ -595,12 +631,10 @@ ALTER SEQUENCE public.providers_id_seq OWNED BY public.providers.id;
 CREATE TABLE public.sectors (
     id integer NOT NULL,
     sector_name text NOT NULL,
-    field_id integer NOT NULL,
+    farm_id integer NOT NULL,
     culture text NOT NULL,
     culture_type text,
     location public.geometry,
-    prescriptive boolean,
-    advice boolean,
     dripper_capacity double precision,
     sprinkler_capacity double precision,
     double_wing boolean
@@ -647,6 +681,43 @@ ALTER SEQUENCE public.sectors_id_seq OWNED BY public.sectors.id;
 
 
 --
+-- Name: sectors_services; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.sectors_services (
+    id integer NOT NULL,
+    sector_id integer NOT NULL,
+    service_id integer NOT NULL,
+    valid_from double precision NOT NULL,
+    valid_to double precision
+);
+
+
+ALTER TABLE public.sectors_services OWNER TO postgres;
+
+--
+-- Name: sectors_services_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.sectors_services_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.sectors_services_id_seq OWNER TO postgres;
+
+--
+-- Name: sectors_services_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.sectors_services_id_seq OWNED BY public.sectors_services.id;
+
+
+--
 -- Name: sectors_signals_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -666,6 +737,40 @@ ALTER SEQUENCE public.sectors_signals_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.sectors_signals_id_seq OWNED BY public.sectors_devices.id;
+
+
+--
+-- Name: services; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.services (
+    id integer NOT NULL,
+    service_name text NOT NULL
+);
+
+
+ALTER TABLE public.services OWNER TO postgres;
+
+--
+-- Name: services_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.services_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.services_id_seq OWNER TO postgres;
+
+--
+-- Name: services_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.services_id_seq OWNED BY public.services.id;
 
 
 --
@@ -761,31 +866,26 @@ ALTER TABLE public.theses_in_sectors OWNER TO postgres;
 
 CREATE VIEW public.theses_all_signals AS
  WITH thesis_denorm AS (
-         SELECT o.id AS organization_id,
-            o.organization_name,
-            c.id AS company_id,
+         SELECT c.id AS company_id,
             c.company_name,
-            f.id AS field_id,
-            f.field_name,
+            f.id AS farm_id,
+            f.farm_name,
             sec.id AS sector_id,
             sec.sector_name,
             t.id AS thesis_id,
             t.thesis_name
-           FROM (((((public.organizations o
-             JOIN public.companies c ON ((c.organization_id = o.id)))
-             JOIN public.fields f ON ((f.company_id = c.id)))
-             JOIN public.sectors sec ON ((sec.field_id = f.id)))
+           FROM ((((public.companies c
+             JOIN public.farms f ON ((f.company_id = c.id)))
+             JOIN public.sectors sec ON ((sec.farm_id = f.id)))
              JOIN ( SELECT DISTINCT theses_in_sectors.thesis_id,
                     theses_in_sectors.sector_id
                    FROM public.theses_in_sectors) tsec ON ((tsec.sector_id = sec.id)))
              JOIN public.theses t ON ((tsec.thesis_id = t.id)))
         )
- SELECT td.organization_id,
-    td.organization_name,
-    td.company_id,
+ SELECT td.company_id,
     td.company_name,
-    td.field_id,
-    td.field_name,
+    td.farm_id,
+    td.farm_name,
     td.sector_id,
     td.sector_name,
     td.thesis_id,
@@ -814,12 +914,10 @@ CREATE VIEW public.theses_all_signals AS
      JOIN public.devices_signals_denormalized dd ON ((tdev.device_id = dd.device_id)))
   WHERE ((dd.valid_from < COALESCE(tdev.valid_to, 'Infinity'::double precision)) AND (COALESCE(dd.valid_to, 'Infinity'::double precision) > tdev.valid_from))
 UNION ALL
- SELECT td.organization_id,
-    td.organization_name,
-    td.company_id,
+ SELECT td.company_id,
     td.company_name,
-    td.field_id,
-    td.field_name,
+    td.farm_id,
+    td.farm_name,
     td.sector_id,
     td.sector_name,
     td.thesis_id,
@@ -848,12 +946,10 @@ UNION ALL
      JOIN public.devices_signals_denormalized dd ON ((sdev.device_id = dd.device_id)))
   WHERE ((dd.valid_from < COALESCE(sdev.valid_to, 'Infinity'::double precision)) AND (COALESCE(dd.valid_to, 'Infinity'::double precision) > sdev.valid_from))
 UNION ALL
- SELECT td.organization_id,
-    td.organization_name,
-    td.company_id,
+ SELECT td.company_id,
     td.company_name,
-    td.field_id,
-    td.field_name,
+    td.farm_id,
+    td.farm_name,
     td.sector_id,
     td.sector_name,
     td.thesis_id,
@@ -876,9 +972,9 @@ UNION ALL
     dd.sensor_technology,
     GREATEST(fdev.valid_from, dd.valid_from) AS valid_from,
     LEAST(COALESCE(fdev.valid_to, 'Infinity'::double precision), COALESCE(dd.valid_to, 'Infinity'::double precision)) AS valid_to,
-    'field'::text AS association_type
+    'farm'::text AS association_type
    FROM ((thesis_denorm td
-     JOIN public.fields_devices fdev ON ((td.field_id = fdev.field_id)))
+     JOIN public.farms_devices fdev ON ((td.farm_id = fdev.farm_id)))
      JOIN public.devices_signals_denormalized dd ON ((fdev.device_id = dd.device_id)))
   WHERE ((dd.valid_from < COALESCE(fdev.valid_to, 'Infinity'::double precision)) AND (COALESCE(dd.valid_to, 'Infinity'::double precision) > fdev.valid_from));
 
@@ -890,22 +986,19 @@ ALTER VIEW public.theses_all_signals OWNER TO postgres;
 --
 
 CREATE VIEW public.theses_denormalized AS
- SELECT o.id AS organization_id,
-    o.organization_name,
-    c.id AS company_id,
+ SELECT c.id AS company_id,
     c.company_name,
-    f.id AS field_id,
-    f.field_name,
+    f.id AS farm_id,
+    f.farm_name,
     sec.id AS sector_id,
     sec.sector_name,
     t.id AS thesis_id,
     t.thesis_name,
     tsec.valid_from,
     tsec.valid_to
-   FROM (((((public.organizations o
-     JOIN public.companies c ON ((c.organization_id = o.id)))
-     JOIN public.fields f ON ((f.company_id = c.id)))
-     JOIN public.sectors sec ON ((sec.field_id = f.id)))
+   FROM ((((public.companies c
+     JOIN public.farms f ON ((f.company_id = c.id)))
+     JOIN public.sectors sec ON ((sec.farm_id = f.id)))
      JOIN ( SELECT ts.thesis_id,
             ts.sector_id,
             min(ts.valid_from) AS valid_from,
@@ -994,8 +1087,7 @@ CREATE TABLE public.users (
     id integer NOT NULL,
     email text NOT NULL,
     password text NOT NULL,
-    name text,
-    role text
+    name text
 );
 
 
@@ -1158,6 +1250,13 @@ ALTER TABLE ONLY public.companies ALTER COLUMN id SET DEFAULT nextval('public.co
 
 
 --
+-- Name: companies_organizations id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.companies_organizations ALTER COLUMN id SET DEFAULT nextval('public.companies_organizations_id_seq'::regclass);
+
+
+--
 -- Name: devices id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -1172,17 +1271,17 @@ ALTER TABLE ONLY public.devices_signals ALTER COLUMN id SET DEFAULT nextval('pub
 
 
 --
--- Name: fields id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: farms id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.fields ALTER COLUMN id SET DEFAULT nextval('public.fields_id_seq'::regclass);
+ALTER TABLE ONLY public.farms ALTER COLUMN id SET DEFAULT nextval('public.farms_id_seq'::regclass);
 
 
 --
--- Name: fields_devices id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: farms_devices id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.fields_devices ALTER COLUMN id SET DEFAULT nextval('public.fields_signals_id_seq'::regclass);
+ALTER TABLE ONLY public.farms_devices ALTER COLUMN id SET DEFAULT nextval('public.farms_signals_id_seq'::regclass);
 
 
 --
@@ -1239,6 +1338,20 @@ ALTER TABLE ONLY public.sectors ALTER COLUMN id SET DEFAULT nextval('public.sect
 --
 
 ALTER TABLE ONLY public.sectors_devices ALTER COLUMN id SET DEFAULT nextval('public.sectors_signals_id_seq'::regclass);
+
+
+--
+-- Name: sectors_services id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sectors_services ALTER COLUMN id SET DEFAULT nextval('public.sectors_services_id_seq'::regclass);
+
+
+--
+-- Name: services id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.services ALTER COLUMN id SET DEFAULT nextval('public.services_id_seq'::regclass);
 
 
 --
@@ -1327,14 +1440,14 @@ VALUES (1, -10000, -1500, -300, -200, -100, -30, 0, 'Soil water potential'),
 INSERT INTO public.organizations (id, organization_name) 
 VALUES (1, 'Test Organization 1');
 
-INSERT INTO public.companies (id, company_name, organization_id) 
-VALUES (1, 'Test Company 1', 1);
+INSERT INTO public.companies (id, company_name, address) 
+VALUES (1, 'Test Company 1', 'via XXV Aprile, 45 Faenza (Ra)');
 
-INSERT INTO public.fields (id, field_name, company_id, location) 
-VALUES (1, 'Test Field 1', 1, public.ST_GeomFromText('POLYGON((10 45, 10.1 45, 10.1 45.1, 10 45.1, 10 45))', 4326));
+INSERT INTO public.farms (id, farm_name, company_id, location) 
+VALUES (1, 'Test Farm 1', 1, public.ST_GeomFromText('POLYGON((10 45, 10.1 45, 10.1 45.1, 10 45.1, 10 45))', 4326));
 
-INSERT INTO public.sectors (id, sector_name, field_id, culture, culture_type, location, prescriptive, advice, dripper_capacity, sprinkler_capacity, double_wing) 
-VALUES (1, 'Test Sector 1', 1, 'Kiwi', 'G3', public.ST_GeomFromText('POLYGON((10.01 45.01, 10.05 45.01, 10.05 45.05, 10.01 45.05, 10.01 45.01))', 4326), true, true, 4.0, NULL, false);
+INSERT INTO public.sectors (id, sector_name, farm_id, culture, culture_type, location, dripper_capacity, sprinkler_capacity, double_wing) 
+VALUES (1, 'Test Sector 1', 1, 'Kiwi', 'G3', public.ST_GeomFromText('POLYGON((10.01 45.01, 10.05 45.01, 10.05 45.05, 10.01 45.05, 10.01 45.01))', 4326), 4.0, NULL, false);
 
 INSERT INTO public.theses (id, thesis_name) 
 VALUES (1, 'Thesis 1');
@@ -1344,7 +1457,7 @@ VALUES (1, 1, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-20 7:00:00'));
 
 INSERT INTO public.devices (id, type, description, binning_id, location)
 VALUES
-(1, 'WEATHER_STATION', 'Field 1 Station', NULL, public.ST_GeomFromText('POINT(10.05 45.05)', 4326)),
+(1, 'WEATHER_STATION', 'Farm 1 Station', NULL, public.ST_GeomFromText('POINT(10.05 45.05)', 4326)),
 (2, 'FLOW_METER', 'Sector 1 Pressure Switch',  NULL, public.ST_GeomFromText('POINT(10.02 45.02)', 4326)),
 (3, 'SOIL_MOISTURE_GRID', 'Thesis 1 Grid',   1, public.ST_GeomFromText('POINT(10.03 45.03)', 4326));
 
@@ -1368,14 +1481,19 @@ VALUES
 (3, 6, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 10:00:00')),
 (3, 7, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 10:00:00'));
 
-INSERT INTO public.users (id, email, password, name, role)
+INSERT INTO public.users (id, email, password, name)
 VALUES (
   1,
   'test-admin-user@example.com',
   'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86',
-  'Test Admin',
-  'admin'
+  'Test Admin'
 );
+
+INSERT INTO public.services (id, service_name)
+VALUES
+(1, 'Monitoring'),
+(2, 'Watering Advice'),
+(3, 'Prescriptive Watering Advice');
 
 
 --
@@ -1400,17 +1518,17 @@ SELECT pg_catalog.setval('public.devices_signals_id_seq', 8, false);
 
 
 --
--- Name: fields_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: farms_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.fields_id_seq', 2, true);
+SELECT pg_catalog.setval('public.farms_id_seq', 2, true);
 
 
 --
--- Name: fields_signals_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: farms_signals_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.fields_signals_id_seq', 1, true);
+SELECT pg_catalog.setval('public.farms_signals_id_seq', 1, true);
 
 
 --
@@ -1463,10 +1581,24 @@ SELECT pg_catalog.setval('public.sectors_id_seq', 2, true);
 
 
 --
+-- Name: sectors_services_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.sectors_services_id_seq', 1, false);
+
+
+--
 -- Name: sectors_signals_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public.sectors_signals_id_seq', 1, true);
+
+
+--
+-- Name: services_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.services_id_seq', 3, true);
 
 
 --
@@ -1541,6 +1673,14 @@ ALTER TABLE ONLY public.advices
 
 
 --
+-- Name: companies_organizations companies_organizations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.companies_organizations
+    ADD CONSTRAINT companies_organizations_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: companies companies_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1573,27 +1713,27 @@ ALTER TABLE ONLY public.devices_signals
 
 
 --
--- Name: fields_devices fields_devices_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: farms_devices farms_devices_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.fields_devices
-    ADD CONSTRAINT fields_devices_pkey PRIMARY KEY (id);
-
-
---
--- Name: fields fields_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.fields
-    ADD CONSTRAINT fields_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.farms_devices
+    ADD CONSTRAINT farms_devices_pkey PRIMARY KEY (id);
 
 
 --
--- Name: fields_devices fields_signals_field_id_signal_id_valid_from_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: farms farms_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.fields_devices
-    ADD CONSTRAINT fields_signals_field_id_signal_id_valid_from_key UNIQUE (field_id, device_id, valid_from);
+ALTER TABLE ONLY public.farms
+    ADD CONSTRAINT farms_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: farms_devices farms_signals_farm_id_signal_id_valid_from_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.farms_devices
+    ADD CONSTRAINT farms_signals_farm_id_signal_id_valid_from_key UNIQUE (farm_id, device_id, valid_from);
 
 
 --
@@ -1741,11 +1881,27 @@ ALTER TABLE ONLY public.sectors
 
 
 --
+-- Name: sectors_services sectors_services_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sectors_services
+    ADD CONSTRAINT sectors_services_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: sectors_devices sectors_signals_sector_id_signal_id_valid_from_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.sectors_devices
     ADD CONSTRAINT sectors_signals_sector_id_signal_id_valid_from_key UNIQUE (sector_id, device_id, valid_from);
+
+
+--
+-- Name: services services_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.services
+    ADD CONSTRAINT services_pkey PRIMARY KEY (id);
 
 
 --
@@ -1867,10 +2023,26 @@ CREATE INDEX idx_profiles_grid_id_timestamp ON public.interpolated_profiles USIN
 
 
 --
--- Name: fields company_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: companies_organizations companies_organizations_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.fields
+ALTER TABLE ONLY public.companies_organizations
+    ADD CONSTRAINT companies_organizations_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id);
+
+
+--
+-- Name: companies_organizations companies_organizations_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.companies_organizations
+    ADD CONSTRAINT companies_organizations_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
+
+
+--
+-- Name: farms company_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.farms
     ADD CONSTRAINT company_fk FOREIGN KEY (company_id) REFERENCES public.companies(id);
 
 
@@ -1891,27 +2063,27 @@ ALTER TABLE ONLY public.devices
 
 
 --
--- Name: sectors field_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: sectors farm_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.sectors
-    ADD CONSTRAINT field_fk FOREIGN KEY (field_id) REFERENCES public.fields(id);
+    ADD CONSTRAINT farm_fk FOREIGN KEY (farm_id) REFERENCES public.farms(id);
 
 
 --
--- Name: fields_devices fields_devices_device_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: farms_devices farms_devices_device_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.fields_devices
-    ADD CONSTRAINT fields_devices_device_id_fkey FOREIGN KEY (device_id) REFERENCES public.devices(id) NOT VALID;
+ALTER TABLE ONLY public.farms_devices
+    ADD CONSTRAINT farms_devices_device_id_fkey FOREIGN KEY (device_id) REFERENCES public.devices(id) NOT VALID;
 
 
 --
--- Name: fields_devices fields_devices_field_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: farms_devices farms_devices_farm_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.fields_devices
-    ADD CONSTRAINT fields_devices_field_id_fkey FOREIGN KEY (field_id) REFERENCES public.fields(id);
+ALTER TABLE ONLY public.farms_devices
+    ADD CONSTRAINT farms_devices_farm_id_fkey FOREIGN KEY (farm_id) REFERENCES public.farms(id);
 
 
 --
@@ -1947,14 +2119,6 @@ ALTER TABLE ONLY public.measurements
 
 
 --
--- Name: companies organization_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.companies
-    ADD CONSTRAINT organization_fk FOREIGN KEY (organization_id) REFERENCES public.organizations(id);
-
-
---
 -- Name: watering_events sector_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1984,6 +2148,22 @@ ALTER TABLE ONLY public.sectors_devices
 
 ALTER TABLE ONLY public.sectors_devices
     ADD CONSTRAINT sectors_devices_sector_id_fkey FOREIGN KEY (sector_id) REFERENCES public.sectors(id);
+
+
+--
+-- Name: sectors_services sectors_services_sector_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sectors_services
+    ADD CONSTRAINT sectors_services_sector_id_fkey FOREIGN KEY (sector_id) REFERENCES public.sectors(id);
+
+
+--
+-- Name: sectors_services sectors_services_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.sectors_services
+    ADD CONSTRAINT sectors_services_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.services(id);
 
 
 --

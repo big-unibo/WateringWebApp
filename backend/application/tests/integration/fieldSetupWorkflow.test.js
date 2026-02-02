@@ -43,7 +43,7 @@ describe('Field Setup Creation Integration Test', () => {
     // IDs to track across the hierarchy chain
     let organizationId
     let companyId
-    let fieldId
+    let farmId
     let sectorId
     let thesisId
 
@@ -73,8 +73,9 @@ describe('Field Setup Creation Integration Test', () => {
      */
     it('should create a Company linked to the Organization', async () => {
         const payload = {
-        name: 'Mario Rossi Agro Company',
-        organizationId: organizationId
+            name: 'Mario Rossi Agro Company',
+            address: 'via Roma, 1588 Bologna (BO)',
+            organizationIds: [organizationId]
         }
 
         const res = await request(app)
@@ -90,15 +91,21 @@ describe('Field Setup Creation Integration Test', () => {
         const record = await table(db, 'companies').where({ id: companyId }).first()
         expect(record).toBeDefined()
         expect(record.company_name).toBe(payload.name)
-        expect(record.organization_id).toBe(organizationId)
+        expect(record.address).toBe(payload.address)
+        
+        const organizations = await table(db, 'companies_organizations').where({company_id: companyId})
+        const ids = organizations.map(o => o.organization_id)
+        expect(ids).toHaveLength(payload.organizationIds.length)
+        expect(ids).toEqual(expect.arrayContaining(payload.organizationIds))
+
     })
 
     /**
-     * TEST 3: Field
+     * TEST 3: Farm
      */
-    it('should create a Field linked to the Company with GeoJSON', async () => {
+    it('should create a Farm linked to the Company with GeoJSON', async () => {
         const payload = {
-        name: 'Field North 01',
+        name: 'Farm North 01',
         companyId: companyId,
         location: {
             type: 'Polygon',
@@ -109,23 +116,23 @@ describe('Field Setup Creation Integration Test', () => {
         }
 
         const res = await request(app)
-            .post('/fields/create')
+            .post('/farms/create')
             .set('Authorization', `Bearer ${authToken}`)
             .send(payload)
             .expect(200)
 
         expect(res.body).toHaveProperty('id')
-        fieldId = res.body.id
+        farmId = res.body.id
 
         // DB Persistence Check
         // We use ST_AsGeoJSON to ensure PostGIS data is readable
-        const record = await table(db,'fields')
+        const record = await table(db,'farms')
             .select('*', db.raw('public.ST_AsGeoJSON(location) as location_json'))
-            .where({ id: fieldId })
+            .where({ id: farmId })
             .first()
 
         expect(record).toBeDefined()
-        expect(record.field_name).toBe(payload.name)
+        expect(record.farm_name).toBe(payload.name)
         expect(record.company_id).toBe(companyId)
 
         // Verify Geometry
@@ -137,13 +144,11 @@ describe('Field Setup Creation Integration Test', () => {
     /**
      * TEST 4: Sector
      */
-    it('should create a Sector linked to the Field', async () => {
+    it('should create a Sector linked to the Farm', async () => {
         const payload = {
         name: 'Sector T1',
         culture: 'Kiwi',
         cultureType: 'G3',
-        prescriptive: true,
-        advice: true,
         dripperCapacity: 2.5,
         doubleWing: false,
         location: {
@@ -155,7 +160,7 @@ describe('Field Setup Creation Integration Test', () => {
         };
 
         const res = await request(app)
-        .post(`/fields/${fieldId}/createSector`)
+        .post(`/farms/${farmId}/createSector`)
         .set('Authorization', `Bearer ${authToken}`)
         .send(payload)
         .expect(200)
@@ -167,7 +172,7 @@ describe('Field Setup Creation Integration Test', () => {
         const record = await table(db, 'sectors').where({ id: sectorId }).first()
         expect(record).toBeDefined()
         expect(record.sector_name).toBe(payload.name)
-        expect(record.field_id).toBe(fieldId)
+        expect(record.farm_id).toBe(farmId)
         expect(record.culture).toBe('Kiwi')
     })
 
@@ -210,15 +215,13 @@ describe('Field Setup Creation Integration Test', () => {
         const result = await table(db, 'theses')
         .join('theses_in_sectors', 'theses.id', 'theses_in_sectors.thesis_id')
         .join('sectors', 'theses_in_sectors.sector_id', 'sectors.id')
-        .join('fields', 'sectors.field_id', 'fields.id')
-        .join('companies', 'fields.company_id', 'companies.id')
-        .join('organizations', 'companies.organization_id', 'organizations.id')
+        .join('farms', 'sectors.farm_id', 'farms.id')
+        .join('companies', 'farms.company_id', 'companies.id')
         .select(
             'theses.thesis_name',
             'sectors.sector_name',
-            'fields.field_name',
-            'companies.company_name',
-            'organizations.organization_name'
+            'farms.farm_name',
+            'companies.company_name'
         )
         .where('theses.id', thesisId)
         .first()
@@ -226,8 +229,7 @@ describe('Field Setup Creation Integration Test', () => {
         expect(result).toBeDefined()
         expect(result.thesis_name).toBe('T1 high')
         expect(result.sector_name).toBe('Sector T1')
-        expect(result.field_name).toBe('Field North 01')
+        expect(result.farm_name).toBe('Farm North 01')
         expect(result.company_name).toBe('Mario Rossi Agro Company')
-        expect(result.organization_name).toBe('Global Agro Op')
     })
 })

@@ -6,14 +6,6 @@ class ThesesAllSignals extends Model {
 
 function initThesesAllSignals(sequelize) {
     ThesesAllSignals.init({
-        organizationId: {
-            type: DataTypes.INTEGER,
-            field: "organization_id"
-        },
-        organizationName: {
-            type: DataTypes.STRING,
-            field: "organization_name"
-        },
         companyId: {
             type: DataTypes.INTEGER,
             field: "company_id"
@@ -22,13 +14,13 @@ function initThesesAllSignals(sequelize) {
             type: DataTypes.TEXT,
             field: "company_name"
         },
-        fieldId: {
+        farmId: {
             type: DataTypes.INTEGER,
-            field: "field_id"
+            field: "farm_id"
         },
-        fieldName: {
+        farmName: {
             type: DataTypes.TEXT,
-            field: "field_name"
+            field: "farm_name"
         },
         sectorId: {
             type: DataTypes.INTEGER,

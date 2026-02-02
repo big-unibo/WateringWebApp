@@ -56,9 +56,10 @@ const computeIrrigation = (advice, sectorDetails, maxWatering, expectedWater) =>
 
 export class WateringAdviceService {
 
-    constructor(wateringAdviceRepository, fieldRepository, interpolatedProfileRepository, optimalDistanceRepository, thesesAllSignalsRepository, userActionService) {
+    constructor(wateringAdviceRepository, sectorRepository, thesisRepository, interpolatedProfileRepository, optimalDistanceRepository, thesesAllSignalsRepository, userActionService) {
         this.wateringAdviceRepository = wateringAdviceRepository
-        this.fieldRepository = fieldRepository
+        this.sectorRepository = sectorRepository
+        this.thesisRepository = thesisRepository
         this.interpolatedProfileRepository = interpolatedProfileRepository
         this.optimalDistanceRepository = optimalDistanceRepository
         this.thesesAllSignalsRepository = thesesAllSignalsRepository
@@ -77,13 +78,13 @@ export class WateringAdviceService {
 
             let r
 
-            const thesisDetails = await this.fieldRepository.getThesisDetails(thesisId, timestamp)
+            const thesisDetails = await this.thesisRepository.getThesisDetails(thesisId, timestamp)
             const algorithmParams = await this.wateringAdviceRepository.getWateringAlgorithmParams(thesisId, timestamp)
             if (!thesisDetails || !algorithmParams) {
                 console.warn("Thesis details or algorithm params not found, returning empty advice");
                 throw new Error("Thesis details or algorithm params not found");
             }
-            const sectorDetails = await this.fieldRepository.getSectorDetails(thesisDetails.sector.id, timestamp)
+            const sectorDetails = await this.sectorRepository.getSectorDetails(thesisDetails.sector.id, timestamp)
             if (!sectorDetails) {
                 console.warn("Sector details not found, returning empty advice");
                 throw new Error("Sector details not found");

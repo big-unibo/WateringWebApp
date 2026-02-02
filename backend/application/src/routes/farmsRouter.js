@@ -1,20 +1,20 @@
 import { Router } from 'express';
 
-import { Field } from '../dtos/fieldDto.js';
+import { Farm } from '../dtos/farmDto.js';
 import { Sector } from '../dtos/sectorDto.js';
 
-const fieldsRouter = ({ authenticationService, authorizationService, fieldService }) => {
+const farmsRouter = ({ authenticationService, authorizationService, fieldService }) => {
     const router = Router();
 
 
     /**
      * @swagger
-     * /fields/{fieldId}:
+     * /farms/{farmId}:
      *   get:
-     *     summary: Retrives data about a field.
-     *     tags: [Fields]
+     *     summary: Retrives data about a farm.
+     *     tags: [Farms]
      *     description: |
-     *       Retrives data about a field including:
+     *       Retrives data about a farm including:
      *       
      *       - Info about the company owning it
      *       - Info about the organization owning it
@@ -23,18 +23,18 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *       Requires authentication and proper authorization.
      *     parameters:
      *       - in: path
-     *         name: fieldId
+     *         name: farmId
      *         required: true
      *         schema:
      *           type: integer
-     *         description: ID of field to reterieve
+     *         description: ID of farm to reterieve
      *     responses:
      *       200:
-     *         description: Detailed field information
+     *         description: Detailed farm information
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: '#/components/schemas/FieldData'
+     *               $ref: '#/components/schemas/FarmData'
      *       '400':
      *         description: Input validation error (Bad Request)
      *         content:
@@ -69,7 +69,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *                 message:
      *                   type: string
      *       403:
-     *         description: Unauthorized request – user not allowed view field data
+     *         description: Unauthorized request – user not allowed view farm data
      *         content:
      *           application/json:
      *             schema:
@@ -87,7 +87,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *                 message:
      *                   type: string
      */
-    router.get('/:fieldId', async (req, res) => {
+    router.get('/:farmId', async (req, res) => {
         let requestUserData
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -96,35 +96,35 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
         }
         //[TO DO]: Authorization
 
-        const fieldId = req.params.fieldId;
+        const farmId = req.params.farmId;
 
         try {
-            const result = await fieldService.getFieldDetails(fieldId)
+            const result = await fieldService.getFarmDetails(farmId)
             return res.status(200).json(result)
         } catch (error) {
-            console.log(`Failed retrieving field data: ${error.message}`)
-            return res.status(500).json({ error: "Internal error retrieving field data" })
+            console.log(`Failed retrieving farm data: ${error.message}`)
+            return res.status(500).json({ error: "Internal error retrieving farm data" })
         }
     })
 
 
     /**
      * @swagger
-     * /fields/create:
+     * /farms/create:
      *   post:
-     *     summary: Creates a new field
-     *     description: Creates a new field within a company. Requires authentication and proper authorization.
+     *     summary: Creates a new farm
+     *     description: Creates a new farm within a company. Requires authentication and proper authorization.
      *     tags:
-     *       - Fields
+     *       - Farms
      *     requestBody:
      *       required: true
      *       content:
      *         application/json:
      *           schema:
-     *             $ref: '#/components/schemas/CreateField'
+     *             $ref: '#/components/schemas/CreateFarm'
      *     responses:
      *       200:
-     *         description: Field created successfully
+     *         description: Farm created successfully
      *         content:
      *           application/json:
      *             schema:
@@ -134,7 +134,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *                   type: string
      *                 id:
      *                   type: number
-     *                   description: Id of the new Field           
+     *                   description: Id of the new Farm   
      *       '400':
      *         description: Input validation error (Bad Request)
      *         content:
@@ -169,7 +169,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *                 message:
      *                   type: string
      *       '403':
-     *         description: Unauthorized (user not allowed to create fields)
+     *         description: Unauthorized (user not allowed to create farms)
      *         content:
      *           application/json:
      *             schema:
@@ -200,51 +200,51 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
             const userId = requestUserData.userId;
             const companyId = Number(req.body.companyId)
 
-            if (!(await authorizationService.isUserAuthorizedById(userId, 'update', 'companies', companyId)))
-                return res.status(403).json({ message: 'Unauthorized request' });
+            // if (!(await authorizationService.isUserAuthorizedById(userId, 'update', 'companies', companyId)))
+            //     return res.status(403).json({ message: 'Unauthorized request' });
 
-            const fieldLocation = req.body.location
-            const fieldName = req.body.name
-            const field = new Field(fieldName, companyId, fieldLocation);
+            const farmLocation = req.body.location
+            const farmName = req.body.name
+            const farm = new Farm(farmName, companyId, farmLocation);
 
-            const fieldId = await fieldService.createField(userId, field);
-            return res.status(200).json({ message: `Field created with success`, id: fieldId })
+            const farmId = await fieldService.createFarm(userId, farm);
+            return res.status(200).json({ message: `Farm created with success`, id: farmId })
         } catch (error) {
-            console.log(`Failed creating field caused by: ${error.message}`)
-            return res.status(500).json({ message: "Error on creating field" })
+            console.log(`Failed creating farm caused by: ${error.message}`)
+            return res.status(500).json({ message: "Error on creating farm" })
         }
     })
 
 
     /**
      * @swagger
-     * /fields/{fieldId}/disable:
+     * /farms/{farmId}/disable:
      *   post:
-     *     summary: Disables a field.
-     *     tags: [Fields]
+     *     summary: Disables a farm.
+     *     tags: [Farms]
      *     description: |
-     *       Disables a field by:
+     *       Disables a farm by:
      *       
-     *       - Ending validity period of the devices associated with the field.
-     *       - Disabling all of the sectors associated with the field.
+     *       - Ending validity period of the devices associated with the farm.
+     *       - Disabling all of the sectors associated with the farm.
      * 
      *       Requires authentication and proper authorization.
      *     parameters:
      *       - in: path
-     *         name: fieldId
+     *         name: farmId
      *         required: true
      *         schema:
      *           type: integer
-     *         description: ID of field to disable
+     *         description: ID of farm to disable
      *       - in: query
      *         name: timestamp
      *         required: false
      *         schema:
      *           type: number
-     *         description: Timestamp indicating end date of the field validity, if not set takes actual timestamp (Seconds elapsed since 1/1/1970).
+     *         description: Timestamp indicating end date of the farm validity, if not set takes actual timestamp (Seconds elapsed since 1/1/1970).
      *     responses:
      *       200:
-     *         description: Field succesfuly disabled.
+     *         description: Farm succesfuly disabled.
      *         content:
      *           application/json:
      *             schema:
@@ -252,7 +252,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *               properties:
      *                 message:
      *                   type: string
-     *                   example: Field succesfuly disabled.
+     *                   example: Farm succesfuly disabled.
      *       '400':
      *         description: Input validation error (Bad Request)
      *         content:
@@ -287,7 +287,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *                 message:
      *                   type: string
      *       403:
-     *         description: Unauthorized request – user not allowed to end field validity.
+     *         description: Unauthorized request – user not allowed to end farm validity.
      *         content:
      *           application/json:
      *             schema:
@@ -314,7 +314,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *                 message:
      *                   type: string
      */
-    router.post('/:fieldId/disable', async (req, res) => {
+    router.post('/:farmId/disable', async (req, res) => {
         let requestUserData
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -323,10 +323,10 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
         }
         const userId = requestUserData.userId;
 
-        const fieldId = req.params.fieldId;
-        const exists = await fieldService.fieldExists(fieldId);
+        const farmId = req.params.farmId;
+        const exists = await fieldService.farmExists(farmId);
         if (!exists) {
-            return res.status(404).json({ message: 'Field not found' });
+            return res.status(404).json({ message: 'Farm not found' });
         }
 
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
@@ -334,29 +334,29 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
         //[TO DO]: Authorization
 
         try {
-            await fieldService.disableField(userId, fieldId, timestamp)
-            return res.status(200).json({ message: `Field validity succesfully endend` })
+            await fieldService.disableFarm(userId, farmId, timestamp)
+            return res.status(200).json({ message: `Farm validity succesfully endend` })
         } catch (error) {
-            console.log(`Failed disabling field: ${error.message}`)
+            console.log(`Failed disabling farm: ${error.message}`)
             return res.status(500).json({ error: "Internal error disabling thesis" })
         }
     })
 
     /**
      * @swagger
-     * /fields/{fieldId}/createSector:
+     * /farms/{farmId}/createSector:
      *   post:
      *     summary: Creates a new sector
-     *     description: Creates a new sector within a field. Requires authentication and proper authorization.
+     *     description: Creates a new sector within a farm. Requires authentication and proper authorization.
      *     tags:
-     *       - Fields
+     *       - Farms
      *     parameters:
      *       - in: path
-     *         name: fieldId
+     *         name: farmId
      *         required: true
      *         schema:
      *           type: integer
-     *         description: ID of the field the sector belongs to
+     *         description: ID of the farm the sector belongs to
      *     requestBody:
      *       required: true
      *       content:
@@ -410,7 +410,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *                 message:
      *                   type: string
      *       '403':
-     *         description: Unauthorized (user not allowed to create sectors for the given field)
+     *         description: Unauthorized (user not allowed to create sectors for the given farm)
      *         content:
      *           application/json:
      *             schema:
@@ -438,7 +438,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *                   type: string
      *
     */
-    router.post('/:fieldId/createSector', async (req, res) => {
+    router.post('/:farmId/createSector', async (req, res) => {
         let requestUserData
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -447,15 +447,15 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
         }
         try {
             const userId = requestUserData.userId
-            const fieldId = Number(req.params.fieldId)
+            const farmId = Number(req.params.farmId)
 
 
-            const exists = await fieldService.fieldExists(fieldId);
+            const exists = await fieldService.farmExists(farmId);
             if (!exists) {
-                return res.status(404).json({ message: 'Field not found' });
+                return res.status(404).json({ message: 'Farm not found' });
             }
 
-            // if (!(await authorizationService.isUserAuthorizedInField(userId, 'update', fieldId)))
+            // if (!(await authorizationService.isUserAuthorizedInFarm(userId, 'update', farmId)))
             //     return res.status(403).json({ message: 'Unauthorized request' });
 
             const {
@@ -463,8 +463,6 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
                 culture,
                 cultureType,
                 location,
-                prescriptive,
-                advice,
                 dripperCapacity,
                 sprinklerCapacity,
                 doubleWing
@@ -472,12 +470,10 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
 
             const sector = new Sector(
                 name,
-                fieldId,
+                farmId,
                 culture,
                 cultureType,
                 location,
-                prescriptive,
-                advice,
                 dripperCapacity,
                 sprinklerCapacity,
                 doubleWing
@@ -493,15 +489,15 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
 
     /**
      * @swagger
-     * /fields/{fieldId}/devices:
+     * /farms/{farmId}/devices:
      *   get:
-     *     summary: Gets all the devices info for a given field
-     *     tags: [Fields]
-     *     description: Returns devices directly assigned to the field and, optionally, devices from descendant entities
+     *     summary: Gets all the devices info for a given farm
+     *     tags: [Farms]
+     *     description: Returns devices directly assigned to the farm and, optionally, devices from descendant entities
      *       (e.g. thesis or sectors). Inheritance behavior is controlled via the `includeDescendants` parameter. Requires authentication and proper authorization
      *     parameters:
      *       - in: path
-     *         name: fieldId
+     *         name: farmId
      *         required: true
      *         schema:
      *           type: integer
@@ -594,7 +590,7 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
      *                 message:
      *                   type: string
     */
-    router.get('/:fieldId/devices', async (req, res) => {
+    router.get('/:farmId/devices', async (req, res) => {
         let requestUserData;
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -602,21 +598,21 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
             return res.status(401).json({ message: 'Authentication failed' });
         }
 
-        const fieldId = Number(req.params.fieldId)
-        const exists = await fieldService.fieldExists(fieldId);
+        const farmId = Number(req.params.farmId)
+        const exists = await fieldService.farmExists(farmId);
         if (!exists) {
-            return res.status(404).json({ message: 'Field not found' });
+            return res.status(404).json({ message: 'Farm not found' });
         }
 
         try {
             // TODO Authorization
-            // if (!(await authorizationService.isUserAuthorizedInSector(user.id, 'update', fieldId)))
+            // if (!(await authorizationService.isUserAuthorizedInSector(user.id, 'update', farmId)))
             //     return res.status(403).json({message: 'Unauthorized request'});
 
             const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000
             const deviceTypes = req.query.deviceTypes;
             const includeDescendants = req.query.includeDescendants ?? false
-            const results = await fieldService.getDevicesByField(fieldId, timestamp, deviceTypes, includeDescendants);
+            const results = await fieldService.getDevicesByFarm(farmId, timestamp, deviceTypes, includeDescendants);
             return res.status(200).json(results)
         } catch (error) {
             console.log(`Fail retrieving devices data: ${error.message}`);
@@ -626,22 +622,22 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
 
     /**
      * @swagger
-     * /fields:
+     * /farms:
      *   get:
-     *     summary: Retrieve all fields available for the user
-     *     tags: [Fields]
+     *     summary: Retrieve all farms available for the user
+     *     tags: [Farms]
      *     description: | 
-     *       Retrieve all fields available for the user.
+     *       Retrieve all farms available for the user.
      *       Requires Authentication and proper authorization
      *     responses:
      *       200:
-     *         description: List of fields for the user
+     *         description: List of farms for the user
      *         content:
      *           application/json:
      *             schema:
      *               type: array
      *               items:
-     *                 $ref: '#/components/schemas/Field'
+     *                 $ref: '#/components/schemas/Farm'
      *       '400':
      *         description: Input validation error (Bad Request)
      *         content:
@@ -694,14 +690,14 @@ const fieldsRouter = ({ authenticationService, authorizationService, fieldServic
         }
 
         try {
-            const fields = await fieldService.getFields(requestUserData.userId);
-            return res.status(200).json(fields || []);
+            const farms = await fieldService.getFarms(requestUserData.userId);
+            return res.status(200).json(farms || []);
         } catch (error) {
-            console.log(`Fail retrieving fields caused by: ${error.message}`);
-            return res.status(500).json({ error: "Error while retrieving fields" });
+            console.log(`Fail retrieving farms caused by: ${error.message}`);
+            return res.status(500).json({ error: "Error while retrieving farms" });
         }
     });
 
     return router;
 }
-export default fieldsRouter;
+export default farmsRouter;

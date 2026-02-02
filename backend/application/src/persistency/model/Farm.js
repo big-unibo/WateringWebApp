@@ -1,20 +1,20 @@
 import { Model, DataTypes } from 'sequelize';
 
-class Field extends Model {
+class Farm extends Model {
 
 }
 
-function initField(sequelize) {
-    Field.init({
+function initFarm(sequelize) {
+    Farm.init({
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true
         },
-        fieldName: {
+        farmName: {
             type: DataTypes.TEXT,
             allowNull: false,
-            field: "field_name"
+            field: "farm_name"
         },
         companyId: {
             type: DataTypes.INTEGER,
@@ -26,12 +26,12 @@ function initField(sequelize) {
             allowNull: true
         }
     }, {
-        modelName : 'fields',
+        modelName : 'farms',
         timestamps : false,
         sequelize
     });
 
-    return Field;
+    return Farm;
 }
 
-export default initField;
+export default initFarm;

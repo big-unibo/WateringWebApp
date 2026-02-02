@@ -217,7 +217,7 @@ class ThesesAllSignalsRepository {
             ) m ON true
             WHERE thesis_id = :thesisId
                 AND :timestamp BETWEEN valid_from AND COALESCE(valid_to, 'infinity')
-                AND association_type IN ('thesis' ${includeAnchestors ? ", 'sector', 'field'": ""})
+                AND association_type IN ('thesis' ${includeAnchestors ? ", 'sector', 'farm'": ""})
                 ${deviceTypes?.length > 0 ? "AND tas.device_type = ANY(ARRAY[:deviceTypes])" : "" }
         `;
 
@@ -270,7 +270,7 @@ class ThesesAllSignalsRepository {
         return results;
     }
 
-    async getDevicesByField(fieldId, timestamp, deviceTypes, includeDescendants){
+    async getDevicesByFarm(farmId, timestamp, deviceTypes, includeDescendants){
         const query = `
             SELECT DISTINCT 
                 device_id AS "deviceId",
@@ -293,15 +293,15 @@ class ThesesAllSignalsRepository {
                 FROM measurements m
                 WHERE m.signal_id = tas.signal_id
             ) m ON true
-            WHERE field_id = :fieldId
+            WHERE farm_id = :farmId
                 AND :timestamp BETWEEN valid_from AND COALESCE(valid_to, 'infinity') 
-                AND association_type IN ('field' ${includeDescendants ? ", 'sector', 'thesis'": ""})
+                AND association_type IN ('farm' ${includeDescendants ? ", 'sector', 'thesis'": ""})
                 ${deviceTypes?.length > 0 ? "AND tas.device_type = ANY(ARRAY[:deviceTypes])" : "" }
         `;
 
         try {
             const results = await this.sequelize.query(query, {
-                replacements: { fieldId, timestamp, deviceTypes },
+                replacements: { farmId: farmId, timestamp, deviceTypes },
                 type: this.sequelize.QueryTypes.SELECT
             });
             return results;
@@ -336,7 +336,7 @@ class ThesesAllSignalsRepository {
             ) m ON true
             WHERE sector_id = :sectorId
                 AND :timestamp BETWEEN valid_from AND COALESCE(valid_to, 'infinity') 
-                AND association_type IN ('sector' ${includeDescendants ? ", 'thesis'": ""} ${includeAnchestors ? ", 'field'": ""})
+                AND association_type IN ('sector' ${includeDescendants ? ", 'thesis'": ""} ${includeAnchestors ? ", 'farm'": ""})
                 ${deviceTypes?.length > 0 ? "AND tas.device_type = ANY(ARRAY[:deviceTypes])" : "" }
         `;
 

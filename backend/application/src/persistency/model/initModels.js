@@ -1,16 +1,15 @@
 import initUser from './User.js';
 import initCompany from './Company.js';
 import initOrganization from './Organization.js';
-import initField from './Field.js';
-import initTranscodingField from './TranscodingField.js';
+import initFarm from './Farm.js';
 import initThesis from './Thesis.js';
 import initWateringAlgorithmParams from './WateringAlgorithmParams.js';
 import initPermit from './Permit.js';
 import initSector from './Sector.js';
-import initThesisInSector from './ThesisInsector.js';
+import initThesisInSector from './ThesisInSector.js';
 import initDevice from './Device.js';
 import initSignal from './Signal.js';
-import initDeviceInField from './DeviceInField.js';
+import initDeviceInFarm from './DeviceInFarm.js';
 import initDeviceInSector from './DeviceInSector.js';
 import initDeviceInThesis from './DeviceInThesis.js';
 import initMeasurement from './Measurement.js';
@@ -23,14 +22,16 @@ import initUserAction from './UserAction.js';
 import initProvider from './Provider.js';
 import initDevicesSignals from './DevicesSignals.js';
 import initSignalsDenormalized from './SignalsDenormalized.js';
+import initCompaniesOrganizations from './ComapaniesOrganizations.js';
 
 
 export default function initModels(sequelize) {
   const models = {
     User: initUser(sequelize),
     Company: initCompany(sequelize),
+    CompaniesOrganizations: initCompaniesOrganizations(sequelize),
     Organization: initOrganization(sequelize),
-    Field: initField(sequelize),
+    Farm: initFarm(sequelize),
     Sector: initSector(sequelize),
     Thesis: initThesis(sequelize),
     Permit: initPermit(sequelize),
@@ -39,11 +40,10 @@ export default function initModels(sequelize) {
     DevicesSignals: initDevicesSignals(sequelize),
     Signal : initSignal(sequelize),
     SignalsDenormalized: initSignalsDenormalized(sequelize),
-    DeviceInField : initDeviceInField(sequelize),
+    DeviceInFarm : initDeviceInFarm(sequelize),
     DeviceInSector : initDeviceInSector(sequelize),
     DeviceInThesis : initDeviceInThesis(sequelize),
     Measurement : initMeasurement(sequelize),
-    TranscodingField: initTranscodingField(sequelize),
     WateringAlgorithmParams: initWateringAlgorithmParams(sequelize),
     ThesesAllSignals: initThesesAllSignals(sequelize),
     Advice: initAdvice(sequelize),
@@ -55,11 +55,13 @@ export default function initModels(sequelize) {
     Provider : initProvider(sequelize)
   };
 
-  models.Company.belongsTo(models.Organization, { foreignKey: "organizationId", as: "organization" });
-  models.Organization.hasMany(models.Company, { foreignKey: "organizationId" , as:  "companies"});
+  models.Company.hasMany(models.CompaniesOrganizations, { foreignKey: "companyId", as: "organizations" });
+  models.CompaniesOrganizations.belongsTo(models.Company, {foreignKey: "companyId", as: "company"})
+  models.Organization.hasMany(models.CompaniesOrganizations, { foreignKey: "organizationId" , as:  "companies"});
+  models.CompaniesOrganizations.belongsTo(models.Organization, {foreignKey: "organizationId", as: "organization"})
 
-  models.Field.belongsTo(models.Company, { foreignKey: "companyId" , as: "company"});
-  models.Company.hasMany(models.Field, { foreignKey: "companyId" , as: "fields"});
+  models.Farm.belongsTo(models.Company, { foreignKey: "companyId" , as: "company"});
+  models.Company.hasMany(models.Farm, { foreignKey: "companyId" , as: "farms"});
 
   models.User.hasMany(models.Permit, {foreignKey: "userId", as: "permits" });
   models.Permit.belongsTo(models.User, {foreignKey: "userId", as: "user" });
@@ -67,8 +69,8 @@ export default function initModels(sequelize) {
   models.User.hasMany(models.UserAction, {foreignKey: "userId", as: "userActions" });
   models.UserAction.belongsTo(models.User, {foreignKey: "userId", as: "user" });
 
-  models.Field.hasMany(models.Sector, {foreignKey: "fieldId", as: "sectors"});
-  models.Sector.belongsTo(models.Field, {foreignKey: "fieldId", as: 'field'});
+  models.Farm.hasMany(models.Sector, {foreignKey: "farmId", as: "sectors"});
+  models.Sector.belongsTo(models.Farm, {foreignKey: "farmId", as: 'farm'});
 
   models.Thesis.hasMany(models.ThesisInSector, { foreignKey: "thesisId",  as: "thesisInSector"});
   models.ThesisInSector.belongsTo(models.Thesis, { foreignKey: "thesisId", as: "thesis" });
@@ -84,10 +86,10 @@ export default function initModels(sequelize) {
   models.Signal.hasMany(models.DevicesSignals, {foreignKey: "signalId", as: "devices"});
   models.DevicesSignals.belongsTo(models.Signal, {foreignKey: "signalId", as: "signal"});
 
-  models.Field.hasMany(models.DeviceInField, {foreignKey: "fieldId", as: "signals"});
-  models.DeviceInField.belongsTo(models.Field, {foreignKey: "fieldId", as: "field"});
-  models.Device.hasMany(models.DeviceInField, {foreignKey: "deviceId", as: "signalsInFields"});
-  models.DeviceInField.belongsTo(models.Device, {foreignKey: "deviceId", as: "device"});
+  models.Farm.hasMany(models.DeviceInFarm, {foreignKey: "farmId", as: "signals"});
+  models.DeviceInFarm.belongsTo(models.Farm, {foreignKey: "farmId", as: "farm"});
+  models.Device.hasMany(models.DeviceInFarm, {foreignKey: "deviceId", as: "signalsInFarm"});
+  models.DeviceInFarm.belongsTo(models.Device, {foreignKey: "deviceId", as: "device"});
 
   models.Sector.hasMany(models.DeviceInSector, {foreignKey: "sectorId", as: "signals"});
   models.DeviceInSector.belongsTo(models.Sector, {foreignKey: "sectorId", as: "sector"});

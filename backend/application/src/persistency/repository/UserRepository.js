@@ -3,7 +3,6 @@ class UserRepository {
     constructor(models, sequelize) {
         this.User = models.User;
         this.Permit = models.Permit;
-        this.TranscodingField = models.TranscodingField;
         this.sequelize = sequelize;
     }
     
@@ -21,7 +20,7 @@ class UserRepository {
                 include: {
                     model: this.Permit,
                     as: 'permits',       
-                    attributes: ['table', 'permit', 'idKey'] 
+                    attributes: ['table', 'role', 'idKey'] 
                 }
             });
 

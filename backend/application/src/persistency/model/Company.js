@@ -16,10 +16,9 @@ function initCompany(sequelize) {
             allowNull: false,
             field: "company_name"
         },
-        organizationId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: "organization_id"
+        address: {
+            type: DataTypes.TEXT,
+            allowNull: true
         }
     }, {
         tableName : 'companies',

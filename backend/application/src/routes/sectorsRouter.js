@@ -628,7 +628,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *     summary: Get devices info for a given sector
      *     tags: [Sectors]
      *     description: Returns devices directly assigned to the sector and, optionally, devices from descendant or anchestor entities
-     *       (e.g. thesis or field). Inheritance behavior is controlled via the `includeDescendants` and `includeAnchestors` parameter. Requires authentication and proper authorization
+     *       (e.g. thesis or farm). Inheritance behavior is controlled via the `includeDescendants` and `includeAnchestors` parameter. Requires authentication and proper authorization
      *     parameters:
      *       - in: path
      *         name: sectorId
@@ -650,7 +650,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *         name: includeAnchestors
      *         schema:
      *           type: boolean
-     *         description: Include devices assigned to parent entity (e.g. field)
+     *         description: Include devices assigned to parent entity (e.g. farm)
      *       - in: query
      *         name: deviceTypes
      *         required: false

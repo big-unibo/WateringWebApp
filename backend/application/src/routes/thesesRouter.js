@@ -118,7 +118,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
 
         } catch (error) {
             console.log(`Fail retrieving thesis data: ${error.message}`);
-            return res.status(500).json({ error: "Error while retrieving devices data" });
+            return res.status(500).json({ error: "Error while retrieving thesis data" });
         }
     });
 
@@ -129,7 +129,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *     summary: Gets devices info for a given thesis
      *     tags: [Theses]
      *     description: Returns devices directly assigned to the thesis and, optionally, devices from anchestor entities
-     *       (e.g. sector or field). Inheritance behavior is controlled via the `includeAnchestors` parameter.
+     *       (e.g. sector or farm). Inheritance behavior is controlled via the `includeAnchestors` parameter.
      *       Requires authentication and proper authorization
      *     parameters:
      *       - in: path
@@ -147,7 +147,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
      *         name: includeAnchestors
      *         schema:
      *           type: boolean
-     *         description: Include devices assigned to parent entity (e.g. field)
+     *         description: Include devices assigned to parent entity (e.g. farm)
      *       - in: query
      *         name: deviceTypes
      *         required: false

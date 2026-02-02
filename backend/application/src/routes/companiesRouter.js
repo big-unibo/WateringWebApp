@@ -89,7 +89,7 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
      *     summary: Retrives data about a company.
      *     tags: [Companies]
      *     description: |
-     *       Retrives data about a company including its fields.
+     *       Retrives data about a company including its farms.
      *       Requires authentication and proper authorization.
      *     parameters:
      *       - in: path
@@ -282,9 +282,11 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
             // if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'companies')))
             //     return res.status(403).json({ message: 'Unauthorized request' });
 
-            const organizationId = Number(req.body.organizationId)
-            const companyName = req.body.name;
-            const company = new Company(companyName, organizationId);
+
+            const companyName = req.body.name
+            const address = req.body.address
+            const organizationIds = req.body.organizationIds
+            const company = new Company(companyName, address, organizationIds);
 
             const companyId = await companyService.createCompany(userId, company);
             return res.status(200).json({ message: `Company created with success`, id: companyId });

@@ -1,4 +1,4 @@
-import { DEVICES_LOG_TABLE, FIELDS_DEVICES_LOG_TABLE, SECTORS_DEVICES_LOG_TABLE, DEVICES_SIGNALS_LOG_TABLE, THESES_DEVICES_LOG_TABLE } from "../commons/constants.js";
+import { DEVICES_LOG_TABLE, FARMS_DEVICES_LOG_TABLE, SECTORS_DEVICES_LOG_TABLE, DEVICES_SIGNALS_LOG_TABLE, THESES_DEVICES_LOG_TABLE } from "../commons/constants.js";
 import { DeviceTargetType } from "../dtos/deviceDto.js";
 import DtoConverter from './DtoConverter.js';
 import PaginationService from "./PaginationService.js";
@@ -7,10 +7,10 @@ const dtoConverter = new DtoConverter()
 const paginationService = new PaginationService()
 
 class DeviceService {
-    constructor(deviceRepository, signalRepository, fieldRepository, userActionService) {
+    constructor(deviceRepository, signalRepository, farmRepository, userActionService) {
         this.deviceRepository = deviceRepository;
         this.signalRepository = signalRepository;
-        this.fieldRepository = fieldRepository;
+        this.farmRepository = farmRepository;
         this.userActionService = userActionService;
     }
 
@@ -75,13 +75,13 @@ class DeviceService {
             const validFrom = deviceAssociation.validFrom ?? Date.now() / 1000;
 
             const assingFunctions = {
-                [DeviceTargetType.FIELD]: async (args) => await this.deviceRepository.assignDeviceToField(args),
+                [DeviceTargetType.FARM]: async (args) => await this.deviceRepository.assignDeviceToFarm(args),
                 [DeviceTargetType.SECTOR]: async (args) => await this.deviceRepository.assignDeviceToSector(args),
                 [DeviceTargetType.THESIS]: async (args) => await this.deviceRepository.assignDeviceToThesis(args)
             }
 
             const logTables = {
-                [DeviceTargetType.FIELD]: FIELDS_DEVICES_LOG_TABLE,
+                [DeviceTargetType.FARM]: FARMS_DEVICES_LOG_TABLE,
                 [DeviceTargetType.SECTOR]: SECTORS_DEVICES_LOG_TABLE,
                 [DeviceTargetType.THESIS]: THESES_DEVICES_LOG_TABLE
             }
@@ -129,7 +129,7 @@ class DeviceService {
 
     async disableDevice(userId, deviceId, timestamp) {
         try {
-            const optimalProfileAssignmentId = await this.fieldRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp);
+            const optimalProfileAssignmentId = await this.farmRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp);
             if (optimalProfileAssignmentId) {
                 await this.userActionService.logDisabling(userId, OPTIMAL_PROFILES_LOG_TABLE, optimalProfileAssignmentId, null);
             }
@@ -147,10 +147,10 @@ class DeviceService {
                 await this.userActionService.logDisabling(userId, SECTORS_DEVICES_LOG_TABLE, sectorSigId, null);
             }
 
-            // 3. Field
-            const fieldSigId = await this.deviceRepository.disableDeviceInField(deviceId, timestamp);
-            if (fieldSigId) {
-                await this.userActionService.logDisabling(userId, FIELDS_DEVICES_LOG_TABLE, fieldSigId, null);
+            // 3. Farm
+            const farmSigId = await this.deviceRepository.disableDeviceInFarm(deviceId, timestamp);
+            if (farmSigId) {
+                await this.userActionService.logDisabling(userId, FARMS_DEVICES_LOG_TABLE, farmSigId, null);
             }
 
             const signalDeviceIds = await this.deviceRepository.disableDeviceSignals(deviceId, timestamp);

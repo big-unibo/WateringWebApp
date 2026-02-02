@@ -10,7 +10,7 @@ import { Device, DeviceTargetType } from "../dtos/deviceDto.js";
 import { Signal, SignalInfo } from "../dtos/signalDto.js";
 import { ThesisData, ThesisRef } from "../dtos/thesisDto.js";
 import { WateringParams } from "../dtos/wateringParamsDto.js";
-import { Field, FieldData } from "../dtos/fieldDto.js";
+import { Farm, FarmData } from "../dtos/farmDto.js";
 
 class DtoConverter {
 
@@ -48,19 +48,17 @@ class DtoConverter {
     convertCompanyDataWrapper(companyData) {
         if (!companyData) return null;
 
-        const organization = {
-            id: companyData.organization.id,
-            name: companyData.organization.organizationName
-        };
-        const fields = (companyData.fields || []).map(field => ({
-            id: field.id,
-            name: field.fieldName
+        const organizations = (companyData.organizations || []).map(({organization})=>new Organization(organization.organizationName, organization.id))
+        const farms = (companyData.farms || []).map(farm => ({
+            id: farm.id,
+            name: farm.farmName
         }));
         return new CompanyData(
             companyData.id,
             companyData.companyName,
-            organization,
-            fields
+            companyData.address,
+            organizations,
+            farms
         );
     }
 
@@ -74,16 +72,12 @@ class DtoConverter {
             s.cultureType,
             s.location,
             {
-                id: s.fieldId,
-                name: s.fieldName
+                id: s.farmId,
+                name: s.farmName
             },
             {
                 id: s.companyId,
                 name: s.companyName
-            },
-            {
-                id: s.organizationId,
-                name: s.organizationName
             }
         ));
     }
@@ -99,20 +93,15 @@ class DtoConverter {
         const uniqueTheses = Array.from(new Map(theses.map(t => [t.id, t])).values());
         const thesisDtos = uniqueTheses.map(t => new ThesisRef(t.id, t.name));
 
-        const organization = {
-            id: sectorData.field.company.organizationId,
-            name: sectorData.field.company.organization.organizationName
-        };
-
         const company = {
-            id: sectorData.field.companyId,
-            name: sectorData.field.company.companyName
+            id: sectorData.farm.companyId,
+            name: sectorData.farm.company.companyName
         };
 
-        const field = {
-            id: sectorData.fieldId,
-            name: sectorData.field.fieldName,
-            location: sectorData.field.location
+        const farm = {
+            id: sectorData.farmId,
+            name: sectorData.farm.farmName,
+            location: sectorData.farm.location
         };
 
 
@@ -122,63 +111,50 @@ class DtoConverter {
             sectorData.culture,
             sectorData.cultureType,
             sectorData.location,
-            sectorData.prescriptive,
-            sectorData.advice,
             sectorData.dripperCapacity,
             sectorData.sprinklerCapacity,
             sectorData.doubleWing,
-            field,
+            farm,
             company,
-            organization,
             thesisDtos
         );
     }
 
-    convertFields(fieldsData){
-        return fieldsData.map(field => new Field(field.fieldName, field.companyId, field.location, field.id))
+    convertFarms(farmsData){
+        return farmsData.map(farm => new Farm(farm.farmName, farm.companyId, farm.location, farm.id))
     }
 
-    convertFieldDataWrapper(fieldData) {
-        const organization = {
-            id: fieldData.company.organization.id,
-            name: fieldData.company.organization.organizationName
-        };
+    convertFarmDataWrapper(farmData) {
 
         const company = {
-            id: fieldData.company.id,
-            name: fieldData.company.companyName
+            id: farmData.company.id,
+            name: farmData.company.companyName
         };
 
-        const sectors = (fieldData.sectors || []).map(sector => ({
+        const sectors = (farmData.sectors || []).map(sector => ({
             id: sector.id,
             name: sector.sectorName
         }));
 
-        return new FieldData(
-            fieldData.id,
-            fieldData.fieldName,
-            fieldData.location,
-            organization,
+        return new FarmData(
+            farmData.id,
+            farmData.farmName,
+            farmData.location,
             company,
             sectors
         );
     }
 
     convertThesisDataWrapper(thesisData) {
-        const organization = {
-            id: thesisData.sector.field.company.id,
-            name: thesisData.sector.field.company.organization.organizationName
-        };
-
         const company = {
-            id: thesisData.sector.field.company.id,
-            name: thesisData.sector.field.company.companyName
+            id: thesisData.sector.farm.company.id,
+            name: thesisData.sector.farm.company.companyName
         };
 
-        const field = {
-            id: thesisData.sector.field.id,
-            name: thesisData.sector.field.fieldName,
-            location: thesisData.sector.field.location
+        const farm = {
+            id: thesisData.sector.farm.id,
+            name: thesisData.sector.farm.farmName,
+            location: thesisData.sector.farm.location
         };
 
         const sector = {
@@ -187,8 +163,6 @@ class DtoConverter {
             culture: thesisData.sector.culture,
             cultureType: thesisData.sector.cultureType,
             location: thesisData.sector.location,
-            prescriptive: thesisData.sector.prescriptive,
-            advice: thesisData.sector.advice,
             dripperCapacity: thesisData.sector.dripperCapacity,
             sprinklerCapacity: thesisData.sector.sprinklerCapacity,
             doubleWing: thesisData.sector.doubleWing,
@@ -201,9 +175,8 @@ class DtoConverter {
             thesisData.validFrom,
             thesisData.validTo,
             thesisData.weight,
-            organization,
             company,
-            field,
+            farm,
             sector
         );
     }
@@ -438,15 +411,15 @@ class DtoConverter {
                     .map(t => [t.sectorId, { id: t.sectorId, name: t.sectorName }])
             ).values()
         ]
-        const fields = [
+        const farms = [
             ...new Map(
                 associations
-                    .filter(s => s.associationType === DeviceTargetType.FIELD)
-                    .map(t => [t.fieldId, { id: t.fieldId, name: t.fieldName }])
+                    .filter(s => s.associationType === DeviceTargetType.FARM)
+                    .map(t => [t.farmId, { id: t.farmId, name: t.farmName }])
             ).values()
         ]
 
-        return { theses: theses, sectors: sectors, fields: fields }
+        return { theses: theses, sectors: sectors, farms: farms }
     }
 
     convertCalendarWrapper(wrappers) {

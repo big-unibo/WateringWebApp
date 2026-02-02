@@ -1,22 +1,32 @@
 class CompanyRepository {
     constructor(models, sequelize) {
-        this.Company = models.Company;
-        this.Organization = models.Organization;
-        this.Field = models.Field;
-        this.sequelize = sequelize;
+        this.Company = models.Company
+        this.Organization = models.Organization
+        this.CompaniesOrganizations = models.CompaniesOrganizations
+        this.Farm = models.Farm
+        this.sequelize = sequelize
     }
 
-    async createCompany(companyName, organizationId) {
+    async createCompany(companyName, address, organizationIds) {
         try {
-            const organization = await this.Organization.findByPk(organizationId);
-            if (!organization) {
-            throw new Error(`Organization with ID ${organizationId} does not exist.`);
+            for(const organizationId of organizationIds){
+                const organization = await this.Organization.findByPk(organizationId);
+                if (!organization) {
+                    throw new Error(`Organization with ID ${organizationId} does not exist.`);
+                }
             }
 
             const companyCreated = await this.Company.create({
                 companyName,
-                organizationId
+                address
             });
+
+            for(const organizationId of organizationIds){
+                await this.CompaniesOrganizations.create({
+                    companyId: companyCreated.id,
+                    organizationId: organizationId
+                })
+            }
 
             return companyCreated;
         } catch (error) {
@@ -28,12 +38,18 @@ class CompanyRepository {
         try {
             const company = await this.Company.findByPk(companyId, {
                 include: [{
-                    model: this.Organization,
-                    as: 'organization'
+                    model: this.CompaniesOrganizations,
+                    as: 'organizations',
+                    include: [
+                        {
+                            model: this.Organization,
+                            as: 'organization'
+                        }
+                    ]
                 },
                 {
-                    model: this.Field,
-                    as: 'fields',
+                    model: this.Farm,
+                    as: 'farms',
                     required: false
                 }],
             });

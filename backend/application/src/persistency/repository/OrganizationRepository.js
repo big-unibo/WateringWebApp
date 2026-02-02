@@ -1,6 +1,7 @@
 class OrganizationRepository {
     constructor(models, sequelize) {
         this.Organization = models.Organization;
+        this.CompaniesOrganizations = models.CompaniesOrganizations
         this.Company = models.Company;
         this.sequelize = sequelize;
     }
@@ -29,13 +30,16 @@ class OrganizationRepository {
         try {
             const organization = await this.Organization.findOne({
                 where: { id: organizationId },
-                include: [
+                include: [{
+                    model: this.CompaniesOrganizations,
+                    as: 'companies',
+                    include: [
                         {
                             model: this.Company,
-                            as: 'companies',
-                            required: false
+                            as: 'company'
                         }
-                    ],
+                    ]
+                }]
             });
             return organization;
         } catch (error) {

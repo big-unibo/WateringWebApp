@@ -1,31 +1,29 @@
-export class Field{
+export class Farm{
     constructor(
-        fieldName,
+        farmName,
         companyId,
         location,
-        fieldId,
+        farmId,
     ) {
-        this.id = fieldId;
-        this.name = fieldName;
+        this.id = farmId;
+        this.name = farmName;
         this.companyId = companyId;
         this.location = location
     }
 }
 
 
-export class FieldData{
+export class FarmData{
     constructor(
-        fieldId,
-        fieldName,
+        farmId,
+        farmName,
         location,
-        organization,
         company,
         sectors
     ) {
-        this.id = fieldId
-        this.name = fieldName
+        this.id = farmId
+        this.name = farmName
         this.location = location
-        this.organization = organization
         this.company = company,
         this.sectors = sectors
     }

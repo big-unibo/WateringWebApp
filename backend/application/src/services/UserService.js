@@ -1,5 +1,5 @@
 import { USERS_LOG_TABLE } from "../commons/constants.js";
-import { User, UserData } from "../dtos/userDto.js";
+import { User } from "../dtos/userDto.js";
 import { UserPermit, UserPermits } from "../dtos/userPermitsDto.js";
 
 
@@ -104,10 +104,9 @@ class UserService {
     async getUserData(userId) {
         const rawUserData = await this.findUser(userId);
         if (rawUserData) {
-            return new UserData(
+            return new User(
                 rawUserData.email,
-                rawUserData.name,
-                rawUserData.role
+                rawUserData.name
             )
         }
     }

@@ -21,9 +21,9 @@ import AuthorizationService from './services/AuthorizationService.js';
 import usersRouter from './routes/usersRouter.js';
 import companiesRouter from './routes/companiesRouter.js';
 import organizationsRouter from './routes/organizationsRouter.js';
-import FieldRepository from './persistency/repository/FieldRepository.js';
+import FarmRepository from './persistency/repository/FarmRepository.js';
 import FieldService from './services/FieldService.js';
-import fieldsRouter from './routes/fieldsRouter.js';
+import farmsRouter from './routes/farmsRouter.js';
 import devicesRouter from './routes/devicesRouter.js';
 import DeviceService from './services/DeviceService.js';
 import DeviceRepository from './persistency/repository/DeviceRepository.js';
@@ -47,6 +47,8 @@ import LogService from './services/LogService.js';
 import LogRepository from './persistency/repository/LogRepository.js';
 import UserActionRepository from './persistency/repository/UserActionRepository.js';
 import UserActionService from './services/UserActionService.js';
+import SectorRepository from './persistency/repository/SectorRepository.js';
+import ThesisRepository from './persistency/repository/ThesisRepository.js';
 
 dotenv.config()
 
@@ -92,7 +94,9 @@ const models = initModels(sequelize)
 const userRepository = new UserRepository(models, sequelize)
 const organizationRepository = new OrganizationRepository(models, sequelize)
 const companyRepository = new CompanyRepository(models, sequelize)
-const fieldRepository = new FieldRepository(models, sequelize)
+const farmRepository = new FarmRepository(models, sequelize)
+const sectorRepository = new SectorRepository(models,sequelize)
+const thesisRepository = new ThesisRepository(models, sequelize)
 const deviceRepository = new DeviceRepository(models, sequelize)
 const signalRepository = new SignalRepository(models, sequelize)
 const thesesAllSignalsRepository = new ThesesAllSignalsRepository(models, sequelize)
@@ -109,12 +113,12 @@ const organizationService = new OrganizationService(organizationRepository, user
 const userService = new UserService(userRepository, userActionService)
 const authenticationService = new AuthenticationService(userService)
 const companyService = new CompanyService(companyRepository, userActionService)
-const fieldService = new FieldService(fieldRepository, companyRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, deviceRepository, wateringScheduleRepository, userActionService)
+const fieldService = new FieldService(companyRepository, farmRepository, sectorRepository, thesisRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, deviceRepository, wateringScheduleRepository, userActionService)
 const authorizationService = new AuthorizationService(userService, fieldService)
-const deviceService = new DeviceService(deviceRepository, signalRepository, fieldRepository, userActionService)
+const deviceService = new DeviceService(deviceRepository, signalRepository, farmRepository, userActionService)
 const signalService = new SignalService(signalRepository, userActionService)
 const wateringScheduleService = new WateringScheduleService(wateringScheduleRepository, wateringAdviceRepository, userActionService)
-const wateringAdviceService = new WateringAdviceService(wateringAdviceRepository, fieldRepository, interpolatedProfileRepository, optimalDistanceRepository, thesesAllSignalsRepository, userActionService)
+const wateringAdviceService = new WateringAdviceService(wateringAdviceRepository, sectorRepository, thesisRepository, interpolatedProfileRepository, optimalDistanceRepository, thesesAllSignalsRepository, userActionService)
 const logService = new LogService(logRepository, userActionService)
 
 app.use(express.json());
@@ -135,8 +139,8 @@ app.use(
 );
 
 app.use(
-  '/fields',
-  fieldsRouter({ userService, authenticationService, authorizationService, fieldService })
+  '/farms',
+  farmsRouter({ userService, authenticationService, authorizationService, fieldService })
 );
 
 app.use(

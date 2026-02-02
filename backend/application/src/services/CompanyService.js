@@ -11,7 +11,7 @@ class CompanyService {
 
     async createCompany(userId,company){ 
         try {
-            const companyCreated = await this.companyRepository.createCompany(company.name,company.organizationId)
+            const companyCreated = await this.companyRepository.createCompany(company.name, company.address,company.organizationIds)
             const companyId = companyCreated.id
             if (companyId) {
                 await this.userActionService.logCreation(userId, COMPANIES_LOG_TABLE, companyId, null)

@@ -16,10 +16,10 @@ function initSector(sequelize) {
             allowNull: false,
             field: "sector_name"
         },
-        fieldId: {
+        farmId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            field: "field_id"
+            field: "farm_id"
         },
         culture: {
             type: DataTypes.TEXT,
@@ -30,40 +30,25 @@ function initSector(sequelize) {
             allowNull: true,
             field: "culture_type"
         },
-
         location: {
             type: DataTypes.GEOMETRY,
             allowNull: true
         },
-
-        prescriptive: {
-            type: DataTypes.BOOLEAN,
-            allowNull: true
-        },
-
-        advice: {
-            type: DataTypes.BOOLEAN,
-            allowNull: true
-        },
-
         dripperCapacity: {
             type: DataTypes.DOUBLE,
             allowNull: true,
             field : "dripper_capacity"
         },
-
         sprinklerCapacity: {
             type: DataTypes.DOUBLE,
             allowNull: true,
             field : "sprinkler_capacity"
         },
-
         doubleWing: {
             type: DataTypes.BOOLEAN,
             allowNull: true,
             field : "double_wing"
         }
-
     }, {
         modelName:'Sector',
         tableName: 'sectors',

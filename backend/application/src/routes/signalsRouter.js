@@ -571,9 +571,9 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
      * @swagger
      * /signals/{signalId}/:
      *   get:
-     *     summary: Get all information about a signal including the reference to field, sector or thesis where it is associated 
+     *     summary: Get all information about a signal including the reference to farm, sector or thesis where it is associated 
      *     description: |
-     *       Get all information about a signal including the reference to field, sector or thesis where it is associated
+     *       Get all information about a signal including the reference to farm, sector or thesis where it is associated
      *     tags:
      *       - Signals
      *     parameters:

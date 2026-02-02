@@ -20,10 +20,6 @@ function initUser(sequelize) {
     name: {
       type: DataTypes.TEXT,
       allowNull: true
-    },
-    role: {
-      type: DataTypes.TEXT,
-      allowNull: true
     }
   }, {
     tableName: 'users', 

@@ -1,5 +1,4 @@
 import { PostgreSqlContainer } from '@testcontainers/postgresql';
-import { DockerImageName } from 'testcontainers';
 import knex from 'knex';
 import { readFile } from 'node:fs/promises';
 import request from 'supertest'; // Missing import added here

@@ -2,16 +2,19 @@ export class Company {
     /**
      * @param {number} [companyId] - Id of the company (optional, e.g., for creation)
      * @param {string} companyName - Company name
-     * @param {number} organizationId - Id of the organization associated with the company
+     * @param {string} address - Address of the company
+     * @param {number} [organizationIds] - Id of the organization associated with the company
      */
     constructor(
         companyName,
-        organizationId,
-        companyId = undefined
+        address,
+        organizationIds,
+        companyId
     ) {
-        this.id = companyId;
-        this.name = companyName;
-        this.organizationId = organizationId;
+        this.id = companyId
+        this.name = companyName
+        this.address = address
+        this.organizationIds = organizationIds
     }
 }
 
@@ -19,14 +22,16 @@ export class CompanyData {
     /**
      * @param {number} companyId - Id of the company
      * @param {string} companyName - Company name
-     * @param {Organization} organization - Organization associated with the company
-     * @param {Array<Fields>} fields - Array of fields associated with the company
+     * @param {string} address - Address of the company
+     * @param {Array<Organization>} organizations - Array of organization associated with the company
+     * @param {Array<Farm>} farms - Array of farms associated with the company
      */
-    constructor(companyId, companyName, organization, fields) {
+    constructor(companyId, companyName, address, organizations, farms) {
         this.id = companyId
         this.name = companyName
-        this.organization = organization
-        this.fields = fields
+        this.address = address
+        this.organizations = organizations
+        this.farms = farms
     }
 }
 

@@ -1,18 +1,18 @@
 import { Model, DataTypes } from 'sequelize';
 
-class DeviceInField extends Model {}
+class DeviceInFarm extends Model {}
 
-function initDeviceInField(sequelize) {
-    DeviceInField.init({
+function initDeviceInFarm(sequelize) {
+    DeviceInFarm.init({
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true,
             field: "id"
         },
-        fieldId: {
+        farmId: {
             type: DataTypes.INTEGER,
-            field: "field_id",
+            field: "farm_id",
             allowNull: false
         },
         deviceId: {
@@ -31,13 +31,13 @@ function initDeviceInField(sequelize) {
             field: "valid_to"
         },
     }, {
-        tableName : 'fields_devices',
-        modelName : 'DeviceInField',
+        tableName : 'farms_devices',
+        modelName : 'DeviceInFarm',
         timestamps : false,
         sequelize
     });
 
-    return DeviceInField;
+    return DeviceInFarm;
 }
 
-export default initDeviceInField;
+export default initDeviceInFarm;

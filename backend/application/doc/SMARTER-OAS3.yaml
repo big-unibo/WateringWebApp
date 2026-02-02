@@ -40,23 +40,25 @@ components:
           type: string
         name:
           type: string
-        role:
-          type: string
 
     CreateCompany:
       type: object
       required:
         - name
-        - organizationId
       properties:
         name:
           type: string
           description: Name of the company
-        organizationId:
-          type: integer
-          description: ID of the organization to associate
+        address:
+          type: string
+          description: Address of the company
+        organizationIds:
+          type: array
+          items:
+            type: integer
+          description: ID of the organizations to associate
 
-    CreateField:
+    CreateFarm:
       type: object
       required:
         - name
@@ -64,10 +66,10 @@ components:
       properties:
         name:
           type: string
-          description: Name of the field
+          description: Name of the farm
         companyId:
           type: integer
-          description: ID of the company to associate the field with
+          description: ID of the company to associate the farm with
         location:
           $ref: '#/components/schemas/GeometryElement'
 
@@ -89,12 +91,6 @@ components:
         location:
           $ref: '#/components/schemas/GeometryElement'
           description: Location of the sector
-        prescriptive:
-          type: boolean
-          description: Indicate if the watering advice is sent to valves
-        advice:
-          type: boolean
-          description: Indicate if in this sector is enabled watering advice
         dripperCapacity:
           type: number
           format: double
@@ -225,7 +221,7 @@ components:
         targetType:
           type: string
           enum:
-            - field
+            - farm
             - sector
             - thesis
           description: Type of the target entity
@@ -428,27 +424,24 @@ components:
           type: number
           description: Count of the measurements included in the bin
 
-    FieldData:
+    FarmData:
       type: object
       properties:
         id:
           type: number
-          description: Id of the field
+          description: Id of the farm
         name:
           type: string
-          description: Name of the field
+          description: Name of the farm
         location:
           $ref: '#/components/schemas/GeometryElement'
-          description: Location of the field
+          description: Location of the farm
         company:
             $ref: "#/components/schemas/Company"
-            description: Company owning the field
-        organization:
-            $ref: "#/components/schemas/Organization"
-            description: Organization the company belongs to
+            description: Company owning the farm
         sectors:
           type: array
-          description: List of sectors belonging to the field
+          description: List of sectors belonging to the farm
           items:
             type: object
             properties:
@@ -469,18 +462,14 @@ components:
             id:
               type: number
               description: Id of the sector
-            field:
+            farm:
               allOf:
-              - $ref: "#/components/schemas/Field"
-              - description: Field the sector belongs to
+              - $ref: "#/components/schemas/Farm"
+              - description: farm the sector belongs to
             company:
               allOf:
               - $ref: "#/components/schemas/Company"
-              - description: Company owning the field
-            organization:
-              allOf:
-              - $ref: "#/components/schemas/Organization"
-              - description: Organization the company belongs to
+              - description: Company owning the farm
             theses:
               type: array
               description: List of theses associated to the sector
@@ -524,15 +513,12 @@ components:
           description: Thesis validity end (Unix epoch in seconds)
         weight:
           type: number
-        organization:
-          $ref: "#/components/schemas/Organization"
-          description: Organization the company belongs to
         company:
           $ref: "#/components/schemas/Company"
-          description: Company owning the field
-        field:
-          $ref: "#/components/schemas/Field"
-          description: Field the sector belongs to
+          description: Company owning the farm
+        farm:
+          $ref: "#/components/schemas/Farm"
+          description: farm the sector belongs to
         sector:
           allOf: 
             - $ref: "#/components/schemas/CreateSector" 
@@ -542,7 +528,7 @@ components:
                   type: number
                   description: Id of the sector
     
-    Field:
+    Farm:
       type: object
       required:
         - id
@@ -550,13 +536,13 @@ components:
       properties:
         id:
           type: number
-          description: Id of the field
+          description: Id of the farm
         name:
           type: string
-          description: Name of the field
+          description: Name of the farm
         location:
           $ref: '#/components/schemas/GeometryElement'
-          description: Location of the field
+          description: Location of the farm
     
     Company:
       type: object
@@ -574,14 +560,16 @@ components:
         - $ref: "#/components/schemas/Company"
         - type: object
           properties:
-            organization:
-              $ref: "#/components/schemas/Organization"
-              description: Organization the company belongs to
-            fields:
+            organizations:
               type: array
-              description: List of fields belonging to the company
               items:
-                $ref: "#/components/schemas/Field"
+                $ref: "#/components/schemas/Organization"
+              description: Organization the company belongs to
+            farms:
+              type: array
+              description: List of farms belonging to the company
+              items:
+                $ref: "#/components/schemas/Farm"
             
 
     Organization:
@@ -636,16 +624,13 @@ components:
             description: Type of culture
           location:
             $ref: '#/components/schemas/GeometryElement'
-            description: Location of the field
-          field:
-            $ref: "#/components/schemas/Field"
-            description: Field the sector belongs to
+            description: Location of the farm
+          farm:
+            $ref: "#/components/schemas/Farm"
+            description: Farm the sector belongs to
           company:
             $ref: "#/components/schemas/Company"
-            description: Company owning the field
-          organization:
-            $ref: "#/components/schemas/Organization"
-            description: Organization the company belongs to
+            description: Company owning the farm
       
     SectorsCompact:
         type: array
@@ -698,10 +683,10 @@ components:
             type: array
             items:
               $ref: "#/components/schemas/DeviceData"
-          fields:
+          farms:
             type: array
             items:
-              $ref: "#/components/schemas/Field"
+              $ref: "#/components/schemas/Farm"
           sectors:
             type: array
             items:
@@ -743,10 +728,10 @@ components:
       - $ref: "#/components/schemas/Device"
       - type: object
         properties:
-          fields:
+          farms:
             type: array
             items:
-              $ref: "#/components/schemas/Field"
+              $ref: "#/components/schemas/Farm"
           sectors:
             type: array
             items:
@@ -1106,7 +1091,4 @@ components:
         name: 
           type: string
           description: User's name
-        role: 
-          type: string
-          description: User's role
 

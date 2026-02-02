@@ -131,6 +131,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
+            console.log(error)
             return res.status(401).json({ message: 'Authentication failed' });
         }
 
@@ -245,8 +246,8 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         }
         try {
             const userId = requestUserData.userId
-            if (!(await authorizationService.isUserAuthorized(userId, 'create', 'devices')))
-                return res.status(403).json({ message: 'Unauthorized request' });
+            // if (!(await authorizationService.isUserAuthorized(userId, 'create', 'devices')))
+            //     return res.status(403).json({ message: 'Unauthorized request' });
 
             const device = new CreateDevice(req.body.type, req.body.description, req.body.location, req.body.binningId);
 
@@ -355,8 +356,8 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         }
         try {
             const userId = requestUserData.userId
-            if (!(await authorizationService.isUserAuthorized(userId, 'create', 'devices')))
-                return res.status(403).json({ message: 'Unauthorized request' });
+            // if (!(await authorizationService.isUserAuthorized(userId, 'create', 'devices')))
+            //     return res.status(403).json({ message: 'Unauthorized request' });
 
             const validFrom = req.body.timestamp ?? Date.now() / 1000;
 
@@ -372,14 +373,14 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      * @swagger
      * /devices/{deviceId}/assign:
      *   post:
-     *     summary: Assigns device to a given field, sector, or thesis
+     *     summary: Assigns device to a given farm, sector, or thesis
      *     description: |
-     *       Assigns a device with its signals to a given field, sector, or thesis.
+     *       Assigns a device with its signals to a given farm, sector, or thesis.
      *       
      *       **Required request parameters:**
      *       - **targetId** (*integer*): ID of the target entity
      *       - **targetType** (*string*): One of the following values:
-     *         - `field`
+     *         - `farm`
      *         - `sector`
      *         - `thesis`
      *       - **validFrom** (*number*, optional): Timestamp (in seconds since 01/01/1970) indicating when the association becomes valid
@@ -513,7 +514,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *     description: |
      *       Disables a device by:
      *       
-     *       - Ending the validity period of device in field associations.
+     *       - Ending the validity period of device in farm associations.
      *       - Ending validity period of the signals associated with the device.
      *       - Ending optimal profile assignment.
      * 

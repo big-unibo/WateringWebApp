@@ -1,4 +1,4 @@
-import { FIELDS_LOG_TABLE, FIELDS_DEVICES_LOG_TABLE, OPTIMAL_PROFILES_LOG_TABLE, SECTORS_LOG_TABLE, SECTORS_DEVICES_LOG_TABLE, THESES_IN_SECTORS_LOG_TABLE, THESES_LOG_TABLE, THESES_DEVICES_LOG_TABLE, WATERING_ALGORITHM_LOG_TABLE, WATERING_EVENTS_LOG_TABLE } from '../commons/constants.js';
+import { FARMS_LOG_TABLE, FARMS_DEVICES_LOG_TABLE, OPTIMAL_PROFILES_LOG_TABLE, SECTORS_LOG_TABLE, SECTORS_DEVICES_LOG_TABLE, THESES_IN_SECTORS_LOG_TABLE, THESES_LOG_TABLE, THESES_DEVICES_LOG_TABLE, WATERING_ALGORITHM_LOG_TABLE, WATERING_EVENTS_LOG_TABLE } from '../commons/constants.js';
 import { OptimalStateData } from '../dtos/optStateDto.js';
 import DtoConverter from './DtoConverter.js';
 
@@ -9,9 +9,11 @@ const MONTH_TO_SECONDS = MINUTE_TO_SECONDS * 60 * 24 * 30
 
 class FieldService {
 
-    constructor(fieldRepository, companyRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, deviceRepository, wateringScheduleRepository, userActionService) {
-        this.fieldRepository = fieldRepository
+    constructor(companyRepository, farmRepository, sectorRepository, thesisRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, deviceRepository, wateringScheduleRepository, userActionService) {
+        this.farmRepository = farmRepository
         this.companyRepository = companyRepository
+        this.sectorRepository = sectorRepository
+        this.thesisRepository = thesisRepository
         this.thesesAllSignalsRepository = thesesAllSignalsRepository
         this.interpolatedProfileRepository = interpolatedProfileRepository
         this.humidityBinsRepository = humidityBinsRepository
@@ -23,40 +25,40 @@ class FieldService {
     }
 
     async thesisExists(thesisId) {
-        return await this.fieldRepository.thesisExists(thesisId)
+        return await this.thesisRepository.thesisExists(thesisId)
     }
 
-    async fieldExists(fieldId) {
-        return await this.fieldRepository.fieldExists(fieldId)
+    async farmExists(farmId) {
+        return await this.farmRepository.farmExists(farmId)
     }
 
     async sectorExists(sectorId) {
-        return await this.fieldRepository.sectorExists(sectorId)
+        return await this.sectorRepository.sectorExists(sectorId)
     }
 
-    async createField(userId, field) {
+    async createFarm(userId, farm) {
         try {
-            const fieldCreated = await this.fieldRepository.createField(field.name, field.companyId, field.location);
-            const fieldId = fieldCreated.id;
-            if (fieldId) {
-                this.userActionService.logCreation(userId, FIELDS_LOG_TABLE, fieldId, null)
-                return fieldId
+            const farmCreated = await this.farmRepository.createFarm(farm.name, farm.companyId, farm.location);
+            const farmId = farmCreated.id;
+            if (farmId) {
+                this.userActionService.logCreation(userId, FARMS_LOG_TABLE, farmId, null)
+                return farmId
             }
         } catch (error) {
-            console.error(`Error creating field ${field.name}: ${error.message}`);
+            console.error(`Error creating farm ${farm.name}: ${error.message}`);
             throw error;
         }
     }
 
-    async getFields(userId) {
-        const result = await this.fieldRepository.getFields();
-        return dtoConverter.convertFields(result);
+    async getFarms(userId) {
+        const result = await this.farmRepository.getFarms();
+        return dtoConverter.convertFarms(result);
     }
 
 
     async createSector(userId, sector) {
         try {
-            const sectorCreated = await this.fieldRepository.createSector(sector);
+            const sectorCreated = await this.sectorRepository.createSector(sector);
 
             const sectorId = sectorCreated.id;
             if (sectorId) {
@@ -70,36 +72,36 @@ class FieldService {
     }
 
     async getSectorOwner(sectorId) {
-        const result = await this.fieldRepository.getSectorDetails(sectorId, Date.now() / 1000);
+        const result = await this.sectorRepository.getSectorDetails(sectorId, Date.now() / 1000);
 
-        if (!result || !result.field || !result.field.company) {
+        if (!result || !result.farm || !result.farm.company) {
             throw new Error(`Company not found for sector ${sectorId}`);
         }
-        return dtoConverter.convertCompany(result.field.company);
+        return dtoConverter.convertCompany(result.farm.company);
     }
 
     async createThesis(userId, thesis) {
-        const newThesisId = await this.fieldRepository.createThesis(thesis.name);
+        const newThesisId = await this.thesisRepository.createThesis(thesis.name);
         if (!newThesisId) {
             throw Error("Impossible to create thesis")
         }
         await this.userActionService.logCreation(userId, THESES_LOG_TABLE, newThesisId, null);
-        const assignmentId = await this.fieldRepository.assignThesisToSector(newThesisId, thesis.sectorId, undefined, thesis.validFrom || Math.floor(Date.now() / 1000));
+        const assignmentId = await this.thesisRepository.assignThesisToSector(newThesisId, thesis.sectorId, undefined, thesis.validFrom || Math.floor(Date.now() / 1000));
         await this.userActionService.logCreation(userId, THESES_IN_SECTORS_LOG_TABLE, assignmentId, null);
         return newThesisId;
     }
 
-    async getFieldOwner(fieldId) {
-        const result = await this.fieldRepository.getFieldDetails(fieldId);
+    async getFarmOwner(farmId) {
+        const result = await this.farmRepository.getFarmDetails(farmId);
         if (!result.company) {
-            throw new Error(`Company not found for field ${fieldId}`);
+            throw new Error(`Company not found for farm ${farmId}`);
         }
         return dtoConverter.convertCompany(result.company);
     }
 
-    async getFieldDetails(fieldId) {
-        const result = await this.fieldRepository.getFieldDetails(fieldId);
-        return dtoConverter.convertFieldDataWrapper(result);
+    async getFarmDetails(farmId) {
+        const result = await this.farmRepository.getFarmDetails(farmId);
+        return dtoConverter.convertFarmDataWrapper(result);
     }
 
     async getMeasurementsByThesis(thesisId, signalTypes, timeFilterFrom, timeFilterTo, aggregationType, aggregationPeriod = null) {
@@ -171,17 +173,17 @@ class FieldService {
 
 
     async getSectors(userId, timeFilterFrom, timeFilterTo) {
-        const result = await this.fieldRepository.getSectors(userId, timeFilterFrom, timeFilterTo);
+        const result = await this.sectorRepository.getSectors(userId, timeFilterFrom, timeFilterTo);
         return dtoConverter.convertSectorsDataWrapper(result);
     }
 
     async getSectorDetails(sectorId, timestamp) {
-        const result = await this.fieldRepository.getSectorDetails(sectorId, timestamp);
+        const result = await this.sectorRepository.getSectorDetails(sectorId, timestamp);
         return dtoConverter.convertSectorDataWrapper(result);
     }
 
     async getThesisDetails(thesisId, timestamp) {
-        const result = await this.fieldRepository.getThesisDetails(thesisId, timestamp || Date.now() / 1000)
+        const result = await this.thesisRepository.getThesisDetails(thesisId, timestamp || Date.now() / 1000)
         if (result) {
             return dtoConverter.convertThesisDataWrapper(result)
         }
@@ -197,8 +199,8 @@ class FieldService {
         return dtoConverter.convertDevicesDataWrapper(result);
     }
 
-    async getDevicesByField(fieldId, timestamp, deviceTypes, includeDescendants){
-        const result = await this.thesesAllSignalsRepository.getDevicesByField(fieldId, timestamp, deviceTypes, includeDescendants);
+    async getDevicesByFarm(farmId, timestamp, deviceTypes, includeDescendants){
+        const result = await this.thesesAllSignalsRepository.getDevicesByFarm(farmId, timestamp, deviceTypes, includeDescendants);
         return dtoConverter.convertDevicesDataWrapper(result);
     }
 
@@ -217,7 +219,7 @@ class FieldService {
     }
 
     async getOptimalState(thesisId, timestamp) {
-        const result = await this.fieldRepository.getOptimalState(thesisId, timestamp)
+        const result = await this.thesisRepository.getOptimalState(thesisId, timestamp)
         if (result.length > 0) {
             return dtoConverter.convertOptimalStateWrapper(result)
         }
@@ -239,7 +241,7 @@ class FieldService {
     }
 
     async createMatrixOptimalState(userId, gridOptimalProfiles) {
-        const matrixData = await this.fieldRepository.createMatrixOptimalState(
+        const matrixData = await this.thesisRepository.createMatrixOptimalState(
             gridOptimalProfiles.gridId,
             gridOptimalProfiles.validFrom,
             gridOptimalProfiles.validTo,
@@ -254,14 +256,14 @@ class FieldService {
         const matrixId = matrixData.matrixId
 
         for (const optimalProfile of gridOptimalProfiles.optimalState) {
-            await this.fieldRepository.createMatrixProfile(matrixId, optimalProfile.x, optimalProfile.y, optimalProfile.z, optimalProfile.value, optimalProfile.weight)
+            await this.thesisRepository.createMatrixProfile(matrixId, optimalProfile.x, optimalProfile.y, optimalProfile.z, optimalProfile.value, optimalProfile.weight)
         }
         await this.userActionService.logCreation(userId, OPTIMAL_PROFILES_LOG_TABLE, matrixData.optimalProfileAssignmentId, null)
         return matrixData.optimalProfileAssignmentId
     }
 
     async setOptimalState(userId, gridId, validFrom, validTo, stopPercentage, optimalWetBound, optimalDryBound, profileId) {
-        const matrixData = await this.fieldRepository.createMatrixOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound, optimalDryBound, profileId)
+        const matrixData = await this.thesisRepository.createMatrixOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound, optimalDryBound, profileId)
         if (!matrixData.matrixId || !matrixData.optimalProfileAssignmentId) {
             throw Error("Impossible to create optimal matrix for this thesis")
         }
@@ -284,22 +286,22 @@ class FieldService {
         }
 
         await thesesContributions.forEach(async t => {
-            const sectorAssignmentsIds = await this.fieldRepository.disableThesisInSector(sectorId, t.id, validFrom)
+            const sectorAssignmentsIds = await this.thesisRepository.disableThesisInSector(sectorId, t.id, validFrom)
             if (sectorAssignmentsIds) {
                 await this.userActionService.logDisabling(userId, THESES_IN_SECTORS_LOG_TABLE, sectorAssignmentsIds, null);
             }
 
-            const assignmentId = await this.fieldRepository.assignThesisToSector(t.id, sectorId, t.weight, validFrom, validTo)
+            const assignmentId = await this.sectorRepository.assignThesisToSector(t.id, sectorId, t.weight, validFrom, validTo)
             if (assignmentId) {
                 await this.userActionService.logCreation(userId, THESES_IN_SECTORS_LOG_TABLE, assignmentId, null);
             }
         })
         await [...thesesIds].filter(id => !paramThesisIds.has(id)).forEach(async id => {
-            const sectorAssignmentsIds = await this.fieldRepository.disableThesisInSector(sectorId, id, validFrom)
+            const sectorAssignmentsIds = await this.thesisRepository.disableThesisInSector(sectorId, id, validFrom)
             if (sectorAssignmentsIds) {
                 await this.userActionService.logDisabling(userId, THESES_IN_SECTORS_LOG_TABLE, sectorAssignmentsIds, null);
             }
-            const assignmentId = await this.fieldRepository.assignThesisToSector(id, sectorId, 0, validFrom, validTo)
+            const assignmentId = await this.thesisRepository.assignThesisToSector(id, sectorId, 0, validFrom, validTo)
             if (assignmentId) {
                 await this.userActionService.logCreation(userId, THESES_IN_SECTORS_LOG_TABLE, assignmentId, null);
             }
@@ -309,7 +311,7 @@ class FieldService {
     async disableThesis(userId, thesisId, timestamp) {
         try {
             const deviceId = await this.thesesAllSignalsRepository.getGridDeviceByThesis(thesisId, timestamp, timestamp)
-            const optimalProfileAssignmentId = await this.fieldRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp)
+            const optimalProfileAssignmentId = await this.thesisRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp)
             if (optimalProfileAssignmentId) {
                 this.userActionService.logDisabling(userId, OPTIMAL_PROFILES_LOG_TABLE, optimalProfileAssignmentId, null)
             }
@@ -326,7 +328,7 @@ class FieldService {
                 }
             }));
 
-            const sectorAssignmentsIds = await this.fieldRepository.disableThesisFromSectors(thesisId, timestamp)
+            const sectorAssignmentsIds = await this.thesisRepository.disableThesisFromSectors(thesisId, timestamp)
             if (sectorAssignmentsIds) {
                 await this.userActionService.logDisabling(userId, THESES_IN_SECTORS_LOG_TABLE, sectorAssignmentsIds, null);
             }
@@ -372,29 +374,29 @@ class FieldService {
         }
     }
 
-    async disableField(userId, fieldId, timestamp) {
+    async disableFarm(userId, farmId, timestamp) {
         try {
-            const devices = await this.deviceRepository.getFieldAssociatedDevices(fieldId, timestamp);
+            const devices = await this.deviceRepository.getFarmAssociatedDevices(farmId, timestamp);
             await Promise.all(devices.map(async (device) => {
-                const deviceAssignmentId = await this.deviceRepository.disableDeviceInField(device.id, timestamp);
+                const deviceAssignmentId = await this.deviceRepository.disableDeviceInFarm(device.id, timestamp);
                 if (deviceAssignmentId) {
-                    await this.userActionService.logDisabling(userId, FIELDS_DEVICES_LOG_TABLE, deviceAssignmentId, null);
+                    await this.userActionService.logDisabling(userId, FARMS_DEVICES_LOG_TABLE, deviceAssignmentId, null);
                 }
             }));
-            const fieldData = await this.fieldRepository.getFieldDetails(fieldId);
+            const farmData = await this.farmRepository.getFarmDetails(farmId);
 
-            if (fieldData && fieldData.sectors && Array.isArray(fieldData.sectors)) {
-                await Promise.all(fieldData.sectors.map(async sector => {
+            if (farmData && farmData.sectors && Array.isArray(farmData.sectors)) {
+                await Promise.all(farmData.sectors.map(async sector => {
                     try {
                         return await this.disableSector(userId, sector.id, timestamp);
                     } catch (err) {
-                        console.error(`Failed to disable sector ${sector.id} inside field disable: ${err.message}`);
+                        console.error(`Failed to disable sector ${sector.id} inside farm disable: ${err.message}`);
                     }
                 }));
             }
 
         } catch (error) {
-            console.error(`Error disabling field: ${error.message}`);
+            console.error(`Error disabling farm: ${error.message}`);
             throw error;
         }
     }
