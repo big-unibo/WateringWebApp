@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { Thesis } from '../dtos/thesisDto.js';
+import { ROLES } from '../commons/permissionRoles.js';
 
 const sectorsRouter = ({ authenticationService, authorizationService, fieldService, wateringScheduleService }) => {
     const router = Router();
@@ -200,8 +201,9 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
         const timestamp = req.query.timestamp ?? null
         
 
-        // if (!authorizationService.isUserAuthorizedById(requestUserData.userId, 'monitoring', 'sectors', sectorId))
-        //     return res.status(403).json({ message: 'Unauthorized request' })
+        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'SECTOR', sectorId))){
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
 
         try {
             const sectorData = await fieldService.getSectorDetails(sectorId, timestamp)
@@ -338,8 +340,9 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 
         const thesis = new Thesis(req.body.name, sectorId, undefined, req.body.validFrom ?? Date.now()/1000);
 
-        // if (!(await authorizationService.isUserAuthorizedInSector(userId, 'update', sectorId)))
-        // 		return res.status(403).json({message: 'Unauthorized request'});
+        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, 'SECTOR', sectorId))){
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
 
         try {
             const thesisId = await fieldService.createThesis(userId, thesis);
@@ -471,8 +474,9 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
                 return res.status(404).json({ message: 'Sector not found' });
             }
 
-            // if (!(await authorizationService.isUserAuthorizedById(requestUserData.userId, 'EDIT_ADVICE', 'sectors', sectorId)))
-            //     return res.status(403).json({ message: 'Unauthorized request' });
+            if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.PLANNER, 'SECTOR', sectorId))){
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
 
             const validFrom = req.query.validFrom ?? Date.now() / 1000
             const validTo = req.query.validTo
@@ -610,7 +614,9 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
 
-        //[TO DO]: Authorization
+        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, 'SECTOR', sectorId))){
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
 
         try {
             await fieldService.disableSector(userId, sectorId, timestamp)
@@ -744,9 +750,9 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
         }
 
         try {
-            // TODO Authorization
-            // if (!(await authorizationService.isUserAuthorizedInSector(user.id, 'update', sectorId)))
-            //     return res.status(403).json({message: 'Unauthorized request'});
+            if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'SECTOR', sectorId))){
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
 
             const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000
             const deviceTypes = req.query.deviceTypes;

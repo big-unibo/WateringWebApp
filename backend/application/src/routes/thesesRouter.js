@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { HUMIDITY_DEVICE_TYPE } from '../commons/constants.js'
 import { GridOptimalProfiles } from '../dtos/optStateDto.js'
 import { WateringParams } from '../dtos/wateringParamsDto.js'
+import { ROLES } from '../commons/permissionRoles.js'
 
 const thesesRouter = ({ userService, authenticationService, authorizationService, fieldService, wateringAdviceService }) => {
     const router = Router();
@@ -103,10 +104,12 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
             return res.status(401).json({ message: 'Authentication failed' });
         }
 
-        //[TO DO]: Authorization
-
         const thesisId = Number(req.params.thesisId)
         const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000
+
+        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId))){
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
 
         try {
             const result = await fieldService.getThesisDetails(thesisId, timestamp);
@@ -241,9 +244,9 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         }
 
         try {
-            // TODO Authorization
-            // if (!(await authorizationService.isUserAuthorizedInSector(user.id, 'update', thesisId)))
-            //     return res.status(403).json({message: 'Unauthorized request'});
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId))) {
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
 
             const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000
             const includeAnchestors = req.query.includeAnchestors ?? false
@@ -374,9 +377,9 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000;
 
         try {
-            //[TO DO]: Authorization
-            // if (!(await authorizationService.isUserAuthorizedInSector(requestUserData.userId, 'update', thesisId)))
-            //     return res.status(403).json({message: 'Unauthorized request'});
+            if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId))){
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
 
             const results = await fieldService.getSignalsByThesis(thesisId, timestamp, signalTypes);
             return res.status(200).json(results)
@@ -485,9 +488,9 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000;
 
         try {
-            // TODO Authorization  
-            // if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userId, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
-            //     return res.status(403).json({message: 'Unauthorized request'});
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId))) {
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
 
             const result = await wateringAdviceService.getThesisLastWateringAdvice(thesisId, timestamp)
             if (result) {
@@ -606,7 +609,9 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
 
 
         try {
-            // TODO authorization 
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId))) {
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
 
             const result = await wateringAdviceService.getWateringAdvice(thesisId, expectedWater, timestamp)
 
@@ -797,6 +802,10 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         if (!exists) {
             return res.status(404).json({ message: 'Thesis not found' });
         }
+        
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.PLANNER, 'THESIS', thesisId))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
 
         const validFrom = req.query.validFrom ? Number(req.query.validFrom) : Math.floor(Date.now() / 1000);
         const validTo = req.query.validTo
@@ -809,9 +818,6 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
 
         try {
             const userId = requestUserData.userId
-            // TODO authorization 
-            //if (!(await authorizationService.isUserAuthorizedByFieldAndId(requestUserData.userId, refStructureName, companyName, fieldName, sectorName, thesisName, 'WA', timestamp, timestamp)))
-            //     return res.status(401).json({message: 'Unauthorized request'});
 
             const devices = await fieldService.getDevicesByThesis(thesisId, validFrom)
             const device = devices.find(d => d.deviceType === HUMIDITY_DEVICE_TYPE);
@@ -969,9 +975,9 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         const thesisId = req.params.thesisId;
 
         try {
-            // const sectorId = fieldService.getThesisDetails(thesisId).sectorId
-            // if (!(await authorizationService.isUserAuthorizedById(requestUserData.userId, 'EDIT_ADVICE', 'sectors', sectorId)))
-            //     return res.status(403).json({ message: 'Unauthorized request' });
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId))) {
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
 
             const timestamp = req.query.timestamp ?? Date.now() / 1000
 
@@ -1098,9 +1104,9 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
 
         try {
             const userId = requestUserData.userId
-            // const sectorId = fieldService.getThesisDetails(thesisId).sectorId
-            // if (!(await authorizationService.isUserAuthorizedById(requestUserData.userId, 'EDIT_ADVICE', 'sectors', sectorId)))
-            //     return res.status(403).json({ message: 'Unauthorized request' });
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.PLANNER, 'THESIS', thesisId))) {
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
 
             const validFrom = req.query.validFrom ?? Date.now() / 1000
             const validTo = req.query.validTo
@@ -1252,7 +1258,9 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
 
         try {
-            //[TO DO]: Authorization
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, 'THESIS', thesisId))) {
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
             await fieldService.disableThesis(userId, thesisId, timestamp)
             return res.status(200).json({ message: `Thesis validity succesfully endend` })
         } catch (error) {

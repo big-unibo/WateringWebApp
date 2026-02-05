@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import { Farm } from '../dtos/farmDto.js';
 import { Sector } from '../dtos/sectorDto.js';
+import { ROLES } from '../commons/permissionRoles.js';
 
 const farmsRouter = ({ authenticationService, authorizationService, fieldService }) => {
     const router = Router();
@@ -94,9 +95,12 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
         } catch (error) {
             return res.status(403).json({ message: 'Authentication failed' });
         }
-        //[TO DO]: Authorization
-
+        
         const farmId = req.params.farmId;
+
+        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'FARM', farmId))){
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
 
         try {
             const result = await fieldService.getFarmDetails(farmId)
@@ -331,7 +335,9 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
 
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
 
-        //[TO DO]: Authorization
+        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, 'FARM', farmId))){
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
 
         try {
             await fieldService.disableFarm(userId, farmId, timestamp)
@@ -455,8 +461,9 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
                 return res.status(404).json({ message: 'Farm not found' });
             }
 
-            // if (!(await authorizationService.isUserAuthorizedInFarm(userId, 'update', farmId)))
-            //     return res.status(403).json({ message: 'Unauthorized request' });
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, 'FARM', farmId))) {
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
 
             const {
                 name,
@@ -605,9 +612,9 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
         }
 
         try {
-            // TODO Authorization
-            // if (!(await authorizationService.isUserAuthorizedInSector(user.id, 'update', farmId)))
-            //     return res.status(403).json({message: 'Unauthorized request'});
+            if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'FARM', farmId))){
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
 
             const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000
             const deviceTypes = req.query.deviceTypes;
@@ -690,8 +697,15 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
         }
 
         try {
-            const farms = await fieldService.getFarms(requestUserData.userId);
-            return res.status(200).json(farms || []);
+            let userAvailableIds = await authorizationService.getAvailableEntityIds(requestUserData.userId, 'FARM', ROLES.VIEWER)
+            if (Array.isArray(userAvailableIds) && userAvailableIds.length > 0) {
+                if (userAvailableIds.includes('ALL')) {
+                    userAvailableIds = null
+                }
+                const farms = await fieldService.getFarms(userAvailableIds);
+                return res.status(200).json(farms);
+            }
+            return res.status(200).json([]);
         } catch (error) {
             console.log(`Fail retrieving farms caused by: ${error.message}`);
             return res.status(500).json({ error: "Error while retrieving farms" });

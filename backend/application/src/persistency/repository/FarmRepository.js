@@ -1,3 +1,5 @@
+import { Op } from "sequelize";
+
 class FarmRepository {
 
     constructor(models, sequelize) {
@@ -14,9 +16,21 @@ class FarmRepository {
         return count > 0;
     }
 
-    async getFarms(){
+    async getFarms(filteringIds){
         try {
-            const farms = await this.Farm.findAll()
+            const where = {};
+
+            if (Array.isArray(filteringIds)) {
+                if (filteringIds.length > 0){
+                    where.id = {
+                        [Op.in]: filteringIds
+                    }
+                } else {
+                    return []
+                }
+            }
+
+            const farms = await this.Farm.findAll({ where });
             return farms;
         } catch (error) {
             throw new Error(`Error retrieving farms caused by: ${error.message}`);

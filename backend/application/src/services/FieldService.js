@@ -50,8 +50,8 @@ class FieldService {
         }
     }
 
-    async getFarms(userId) {
-        const result = await this.farmRepository.getFarms();
+    async getFarms(filteringIds) {
+        const result = await this.farmRepository.getFarms(filteringIds);
         return dtoConverter.convertFarms(result);
     }
 
