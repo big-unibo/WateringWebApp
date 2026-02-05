@@ -9,7 +9,7 @@ class CompanyRepository {
         this.sequelize = sequelize
     }
 
-    async createCompany(companyName, address, organizationIds) {
+    async createCompany(companyName, address, organizationIds = []) {
         try {
             for(const organizationId of organizationIds){
                 const organization = await this.Organization.findByPk(organizationId);

@@ -291,8 +291,9 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
 
         try {
             const userId = requestUserData.userId;
-            // if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'companies')))
-            //     return res.status(403).json({ message: 'Unauthorized request' });
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ADMINISTRATOR))) {
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
 
 
             const companyName = req.body.name
