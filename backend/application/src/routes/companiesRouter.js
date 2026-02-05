@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { Company } from '../dtos/companyDto.js';
+import { ROLES } from "../commons/permissionRoles.js"
 
 const companiesRouter = ({ companyService, authenticationService, authorizationService }) => {
     const router = Router();
@@ -74,8 +75,16 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
         }
 
         try {
-            const companies = await companyService.getCompanies(requestUserData.userId);
-            return res.status(200).json(companies || []);
+            let userAvailableIds = await authorizationService.getAvailableEntityIds(requestUserData.userId, 'COMPANY', ROLES.VIEWER)
+            if (Array.isArray(userAvailableIds) && userAvailableIds.length > 0)
+            {
+                if(userAvailableIds.includes('ALL')){
+                    userAvailableIds = null
+                }
+                const companies = await companyService.getCompanies(userAvailableIds);
+                return res.status(200).json(companies);
+            }            
+            return res.status(200).json([]);
         } catch (error) {
             console.log(`Fail retrieving companies caused by: ${error.message}`);
             return res.status(500).json({ error: "Error while retrieving companies" });
@@ -173,9 +182,12 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
         } catch (error) {
             return res.status(403).json({ message: 'Authentication failed' });
         }
-        //[TO DO]: Authorization
-
+        
         const companyId = req.params.companyId;
+
+        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'COMPANY', companyId))){
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
 
         try {
             const result = await companyService.getCompanyDetails(companyId)

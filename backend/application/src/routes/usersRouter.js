@@ -269,7 +269,116 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
             console.error(`Fail while retrieving user data caused by: ${error.message}`);
             return res.status(500).json({ error: 'Error while retrieving user data' });
         }
-    });
+    })
+
+    /**
+     * @swagger
+     * /users/isAuthorized:
+     *   get:
+     *     summary: Checks if a user has an authorization on an entity
+     *     tags: [Users]
+     *     description: |
+     *       Checks if a user has an authorization on an entity grater or equal to specified *role* on the specified entity
+     *     parameters:
+     *       - in: query
+     *         name: role
+     *         required: true
+     *         schema:
+     *           type: string
+     *           enum: [VIEWER, PLANNER, ACCOUNTER, ADMINISTRATOR]
+     *         description: Minimum required role on the entity
+     *       - in: query
+     *         name: entityType
+     *         required: true
+     *         schema:
+     *           type: string
+     *           enum: [COMPANY, FARM, SECTOR, THESIS]
+     *         description: Type of the entity on which is requested the authorization
+     *       - in: query
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: Id of the entity          
+     *     responses:
+     *       '200':
+     *         description: Validation Result
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                  isValid:
+     *                    type: boolean
+     *               required:
+     *                - isValid
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *                 - errors
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed – invalid or missing JWT token.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '500':
+     *         description: Internal Server Error – unexpected error while retrieving user authorization data
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     */
+    router.get('/isAuthorized', async (req, res) => {
+        let requestUserData;
+
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization)
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' })
+        }
+
+        try {
+            const userId = requestUserData.userId
+            const minRole = req.query.role.toLowerCase()
+            const entity = req.query.entityType
+            const id = req.query.id
+            
+            const isValid = await authorizationService.isUserAuthorized(userId, minRole, entity, id)
+
+            return res.status(200).json({isValid:isValid})
+        } catch (error) {
+            console.error(`Fail while retrieving user authorization data caused by: ${error.message}`);
+            return res.status(500).json({ error: 'Error while retrieving user authorization' });
+        }
+    })
 
     return router;
 }

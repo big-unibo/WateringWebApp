@@ -1,6 +1,6 @@
 import { USERS_LOG_TABLE } from "../commons/constants.js";
 import { User } from "../dtos/userDto.js";
-import { UserPermit, UserPermits } from "../dtos/userPermitsDto.js";
+import { UserRole, UserPermits } from "../dtos/userPermitsDto.js";
 
 
 class UserService {
@@ -49,6 +49,10 @@ class UserService {
         }
     }
 
+    async isAdmin(userId) {
+        return (await this.userRepository.findUserPermits(userId)).map(({role}) => role).includes('administrator')
+    }
+
     async findUserPermits(userId) {
         try {
             const user = (await this.findUser(userId));
@@ -72,29 +76,34 @@ class UserService {
     async computeUserPermits(user, results) {
         try {
             const map = new Map();
+            let isAdmin = false
 
             results.forEach(p => {
-                const key = `${p.permit}||${p.table}`;
-                if (!map.has(key)) {
-                    map.set(key, {
-                        permit: p.permit,
-                        table: p.table,
-                        idKeys: p.idKey !== null ? new Set([p.idKey]) : new Set()
-                    });
+                if (p.role === 'administrator'){
+                    isAdmin = true
                 } else {
-                    if (p.id_key !== null) {
-                        map.get(key).idKeys.add(p.idKey);
+                    const key = `${p.role}||${p.table}`;
+                    if (!map.has(key)) {
+                        map.set(key, {
+                            role: p.role,
+                            table: p.table,
+                            idKeys: p.idKey !== null ? new Set([p.idKey]) : new Set()
+                        });
+                    } else {
+                        if (p.id_key !== null) {
+                            map.get(key).idKeys.add(p.idKey);
+                        }
                     }
                 }
             });
 
-            const permits = Array.from(map.values()).map(p => new UserPermit(
-                p.permit,
+            const roles = Array.from(map.values()).map(p => new UserRole(
+                p.role,
                 p.table,
                 Array.from(p.idKeys)
             ));
 
-            return new UserPermits(user.id, user.role, permits)
+            return new UserPermits(user.id, isAdmin, roles)
         } catch (error) {
             console.error('Error computing user permits:', error);
             throw error;

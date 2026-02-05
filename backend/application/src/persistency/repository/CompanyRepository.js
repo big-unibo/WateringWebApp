@@ -1,3 +1,5 @@
+import { Op } from "sequelize"
+
 class CompanyRepository {
     constructor(models, sequelize) {
         this.Company = models.Company
@@ -59,9 +61,24 @@ class CompanyRepository {
         }
     }
 
-    async getCompanies() {
+    /**
+     * Returns companies filtered by given ids, if filteringIds is not defined it returns all the companies, if it is empty return empty
+     */
+    async getCompanies(filteringIds) {
         try {
-            const companies = await this.Company.findAll()
+            const where = {};
+
+            if (Array.isArray(filteringIds)) {
+                if (filteringIds.length > 0){
+                    where.id = {
+                        [Op.in]: filteringIds
+                    }
+                } else {
+                    return []
+                }
+            }
+
+            const companies = await this.Company.findAll({ where });
             return companies;
         } catch (error) {
             throw new Error(`Error retrieving companies caused by: ${error.message}`);

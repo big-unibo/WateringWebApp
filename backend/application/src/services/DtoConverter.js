@@ -40,7 +40,8 @@ class DtoConverter {
     convertCompany(company) {
         return new Company(
             company.companyName,
-            company.organizationId,
+            company.address,
+            company.organizationIds,
             company.id
         );
     }

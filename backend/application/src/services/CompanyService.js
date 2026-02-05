@@ -5,8 +5,8 @@ const dtoConverter = new DtoConverter();
 
 class CompanyService {
     constructor(companyRepository, userActionService) {
-        this.companyRepository = companyRepository;
-        this.userActionService = userActionService;
+        this.companyRepository = companyRepository
+        this.userActionService = userActionService
     }
 
     async createCompany(userId,company){ 
@@ -23,8 +23,8 @@ class CompanyService {
         }    
     }
 
-    async getCompanies(userId) {
-        const result = await this.companyRepository.getCompanies();
+    async getCompanies(filteringIds) {
+        const result = await this.companyRepository.getCompanies(filteringIds);
         return dtoConverter.convertCompanies(result);
     }
 

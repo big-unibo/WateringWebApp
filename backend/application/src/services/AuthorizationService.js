@@ -1,48 +1,26 @@
+import { isRoleAtLeast } from "../commons/permissionRoles.js";
+
 class AuthorizationService {
 
-	constructor(userService, fieldService) {
-		this.userService = userService;
-		this.fieldService = fieldService
+	constructor(userService, authorizationRepository) {
+		this.userService = userService
+		this.authorizationRepository = authorizationRepository
 	}
 
-	async isUserAuthorized(userId, permit, table) {
-		const userPermits = await this.userService.findUserPermits(userId);
-		if (!userPermits || !Array.isArray(userPermits.permits)) return false;
-		if (userPermits.role === 'admin') return true;
-
-		return userPermits.permits.some(p =>
-			p.permit === permit &&
-			p.table === table
-		);
+	async getAvailableEntityIds(userId, entity, min_role){
+		if(await this.userService.isAdmin(userId)) return ['ALL']
+		const availableIds = await this.authorizationRepository.getUserAvailableIds(userId, entity)
+		return [...new Set(availableIds.filter(({role}) => isRoleAtLeast(role, min_role)).map(({id}) => id))]
 	}
 
-
-
-	async isUserAuthorizedById(userId, permit, table, idKey) {
-		
-		const userPermits = await this.userService.findUserPermits(userId);
-		if (!userPermits || !Array.isArray(userPermits.permits)) return false;
-		if (userPermits.role === 'admin') return true;
-
-		return userPermits.permits.some(p =>
-			p.permit === permit &&
-			p.table === table &&
-			p.idKeys.includes(idKey)
-		);
-	}
-
-	/* User allowed if it has a permit of given type for the company owning the given sector*/ 
-	async isUserAuthorizedInSector(userId, permit, sectorId) {
-		const company = await this.fieldService.getSectorOwner(sectorId);
-		const companyId = company.id;
-		return this.isUserAuthorizedById(userId, permit, 'companies', companyId);
-	}
-
-	/* User allowed if it has a permit of given type for the company owning the given sector*/ 
-	async isUserAuthorizedInField(userId, permit, fieldId) {
-		const company = await this.fieldService.getFieldOwner(fieldId);
-		const companyId = company.id;
-		return this.isUserAuthorizedById(userId, permit, 'companies', companyId);
+	async isUserAuthorized(userId, requiredRole, entity, id)
+	{
+		if(await this.userService.isAdmin(userId)) return true
+		const userRole = await this.authorizationRepository.getUserRole(userId, entity, id)
+		if(userRole && userRole.length > 0){
+			return isRoleAtLeast(userRole[0].role, requiredRole)
+		}
+		return false		
 	}
 }
 
