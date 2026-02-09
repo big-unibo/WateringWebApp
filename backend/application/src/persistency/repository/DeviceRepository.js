@@ -26,6 +26,7 @@ class DeviceRepository {
                 description: deviceData.description,
                 location: deviceData.location,
                 binningId: deviceData.binningId,
+                companyId: deviceData.companyId
             });
 
             return device.id;

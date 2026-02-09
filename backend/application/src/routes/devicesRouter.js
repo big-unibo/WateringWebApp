@@ -251,7 +251,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
-            const device = new CreateDevice(req.body.type, req.body.description, req.body.location, req.body.binningId);
+            const device = new CreateDevice(req.body.type, req.body.description, req.body.companyId, req.body.location, req.body.binningId);
 
             const deviceId = await deviceService.createDevice(userId, device);
             return res.status(200).json({ message: `Device created with success`, id: deviceId });

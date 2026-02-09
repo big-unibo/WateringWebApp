@@ -46,6 +46,7 @@ describe('Device and Signal Setup Integration Test', () => {
         const payload = {
             type: 'WHEATER_STATION',
             description: 'Main Field Station',
+            companyId: 1,
             location: {
                 type: 'Point',
                 coordinates: [10.50, 45.50]

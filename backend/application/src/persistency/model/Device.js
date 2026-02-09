@@ -31,6 +31,11 @@ function initDevice(sequelize) {
             type: DataTypes.INTEGER,
             allowNull: true,
             field: "binning_id"
+        },
+        companyId: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            field: "company_id"
         }
     }, {
         tableName : 'devices',

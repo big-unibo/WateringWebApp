@@ -12,12 +12,14 @@ export class CreateDevice {
     /**
      * @param {string} type - Device type
      * @param {string} description - Optional description
+     * @param {number} companyId - Company that devices belongs to
      * @param {Object} location - GeoJSON Point
      * @param {number} binningId  - Id of the binning profile
      */
-    constructor(type, description, location, binningId) {
+    constructor(type, description, companyId, location, binningId) {
         this.type = type;
         this.description = description;
+        this.companyId = companyId;
         this.location = location;
         this.binningId = binningId;
     }
