@@ -358,7 +358,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         }
         try {
             const userId = requestUserData.userId
-            if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, 'DEVICE', deviceId))) {
+            if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, 'DEVICE', req.params.deviceId))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
@@ -484,13 +484,13 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         }
 
         const userId = requestUserData.userId
+        const deviceId = req.params.deviceId
+        
         if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, 'DEVICE', deviceId))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
         try {
-
-            const deviceId = req.params.deviceId
             const exists = await deviceService.deviceExists(deviceId);
             if (!exists) {
                 return res.status(404).json({ message: 'Device not found' });

@@ -149,7 +149,8 @@ CREATE TABLE public.devices (
     type text,
     description text,
     location public.geometry,
-    binning_id integer
+    binning_id integer,
+    company_id integer
 );
 
 
@@ -1087,7 +1088,8 @@ CREATE TABLE public.users (
     id integer NOT NULL,
     email text NOT NULL,
     password text NOT NULL,
-    name text
+    name text,
+    phone text
 );
 
 
@@ -1153,6 +1155,77 @@ ALTER SEQUENCE public.users_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
+
+--
+-- Name: master_data_permits; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.master_data_permits AS
+ SELECT permits.user_id,
+    permits.role,
+    sectors.company_id,
+    sectors.farm_id,
+    sectors.sector_id,
+    sectors.organization_id,
+    sectors.thesis_id,
+    sectors.device_id,
+    sectors.signal_id,
+    array_agg(DISTINCT sectors.service_name) AS services
+   FROM (public.permits
+     JOIN ( SELECT c.id AS company_id,
+            f.id AS farm_id,
+            s.id AS sector_id,
+            srv.service_name,
+            co.organization_id,
+            ts.thesis_id,
+            d.id AS device_id,
+            ds.signal_id
+           FROM (((((((((((public.companies c
+             JOIN public.farms f ON ((f.company_id = c.id)))
+             JOIN public.sectors s ON ((s.farm_id = f.id)))
+             LEFT JOIN public.sectors_services ss ON ((ss.sector_id = s.id)))
+             LEFT JOIN public.services srv ON ((ss.service_id = srv.id)))
+             LEFT JOIN public.companies_organizations co ON ((c.id = co.company_id)))
+             LEFT JOIN public.farms_devices fd ON ((fd.farm_id = f.id)))
+             LEFT JOIN public.sectors_devices sd ON ((sd.sector_id = s.id)))
+             LEFT JOIN ( SELECT DISTINCT theses_in_sectors.sector_id,
+                    theses_in_sectors.thesis_id
+                   FROM public.theses_in_sectors) ts ON ((ts.sector_id = s.id)))
+             LEFT JOIN public.theses_devices td ON ((td.thesis_id = ts.thesis_id)))
+             LEFT JOIN public.devices d ON (((d.id = fd.device_id) OR (d.id = sd.device_id) OR (d.id = td.device_id))))
+             LEFT JOIN ( SELECT DISTINCT devices_signals.device_id,
+                    devices_signals.signal_id
+                   FROM public.devices_signals) ds ON ((ds.device_id = d.id)))) sectors ON (((permits."table" = 'sectors'::text) AND (permits.id_key = sectors.sector_id))))
+  GROUP BY permits.user_id, permits.role, sectors.company_id, sectors.farm_id, sectors.sector_id, sectors.organization_id, sectors.thesis_id, sectors.device_id, sectors.signal_id
+UNION
+ SELECT permits.user_id,
+    permits.role,
+    c.id AS company_id,
+    f.id AS farm_id,
+    s.id AS sector_id,
+    co.organization_id,
+    ts.thesis_id,
+    d.id AS device_id,
+    ds.signal_id,
+    array_agg(DISTINCT srv.service_name) AS services
+   FROM (((((((((public.permits
+     JOIN public.companies c ON (((permits."table" = 'companies'::text) AND (permits.id_key = c.id))))
+     LEFT JOIN public.farms f ON ((f.company_id = c.id)))
+     LEFT JOIN public.sectors s ON ((s.farm_id = f.id)))
+     LEFT JOIN public.sectors_services ss ON ((ss.sector_id = s.id)))
+     LEFT JOIN public.services srv ON ((ss.service_id = srv.id)))
+     LEFT JOIN public.companies_organizations co ON ((c.id = co.company_id)))
+     LEFT JOIN ( SELECT DISTINCT theses_in_sectors.sector_id,
+            theses_in_sectors.thesis_id
+           FROM public.theses_in_sectors) ts ON ((ts.sector_id = s.id)))
+     LEFT JOIN public.devices d ON ((d.company_id = c.id)))
+     LEFT JOIN ( SELECT DISTINCT devices_signals.device_id,
+            devices_signals.signal_id
+           FROM public.devices_signals) ds ON ((ds.device_id = d.id)))
+  GROUP BY permits.user_id, permits.role, c.id, f.id, s.id, srv.service_name, co.organization_id, ts.thesis_id, d.id, ds.signal_id;
+
+
+ALTER VIEW public.master_data_permits OWNER TO postgres;
 
 
 --
@@ -1487,6 +1560,15 @@ VALUES (
   'test-admin-user@example.com',
   'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86',
   'Test Admin'
+);
+
+INSERT INTO public.permits (id, "table", role, id_key, user_id)
+VALUES (
+  1,
+  NULL,
+  'administrator',
+  NULL,
+  1
 );
 
 INSERT INTO public.services (id, service_name)
@@ -2060,6 +2142,14 @@ ALTER TABLE ONLY public.devices_signals
 
 ALTER TABLE ONLY public.devices
     ADD CONSTRAINT devices_binning_id_fkey FOREIGN KEY (binning_id) REFERENCES public.profiles_bins(id) NOT VALID;
+
+
+--
+-- Name: devices devices_company_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.devices
+    ADD CONSTRAINT devices_company_id_fkey FOREIGN KEY (company_id) REFERENCES public.companies(id) NOT VALID;
 
 
 --
