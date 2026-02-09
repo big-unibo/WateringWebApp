@@ -13,15 +13,13 @@ class AuthorizationService {
 		return [...new Set(availableIds.filter(({role}) => isRoleAtLeast(role, min_role)).map(({id}) => id))]
 	}
 
-	async isUserAuthorized(userId, requiredRole, entity = null, id = null)
-	{
-		if(await this.userService.isAdmin(userId)) return true
-		if (entity != null && id != null) {
-			const userRole = await this.authorizationRepository.getUserRole(userId, entity, id)
-			if (userRole && userRole.length > 0) {
-				return isRoleAtLeast(userRole[0].role, requiredRole)
-			}
+	async isUserAuthorized(userId, requiredRole, entity = null, id = null) {
+		if (await this.userService.isAdmin(userId)) return true
+		const userRoles = await this.authorizationRepository.getUserRoles(userId, entity, id)
+		if (userRoles && userRoles.length > 0) {
+			return userRoles.some(({ role }) => isRoleAtLeast(role, requiredRole))
 		}
+
 		return false		
 	}
 }

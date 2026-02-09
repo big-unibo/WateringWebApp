@@ -23,13 +23,13 @@ class AuthorizationRepository {
         }
     }
 
-    async getUserRole(userId, entity, id){
+    async getUserRoles(userId, entity, id){
         try {
             const query = `
                 SELECT DISTINCT role
                 FROM master_data_permits
                 WHERE user_id = :userId
-                    AND ${ENTITY_ID_MAPPING[entity]} = :id
+                    ${entity!=null && id != null ? `AND ${ENTITY_ID_MAPPING[entity]} = :id`:''}
             `
             const results = await this.sequelize.query(query, {
                 replacements: { userId, id },

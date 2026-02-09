@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { CreateDevice, DeviceAssociation } from '../dtos/deviceDto.js';
+import { ROLES } from '../commons/permissionRoles.js';
 
 const devicesRouter = ({ authenticationService, authorizationService, userService, deviceService }) => {
     const router = Router();
@@ -246,8 +247,9 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         }
         try {
             const userId = requestUserData.userId
-            // if (!(await authorizationService.isUserAuthorized(userId, 'create', 'devices')))
-            //     return res.status(403).json({ message: 'Unauthorized request' });
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER))) {
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
 
             const device = new CreateDevice(req.body.type, req.body.description, req.body.location, req.body.binningId);
 
@@ -356,8 +358,9 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         }
         try {
             const userId = requestUserData.userId
-            // if (!(await authorizationService.isUserAuthorized(userId, 'create', 'devices')))
-            //     return res.status(403).json({ message: 'Unauthorized request' });
+            if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, 'DEVICE', deviceId))) {
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
 
             const validFrom = req.body.timestamp ?? Date.now() / 1000;
 
@@ -481,7 +484,9 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         }
 
         const userId = requestUserData.userId
-        //[TO DO]: Authorization
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, 'DEVICE', deviceId))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
 
         try {
 
@@ -624,7 +629,9 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
 
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
 
-        //[TO DO]: Authorization
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, 'DEVICE', deviceId))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
 
         try {
             await deviceService.disableDevice(userId, deviceId, timestamp)
@@ -732,6 +739,10 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
 
         const deviceId = req.params.deviceId
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
+
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, 'DEVICE', deviceId))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
 
         try {
             const device = await deviceService.getDevice(deviceId, timestamp);

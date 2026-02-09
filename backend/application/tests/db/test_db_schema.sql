@@ -997,9 +997,9 @@ CREATE VIEW public.theses_denormalized AS
     tsec.valid_from,
     tsec.valid_to
    FROM ((((public.companies c
-     JOIN public.farms f ON ((f.company_id = c.id)))
-     JOIN public.sectors sec ON ((sec.farm_id = f.id)))
-     JOIN ( SELECT ts.thesis_id,
+     LEFT JOIN public.farms f ON ((f.company_id = c.id)))
+     LEFT JOIN public.sectors sec ON ((sec.farm_id = f.id)))
+     LEFT JOIN ( SELECT ts.thesis_id,
             ts.sector_id,
             min(ts.valid_from) AS valid_from,
                 CASE
@@ -1008,7 +1008,7 @@ CREATE VIEW public.theses_denormalized AS
                 END AS valid_to
            FROM public.theses_in_sectors ts
           GROUP BY ts.thesis_id, ts.sector_id) tsec ON ((tsec.sector_id = sec.id)))
-     JOIN public.theses t ON ((tsec.thesis_id = t.id)));
+     LEFT JOIN public.theses t ON ((tsec.thesis_id = t.id)));
 
 
 ALTER VIEW public.theses_denormalized OWNER TO postgres;

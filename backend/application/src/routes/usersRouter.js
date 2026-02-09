@@ -275,10 +275,10 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      * @swagger
      * /users/isAuthorized:
      *   get:
-     *     summary: Checks if a user has an authorization on an entity
+     *     summary: Checks if a user has certain authorizations
      *     tags: [Users]
      *     description: |
-     *       Checks if a user has an authorization on an entity grater or equal to specified *role* on the specified entity
+     *       Checks if a user has an authorization on an entity grater or equal to specified *role* on the specified entity if specified, otherwise it checks if user as at least *role* on some entity
      *     parameters:
      *       - in: query
      *         name: role
@@ -289,14 +289,12 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      *         description: Minimum required role on the entity
      *       - in: query
      *         name: entityType
-     *         required: true
      *         schema:
      *           type: string
      *           enum: [COMPANY, FARM, SECTOR, THESIS]
      *         description: Type of the entity on which is requested the authorization
      *       - in: query
      *         name: id
-     *         required: true
      *         schema:
      *           type: integer
      *         description: Id of the entity          
