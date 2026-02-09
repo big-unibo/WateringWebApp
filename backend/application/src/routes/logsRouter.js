@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { ROLES } from '../commons/permissionRoles.js';
 
 
 const logsRouter = ({ authenticationService, authorizationService, logService, fieldService }) => {
@@ -105,16 +106,18 @@ const logsRouter = ({ authenticationService, authorizationService, logService, f
     router.get("/:thesisId/anomalies", async (req, res) => {
         try {
             const user = await authenticationService.validateJwt(req.headers.authorization);
-            // if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userId, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timeFilterFrom, timeFilterTo)))
-            //     return res.status(401).json({ message: 'Unauthorized request' });
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
 
         const thesisId = req.params.thesisId;
         const exists = await fieldService.thesisExists(thesisId);
         if (!exists) {
             return res.status(404).json({ message: 'Thesis not found' });
+        }
+
+        if (!(await authorizationService.isUserAuthorized(user.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Monitoring'))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
         }
         const timeFilterFrom = req.query.timeFilterFrom;
         const timeFilterTo = req.query.timeFilterTo;

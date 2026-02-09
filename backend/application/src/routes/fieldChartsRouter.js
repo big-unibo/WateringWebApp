@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { ROLES } from '../commons/permissionRoles.js';
 const fieldChartRouter = ({ authenticationService, authorizationService, fieldService }) => {
     const router = Router();
 
@@ -137,11 +138,14 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         } catch (error) {
             return res.status(401).json({ message: 'Authentication failed' });
         }
-        // [TO DO]: Authorization
         const thesisId = Number(req.params.thesisId)
         const exists = await fieldService.thesisExists(thesisId);
         if (!exists) {
             return res.status(404).json({ message: 'Thesis not found' });
+        }
+
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Monitoring'))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
         }
 
         const timeFilterFrom = Number(req.query.timeFilterFrom)
@@ -270,11 +274,13 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
             return res.status(401).json({ message: 'Authentication failed' });
         }
 
-        // [TO DO]: Authorization
         const thesisId = Number(req.params.thesisId)
         const exists = await fieldService.thesisExists(thesisId);
         if (!exists) {
             return res.status(404).json({ message: 'Thesis not found' });
+        }
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Monitoring'))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
         }
 
         const timeFilterFrom = Number(req.query.timeFilterFrom)
@@ -399,11 +405,14 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         } catch (error) {
             return res.status(401).json({ message: 'Authentication failed' });
         }
-        // [TO DO]: Authorization
         const thesisId = Number(req.params.thesisId)
         const exists = await fieldService.thesisExists(thesisId);
         if (!exists) {
             return res.status(404).json({ message: 'Thesis not found' });
+        }
+
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Monitoring'))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
         }
 
         const timeFilterFrom = Number(req.query.timeFilterFrom)
@@ -528,11 +537,13 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         } catch (error) {
             return res.status(401).json({ message: 'Authentication failed' });
         }
-        // [TO DO]: Authorization
         const thesisId = Number(req.params.thesisId)
         const exists = await fieldService.thesisExists(thesisId);
         if (!exists) {
             return res.status(404).json({ message: 'Thesis not found' });
+        }
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Monitoring'))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
         }
 
         const timeFilterFrom = Number(req.query.timeFilterFrom)
@@ -645,14 +656,13 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
             return res.status(401).json({ message: 'Authentication failed' });
         }
 
-        // TODO authorization
-        // if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userId, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
-        //     return res.status(403).json({ message: 'Unauthorized request' });
-
         const thesisId = Number(req.params.thesisId)
         const exists = await fieldService.thesisExists(thesisId);
         if (!exists) {
             return res.status(404).json({ message: 'Thesis not found' });
+        }
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Watering Advice'))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
         }
         const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000;
 
@@ -759,14 +769,13 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
             return res.status(401).json({ message: 'Authentication failed' });
         }
 
-        // TODO authorization
-        // if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userId, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
-        //     return res.status(403).json({ message: 'Unauthorized request' });
-
         const thesisId = Number(req.params.thesisId)
         const exists = await fieldService.thesisExists(thesisId);
         if (!exists) {
             return res.status(404).json({ message: 'Thesis not found' });
+        }
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Watering Advice'))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
         }
         const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000;
 
@@ -878,15 +887,13 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         } catch (error) {
             return res.status(401).json({ message: 'Authentication failed' });
         }
-
-        // TODO authorization
-        // if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userId, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
-        //     return res.status(403).json({ message: 'Unauthorized request' });
-
         const thesisId = Number(req.params.thesisId)
         const exists = await fieldService.thesisExists(thesisId);
         if (!exists) {
             return res.status(404).json({ message: 'Thesis not found' });
+        }
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Watering Advice'))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
         }
 
         const timeFilterFrom = Number(req.query.timeFilterFrom)
@@ -1001,14 +1008,14 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
             return res.status(401).json({ message: 'Authentication failed' });
         }
 
-        // TODO authorization
-        // if (!(await authorizationService.isUserAuthorizedByFieldAndId(user.userId, refStructureName, companyName, fieldName, sectorName, thesisName, 'MO', timestamp, timestamp)))
-        //     return res.status(403).json({ message: 'Unauthorized request' });
-
         const thesisId = Number(req.params.thesisId)
         const exists = await fieldService.thesisExists(thesisId);
         if (!exists) {
             return res.status(404).json({ message: 'Thesis not found' });
+        }
+
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Monitoring'))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
         }
         const timeFilterFrom = Number(req.query.timeFilterFrom)
         const timeFilterTo = Number(req.query.timeFilterTo)

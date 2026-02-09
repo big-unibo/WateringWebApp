@@ -147,12 +147,12 @@ app.use(
 
 app.use(
   '/sectors',
-  sectorsRouter({ userService, authenticationService, authorizationService, fieldService, wateringScheduleService })
+  sectorsRouter({ userService, authenticationService, authorizationService, fieldService })
 );
 
 app.use(
   '/theses',
-  thesesRouter({ userService, authenticationService, authorizationService, fieldService, wateringAdviceService })
+  thesesRouter({ authenticationService, authorizationService, fieldService, wateringAdviceService })
 );
 
 app.use(

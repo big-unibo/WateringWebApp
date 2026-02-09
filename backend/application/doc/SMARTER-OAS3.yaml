@@ -196,6 +196,7 @@ components:
       type: object
       required:
         - type
+        - companyId
       properties:
         type:
           type: string
@@ -203,6 +204,9 @@ components:
         description:
           type: string
           description: Description of the device
+        companyId:
+          type: integer
+          description: Company ID to which the device belongs
         location:
           $ref: '#/components/schemas/Point'
         binningId:

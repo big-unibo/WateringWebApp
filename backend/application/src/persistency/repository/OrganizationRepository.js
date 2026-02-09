@@ -1,3 +1,5 @@
+import { Op } from "sequelize";
+
 class OrganizationRepository {
     constructor(models, sequelize) {
         this.Organization = models.Organization;
@@ -17,9 +19,20 @@ class OrganizationRepository {
         }
     }
 
-    async getOrganizations() {
+    async getOrganizations(filteringIds) {
         try {
-            const organizations = await this.Organization.findAll()
+            const where = {};
+
+            if (Array.isArray(filteringIds)) {
+                if (filteringIds.length > 0) {
+                    where.id = {
+                        [Op.in]: filteringIds
+                    }
+                } else {
+                    return []
+                }
+            }
+            const organizations = await this.Organization.findAll({ where })
             return organizations;
         } catch (error) {
             throw new Error(`Error retrieving organizations caused by: ${error.message}`);

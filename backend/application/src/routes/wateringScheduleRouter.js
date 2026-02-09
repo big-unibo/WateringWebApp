@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { WateringEvent } from '../dtos/wateringScheduleDto.js';
 import { SCHEDULE_SAFE_INTERVAL } from '../commons/constants.js';
+import { ROLES } from '../commons/permissionRoles.js';
 
 const wateringScheduleRouter = ({ authenticationService, authorizationService, wateringScheduleService, fieldService }) => {
     const router = Router();
@@ -107,14 +108,13 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             return res.status(401).json({ message: 'Authentication failed' });
         }
         try {
-            //[TO DO]: Authorzation
-            // if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'companies')))
-            //     return res.status(403).json({ message: 'Unauthorized request' });
-
             const sectorId = parseInt(req.params.sectorId);
             const exists = await fieldService.sectorExists(sectorId);
             if (!exists) {
                 return res.status(404).json({ message: 'Sector not found' });
+            }
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'SECTOR', sectorId, 'Watering Advice'))) {
+                return res.status(403).json({ message: 'Unauthorized request' });
             }
 
             const timeFilterFrom = Number(req.query.timeFilterFrom)
@@ -221,7 +221,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
      *                   type: string
      */
 
-    router.put('/:eventId/update', async (req, res) => {
+    router.put('/:sectorId/:eventId/update', async (req, res) => {
         let requestUserData;
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -230,8 +230,9 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
         }
         try {
             const userId = requestUserData.userId
-            //[TO DO]: Authorization
-
+            if (!(await authorizationService.isUserAuthorized(userId, ROLES.PLANNER, 'SECTOR', req.params.sectorId, 'Watering Advice'))) {
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
             const eventId = req.params.eventId;
 
             const allowedFields = ['wateringStart', 'expectedWater', 'note', 'enabled'];
@@ -364,14 +365,14 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
 
         try {
             const userId = requestUserData.userId
-            //[TO DO]: Authorization
-            // if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'watering_events')))
-            //     return res.status(403).json({ message: 'Unauthorized request' });
 
             const sectorId = req.params.sectorId
             const exists = await fieldService.sectorExists(sectorId);
             if (!exists) {
                 return res.status(404).json({ message: 'Sector not found' });
+            }
+            if (!(await authorizationService.isUserAuthorized(userId, ROLES.PLANNER, 'SECTOR', sectorId, 'Watering Advice'))) {
+                return res.status(403).json({ message: 'Unauthorized request' });
             }
 
             const event = new WateringEvent({
@@ -513,14 +514,13 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
 
         try {
             const userId = requestUserData.userId
-            //[TO DO]: Authorization
-            // if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'watering_events')))
-            //     return res.status(403).json({ message: 'Unauthorized request' });
-
             const sectorId = req.params.sectorId;
             const exists = await fieldService.sectorExists(sectorId);
             if (!exists) {
                 return res.status(404).json({ message: 'Sector not found' });
+            }
+            if (!(await authorizationService.isUserAuthorized(userId, ROLES.PLANNER, 'SECTOR', sectorId, 'Watering Advice'))) {
+                return res.status(403).json({ message: 'Unauthorized request' });
             }
             const timestampFrom = req.query.timestampFrom;
             const timestampTo = req.query.timestampTo;
@@ -633,15 +633,16 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
         }
         try {
             const userId = requestUserData.userId
-            //[TO DO]: Authorzation
-            // if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'companies')))
-            //     return res.status(403).json({ message: 'Unauthorized request' });
 
             const now = Date.now() / 1000
             const sectorId = parseInt(req.params.sectorId);
             const exists = await fieldService.sectorExists(sectorId);
             if (!exists) {
                 return res.status(404).json({ message: 'Sector not found' });
+            }
+
+            if (!(await authorizationService.isUserAuthorized(userId, ROLES.PLANNER, 'SECTOR', sectorId, 'Watering Advice'))) {
+                return res.status(403).json({ message: 'Unauthorized request' });
             }
 
             const timestamp = req.query.timestamp || now + SCHEDULE_SAFE_INTERVAL
@@ -744,7 +745,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
      *                   type: string
      */
 
-    router.put('/:eventId/schedule', async (req, res) => {
+    router.put('/:sectorId/:eventId/schedule', async (req, res) => {
         let requestUserData;
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -755,7 +756,9 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
 
         const userId = requestUserData.userId
         const eventId = req.params.eventId;
-        //[TO DO]: Authorization
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.PLANNER, 'SECTOR', req.params.sectorId, 'Prescriptive Watering Advice'))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
 
         try {
             const event = await wateringScheduleService.validateEventForScheduling(eventId);
@@ -859,8 +862,15 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             const timeFilterFrom = Number(req.query.timeFilterFrom)
             const timeFilterTo = Number(req.query.timeFilterTo)
 
-            const result = await wateringScheduleService.getUserWateringEvents(requestUserData.userId, timeFilterFrom, timeFilterTo)
-            res.status(200).json(result);
+            let userAvailableSectorIds = await authorizationService.getAvailableEntityIds(requestUserData.userId, 'SECTOR', ROLES.VIEWER, 'Watering Advice')
+            if (Array.isArray(userAvailableSectorIds) && userAvailableSectorIds.length > 0)
+            {
+                if (userAvailableSectorIds.includes('ALL')) {
+                    userAvailableSectorIds = null
+                }
+                const result = await wateringScheduleService.getUserWateringEvents(userAvailableSectorIds, timeFilterFrom, timeFilterTo)
+                res.status(200).json(result);
+            } 
         } catch (error) {
             console.log(`Failed retrieving calendar caused by: ${error.message}`)
             return res.status(500).json({ message: "Error while retrieving calendar" })

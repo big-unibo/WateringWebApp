@@ -75,7 +75,7 @@ class WateringScheduleRepository {
         }
     }
 
-    async getUserWateringEvents(userId, timeFilterFrom, timeFilterTo){
+    async getUserWateringEvents(filteringSectorIds, timeFilterFrom, timeFilterTo){
         try {
             const query = `
                 SELECT DISTINCT
@@ -122,18 +122,18 @@ class WateringScheduleRepository {
                     ON s.id = tis.sector_id
                 JOIN users usr
                     ON usr.id = :userId
-                LEFT JOIN permits p
-                    ON (usr.role = 'admin' OR p.user_id = usr.id)
-                    AND p.id_key = s.id 
-                    AND p.table = 'sectors'
-                    AND p.permit = 'READ_ADVICE'
-                WHERE 
-                    we.watering_start BETWEEN :timeFilterFrom AND :timeFilterTo
+                WHERE we.watering_start BETWEEN :timeFilterFrom AND :timeFilterTo
+                    AND ${filteringIds === null
+                ? 'TRUE'
+                : filteringIds.length === 0
+                    ? 'FALSE'
+                    : 's.id = ANY(ARRAY(:filteringIds))'}
+                ${timeConditions}
             `;
 
             const results = await this.sequelize.query(query, {
                 replacements: { 
-                    userId: userId, 
+                    filteringSectorIds: filteringSectorIds, 
                     timeFilterFrom: timeFilterFrom, 
                     timeFilterTo: timeFilterTo 
                 },

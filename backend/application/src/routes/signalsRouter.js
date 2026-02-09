@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { AddMeasurementsRequest, CreateSignal, SignalUpdate} from '../dtos/signalDto.js';
+import { ROLES } from '../commons/permissionRoles.js';
 
 const signalsRouter = ({ authenticationService, authorizationService, signalService }) => {
     const router = Router();
@@ -72,14 +73,11 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
      *                   type: string
      */
     router.get('/providers', async (req, res) => {
-        let requestUserData;
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
             return res.status(401).json({ message: 'Authentication failed' });
         }
-
-        //[TO DO]: Authorization
 
         try {
             const providers = await signalService.getProviders();
@@ -177,7 +175,9 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
             return res.status(401).json({ message: 'Authentication failed' })
         }
         const userId = requestUserData.userId
-        //[TO DO]: Authorization
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
         try {
             const signal = new CreateSignal(req.body)
             const signalId = await signalService.createSignal(userId, signal)
@@ -292,11 +292,13 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
 
         const userId = requestUserData.userId;
 
-        //[TO DO]: Authorization
         const signalId = Number(req.params.signalId);
         const exists = await signalService.signalExists(signalId);
         if (!exists) {
             return res.status(404).json({ message: 'Signal not found' });
+        }
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, 'SIGNAL', signalId))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
         }
 
         const description = req.body.description;
@@ -416,11 +418,14 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
         }
         const userId = requestUserData.userId
 
-        //[TO DO]: Authorization
         const signalId = Number(req.params.signalId);
         const exists = await signalService.signalExists(signalId);
         if (!exists) {
             return res.status(404).json({ message: 'Signal not found' });
+        }
+
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, 'SIGNAL', signalId))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
         }
 
         const currentTimestamp = Date.now() / 1000
@@ -534,13 +539,11 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
      *                   example: Error creating measurements
      */
     router.post('/:signalId/addMeasurements', async (req, res) => {
-        let requestUserData;
         try {
-            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+            await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
             return res.status(401).json({ message: 'Authentication failed' });
         }
-        //[TO DO]: Authorization
 
         const signalId = Number(req.params.signalId);
         const exists = await signalService.signalExists(signalId);
@@ -664,12 +667,14 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
             return res.status(401).json({ message: 'Authentication failed' });
         }
 
-        //[TO DO]: Authorization
-
         try {
 
             const signalId = req.params.signalId
             const timestamp = req.query.timestamp ?? Date.now() / 1000
+
+            if (!(await authorizationService.isUserAuthorized(userId, ROLES.VIEWER, 'SIGNAL', signalId))) {
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
 
             const signalInfo = await signalService.getSignalInfo(signalId, timestamp)
             if (signalInfo) {

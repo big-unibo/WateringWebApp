@@ -91,13 +91,11 @@
      *                   type: string
      */
     router.get('/:profileId', async (req, res) => {
-        let requestUserData;
         try {
-            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+            await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
             return res.status(401).json({ message: 'Authentication failed' });
         }
-        // [TO DO]: Authorization
 
         const profileId = Number(req.params.profileId);
         

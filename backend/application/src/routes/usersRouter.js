@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { UserTokenRequest, UserTokenResponse } from '../dtos/authenticationDto.js';
 import { User, Users } from '../dtos/userDto.js';
+import { ROLES } from '../commons/permissionRoles.js';
 
 const usersRouter = ({ userService, authenticationService, authorizationService }) => {
     const router = Router();
@@ -66,8 +67,6 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
                 throw new Error('Body is empty');
 
             const request = new UserTokenRequest(req.body.email, req.body.password);
-
-            //[TO DO]: Improve log if no user is found
             const token = await authenticationService.generateJwt(request);
 
             const responseDto = new UserTokenResponse(token);
@@ -167,11 +166,11 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
         try {
             const userId = requestUserData.userId;
 
-            // if (!(await authorizationService.isUserAuthorized(userId, 'create', 'users')))
-            // return res.status(403).json({ message: 'Unauthorized request' });
-
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER))) {
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
             if (req.body.users.length === 0)
-                return res.status(400).json({ message: 'Insert at  least onew user' });
+                return res.status(400).json({ message: 'Insert at  least one new user' });
 
             const request = new Users(
             req.body.users.map(
@@ -297,7 +296,13 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      *         name: id
      *         schema:
      *           type: integer
-     *         description: Id of the entity          
+     *         description: Id of the entity
+     *       - in: query
+     *         name: service
+     *         schema:
+     *           type: string
+     *           enum: [Monitoring, Watering Advice, Prescriptive Watering Advice]
+     *         description: Name of the service that has to be enabled on the requested resource         
      *     responses:
      *       '200':
      *         description: Validation Result
@@ -368,8 +373,9 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
             const minRole = req.query.role.toLowerCase()
             const entity = req.query.entityType
             const id = req.query.id
+            const service = req.query.service
             
-            const isValid = await authorizationService.isUserAuthorized(userId, minRole, entity, id)
+            const isValid = await authorizationService.isUserAuthorized(userId, minRole, entity, id, service)
 
             return res.status(200).json({isValid:isValid})
         } catch (error) {

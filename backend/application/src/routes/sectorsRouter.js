@@ -3,7 +3,7 @@ import { Router } from 'express';
 import { Thesis } from '../dtos/thesisDto.js';
 import { ROLES } from '../commons/permissionRoles.js';
 
-const sectorsRouter = ({ authenticationService, authorizationService, fieldService, wateringScheduleService }) => {
+const sectorsRouter = ({ authenticationService, authorizationService, fieldService }) => {
     const router = Router();
 
 
@@ -90,8 +90,17 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
         const timeFilterTo = req.query.timeFilterTo ?? null
 
         try {
-            const sectors = await fieldService.getSectors(requestUserData.userId, timeFilterFrom, timeFilterTo);
-            return res.status(200).json(sectors || []);
+            let userAvailableIds = await authorizationService.getAvailableEntityIds(requestUserData.userId, 'SECTOR', ROLES.VIEWER)
+            if (Array.isArray(userAvailableIds) && userAvailableIds.length > 0) {
+                if (userAvailableIds.includes('ALL')) {
+                    userAvailableIds = null
+                }
+                const sectors = await fieldService.getSectors(userAvailableIds, timeFilterFrom, timeFilterTo)
+                return res.status(200).json(sectors)
+            }
+            return res.status(404).json({
+                error: "User has no permission to view any company"
+            })
         } catch (error) {
             console.log(`Fail retrieving sectors caused by: ${error.message}`);
             return res.status(500).json({ error: "Error while retrieving sectors" });
@@ -210,7 +219,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 
             if (!sectorData) {
                 return res.status(404).json({
-                    error: "No sector found with the given Id to retrieve informations from"
+                    error: "No sector found with the given Id"
                 })
             }
 
@@ -462,7 +471,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
 
         try {
@@ -474,7 +483,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
                 return res.status(404).json({ message: 'Sector not found' });
             }
 
-            if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.PLANNER, 'SECTOR', sectorId))){
+            if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.PLANNER, 'SECTOR', sectorId, 'Watering Advice'))){
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
@@ -602,7 +611,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
         const userId = requestUserData.userId
 

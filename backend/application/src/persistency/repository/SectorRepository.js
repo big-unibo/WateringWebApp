@@ -95,10 +95,10 @@ class SectorRepository {
         return sector.toJSON();
     }
 
-    async getSectors(userId, timeFilterFrom, timeFilterTo) {
+    async getSectors(filteringIds, timeFilterFrom, timeFilterTo) {
 
         let timeConditions = "";
-        const replacements = { userId };
+        const replacements = { filteringIds };
 
         if (timeFilterTo) {
             timeConditions += ` AND ts.valid_from <= :timeFilterTo`;
@@ -111,8 +111,7 @@ class SectorRepository {
         }
 
         const query = `
-            SELECT DISTINCT
-                c.id AS "companyId",
+            SELECT c.id AS "companyId",
                 c.company_name AS "companyName",
                 f.id AS "farmId",
                 f.farm_name AS "farmName",
@@ -126,17 +125,13 @@ class SectorRepository {
                 ON f.id = s.farm_id
             JOIN companies c
                 ON c.id = f.company_id
-            JOIN users u
-                ON u.id = :userId 
-            LEFT JOIN permits p
-                ON p.id_key = s.id 
-                AND p.table = 'sectors'
             LEFT JOIN theses_in_sectors ts
                 ON ts.sector_id = s.id
-            WHERE 
-                (
-                    (p.user_id = :userId) 
-                )
+            WHERE ${filteringIds === null
+                ? 'TRUE'
+                : filteringIds.length === 0
+                    ? 'FALSE'
+                    : 's.id = ANY(ARRAY(:filteringIds))'}
                 ${timeConditions}
             ORDER BY "companyName", "farmName", "sectorName";
         `;

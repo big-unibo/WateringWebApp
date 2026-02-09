@@ -11,6 +11,7 @@ class AuthorizationRepository {
                 SELECT DISTINCT role, ${ENTITY_ID_MAPPING[entity]} AS id
                 FROM master_data_permits
                 WHERE user_id = :userId
+                AND ${ENTITY_ID_MAPPING[entity]} IS NOT NULL
             `
             const results = await this.sequelize.query(query, {
                 replacements: { userId },
@@ -23,13 +24,14 @@ class AuthorizationRepository {
         }
     }
 
-    async getUserRoles(userId, entity, id){
+    async getUserRoles(userId, entity, id, service) {
         try {
             const query = `
                 SELECT DISTINCT role
                 FROM master_data_permits
                 WHERE user_id = :userId
-                    ${entity!=null && id != null ? `AND ${ENTITY_ID_MAPPING[entity]} = :id`:''}
+                    ${entity != null && id != null ? `AND ${ENTITY_ID_MAPPING[entity]} = :id` : ''}
+                    ${service != null ? `AND ${service} = ANY(services)` : ''} 
             `
             const results = await this.sequelize.query(query, {
                 replacements: { userId, id },

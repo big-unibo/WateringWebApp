@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { ORGANIZATIONS_LOG_TABLE } from '../commons/constants.js';
+import { ROLES } from '../commons/permissionRoles.js';
 
 const organizationsRouter = ({ organizationService, authenticationService, authorizationService, userActionService }) => {
     const router = Router();
@@ -74,8 +75,18 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
         }
 
         try {
-            const organizations = await organizationService.getOrganizations(requestUserData.userId);
-            return res.status(200).json(organizations || []);
+            let userAvailableIds = await authorizationService.getAvailableEntityIds(requestUserData.userId, 'ORGANIZATION', ROLES.VIEWER)
+            if (Array.isArray(userAvailableIds) && userAvailableIds.length > 0)
+            {
+                if(userAvailableIds.includes('ALL')){
+                    userAvailableIds = null
+                }
+                const organizations = await organizationService.getOrganizations(userAvailableIds)
+                return res.status(200).json(organizations)
+            }            
+            return res.status(404).json({
+                error: "User has no permission to view any company"
+            });
         } catch (error) {
             console.log(`Fail retrieving organizations caused by: ${error.message}`);
             return res.status(500).json({ error: "Error while retrieving organizations" });
@@ -172,11 +183,13 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
-        //[TO DO]: Authorization
 
         const organizationId = req.params.organizationId;
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'ORGANIZATION', organizationId))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
 
         try {
             const result = await organizationService.getOrganizationDetails(organizationId)
@@ -288,11 +301,9 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
 
         try {
             const userId = requestUserData.userId;
-            //const rule = PERMISSIONS.CREATE_ORGANIZATION.checks[0];
-            
-            // if (!(await authorizationService.isUserAuthorized(requestUserData.userId, 'create', 'organizations')))
-            //     return res.status(403).json({ message: 'Unauthorized request' });
-
+            if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER))) {
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
             const organizationName = req.body.name;
 
             const organizationId = await organizationService.createOrganization(userId, organizationName);

@@ -144,14 +144,19 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         const itemsPerPage = req.query.itemsPerPage ?? 50
 
         try {
-            const devices = await deviceService.getDevices(requestUserData.userId, timeFilterFrom, timeFilterTo, providerIds, types, page, itemsPerPage);
-            if (!devices?.pagination?.totalItems) {
-                return res.status(404).json({
-                    error: "User has no permission to view any devices in the given period"
-                });
+            let userAvailableIds = await authorizationService.getAvailableEntityIds(requestUserData.userId, 'DEVICE', ROLES.VIEWER)
+            if (Array.isArray(userAvailableIds) && userAvailableIds.length > 0)
+            {
+                if (userAvailableIds.includes('ALL')) {
+                    userAvailableIds = null
+                }
+                const devices = await deviceService.getDevices(userAvailableIds, timeFilterFrom, timeFilterTo, providerIds, types, page, itemsPerPage);
+                return res.status(200).json(devices);
             }
+            return res.status(404).json({
+                error: "User has no permission to view any devices"
+            });
 
-            return res.status(200).json(devices);
         } catch (error) {
             console.log(`Fail retrieving devices caused by: ${error.message}`);
             return res.status(500).json({ error: "Error while retrieving devices" });
@@ -616,7 +621,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
 
         const userId = requestUserData.userId
@@ -740,7 +745,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         const deviceId = req.params.deviceId
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
 
-        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, 'DEVICE', deviceId))) {
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'DEVICE', deviceId))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 

@@ -4,7 +4,7 @@ import { GridOptimalProfiles } from '../dtos/optStateDto.js'
 import { WateringParams } from '../dtos/wateringParamsDto.js'
 import { ROLES } from '../commons/permissionRoles.js'
 
-const thesesRouter = ({ userService, authenticationService, authorizationService, fieldService, wateringAdviceService }) => {
+const thesesRouter = ({ authenticationService, authorizationService, fieldService, wateringAdviceService }) => {
     const router = Router();
 
     /**
@@ -488,7 +488,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000;
 
         try {
-            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId))) {
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Watering Advice'))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
@@ -609,7 +609,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
 
 
         try {
-            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId))) {
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Watering Advice'))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
@@ -802,8 +802,8 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         if (!exists) {
             return res.status(404).json({ message: 'Thesis not found' });
         }
-        
-        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.PLANNER, 'THESIS', thesisId))) {
+
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.PLANNER, 'THESIS', thesisId, 'Watering Advice'))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
@@ -969,13 +969,13 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
 
         const thesisId = req.params.thesisId;
 
         try {
-            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId))) {
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Watering Advice'))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
@@ -1093,7 +1093,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
 
         const thesisId = req.params.thesisId;
@@ -1104,7 +1104,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
 
         try {
             const userId = requestUserData.userId
-            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.PLANNER, 'THESIS', thesisId))) {
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.PLANNER, 'THESIS', thesisId, 'Watering Advice'))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
@@ -1247,7 +1247,7 @@ const thesesRouter = ({ userService, authenticationService, authorizationService
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
         const userId = requestUserData.userId;
         const thesisId = req.params.thesisId;

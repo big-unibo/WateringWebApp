@@ -84,7 +84,9 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
                 const companies = await companyService.getCompanies(userAvailableIds);
                 return res.status(200).json(companies);
             }            
-            return res.status(200).json([]);
+            return res.status(404).json({
+                error: "User has no permission to view any company"
+            });
         } catch (error) {
             console.log(`Fail retrieving companies caused by: ${error.message}`);
             return res.status(500).json({ error: "Error while retrieving companies" });
@@ -180,7 +182,7 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
         
         const companyId = req.params.companyId;

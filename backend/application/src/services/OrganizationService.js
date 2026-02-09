@@ -23,8 +23,8 @@ class OrganizationService {
         }    
     }
 
-    async getOrganizations(userId) {
-        const result = await this.organizationRepository.getOrganizations();
+    async getOrganizations(filteringIds) {
+        const result = await this.organizationRepository.getOrganizations(filteringIds);
         return dtoConverter.convertOrganizationsDataWrapper(result);
     }
 

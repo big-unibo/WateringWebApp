@@ -93,7 +93,7 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
         
         const farmId = req.params.farmId;
@@ -204,8 +204,9 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
             const userId = requestUserData.userId;
             const companyId = Number(req.body.companyId)
 
-            // if (!(await authorizationService.isUserAuthorizedById(userId, 'update', 'companies', companyId)))
-            //     return res.status(403).json({ message: 'Unauthorized request' });
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, 'COMPANY', companyId))) {
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
 
             const farmLocation = req.body.location
             const farmName = req.body.name
@@ -323,7 +324,7 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            return res.status(403).json({ message: 'Authentication failed' });
+            return res.status(401).json({ message: 'Authentication failed' });
         }
         const userId = requestUserData.userId;
 
@@ -705,7 +706,9 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
                 const farms = await fieldService.getFarms(userAvailableIds);
                 return res.status(200).json(farms);
             }
-            return res.status(200).json([]);
+            return res.status(404).json({
+                error: "User has no permission to view any farms"
+            });
         } catch (error) {
             console.log(`Fail retrieving farms caused by: ${error.message}`);
             return res.status(500).json({ error: "Error while retrieving farms" });
