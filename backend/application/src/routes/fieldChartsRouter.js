@@ -650,8 +650,9 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *                   type: string
      */
     router.get('/:thesisId/distanceProfileToOptimal', async (req, res) => {
+        let requestUserData
         try {
-            const user = await authenticationService.validateJwt(req.headers.authorization);
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
             return res.status(401).json({ message: 'Authentication failed' });
         }
@@ -763,8 +764,9 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *                   type: string
     */
     router.get('/:thesisId/optimalState', async (req, res) => {
+        let requestUserData
         try {
-            const user = await authenticationService.validateJwt(req.headers.authorization);
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
             return res.status(401).json({ message: 'Authentication failed' });
         }
@@ -882,8 +884,9 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *                   type: string
      */
     router.get('/:thesisId/optimalDistance', async (req, res) => {
+        let requestUserData
         try {
-            const user = await authenticationService.validateJwt(req.headers.authorization);
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
             return res.status(401).json({ message: 'Authentication failed' });
         }
@@ -1002,8 +1005,9 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
  *                   type: string
  */
     router.get('/:thesisId/profileStatistics', async (req, res) => {
+        let requestUserData
         try {
-            const user = await authenticationService.validateJwt(req.headers.authorization);
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
             return res.status(401).json({ message: 'Authentication failed' });
         }

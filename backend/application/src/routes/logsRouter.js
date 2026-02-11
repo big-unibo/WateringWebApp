@@ -104,8 +104,9 @@ const logsRouter = ({ authenticationService, authorizationService, logService, f
      *                   type: string
      */
     router.get("/:thesisId/anomalies", async (req, res) => {
+        let user
         try {
-            const user = await authenticationService.validateJwt(req.headers.authorization);
+            user = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
             return res.status(401).json({ message: 'Authentication failed' });
         }

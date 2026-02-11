@@ -111,7 +111,7 @@ class SectorRepository {
         }
 
         const query = `
-            SELECT c.id AS "companyId",
+            SELECT DISTINCT c.id AS "companyId",
                 c.company_name AS "companyName",
                 f.id AS "farmId",
                 f.farm_name AS "farmName",

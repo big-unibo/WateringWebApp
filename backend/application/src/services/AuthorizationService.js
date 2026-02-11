@@ -20,7 +20,7 @@ class AuthorizationService {
 		if (await this.userService.isAdmin(userId)) return true
 		const userRoles = await this.authorizationRepository.getUserRolesAndServices(userId, entity, id)
 		if (userRoles && userRoles.length > 0) {
-			return userRoles.filter(({services}) => services.include(service)).some(({ role }) => isRoleAtLeast(role, requiredRole))
+			return userRoles.filter(({services}) => services.includes(service)).some(({ role }) => isRoleAtLeast(role, requiredRole))
 		}
 		return false		
 	}
@@ -31,7 +31,7 @@ class AuthorizationService {
 			return new UserPermission(ROLES.ADMINISTRATOR, entity, id, services.map(({name}) => name))
 		}
 		const userRoles = await this.authorizationRepository.getUserRolesAndServices(userId, entity, id)
-		
+
 	}
 }
 

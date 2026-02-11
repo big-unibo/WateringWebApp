@@ -163,7 +163,7 @@ async function selectSector(sector) {
 
 function createSectorName(item) {
   if (!item) return ''
-  return `${item.organization.name}; ${item.company.name}; ${item.field.name}; ${item.name}`
+  return `${item.company.name}; ${item.farm.name}; ${item.name}`
 }
 
 function createThesisName(item) {
