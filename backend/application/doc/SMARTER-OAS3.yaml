@@ -1095,21 +1095,5 @@ components:
         name: 
           type: string
           description: User's name
-    
-    UserPermission:
-      type: object
-      properties:
-        resource:
-          type: string
-        id:
-          type: integer
-        role:
-          type: string
-          enum: [viewer, planner, accounter, administrator]
-        services:
-          type: array
-          items:
-            type: string
-            enum: [Monitoring, Watering Advice, Prescriptive Watering Advice]
         
 

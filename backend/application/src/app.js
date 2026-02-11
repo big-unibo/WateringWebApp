@@ -120,7 +120,7 @@ const authenticationService = new AuthenticationService(userService)
 const companyService = new CompanyService(companyRepository, userActionService)
 const fieldService = new FieldService(companyRepository, farmRepository, sectorRepository, thesisRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, deviceRepository, wateringScheduleRepository, userActionService)
 const sectorServicesService = new SectorServicesService(serviceRepository)
-const authorizationService = new AuthorizationService(userService, sectorServicesService, authorizationRepository)
+const authorizationService = new AuthorizationService(userService, authorizationRepository)
 const deviceService = new DeviceService(deviceRepository, signalRepository, farmRepository, userActionService)
 const signalService = new SignalService(signalRepository, userActionService)
 const wateringScheduleService = new WateringScheduleService(wateringScheduleRepository, wateringAdviceRepository, userActionService)
@@ -219,8 +219,5 @@ app.use((err, req, res, next) => {
   }
   next(err);
 });
-
-console.log("Generazione documentazione...");
-savePermissionsToMarkdown()
 
 app.use('/api-docs', serve, setup(swaggerSpec));
