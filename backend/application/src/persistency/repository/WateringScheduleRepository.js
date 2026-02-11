@@ -127,7 +127,7 @@ class WateringScheduleRepository {
                 ? 'TRUE'
                 : filteringIds.length === 0
                     ? 'FALSE'
-                    : 's.id = ANY(ARRAY(:filteringIds))'}
+                    : 's.id = ANY(ARRAY[:filteringIds])'}
             `;
 
             const results = await this.sequelize.query(query, {

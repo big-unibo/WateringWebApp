@@ -131,7 +131,7 @@ class SectorRepository {
                 ? 'TRUE'
                 : filteringIds.length === 0
                     ? 'FALSE'
-                    : 's.id = ANY(ARRAY(:filteringIds))'}
+                    : 's.id = ANY(ARRAY[:filteringIds])'}
                 ${timeConditions}
             ORDER BY "companyName", "farmName", "sectorName";
         `;

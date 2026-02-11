@@ -139,7 +139,7 @@ class DeviceRepository {
                 ? 'TRUE'
                 : filteringIds.length === 0
                     ? 'FALSE'
-                    : 's.id = ANY(ARRAY(:filteringIds))'}`
+                    : 's.id = ANY(ARRAY[:filteringIds])'}`
 
         try {
             const [results] = await this.sequelize.query(query, {
@@ -165,7 +165,7 @@ class DeviceRepository {
                 ? 'TRUE'
                 : filteringIds.length === 0
                     ? 'FALSE'
-                    : 's.id = ANY(ARRAY(:filteringIds))'}
+                    : 's.id = ANY(ARRAY[:filteringIds])'}
             ORDER BY ds.device_id
             LIMIT :limit
             OFFSET :offset
