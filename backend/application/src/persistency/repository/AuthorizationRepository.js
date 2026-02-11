@@ -24,14 +24,14 @@ class AuthorizationRepository {
         }
     }
 
-    async getUserRoles(userId, entity, id, service) {
+    async getUserRolesAndServices(userId, entity, id) {
         try {
             const query = `
-                SELECT DISTINCT role
-                FROM master_data_permits
+                SELECT role, ARRAY_AGG(DISTINCT s) AS services
+                FROM master_data_permits, UNNEST(services) AS s
                 WHERE user_id = :userId
                     ${entity != null && id != null ? `AND ${ENTITY_ID_MAPPING[entity]} = :id` : ''}
-                    ${service != null ? `AND ${service} = ANY(services)` : ''} 
+                GROUP BY role;
             `
             const results = await this.sequelize.query(query, {
                 replacements: { userId, id },

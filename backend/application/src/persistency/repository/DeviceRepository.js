@@ -129,7 +129,6 @@ class DeviceRepository {
     }
 
     async countDevices(filteringIds, timeFilterFrom, timeFilterTo, providerIds, types) {
-        console.log(filteringIds)
         const query = ` SELECT COUNT(DISTINCT ds.device_id) AS total
             FROM devices_signals_denormalized ds
             WHERE valid_from < :timeFilterTo
@@ -140,8 +139,7 @@ class DeviceRepository {
                 ? 'TRUE'
                 : filteringIds.length === 0
                     ? 'FALSE'
-                    : 's.id = ANY(ARRAY(:filteringIds))'}
-                ${timeConditions}`
+                    : 's.id = ANY(ARRAY(:filteringIds))'}`
 
         try {
             const [results] = await this.sequelize.query(query, {

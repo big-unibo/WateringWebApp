@@ -5,7 +5,7 @@ import { SignalData, MeasureData, SignalTypeData } from '../dtos/dataDto.js';
 import { WateringScheduleResponse, WateringEventData, ThesisContributionData } from "../dtos/wateringScheduleDto.js";
 import { DistanceValue, OptimalDistanceData, DistanceProfile, OptimalProfileData, OptimalStateData } from "../dtos/optStateDto.js";
 import { WateringAdvice } from "../dtos/wateringAdviceDto.js";
-import { SectorCompact, SectorData } from "../dtos/sectorDto.js";
+import { SectorCompact, SectorData, Service } from "../dtos/sectorDto.js";
 import { Device, DeviceTargetType } from "../dtos/deviceDto.js";
 import { Signal, SignalInfo } from "../dtos/signalDto.js";
 import { ThesisData, ThesisRef } from "../dtos/thesisDto.js";
@@ -568,19 +568,24 @@ class DtoConverter {
     }
 
     convertInterpolatedMeansWrapper(results) {
-    if (!results || results.length === 0) {
-        return null;
+        if (!results || results.length === 0) {
+            return null;
+        }
+
+        const { thesisName, deviceId, binningId } = results[0];
+        const validRows = results.filter(v => v.mean != null);
+
+        const measures = validRows.map(v =>
+            new InterpolatedMeanMeasureData(v.x, v.y, v.z, v.std, v.mean)
+        );
+
+        return new InterpolatedMeansData(thesisName, deviceId, binningId, measures);
     }
 
-    const { thesisName, deviceId, binningId } = results[0];
-    const validRows = results.filter(v => v.mean != null);
-
-    const measures = validRows.map(v => 
-        new InterpolatedMeanMeasureData(v.x, v.y, v.z, v.std, v.mean)
-    );
-
-    return new InterpolatedMeansData(thesisName, deviceId, binningId, measures);
-}
+    convertServicesWrapper(services) {
+        if (!Array.isArray(services)) return []
+        return services.map(s => new Service(s.serviceName, s.id))
+    }
 }
 
 export default DtoConverter;

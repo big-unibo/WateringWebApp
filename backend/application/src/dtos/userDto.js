@@ -11,3 +11,12 @@ export class User {
     this.name = name
   }
 }
+
+export class UserPermission {
+  constructor(role, resource, id, services){
+    this.role = role
+    this.resource = resource
+    this.id = id
+    this.services = services
+  }
+}

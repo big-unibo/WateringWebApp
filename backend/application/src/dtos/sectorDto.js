@@ -72,3 +72,10 @@ export class SectorData {
         this.theses = theses;
     }
 }
+
+export class Service {
+  constructor(serviceName, serviceId){
+    this.name = serviceName
+    this.id = serviceId
+  }
+}

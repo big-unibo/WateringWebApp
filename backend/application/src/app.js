@@ -50,6 +50,8 @@ import UserActionService from './services/UserActionService.js';
 import SectorRepository from './persistency/repository/SectorRepository.js';
 import ThesisRepository from './persistency/repository/ThesisRepository.js';
 import AuthorizationRepository from './persistency/repository/AuthorizationRepository.js'
+import SectorServicesService from './services/SectorServicesService.js';
+import SectorServiceRepository from './persistency/repository/SectorServiceRepository.js';
 
 dotenv.config()
 
@@ -109,6 +111,7 @@ const optimalDistanceRepository = new OptimalDistanceRepository(models, sequeliz
 const logRepository = new LogRepository(models, sequelize)
 const userActionRepository = new UserActionRepository(models, sequelize)
 const authorizationRepository = new AuthorizationRepository(sequelize)
+const serviceRepository = new SectorServiceRepository(models, sequelize)
 
 const userActionService = new UserActionService(userActionRepository)
 const organizationService = new OrganizationService(organizationRepository, userActionService)
@@ -116,7 +119,8 @@ const userService = new UserService(userRepository, userActionService)
 const authenticationService = new AuthenticationService(userService)
 const companyService = new CompanyService(companyRepository, userActionService)
 const fieldService = new FieldService(companyRepository, farmRepository, sectorRepository, thesisRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, deviceRepository, wateringScheduleRepository, userActionService)
-const authorizationService = new AuthorizationService(userService, authorizationRepository)
+const sectorServicesService = new SectorServicesService(serviceRepository)
+const authorizationService = new AuthorizationService(userService, sectorServicesService, authorizationRepository)
 const deviceService = new DeviceService(deviceRepository, signalRepository, farmRepository, userActionService)
 const signalService = new SignalService(signalRepository, userActionService)
 const wateringScheduleService = new WateringScheduleService(wateringScheduleRepository, wateringAdviceRepository, userActionService)

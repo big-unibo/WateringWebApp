@@ -1,9 +1,11 @@
-import { isRoleAtLeast } from "../commons/permissionRoles.js";
+import { isRoleAtLeast, ROLES } from "../commons/permissionRoles.js";
+import { UserPermission } from "../dtos/userDto.js";
 
 class AuthorizationService {
 
-	constructor(userService, authorizationRepository) {
+	constructor(userService, sectorServicesService, authorizationRepository) {
 		this.userService = userService
+		this.sectorServicesService = sectorServicesService
 		this.authorizationRepository = authorizationRepository
 	}
 
@@ -16,12 +18,20 @@ class AuthorizationService {
 	async isUserAuthorized(userId, requiredRole, entity = null, id = null, service = null
 	) {
 		if (await this.userService.isAdmin(userId)) return true
-		const userRoles = await this.authorizationRepository.getUserRoles(userId, entity, id, service)
+		const userRoles = await this.authorizationRepository.getUserRolesAndServices(userId, entity, id)
 		if (userRoles && userRoles.length > 0) {
-			return userRoles.some(({ role }) => isRoleAtLeast(role, requiredRole))
+			return userRoles.filter(({services}) => services.include(service)).some(({ role }) => isRoleAtLeast(role, requiredRole))
 		}
-
 		return false		
+	}
+
+	async getUserPermissions(userId, entity, id) {
+		if (await this.userService.isAdmin(userId)){
+			const services = await this.sectorServicesService.getServices()
+			return new UserPermission(ROLES.ADMINISTRATOR, entity, id, services.map(({name}) => name))
+		}
+		const userRoles = await this.authorizationRepository.getUserRolesAndServices(userId, entity, id)
+		
 	}
 }
 

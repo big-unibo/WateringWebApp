@@ -128,7 +128,6 @@ class WateringScheduleRepository {
                 : filteringIds.length === 0
                     ? 'FALSE'
                     : 's.id = ANY(ARRAY(:filteringIds))'}
-                ${timeConditions}
             `;
 
             const results = await this.sequelize.query(query, {
