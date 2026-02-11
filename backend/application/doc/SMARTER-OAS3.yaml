@@ -225,9 +225,9 @@ components:
         targetType:
           type: string
           enum:
-            - farm
-            - sector
-            - thesis
+            - FARM
+            - SECTOR
+            - THESIS
           description: Type of the target entity
         validFrom: 
           type: number

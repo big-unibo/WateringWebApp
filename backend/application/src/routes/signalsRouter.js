@@ -74,7 +74,7 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
      */
     router.get('/providers', async (req, res) => {
         try {
-            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+            await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
             return res.status(401).json({ message: 'Authentication failed' });
         }

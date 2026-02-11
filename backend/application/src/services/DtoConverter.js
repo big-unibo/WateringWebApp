@@ -401,21 +401,21 @@ class DtoConverter {
         const theses = [
             ...new Map(
                 associations
-                    .filter(s => s.associationType === DeviceTargetType.THESIS)
+                    .filter(s => s.associationType.toUpperCase() === DeviceTargetType.THESIS)
                     .map(t => [t.thesisId, { id: t.thesisId, name: t.thesisName }])
             ).values()
         ]
         const sectors = [
             ...new Map(
                 associations
-                    .filter(s => s.associationType === DeviceTargetType.SECTOR)
+                    .filter(s => s.associationType.toUpperCase() === DeviceTargetType.SECTOR)
                     .map(t => [t.sectorId, { id: t.sectorId, name: t.sectorName }])
             ).values()
         ]
         const farms = [
             ...new Map(
                 associations
-                    .filter(s => s.associationType === DeviceTargetType.FARM)
+                    .filter(s => s.associationType.toUpperCase() === DeviceTargetType.FARM)
                     .map(t => [t.farmId, { id: t.farmId, name: t.farmName }])
             ).values()
         ]

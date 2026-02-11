@@ -89,7 +89,7 @@ class DeviceService {
 
             const assignmentId = await assingFunctions[deviceAssociation.targetType]({
                     deviceId: deviceAssociation.sourceId,
-                    [deviceAssociation.targetType + "Id"]: deviceAssociation.targetId,
+                    [deviceAssociation.targetType.toLowerCase() + "Id"]: deviceAssociation.targetId,
                     validFrom
             })
             await this.userActionService.logCreation(userId, logTables[deviceAssociation.targetType], assignmentId, null)

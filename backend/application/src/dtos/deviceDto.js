@@ -42,7 +42,7 @@ export class DeviceAssociation {
 }
 
 export const DeviceTargetType = {
-  FARM: "farm",
-  SECTOR: "sector",
-  THESIS: "thesis"
+  FARM: "FARM",
+  SECTOR: "SECTOR",
+  THESIS: "THESIS"
 };
