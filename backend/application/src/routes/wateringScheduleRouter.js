@@ -130,7 +130,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
 
     /**
      * @swagger
-     * /wateringSchedule/{eventId}/update:
+     * /wateringSchedule/{sectorId}/{eventId}/update:
      *   put:
      *     summary: Updates a watering event with the specified fields
      *     tags: [Watering Schedule Operation]
@@ -660,7 +660,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
 
     /**
      * @swagger
-     * /wateringSchedule/{eventId}/schedule:
+     * /wateringSchedule/{sectorId}/{eventId}/schedule:
      *   put:
      *     summary: Updates a watering event by scheduling it
      *     tags: [Watering Schedule Operation]

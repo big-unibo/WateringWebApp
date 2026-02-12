@@ -270,7 +270,7 @@ class ThesesAllSignalsRepository {
         return results;
     }
 
-    async getDevicesByFarm(farmId, timestamp, deviceTypes, includeDescendants){
+    async getDevicesByFarm(farmId, timestamp, deviceTypes, includeDescendants, userId, isAdmin){
         const query = `
             SELECT DISTINCT 
                 device_id AS "deviceId",
@@ -293,12 +293,13 @@ class ThesesAllSignalsRepository {
                 FROM measurements m
                 WHERE m.signal_id = tas.signal_id
             ) m ON true
+            ${includeDescendants ? 'LEFT JOIN (SELECT DISTINCT sector_id FROM master_data_permits WHERE user_id = :userId) p ON tas.sector_id = p.sector_id':""}
             WHERE farm_id = :farmId
                 AND :timestamp BETWEEN valid_from AND COALESCE(valid_to, 'infinity') 
                 AND association_type IN ('farm' ${includeDescendants ? ", 'sector', 'thesis'": ""})
                 ${deviceTypes?.length > 0 ? "AND tas.device_type = ANY(ARRAY[:deviceTypes])" : "" }
+                ${includeDescendants ? 'AND (:isAdmin = true OR p.sector_id IS NOT NULL) ':""}
         `;
-
         try {
             const results = await this.sequelize.query(query, {
                 replacements: { farmId: farmId, timestamp, deviceTypes },

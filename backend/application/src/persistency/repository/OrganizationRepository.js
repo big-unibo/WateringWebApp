@@ -19,20 +19,9 @@ class OrganizationRepository {
         }
     }
 
-    async getOrganizations(filteringIds) {
+    async getOrganizations() {
         try {
-            const where = {};
-
-            if (Array.isArray(filteringIds)) {
-                if (filteringIds.length > 0) {
-                    where.id = {
-                        [Op.in]: filteringIds
-                    }
-                } else {
-                    return []
-                }
-            }
-            const organizations = await this.Organization.findAll({ where })
+            const organizations = await this.Organization.findAll()
             return organizations;
         } catch (error) {
             throw new Error(`Error retrieving organizations caused by: ${error.message}`);
@@ -43,17 +32,16 @@ class OrganizationRepository {
         try {
             const query = `
             SELECT o.id, o.organization_name AS "organizationName",
-                json_agg(DISTINCT jsonb_build_object('id', c.id, 'companyName', c.company_name)) AS companies
-            FROM companies c
-                JOIN companies_organizations co ON co.company_id = c.id
-                JOIN organizations o ON o.id = co.organization_id
-                LEFT JOIN (SELECT DISTINCT company_id, organization_id FROM master_data_permits 
+                json_agg(DISTINCT jsonb_build_object('id', c.id, 'companyName', c.company_name)) FILTER (WHERE c.id IS NOT NULL) AS companies
+            FROM organizations o
+                LEFT JOIN companies_organizations co ON co.organization_id = o.id
+                LEFT JOIN companies c ON co.company_id = c.id
+                LEFT JOIN (SELECT DISTINCT company_id FROM master_data_permits 
                     WHERE user_id = :userId) p ON 
                     p.company_id = c.id
-                    AND p.organization_id = o.id
             WHERE o.id = :organizationId AND (
                 :isAdmin = true
-                OR p.organization_id IS NOT NULL
+                OR p.company_id = c.id
             )
             GROUP BY o.id, o.organization_name`
 

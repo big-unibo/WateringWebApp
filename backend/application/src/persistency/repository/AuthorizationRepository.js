@@ -1,4 +1,4 @@
-import { ENTITY_ID_MAPPING } from "../../commons/permissionRoles.js";
+import { MASTER_DATA_COLUMN_MAPPING } from "../../commons/permissionRoles.js";
 
 class AuthorizationRepository {
     constructor(sequelize){
@@ -8,10 +8,10 @@ class AuthorizationRepository {
     async getUserAvailableIds(userId, entity, service){
         try {
             const query = `
-                SELECT DISTINCT role, ${ENTITY_ID_MAPPING[entity]} AS id
+                SELECT DISTINCT role, ${MASTER_DATA_COLUMN_MAPPING[entity]} AS id
                 FROM master_data_permits
                 WHERE user_id = :userId
-                AND ${ENTITY_ID_MAPPING[entity]} IS NOT NULL
+                AND ${MASTER_DATA_COLUMN_MAPPING[entity]} IS NOT NULL
                 ${service != null ? `AND '${service}' = ANY(services)` : ''} 
             `
             const results = await this.sequelize.query(query, {
@@ -31,7 +31,7 @@ class AuthorizationRepository {
                 SELECT DISTINCT role
                 FROM master_data_permits
                 WHERE user_id = :userId
-                    ${entity != null && id != null ? `AND ${ENTITY_ID_MAPPING[entity]} = :id` : ''}
+                    ${entity != null && id != null ? `AND ${MASTER_DATA_COLUMN_MAPPING[entity]} = :id` : ''}
                     ${service != null ? `AND '${service}' = ANY(services)` : ''} 
             `
             const results = await this.sequelize.query(query, {

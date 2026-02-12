@@ -60,10 +60,10 @@ class FarmRepository {
         try {
             const query = `
             SELECT c.id AS "companyId", c.company_name AS "companyName", f.id, f.farm_name AS "farmName", f.location,
-                json_agg(DISTINCT jsonb_build_object('id', s.id, 'sectorName', s.sector_name)) AS sectors
-            FROM companies c
-                JOIN farms f ON f.company_id = c.id
-                JOIN sectors s ON s.farm_id = f.id
+                json_agg(DISTINCT jsonb_build_object('id', s.id, 'sectorName', s.sector_name)) FILTER (WHERE s.id IS NOT NULL) AS sectors
+            FROM farms f
+                JOIN companies c ON f.company_id = c.id
+                LEFT JOIN sectors s ON s.farm_id = f.id
                 LEFT JOIN (SELECT DISTINCT company_id, farm_id, sector_id FROM master_data_permits 
                     WHERE user_id = :userId) p ON 
                     p.company_id = c.id

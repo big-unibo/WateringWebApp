@@ -19,12 +19,9 @@ export function isRoleAtLeast(actualRole, requiredRole) {
   return implied.some(r => isRoleAtLeast(r, requiredRole))
 }
 
-export const ENTITY_ID_MAPPING = {
+export const MASTER_DATA_COLUMN_MAPPING = {
     COMPANY: "company_id",
     FARM: "farm_id",
     SECTOR: "sector_id",
-    ORGANIZATION: "organization_id",
     THESIS: "thesis_id",
-    DEVICE: "device_id",
-    SIGNAL: "signal_id"
 }
