@@ -113,7 +113,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             if (!exists) {
                 return res.status(404).json({ message: 'Sector not found' });
             }
-            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'SECTOR', sectorId, 'Watering Advice'))) {
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'SECTOR', sectorId, 'Watering Advice'))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
@@ -230,7 +230,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
         }
         try {
             const userId = requestUserData.userId
-            if (!(await authorizationService.isUserAuthorized(userId, ROLES.PLANNER, 'SECTOR', req.params.sectorId, 'Watering Advice'))) {
+            if (!(await authorizationService.isUserAuthorized(userId, ROLES.PLANNER, requestUserData.isAdmin, 'SECTOR', req.params.sectorId, 'Watering Advice'))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
             const eventId = req.params.eventId;
@@ -371,7 +371,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             if (!exists) {
                 return res.status(404).json({ message: 'Sector not found' });
             }
-            if (!(await authorizationService.isUserAuthorized(userId, ROLES.PLANNER, 'SECTOR', sectorId, 'Watering Advice'))) {
+            if (!(await authorizationService.isUserAuthorized(userId, ROLES.PLANNER, requestUserData.isAdmin, 'SECTOR', sectorId, 'Watering Advice'))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
@@ -519,7 +519,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             if (!exists) {
                 return res.status(404).json({ message: 'Sector not found' });
             }
-            if (!(await authorizationService.isUserAuthorized(userId, ROLES.PLANNER, 'SECTOR', sectorId, 'Watering Advice'))) {
+            if (!(await authorizationService.isUserAuthorized(userId, ROLES.PLANNER, requestUserData.isAdmin, 'SECTOR', sectorId, 'Watering Advice'))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
             const timestampFrom = req.query.timestampFrom;
@@ -641,7 +641,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
                 return res.status(404).json({ message: 'Sector not found' });
             }
 
-            if (!(await authorizationService.isUserAuthorized(userId, ROLES.PLANNER, 'SECTOR', sectorId, 'Watering Advice'))) {
+            if (!(await authorizationService.isUserAuthorized(userId, ROLES.PLANNER, 'SECTOR', requestUserData.isAdmin, sectorId, 'Watering Advice'))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
@@ -756,7 +756,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
 
         const userId = requestUserData.userId
         const eventId = req.params.eventId;
-        if (!(await authorizationService.isUserAuthorized(userId, ROLES.PLANNER, 'SECTOR', req.params.sectorId, 'Prescriptive Watering Advice'))) {
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.PLANNER, requestUserData.isAdmin, 'SECTOR', req.params.sectorId, 'Prescriptive Watering Advice'))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
@@ -862,7 +862,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             const timeFilterFrom = Number(req.query.timeFilterFrom)
             const timeFilterTo = Number(req.query.timeFilterTo)
 
-            let userAvailableSectorIds = await authorizationService.getAvailableEntityIds(requestUserData.userId, 'SECTOR', ROLES.VIEWER, 'Watering Advice')
+            let userAvailableSectorIds = await authorizationService.getAvailableEntityIds(requestUserData.userId, 'SECTOR', ROLES.VIEWER, requestUserData.isAdmin,'Watering Advice')
             if (Array.isArray(userAvailableSectorIds) && userAvailableSectorIds.length > 0)
             {
                 if (userAvailableSectorIds.includes('ALL')) {

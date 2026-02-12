@@ -117,7 +117,7 @@ const logsRouter = ({ authenticationService, authorizationService, logService, f
             return res.status(404).json({ message: 'Thesis not found' });
         }
 
-        if (!(await authorizationService.isUserAuthorized(user.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Monitoring'))) {
+        if (!(await authorizationService.isUserAuthorized(user.userId, ROLES.VIEWER, user.isAdmin, 'THESIS', thesisId, 'Monitoring'))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
         const timeFilterFrom = req.query.timeFilterFrom;

@@ -33,7 +33,7 @@ describe('Device Assignment Integration Test', () => {
         await request(app)
             .post(`/devices/${TEST_WEATHER_STATION_ID}/assign`)
             .set('Authorization', `Bearer ${authToken}`)
-            .send({ targetId: TEST_FARM_ID, targetType: 'farm', validFrom: validFrom })
+            .send({ targetId: TEST_FARM_ID, targetType: 'FARM', validFrom: validFrom })
             .expect(200)
 
         const record = await table(db, 'farms_devices')
@@ -45,7 +45,7 @@ describe('Device Assignment Integration Test', () => {
         await request(app)
             .post(`/devices/${TEST_FLOW_METER_ID}/assign`)
             .set('Authorization', `Bearer ${authToken}`)
-            .send({ targetId: TEST_SECTOR_ID, targetType: 'sector', validFrom: validFrom })
+            .send({ targetId: TEST_SECTOR_ID, targetType: 'SECTOR', validFrom: validFrom })
             .expect(200)
 
         const record = await table(db, 'sectors_devices')
@@ -57,7 +57,7 @@ describe('Device Assignment Integration Test', () => {
         await request(app)
             .post(`/devices/${TEST_SOIL_MOISTURE_GRID_ID}/assign`)
             .set('Authorization', `Bearer ${authToken}`)
-            .send({ targetId: TEST_THESIS_ID, targetType: 'thesis', validFrom: validFrom })
+            .send({ targetId: TEST_THESIS_ID, targetType: 'THESIS', validFrom: validFrom })
             .expect(200)
 
         const record = await table(db, 'theses_devices')
@@ -73,7 +73,7 @@ describe('Device Assignment Integration Test', () => {
         const invalidId = 999999
         const payload = {
             targetId: invalidId,
-            targetType: 'farm',
+            targetType: 'FARM',
             validFrom: validFrom
         }
 

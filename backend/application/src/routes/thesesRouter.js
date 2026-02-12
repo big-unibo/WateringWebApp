@@ -107,7 +107,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
         const thesisId = Number(req.params.thesisId)
         const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000
 
-        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId))){
+        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'THESIS', thesisId))){
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
@@ -244,7 +244,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
         }
 
         try {
-            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId))) {
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'THESIS', thesisId))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
@@ -377,7 +377,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
         const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000;
 
         try {
-            if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId))){
+            if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'THESIS', thesisId))){
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
@@ -488,7 +488,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
         const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000;
 
         try {
-            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Watering Advice'))) {
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'THESIS', thesisId, 'Watering Advice'))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
@@ -609,7 +609,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
 
 
         try {
-            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Watering Advice'))) {
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'THESIS', thesisId, 'Watering Advice'))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
@@ -803,7 +803,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
             return res.status(404).json({ message: 'Thesis not found' });
         }
 
-        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.PLANNER, 'THESIS', thesisId, 'Watering Advice'))) {
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.PLANNER, requestUserData.isAdmin, 'THESIS', thesisId, 'Watering Advice'))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
@@ -975,7 +975,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
         const thesisId = req.params.thesisId;
 
         try {
-            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Watering Advice'))) {
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'THESIS', thesisId, 'Watering Advice'))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
@@ -1104,7 +1104,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
 
         try {
             const userId = requestUserData.userId
-            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.PLANNER, 'THESIS', thesisId, 'Watering Advice'))) {
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.PLANNER, requestUserData.isAdmin, 'THESIS', thesisId, 'Watering Advice'))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
@@ -1258,7 +1258,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
 
         try {
-            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, 'THESIS', thesisId))) {
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'THESIS', thesisId))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
             await fieldService.disableThesis(userId, thesisId, timestamp)

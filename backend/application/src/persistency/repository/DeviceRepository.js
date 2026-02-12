@@ -335,7 +335,7 @@ class DeviceRepository {
         }
     }
 
-    async getThesisAssociatedSignals(thesisId, timestamp) {
+    async getThesisAssociatedDevices(thesisId, timestamp) {
         try {
             const associations = await this.DeviceInThesis.findAll({
                 where: {

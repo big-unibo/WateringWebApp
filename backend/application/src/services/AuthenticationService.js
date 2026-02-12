@@ -16,11 +16,12 @@ class AuthenticationService {
             if (!user)
                 throw new Error('The mail does not exist');
             
-            const match = (user.dataValues.password === request.password);
+            const match = (user.password === request.password);
             if (!match)
                 throw new Error('Password is invalid');
-
-            const payload = { userId: user.dataValues.id, name: user.dataValues.name}
+            
+            const isAdmin = await this.userService.isAdmin(user.id)
+            const payload = { userId: user.id, name: user.name, isAdmin: isAdmin}
             return sign(payload, jwtSecret, { expiresIn: "10h" });
         } catch (error) {
             throw new Error(`Error on generating jwt caused by: ${error}`);
@@ -36,7 +37,7 @@ class AuthenticationService {
                         reject(new Error('Authentication failed: token verify error'));
                     } else {
                         if (decoded.userId !== undefined && decoded.name !== undefined)
-                            resolve({ userId: decoded.userId, name: decoded.name});
+                            resolve({ userId: decoded.userId, name: decoded.name, isAdmin: decoded.isAdmin });
                         else reject(new Error('Authentication failed: token verify error'));
                     }
                 });

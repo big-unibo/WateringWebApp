@@ -98,12 +98,12 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
         
         const farmId = req.params.farmId;
 
-        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'FARM', farmId))){
+        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'FARM', farmId))){
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
         try {
-            const result = await fieldService.getFarmDetails(farmId)
+            const result = await fieldService.getFarmDetails(farmId, requestUserData.userId, requestUserData.isAdmin)
             return res.status(200).json(result)
         } catch (error) {
             console.log(`Failed retrieving farm data: ${error.message}`)
@@ -204,7 +204,7 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
             const userId = requestUserData.userId;
             const companyId = Number(req.body.companyId)
 
-            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, 'COMPANY', companyId))) {
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'COMPANY', companyId))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
@@ -336,7 +336,7 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
 
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
 
-        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, 'FARM', farmId))){
+        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'FARM', farmId))){
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
@@ -462,7 +462,7 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
                 return res.status(404).json({ message: 'Farm not found' });
             }
 
-            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, 'FARM', farmId))) {
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'FARM', farmId))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
@@ -613,7 +613,7 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
         }
 
         try {
-            if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'FARM', farmId))){
+            if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'FARM', farmId))){
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
@@ -698,7 +698,7 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
         }
 
         try {
-            let userAvailableIds = await authorizationService.getAvailableEntityIds(requestUserData.userId, 'FARM', ROLES.VIEWER)
+            let userAvailableIds = await authorizationService.getAvailableEntityIds(requestUserData.userId, 'FARM', ROLES.VIEWER, requestUserData.isAdmin)
             if (Array.isArray(userAvailableIds) && userAvailableIds.length > 0) {
                 if (userAvailableIds.includes('ALL')) {
                     userAvailableIds = null

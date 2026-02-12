@@ -48,8 +48,7 @@ class DtoConverter {
 
     convertCompanyDataWrapper(companyData) {
         if (!companyData) return null;
-
-        const organizations = (companyData.organizations || []).map(({organization})=>new Organization(organization.organizationName, organization.id))
+        const organizations = (companyData.organizations || []).map((organization)=>new Organization(organization.organizationName, organization.id))
         const farms = (companyData.farms || []).map(farm => ({
             id: farm.id,
             name: farm.farmName
@@ -128,8 +127,8 @@ class DtoConverter {
     convertFarmDataWrapper(farmData) {
 
         const company = {
-            id: farmData.company.id,
-            name: farmData.company.companyName
+            id: farmData.companyId,
+            name: farmData.companyName
         };
 
         const sectors = (farmData.sectors || []).map(sector => ({

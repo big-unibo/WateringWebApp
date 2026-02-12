@@ -56,30 +56,30 @@ class FarmRepository {
         }
     }
 
-    async getFarmDetails(farmId) {
+    async getFarmDetails(farmId, userId, isAdmin) {
         try {
-            const farm = await this.Farm.findByPk(farmId, {
-                attributes: {
-                    exclude: ['companyId']
-                },
-                include: [
-                    {
-                        model: this.Company,
-                        as: 'company',
-                        attributes: ['id', 'companyName'],
-                    },
-                    {
-                        model: this.Sector,
-                        as: 'sectors'
-                    }
-                ]
+            const query = `
+            SELECT c.id AS "companyId", c.company_name AS "companyName", f.id, f.farm_name AS "farmName", f.location,
+                json_agg(DISTINCT jsonb_build_object('id', s.id, 'sectorName', s.sector_name)) AS sectors
+            FROM companies c
+                JOIN farms f ON f.company_id = c.id
+                JOIN sectors s ON s.farm_id = f.id
+                LEFT JOIN (SELECT DISTINCT company_id, farm_id, sector_id FROM master_data_permits 
+                    WHERE user_id = :userId) p ON 
+                    p.company_id = c.id
+                    AND p.farm_id = f.id
+                    AND p.sector_id = s.id
+            WHERE f.id = :farmId AND (
+                :isAdmin = true
+                OR p.farm_id IS NOT NULL
+            )
+            GROUP BY c.id, c.company_name, f.id, f.farm_name, f.location`
+
+            const results = await this.sequelize.query(query, {
+                replacements: { userId, farmId, isAdmin},
+                type: this.sequelize.QueryTypes.SELECT
             });
-
-            if (!farm) {
-                throw new Error(`Farm with id ${farmId} not found`);
-            }
-            return farm.get({ plain: true });
-
+            return results?.[0];
         } catch (error) {
             throw new Error(`Error retrieving farm details: ${error.message}`);
         }

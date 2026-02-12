@@ -5,13 +5,14 @@ class AuthorizationRepository {
         this.sequelize = sequelize
     }
 
-    async getUserAvailableIds(userId, entity){
+    async getUserAvailableIds(userId, entity, service){
         try {
             const query = `
                 SELECT DISTINCT role, ${ENTITY_ID_MAPPING[entity]} AS id
                 FROM master_data_permits
                 WHERE user_id = :userId
                 AND ${ENTITY_ID_MAPPING[entity]} IS NOT NULL
+                ${service != null ? `AND '${service}' = ANY(services)` : ''} 
             `
             const results = await this.sequelize.query(query, {
                 replacements: { userId },

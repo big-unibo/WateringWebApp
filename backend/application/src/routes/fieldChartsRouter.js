@@ -144,7 +144,7 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
             return res.status(404).json({ message: 'Thesis not found' });
         }
 
-        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Monitoring'))) {
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'THESIS', thesisId, 'Monitoring'))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
@@ -279,7 +279,7 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         if (!exists) {
             return res.status(404).json({ message: 'Thesis not found' });
         }
-        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Monitoring'))) {
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'THESIS', thesisId, 'Monitoring'))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
@@ -411,7 +411,7 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
             return res.status(404).json({ message: 'Thesis not found' });
         }
 
-        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Monitoring'))) {
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'THESIS', thesisId, 'Monitoring'))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
@@ -542,7 +542,7 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         if (!exists) {
             return res.status(404).json({ message: 'Thesis not found' });
         }
-        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Monitoring'))) {
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'THESIS', thesisId, 'Monitoring'))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
@@ -662,7 +662,7 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         if (!exists) {
             return res.status(404).json({ message: 'Thesis not found' });
         }
-        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Watering Advice'))) {
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'THESIS', thesisId, 'Watering Advice'))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
         const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000;
@@ -776,7 +776,7 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         if (!exists) {
             return res.status(404).json({ message: 'Thesis not found' });
         }
-        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Watering Advice'))) {
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'THESIS', thesisId, 'Watering Advice'))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
         const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000;
@@ -895,7 +895,7 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         if (!exists) {
             return res.status(404).json({ message: 'Thesis not found' });
         }
-        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Watering Advice'))) {
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'THESIS', thesisId, 'Watering Advice'))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
@@ -1018,7 +1018,7 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
             return res.status(404).json({ message: 'Thesis not found' });
         }
 
-        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'THESIS', thesisId, 'Monitoring'))) {
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'THESIS', thesisId, 'Monitoring'))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
         const timeFilterFrom = Number(req.query.timeFilterFrom)

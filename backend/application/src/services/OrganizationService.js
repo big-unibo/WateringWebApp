@@ -28,8 +28,8 @@ class OrganizationService {
         return dtoConverter.convertOrganizationsDataWrapper(result);
     }
 
-    async getOrganizationDetails(organizationId) {
-        const result = await this.organizationRepository.getOrganizationDetails(organizationId);
+    async getOrganizationDetails(organizationId, userId, isAdmin) {
+        const result = await this.organizationRepository.getOrganizationDetails(organizationId, userId, isAdmin);
         return dtoConverter.convertOrganizationDataWrapper(result);
     }
 

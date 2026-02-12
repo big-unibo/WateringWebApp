@@ -75,7 +75,7 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
         }
 
         try {
-            let userAvailableIds = await authorizationService.getAvailableEntityIds(requestUserData.userId, 'COMPANY', ROLES.VIEWER)
+            let userAvailableIds = await authorizationService.getAvailableEntityIds(requestUserData.userId, 'COMPANY', ROLES.VIEWER, requestUserData.isAdmin)
             if (Array.isArray(userAvailableIds) && userAvailableIds.length > 0)
             {
                 if(userAvailableIds.includes('ALL')){
@@ -187,12 +187,12 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
         
         const companyId = req.params.companyId;
 
-        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'COMPANY', companyId))){
+        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'COMPANY', companyId))){
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
         try {
-            const result = await companyService.getCompanyDetails(companyId)
+            const result = await companyService.getCompanyDetails(companyId, requestUserData.userId, requestUserData.isAdmin)
             if (!result) {
                 return res.status(404).json({ error: "Company not found" })
             }
@@ -293,7 +293,7 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
 
         try {
             const userId = requestUserData.userId;
-            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ADMINISTRATOR))) {
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ADMINISTRATOR, requestUserData.isAdmin))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 

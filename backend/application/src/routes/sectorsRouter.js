@@ -90,7 +90,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
         const timeFilterTo = req.query.timeFilterTo ?? null
 
         try {
-            let userAvailableIds = await authorizationService.getAvailableEntityIds(requestUserData.userId, 'SECTOR', ROLES.VIEWER)
+            let userAvailableIds = await authorizationService.getAvailableEntityIds(requestUserData.userId, 'SECTOR', ROLES.VIEWER, requestUserData.isAdmin)
             if (Array.isArray(userAvailableIds) && userAvailableIds.length > 0) {
                 if (userAvailableIds.includes('ALL')) {
                     userAvailableIds = null
@@ -210,7 +210,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
         const timestamp = req.query.timestamp ?? null
         
 
-        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'SECTOR', sectorId))){
+        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'SECTOR', sectorId))){
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
@@ -349,7 +349,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 
         const thesis = new Thesis(req.body.name, sectorId, undefined, req.body.validFrom ?? Date.now()/1000);
 
-        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, 'SECTOR', sectorId))){
+        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'SECTOR', sectorId))){
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
@@ -483,7 +483,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
                 return res.status(404).json({ message: 'Sector not found' });
             }
 
-            if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.PLANNER, 'SECTOR', sectorId, 'Watering Advice'))){
+            if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.PLANNER, requestUserData.isAdmin, 'SECTOR', sectorId, 'Watering Advice'))){
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
@@ -623,7 +623,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
 
-        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, 'SECTOR', sectorId))){
+        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'SECTOR', sectorId))){
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
@@ -759,7 +759,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
         }
 
         try {
-            if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'SECTOR', sectorId))){
+            if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'SECTOR', sectorId))){
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 

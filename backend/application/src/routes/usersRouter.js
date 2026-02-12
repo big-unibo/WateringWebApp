@@ -166,7 +166,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
         try {
             const userId = requestUserData.userId;
 
-            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER))) {
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, requestUserData.isAdmin))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
             if (req.body.users.length === 0)
@@ -375,7 +375,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
             const id = req.query.id
             const service = req.query.service
             
-            const isValid = await authorizationService.isUserAuthorized(userId, minRole, entity, id, service)
+            const isValid = await authorizationService.isUserAuthorized(userId, minRole, requestUserData.isAdmin, entity, id, service)
 
             return res.status(200).json({isValid:isValid})
         } catch (error) {

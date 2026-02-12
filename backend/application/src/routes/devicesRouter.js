@@ -144,7 +144,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         const itemsPerPage = req.query.itemsPerPage ?? 50
 
         try {
-            let userAvailableIds = await authorizationService.getAvailableEntityIds(requestUserData.userId, 'DEVICE', ROLES.VIEWER)
+            let userAvailableIds = await authorizationService.getAvailableEntityIds(requestUserData.userId, 'DEVICE', ROLES.VIEWER, requestUserData.isAdmin)
             if (Array.isArray(userAvailableIds) && userAvailableIds.length > 0)
             {
                 if (userAvailableIds.includes('ALL')) {
@@ -252,7 +252,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         }
         try {
             const userId = requestUserData.userId
-            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER))) {
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, requestUserData.isAdmin))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
@@ -363,7 +363,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         }
         try {
             const userId = requestUserData.userId
-            if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, 'DEVICE', req.params.deviceId))) {
+            if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'DEVICE', req.params.deviceId))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
@@ -491,7 +491,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         const userId = requestUserData.userId
         const deviceId = req.params.deviceId
         
-        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, 'DEVICE', deviceId))) {
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'DEVICE', deviceId))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
@@ -634,7 +634,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
 
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
 
-        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, 'DEVICE', deviceId))) {
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'DEVICE', deviceId))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
@@ -745,7 +745,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         const deviceId = req.params.deviceId
         const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
 
-        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'DEVICE', deviceId))) {
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'DEVICE', deviceId))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 

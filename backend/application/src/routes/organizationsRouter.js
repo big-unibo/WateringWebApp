@@ -75,7 +75,7 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
         }
 
         try {
-            let userAvailableIds = await authorizationService.getAvailableEntityIds(requestUserData.userId, 'ORGANIZATION', ROLES.VIEWER)
+            let userAvailableIds = await authorizationService.getAvailableEntityIds(requestUserData.userId, 'ORGANIZATION', ROLES.VIEWER, requestUserData.isAdmin)
             if (Array.isArray(userAvailableIds) && userAvailableIds.length > 0)
             {
                 if(userAvailableIds.includes('ALL')){
@@ -187,12 +187,12 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
         }
 
         const organizationId = req.params.organizationId;
-        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, 'ORGANIZATION', organizationId))) {
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'ORGANIZATION', organizationId))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
         try {
-            const result = await organizationService.getOrganizationDetails(organizationId)
+            const result = await organizationService.getOrganizationDetails(organizationId, requestUserData.userId, requestUserData.isAdmin)
             if (!result) {
                 return res.status(404).json({ error: "Organization not found" })
             }
@@ -301,7 +301,7 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
 
         try {
             const userId = requestUserData.userId;
-            if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER))) {
+            if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
             const organizationName = req.body.name;

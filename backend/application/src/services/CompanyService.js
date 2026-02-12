@@ -28,8 +28,8 @@ class CompanyService {
         return dtoConverter.convertCompanies(result);
     }
 
-    async getCompanyDetails(companyId) {
-        const result = await this.companyRepository.getCompanyDetails(companyId)
+    async getCompanyDetails(companyId, userId, isAdmin) {
+        const result = await this.companyRepository.getCompanyDetails(companyId, userId, isAdmin)
         return dtoConverter.convertCompanyDataWrapper(result)
     }
 }

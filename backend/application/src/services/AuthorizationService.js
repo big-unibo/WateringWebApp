@@ -7,15 +7,15 @@ class AuthorizationService {
 		this.authorizationRepository = authorizationRepository
 	}
 
-	async getAvailableEntityIds(userId, entity, min_role){
-		if(await this.userService.isAdmin(userId)) return ['ALL']
-		const availableIds = await this.authorizationRepository.getUserAvailableIds(userId, entity)
+	async getAvailableEntityIds(userId, entity, min_role, isAdmin = false, service = null){
+		if(isAdmin) return ['ALL']
+		const availableIds = await this.authorizationRepository.getUserAvailableIds(userId, entity, service)
 		return [...new Set(availableIds.filter(({role}) => isRoleAtLeast(role, min_role)).map(({id}) => id))]
 	}
 
-	async isUserAuthorized(userId, requiredRole, entity = null, id = null, service = null
+	async isUserAuthorized(userId, requiredRole, isAdmin=false, entity = null, id = null, service = null
 	) {
-		if (await this.userService.isAdmin(userId)) return true
+		if (isAdmin) return true
 		const userRoles = await this.authorizationRepository.getUserRoles(userId, entity, id, service)
 		if (userRoles && userRoles.length > 0) {
 			return userRoles.some(({ role }) => isRoleAtLeast(role, requiredRole))

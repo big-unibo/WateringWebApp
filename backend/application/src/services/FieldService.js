@@ -99,8 +99,8 @@ class FieldService {
         return dtoConverter.convertCompany(result.company);
     }
 
-    async getFarmDetails(farmId) {
-        const result = await this.farmRepository.getFarmDetails(farmId);
+    async getFarmDetails(farmId, userId, isAdmin) {
+        const result = await this.farmRepository.getFarmDetails(farmId, userId, isAdmin);
         return dtoConverter.convertFarmDataWrapper(result);
     }
 

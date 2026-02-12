@@ -175,7 +175,7 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
             return res.status(401).json({ message: 'Authentication failed' })
         }
         const userId = requestUserData.userId
-        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER))) {
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
         try {
@@ -297,7 +297,7 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
         if (!exists) {
             return res.status(404).json({ message: 'Signal not found' });
         }
-        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, 'SIGNAL', signalId))) {
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'SIGNAL', signalId))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
@@ -424,7 +424,7 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
             return res.status(404).json({ message: 'Signal not found' });
         }
 
-        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, 'SIGNAL', signalId))) {
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'SIGNAL', signalId))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
@@ -672,7 +672,7 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
             const signalId = req.params.signalId
             const timestamp = req.query.timestamp ?? Date.now() / 1000
 
-            if (!(await authorizationService.isUserAuthorized(userId, ROLES.VIEWER, 'SIGNAL', signalId))) {
+            if (!(await authorizationService.isUserAuthorized(userId, ROLES.VIEWER, requestUserData.isAdmin, 'SIGNAL', signalId))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 

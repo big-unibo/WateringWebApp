@@ -36,26 +36,32 @@ class CompanyRepository {
         }
     }
 
-    async getCompanyDetails(companyId) {
+    async getCompanyDetails(companyId, userId, isAdmin) {
         try {
-            const company = await this.Company.findByPk(companyId, {
-                include: [{
-                    model: this.CompaniesOrganizations,
-                    as: 'organizations',
-                    include: [
-                        {
-                            model: this.Organization,
-                            as: 'organization'
-                        }
-                    ]
-                },
-                {
-                    model: this.Farm,
-                    as: 'farms',
-                    required: false
-                }],
+            const query = `
+            SELECT c.id, c.company_name AS "companyName", c.address,
+                json_agg(DISTINCT jsonb_build_object('id', o.id, 'organizationName', o.organization_name)) AS organizations, 
+                json_agg(DISTINCT jsonb_build_object('id', f.id, 'farmName', f.farm_name)) AS farms 
+            FROM companies c
+                JOIN farms f ON f.company_id = c.id
+                JOIN companies_organizations co ON co.company_id = c.id
+                JOIN organizations o ON o.id = co.organization_id
+                LEFT JOIN (SELECT DISTINCT company_id, farm_id, organization_id FROM master_data_permits 
+                    WHERE user_id = :userId) p ON 
+                    p.company_id = c.id
+                    AND p.farm_id = f.id
+                    AND p.organization_id = o.id
+            WHERE c.id = :companyId AND (
+                :isAdmin = true
+                OR p.company_id IS NOT NULL
+            )
+            GROUP BY c.id, c.company_name, c.address`
+
+            const results = await this.sequelize.query(query, {
+                replacements: { userId, companyId, isAdmin},
+                type: this.sequelize.QueryTypes.SELECT
             });
-            return company;
+            return results?.[0];
         } catch (error) {
             throw new Error(`Error retrieving company details caused by: ${error.message}`);
         }
