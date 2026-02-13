@@ -87,8 +87,8 @@ class SignalService {
         }
     }
 
-    async getSignalAssociations(signalId, timestamp) {
-        const signalAssociations = await this.signalRepository.getSignalAssociationEntries(signalId, timestamp)
+    async getSignalAssociations(signalId, timestamp, userId, isAdmin) {
+        const signalAssociations = await this.signalRepository.getSignalAssociationEntries(signalId, timestamp, userId, isAdmin)
         if (signalAssociations?.length > 0) {
             return dtoConverter.convertAssociationsEntries(signalAssociations)
         } 

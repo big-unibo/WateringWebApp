@@ -92,32 +92,28 @@ class DeviceRepository {
         }
     }
 
-    async getDeviceAssociationEntries(deviceId, timestamp){
+    async getDeviceAssociationEntries(deviceId, timestamp, userId, isAdmin) {
         try {
-            const deviceAssociations = await this.ThesesAllSignals.findAll({
-                attributes: ['deviceId', 'deviceDescription', 'farmId', 'farmName', 'sectorId', 'sectorName', 'thesisId', 'thesisName', 'associationType'],
-                where: {
-                    deviceId,
-                    validFrom: {
-                        [Op.lt]: timestamp
-                    },
-                    validTo: {
-                        [Op.or]: {
-                            [Op.is]: null,
-                            [Op.gt]: timestamp
-                        },
-                    }
-                },
-                distinct: true,                
-                raw: true
+            const query = `
+            SELECT DISTINCT device_id AS "deviceId", device_description AS "deviceDescription", farm_id AS "farmId",
+                farm_name AS "farmName", tas.sector_id AS "sectorId", sector_name AS "sectorName", 
+                thesis_id AS "thesisId", thesis_name AS "thesisName", association_type AS "associationType"
+            FROM theses_all_signals tas
+            LEFT JOIN (SELECT DISTINCT sector_id FROM master_data_permits WHERE user_id = :userId) p ON tas.sector_id = p.sector_id
+            WHERE device_id = :deviceId
+                AND valid_from < :timestamp
+                AND COALESCE(valid_to, 'infinity') > :timestamp
+                AND (:isAdmin = true OR p.sector_id IS NOT NULL)
+            `
+            const deviceAssociations = await this.sequelize.query(query, {
+                replacements: { deviceId, timestamp, userId, isAdmin},
+                type: this.sequelize.QueryTypes.SELECT
             });
-
-            return deviceAssociations
+            return deviceAssociations;
         } catch (error) {
             throw new Error(`Error while finding device associations: ${error.message}`);
         }
     }
-
 
     async getSignals(deviceId) {
         const result = await this.Signal.findAll({
@@ -139,7 +135,7 @@ class DeviceRepository {
                 ? 'TRUE'
                 : filteringIds.length === 0
                     ? 'FALSE'
-                    : 's.id = ANY(ARRAY[:filteringIds])'}`
+                    : 'ds.device_id = ANY(ARRAY[:filteringIds])'}`
 
         try {
             const [results] = await this.sequelize.query(query, {
@@ -165,7 +161,7 @@ class DeviceRepository {
                 ? 'TRUE'
                 : filteringIds.length === 0
                     ? 'FALSE'
-                    : 's.id = ANY(ARRAY[:filteringIds])'}
+                    : 'ds.device_id = ANY(ARRAY[:filteringIds])'}
             ORDER BY ds.device_id
             LIMIT :limit
             OFFSET :offset

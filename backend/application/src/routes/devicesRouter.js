@@ -274,6 +274,13 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *     description: Attaches signals to a device.  Requires authentication and proper authorization.
      *     tags:
      *       - Devices
+     *     parameters:
+     *       - in: path
+     *         name: deviceId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of the device
      *     requestBody:
      *       required: true
      *       content:
@@ -757,7 +764,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
                 });
             }
 
-            const deviceAssociations = await deviceService.getDeviceAssociations(deviceId, timestamp)
+            const deviceAssociations = await deviceService.getDeviceAssociations(deviceId, timestamp, requestUserData.userId, requestUserData.isAdmin)
 
             return res.status(200).json({...device, ...deviceAssociations});
         } catch (error) {

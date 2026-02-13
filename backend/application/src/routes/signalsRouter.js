@@ -672,13 +672,13 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
             const signalId = req.params.signalId
             const timestamp = req.query.timestamp ?? Date.now() / 1000
 
-            if (!(await authorizationService.isUserAuthorized(userId, ROLES.VIEWER, requestUserData.isAdmin, 'SIGNAL', signalId))) {
+            if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'SIGNAL', signalId))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
             const signalInfo = await signalService.getSignalInfo(signalId, timestamp)
             if (signalInfo) {
-                const signalAssociations = await signalService.getSignalAssociations(signalId, timestamp)
+                const signalAssociations = await signalService.getSignalAssociations(signalId, timestamp, requestUserData.userId, requestUserData.isAdmin)
                 return res.status(200).json({...signalInfo, ...signalAssociations})
             }
             return res.status(404).json({ message: 'Signal not found' })

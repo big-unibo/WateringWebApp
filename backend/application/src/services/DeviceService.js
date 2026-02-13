@@ -121,8 +121,8 @@ class DeviceService {
         }
     }
 
-    async getDeviceAssociations(deviceId, timestamp) {
-        const deviceAssociations = await this.deviceRepository.getDeviceAssociationEntries(deviceId, timestamp)
+    async getDeviceAssociations(deviceId, timestamp, userId, isAdmin) {
+        const deviceAssociations = await this.deviceRepository.getDeviceAssociationEntries(deviceId, timestamp, userId, isAdmin)
         if (deviceAssociations?.length > 0) {
             return dtoConverter.convertAssociationsEntries(deviceAssociations)
         } 

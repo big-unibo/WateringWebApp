@@ -106,24 +106,23 @@ class SignalRepository {
         }   
     }
 
-    async getSignalAssociationEntries(signalId, timestamp) {
+    async getSignalAssociationEntries(signalId, timestamp, userId, isAdmin) {
         try {
-            const signalAssociations = await this.ThesesAllSignals.findAll({
-                where: {
-                    signalId,
-                    validFrom: {
-                        [Op.lt]: timestamp
-                    },
-                    validTo: {
-                        [Op.or]: {
-                            [Op.is]: null,
-                            [Op.gt]: timestamp
-                        },
-                    }
-                },
-                raw: true
-            });
-
+            const query = `
+                SELECT thesis_id AS "thesisId", thesis_name AS "thesisName", tas.sector_id AS "sectorId",
+                    sector_name AS "sectorName", farm_id AS "farmId", farm_name AS "farmName",
+                    association_type AS "associationType"
+                FROM theses_all_signals tas
+                LEFT JOIN (SELECT DISTINCT sector_id FROM master_data_permits WHERE user_id = :userId) p ON tas.sector_id = p.sector_id
+                WHERE signal_id = :signalId
+                    AND valid_from < :timestamp
+                    AND COALESCE(valid_to, 'infinity') > :timestamp
+                    AND (:isAdmin = true OR p.sector_id IS NOT NULL)
+            `
+            const signalAssociations = await this.sequelize.query(query, {
+                replacements: { signalId, timestamp, userId, isAdmin},
+                type: this.sequelize.QueryTypes.SELECT
+            })
             return signalAssociations
         } catch (error) {
             throw new Error(`Error while finding signals associations: ${error.message}`);
