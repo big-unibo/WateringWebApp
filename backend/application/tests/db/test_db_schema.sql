@@ -238,6 +238,7 @@ CREATE VIEW public.devices_signals_denormalized AS
     d.description AS device_description,
     d.type AS device_type,
     d.binning_id AS device_binning_id,
+    d.company_id AS device_company_id,
     st.type AS signal_type,
     st.type_description AS signal_type_description,
     sig.x,
@@ -446,6 +447,114 @@ ALTER SEQUENCE public.interpolated_profiles_id_seq OWNED BY public.interpolated_
 
 
 --
+-- Name: permits; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.permits (
+    id integer NOT NULL,
+    "table" text,
+    role text NOT NULL,
+    id_key integer,
+    user_id integer NOT NULL,
+    extra_attributes jsonb
+);
+
+
+ALTER TABLE public.permits OWNER TO postgres;
+
+--
+-- Name: sectors; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.sectors (
+    id integer NOT NULL,
+    sector_name text NOT NULL,
+    farm_id integer NOT NULL,
+    culture text NOT NULL,
+    culture_type text,
+    location public.geometry,
+    dripper_capacity double precision,
+    sprinkler_capacity double precision,
+    double_wing boolean
+);
+
+
+ALTER TABLE public.sectors OWNER TO postgres;
+
+--
+-- Name: sectors_devices; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.sectors_devices (
+    sector_id integer NOT NULL,
+    device_id integer NOT NULL,
+    valid_from double precision NOT NULL,
+    valid_to double precision,
+    id integer NOT NULL
+);
+
+
+ALTER TABLE public.sectors_devices OWNER TO postgres;
+
+--
+-- Name: sectors_services; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.sectors_services (
+    id integer NOT NULL,
+    sector_id integer NOT NULL,
+    service_id integer NOT NULL,
+    valid_from double precision NOT NULL,
+    valid_to double precision
+);
+
+
+ALTER TABLE public.sectors_services OWNER TO postgres;
+
+--
+-- Name: services; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.services (
+    id integer NOT NULL,
+    service_name text NOT NULL
+);
+
+
+ALTER TABLE public.services OWNER TO postgres;
+
+--
+-- Name: theses_devices; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.theses_devices (
+    thesis_id integer NOT NULL,
+    device_id integer NOT NULL,
+    valid_from double precision NOT NULL,
+    valid_to double precision,
+    id integer NOT NULL
+);
+
+
+ALTER TABLE public.theses_devices OWNER TO postgres;
+
+--
+-- Name: theses_in_sectors; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.theses_in_sectors (
+    id integer NOT NULL,
+    thesis_id integer NOT NULL,
+    sector_id integer NOT NULL,
+    valid_from double precision NOT NULL,
+    valid_to double precision,
+    weight double precision
+);
+
+
+ALTER TABLE public.theses_in_sectors OWNER TO postgres;
+
+--
 -- Name: measurements; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -511,22 +620,6 @@ ALTER SEQUENCE public.organizations_id_seq OWNER TO postgres;
 
 ALTER SEQUENCE public.organizations_id_seq OWNED BY public.organizations.id;
 
-
---
--- Name: permits; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.permits (
-    id integer NOT NULL,
-    "table" text,
-    role text NOT NULL,
-    id_key integer,
-    user_id integer NOT NULL,
-    extra_attributes jsonb
-);
-
-
-ALTER TABLE public.permits OWNER TO postgres;
 
 --
 -- Name: permits_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -626,40 +719,6 @@ ALTER SEQUENCE public.providers_id_seq OWNED BY public.providers.id;
 
 
 --
--- Name: sectors; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.sectors (
-    id integer NOT NULL,
-    sector_name text NOT NULL,
-    farm_id integer NOT NULL,
-    culture text NOT NULL,
-    culture_type text,
-    location public.geometry,
-    dripper_capacity double precision,
-    sprinkler_capacity double precision,
-    double_wing boolean
-);
-
-
-ALTER TABLE public.sectors OWNER TO postgres;
-
---
--- Name: sectors_devices; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.sectors_devices (
-    sector_id integer NOT NULL,
-    device_id integer NOT NULL,
-    valid_from double precision NOT NULL,
-    valid_to double precision,
-    id integer NOT NULL
-);
-
-
-ALTER TABLE public.sectors_devices OWNER TO postgres;
-
---
 -- Name: sectors_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -680,21 +739,6 @@ ALTER SEQUENCE public.sectors_id_seq OWNER TO postgres;
 
 ALTER SEQUENCE public.sectors_id_seq OWNED BY public.sectors.id;
 
-
---
--- Name: sectors_services; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.sectors_services (
-    id integer NOT NULL,
-    sector_id integer NOT NULL,
-    service_id integer NOT NULL,
-    valid_from double precision NOT NULL,
-    valid_to double precision
-);
-
-
-ALTER TABLE public.sectors_services OWNER TO postgres;
 
 --
 -- Name: sectors_services_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -739,18 +783,6 @@ ALTER SEQUENCE public.sectors_signals_id_seq OWNER TO postgres;
 
 ALTER SEQUENCE public.sectors_signals_id_seq OWNED BY public.sectors_devices.id;
 
-
---
--- Name: services; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.services (
-    id integer NOT NULL,
-    service_name text NOT NULL
-);
-
-
-ALTER TABLE public.services OWNER TO postgres;
 
 --
 -- Name: services_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -831,37 +863,6 @@ CREATE TABLE public.theses (
 ALTER TABLE public.theses OWNER TO postgres;
 
 --
--- Name: theses_devices; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.theses_devices (
-    thesis_id integer NOT NULL,
-    device_id integer NOT NULL,
-    valid_from double precision NOT NULL,
-    valid_to double precision,
-    id integer NOT NULL
-);
-
-
-ALTER TABLE public.theses_devices OWNER TO postgres;
-
---
--- Name: theses_in_sectors; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.theses_in_sectors (
-    id integer NOT NULL,
-    thesis_id integer NOT NULL,
-    sector_id integer NOT NULL,
-    valid_from double precision NOT NULL,
-    valid_to double precision,
-    weight double precision
-);
-
-
-ALTER TABLE public.theses_in_sectors OWNER TO postgres;
-
---
 -- Name: theses_all_signals; Type: VIEW; Schema: public; Owner: postgres
 --
 
@@ -877,11 +878,11 @@ CREATE VIEW public.theses_all_signals AS
             t.thesis_name
            FROM ((((public.companies c
              JOIN public.farms f ON ((f.company_id = c.id)))
-             JOIN public.sectors sec ON ((sec.farm_id = f.id)))
-             JOIN ( SELECT DISTINCT theses_in_sectors.thesis_id,
+             LEFT JOIN public.sectors sec ON ((sec.farm_id = f.id)))
+             LEFT JOIN ( SELECT DISTINCT theses_in_sectors.thesis_id,
                     theses_in_sectors.sector_id
                    FROM public.theses_in_sectors) tsec ON ((tsec.sector_id = sec.id)))
-             JOIN public.theses t ON ((tsec.thesis_id = t.id)))
+             LEFT JOIN public.theses t ON ((tsec.thesis_id = t.id)))
         )
  SELECT td.company_id,
     td.company_name,
@@ -983,6 +984,37 @@ UNION ALL
 ALTER VIEW public.theses_all_signals OWNER TO postgres;
 
 --
+-- Name: master_data_permits; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.master_data_permits AS
+  SELECT permits.user_id,
+    permits.role,
+    sectors.company_id,
+    sectors.farm_id,
+    sectors.sector_id,
+    sectors.thesis_id,
+    array_agg(DISTINCT sectors.service_name) AS services
+   FROM public.permits
+     JOIN ( SELECT c.id AS company_id,
+            f.id AS farm_id,
+            s.id AS sector_id,
+            srv.service_name,
+            ts.thesis_id
+           FROM public.companies c
+             LEFT JOIN public.farms f ON f.company_id = c.id
+             LEFT JOIN public.sectors s ON s.farm_id = f.id
+             LEFT JOIN public.sectors_services ss ON ss.sector_id = s.id
+             LEFT JOIN public.services srv ON ss.service_id = srv.id
+             LEFT JOIN ( SELECT DISTINCT theses_in_sectors.sector_id,
+                    theses_in_sectors.thesis_id
+                   FROM public.theses_in_sectors) ts ON ts.sector_id = s.id) sectors ON permits."table" = 'companies'::text AND permits.id_key = sectors.company_id OR permits."table" = 'sectors'::text AND permits.id_key = sectors.sector_id
+  GROUP BY permits.user_id, permits.role, sectors.company_id, sectors.farm_id, sectors.sector_id, sectors.thesis_id;
+
+
+ALTER VIEW public.master_data_permits OWNER TO postgres;
+
+--
 -- Name: theses_denormalized; Type: VIEW; Schema: public; Owner: postgres
 --
 
@@ -1013,6 +1045,70 @@ CREATE VIEW public.theses_denormalized AS
 
 
 ALTER VIEW public.theses_denormalized OWNER TO postgres;
+
+
+--
+-- Name: devices_signals_permits; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.devices_signals_permits AS
+ SELECT m.user_id,
+    m.role,
+    'companies'::text AS "table",
+    m.company_id AS id,
+    d.device_id,
+    d.signal_id
+   FROM ( SELECT DISTINCT master_data_permits.user_id,
+            master_data_permits.role,
+            master_data_permits.company_id
+           FROM public.master_data_permits) m
+     JOIN public.devices_signals_denormalized d ON m.company_id = d.device_company_id
+  WHERE m.role = 'accounter'::text
+UNION
+ SELECT m.user_id,
+    m.role,
+    'farms'::text AS "table",
+    m.farm_id AS id,
+    ds.device_id,
+    ds.signal_id
+   FROM ( SELECT DISTINCT master_data_permits.user_id,
+            master_data_permits.role,
+            master_data_permits.farm_id
+           FROM public.master_data_permits
+          WHERE master_data_permits.role <> 'accounter'::text) m
+     JOIN public.farms_devices fd ON m.farm_id = fd.farm_id
+     JOIN public.devices_signals_denormalized ds ON fd.device_id = ds.device_id
+UNION
+ SELECT m.user_id,
+    m.role,
+    'sectors'::text AS "table",
+    m.sector_id AS id,
+    ds.device_id,
+    ds.signal_id
+   FROM ( SELECT DISTINCT master_data_permits.user_id,
+            master_data_permits.role,
+            master_data_permits.sector_id
+           FROM public.master_data_permits
+          WHERE master_data_permits.role <> 'accounter'::text) m
+     JOIN public.sectors_devices sd ON m.sector_id = sd.sector_id
+     JOIN public.devices_signals_denormalized ds ON sd.device_id = ds.device_id
+UNION
+ SELECT m.user_id,
+    m.role,
+    'theses'::text AS "table",
+    m.thesis_id AS id,
+    ds.device_id,
+    ds.signal_id
+   FROM ( SELECT DISTINCT master_data_permits.user_id,
+            master_data_permits.role,
+            master_data_permits.thesis_id
+           FROM public.master_data_permits
+          WHERE master_data_permits.role <> 'accounter'::text) m
+     JOIN public.theses_devices td ON m.thesis_id = td.thesis_id
+     JOIN public.devices_signals_denormalized ds ON td.device_id = ds.device_id;
+
+
+ALTER VIEW public.devices_signals_permits OWNER TO postgres;
 
 --
 -- Name: theses_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -1155,77 +1251,6 @@ ALTER SEQUENCE public.users_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
-
---
--- Name: master_data_permits; Type: VIEW; Schema: public; Owner: postgres
---
-
-CREATE VIEW public.master_data_permits AS
- SELECT permits.user_id,
-    permits.role,
-    sectors.company_id,
-    sectors.farm_id,
-    sectors.sector_id,
-    sectors.organization_id,
-    sectors.thesis_id,
-    sectors.device_id,
-    sectors.signal_id,
-    array_agg(DISTINCT sectors.service_name) AS services
-   FROM (public.permits
-     JOIN ( SELECT c.id AS company_id,
-            f.id AS farm_id,
-            s.id AS sector_id,
-            srv.service_name,
-            co.organization_id,
-            ts.thesis_id,
-            d.id AS device_id,
-            ds.signal_id
-           FROM (((((((((((public.companies c
-             JOIN public.farms f ON ((f.company_id = c.id)))
-             JOIN public.sectors s ON ((s.farm_id = f.id)))
-             LEFT JOIN public.sectors_services ss ON ((ss.sector_id = s.id)))
-             LEFT JOIN public.services srv ON ((ss.service_id = srv.id)))
-             LEFT JOIN public.companies_organizations co ON ((c.id = co.company_id)))
-             LEFT JOIN public.farms_devices fd ON ((fd.farm_id = f.id)))
-             LEFT JOIN public.sectors_devices sd ON ((sd.sector_id = s.id)))
-             LEFT JOIN ( SELECT DISTINCT theses_in_sectors.sector_id,
-                    theses_in_sectors.thesis_id
-                   FROM public.theses_in_sectors) ts ON ((ts.sector_id = s.id)))
-             LEFT JOIN public.theses_devices td ON ((td.thesis_id = ts.thesis_id)))
-             LEFT JOIN public.devices d ON (((d.id = fd.device_id) OR (d.id = sd.device_id) OR (d.id = td.device_id))))
-             LEFT JOIN ( SELECT DISTINCT devices_signals.device_id,
-                    devices_signals.signal_id
-                   FROM public.devices_signals) ds ON ((ds.device_id = d.id)))) sectors ON (((permits."table" = 'sectors'::text) AND (permits.id_key = sectors.sector_id))))
-  GROUP BY permits.user_id, permits.role, sectors.company_id, sectors.farm_id, sectors.sector_id, sectors.organization_id, sectors.thesis_id, sectors.device_id, sectors.signal_id
-UNION
- SELECT permits.user_id,
-    permits.role,
-    c.id AS company_id,
-    f.id AS farm_id,
-    s.id AS sector_id,
-    co.organization_id,
-    ts.thesis_id,
-    d.id AS device_id,
-    ds.signal_id,
-    array_agg(DISTINCT srv.service_name) AS services
-   FROM (((((((((public.permits
-     JOIN public.companies c ON (((permits."table" = 'companies'::text) AND (permits.id_key = c.id))))
-     LEFT JOIN public.farms f ON ((f.company_id = c.id)))
-     LEFT JOIN public.sectors s ON ((s.farm_id = f.id)))
-     LEFT JOIN public.sectors_services ss ON ((ss.sector_id = s.id)))
-     LEFT JOIN public.services srv ON ((ss.service_id = srv.id)))
-     LEFT JOIN public.companies_organizations co ON ((c.id = co.company_id)))
-     LEFT JOIN ( SELECT DISTINCT theses_in_sectors.sector_id,
-            theses_in_sectors.thesis_id
-           FROM public.theses_in_sectors) ts ON ((ts.sector_id = s.id)))
-     LEFT JOIN public.devices d ON ((d.company_id = c.id)))
-     LEFT JOIN ( SELECT DISTINCT devices_signals.device_id,
-            devices_signals.signal_id
-           FROM public.devices_signals) ds ON ((ds.device_id = d.id)))
-  GROUP BY permits.user_id, permits.role, c.id, f.id, s.id, srv.service_name, co.organization_id, ts.thesis_id, d.id, ds.signal_id;
-
-
-ALTER VIEW public.master_data_permits OWNER TO postgres;
 
 
 --
