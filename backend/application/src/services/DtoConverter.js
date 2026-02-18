@@ -7,7 +7,7 @@ import { DistanceValue, OptimalDistanceData, DistanceProfile, OptimalProfileData
 import { WateringAdvice } from "../dtos/wateringAdviceDto.js";
 import { SectorCompact, SectorData, Service } from "../dtos/sectorDto.js";
 import { Device, DeviceTargetType } from "../dtos/deviceDto.js";
-import { Signal, SignalInfo } from "../dtos/signalDto.js";
+import { Signal, SignalInfo, SignalType } from "../dtos/signalDto.js";
 import { ThesisData, ThesisRef } from "../dtos/thesisDto.js";
 import { WateringParams } from "../dtos/wateringParamsDto.js";
 import { Farm, FarmData } from "../dtos/farmDto.js";
@@ -394,6 +394,10 @@ class DtoConverter {
         });
 
         return signalTypeDataArray;
+    }
+
+    convertSignalTypes(signalTypes) {
+        return signalTypes.map(st => new SignalType(st));
     }
 
     convertAssociationsEntries(associations) {

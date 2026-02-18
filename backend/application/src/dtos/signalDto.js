@@ -99,3 +99,11 @@ export class SignalInfo {
         this.devices = devices
     }
 }
+
+export class SignalType {
+    constructor({id, name, description}) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+    }
+}

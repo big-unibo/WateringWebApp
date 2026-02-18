@@ -570,6 +570,84 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
         }
     });
 
+    
+    /**
+     * @swagger
+     * /signals/types/:
+     *   get:
+     *     summary: Get all the possible signal types
+     *     description: |
+     *       Get the information about all the possible signal types
+     *     tags:
+     *       - Signals
+     *     responses:
+     *       200:
+     *         description: Signal types successfully retrieved
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 $ref: '#/components/schemas/SignalType'
+     *       400:
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       401:
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while getting signal information
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.get('/types', async (req, res) => {
+        try {
+            await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        try {
+            const signalTypes = await signalService.getSignalTypes()
+            return res.status(200).json(signalTypes)
+        } catch (error) {
+            console.log(`Failed finding signal types caused by: ${error.message}`)
+            return res.status(500).json({ message: "Error finding signal types" })
+        }
+    })
+
     /**
      * @swagger
      * /signals/{signalId}/:

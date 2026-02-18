@@ -24,6 +24,7 @@ import initDevicesSignals from './DevicesSignals.js';
 import initSignalsDenormalized from './SignalsDenormalized.js';
 import initCompaniesOrganizations from './ComapaniesOrganizations.js';
 import initService from './Service.js';
+import initSignalType from './SignalType.js';
 
 
 export default function initModels(sequelize) {
@@ -54,7 +55,8 @@ export default function initModels(sequelize) {
     OptimalProfile: initOptimalProfile(sequelize),
     UserAction : initUserAction(sequelize),
     Provider : initProvider(sequelize),
-    Service: initService(sequelize)
+    Service: initService(sequelize),
+    SignalType: initSignalType(sequelize)
   };
 
   models.Company.hasMany(models.CompaniesOrganizations, { foreignKey: "companyId", as: "organizations" });

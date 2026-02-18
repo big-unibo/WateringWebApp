@@ -92,7 +92,13 @@ class SignalService {
         if (signalAssociations?.length > 0) {
             return dtoConverter.convertAssociationsEntries(signalAssociations)
         } 
-    } 
+    }
+
+    async getSignalTypes() {
+        const signalTypes = await this.signalRepository.getSignalTypes()
+        return dtoConverter.convertSignalTypes(signalTypes)
+
+    }
 
     async signalExists(signalId) {
         return await this.signalRepository.signalExists(signalId);

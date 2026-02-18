@@ -699,13 +699,23 @@ components:
             type: array
             items:
               $ref: "#/components/schemas/Thesis"
+    
+    SignalType:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
 
     DeviceData:
       type: object
       properties:
         id:
           type: integer
-        deviceType:
+        type:
           type: string
         description:
           type: string
@@ -722,8 +732,8 @@ components:
             items:
               $ref: "#/components/schemas/Signal"
       required:
-        - deviceId
-        - deviceType
+        - id
+        - type
         - signals
     
     DeviceInfo:

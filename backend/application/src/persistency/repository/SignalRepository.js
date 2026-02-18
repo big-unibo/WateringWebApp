@@ -5,9 +5,10 @@ class SignalRepository {
         this.Signal = models.Signal
         this.DevicesSignals = models.DevicesSignals
         this.Measurement = models.Measurement
-        this.Provider = models.Provider;
+        this.Provider = models.Provider
         this.SignalsDenormalized = models.SignalsDenormalized
         this.ThesesAllSignals = models.ThesesAllSignals
+        this.SignalType = models.SignalType
         this.ThesesAllSignals.removeAttribute('id')
         this.SignalsDenormalized.removeAttribute('id')
         this.sequelize = sequelize
@@ -142,6 +143,15 @@ class SignalRepository {
             return providers
         } catch {
             throw new Error(`Error while retrieving providers data caused by: ${error.message}`);
+        }
+    }
+
+    async getSignalTypes() {
+        try {
+            const signalTypes = await this.SignalType.findAll();
+            return signalTypes;
+        } catch (error) {
+            throw new Error(`Error while retrieving signals types data caused by: ${error.message}`);
         }
     }
 }
