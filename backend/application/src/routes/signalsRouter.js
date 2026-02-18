@@ -573,7 +573,7 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
     
     /**
      * @swagger
-     * /signals/types/:
+     * /signals/types:
      *   get:
      *     summary: Get all the possible signal types
      *     description: |

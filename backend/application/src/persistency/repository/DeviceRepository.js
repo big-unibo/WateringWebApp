@@ -124,12 +124,13 @@ class DeviceRepository {
         return result.map(r => r.get({ plain: true }));
     }
 
-    async countDevices(filteringIds, timeFilterFrom, timeFilterTo, providerIds, types) {
+    async countDevices(filteringIds, timeFilterFrom, timeFilterTo, providerIds, types, companyIds) {
         const query = ` SELECT COUNT(DISTINCT ds.device_id) AS total
             FROM devices_signals_denormalized ds
             WHERE valid_from < :timeFilterTo
                 AND COALESCE(valid_to, 'infinity') > :timeFilterFrom
                 ${providerIds?.length > 0 ? "AND provider_id = ANY(ARRAY[:providerIds])" : ""}
+                ${companyIds?.length > 0 ? "AND device_company_id = ANY(ARRAY[:companyIds])" : ""}
                 ${types?.length > 0 ? "AND device_type = ANY(ARRAY[:types])" : ""}
                 AND ${filteringIds === null
                 ? 'TRUE'
@@ -139,7 +140,7 @@ class DeviceRepository {
 
         try {
             const [results] = await this.sequelize.query(query, {
-                replacements: { timeFilterFrom, timeFilterTo, providerIds, types, filteringIds },
+                replacements: { timeFilterFrom, timeFilterTo, providerIds, types, companyIds, filteringIds },
                 type: this.sequelize.QueryTypes.SELECT
             });
             return Number(results.total);
@@ -149,7 +150,7 @@ class DeviceRepository {
         }
     }
 
-    async getDevices(filteringIds, timeFilterFrom, timeFilterTo, providerIds, types, offset, limit) {
+    async getDevices(filteringIds, timeFilterFrom, timeFilterTo, providerIds, types, companyIds, offset, limit) {
         const query = `WITH paginated_devices AS (
             SELECT DISTINCT ds.device_id
             FROM devices_signals_denormalized ds
@@ -157,6 +158,7 @@ class DeviceRepository {
                 AND COALESCE(valid_to, 'infinity') > :timeFilterFrom
                 ${providerIds?.length > 0 ? "AND provider_id = ANY(ARRAY[:providerIds])" : ""}
                 ${types?.length > 0 ? "AND device_type = ANY(ARRAY[:types])" : ""}
+                ${companyIds?.length > 0 ? "AND device_company_id = ANY(ARRAY[:companyIds])" : ""}
                 AND ${filteringIds === null
                 ? 'TRUE'
                 : filteringIds.length === 0
@@ -192,7 +194,7 @@ class DeviceRepository {
 
         try {
             const results = await this.sequelize.query(query, {
-                replacements: { timeFilterFrom, timeFilterTo, providerIds, types, offset, limit, filteringIds},
+                replacements: { timeFilterFrom, timeFilterTo, providerIds, types, companyIds, offset, limit, filteringIds},
                 type: this.sequelize.QueryTypes.SELECT
             });
             return results;

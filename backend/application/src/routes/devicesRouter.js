@@ -46,6 +46,13 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *         explode: true
      *         description: Device types to include
      *       - in: query
+     *         name: companyIds
+     *         schema:
+     *           type: array
+     *           items:
+     *             type: integer
+     *         description: Company IDs to include
+     *       - in: query
      *         name: page
      *         schema:
      *           type: number
@@ -140,6 +147,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         const timeFilterTo = Number(req.query.timeFilterTo)
         const providerIds = req.query.providerIds
         const types = req.query.types
+        const companyIds = req.query.companyIds
         const page = req.query.page ?? 1
         const itemsPerPage = req.query.itemsPerPage ?? 50
 
@@ -150,7 +158,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
                 if (userAvailableIds.includes('ALL')) {
                     userAvailableIds = null
                 }
-                const devices = await deviceService.getDevices(userAvailableIds, timeFilterFrom, timeFilterTo, providerIds, types, page, itemsPerPage);
+                const devices = await deviceService.getDevices(userAvailableIds, timeFilterFrom, timeFilterTo, providerIds, types, companyIds, page, itemsPerPage);
                 return res.status(200).json(devices);
             }
             return res.status(404).json({

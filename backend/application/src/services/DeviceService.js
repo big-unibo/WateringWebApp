@@ -100,14 +100,14 @@ class DeviceService {
         }
     }
 
-    async getDevices(userAvailableIds, timeFilterFrom, timeFilterTo, providerIds, types, page, itemsPerPage) {
+    async getDevices(userAvailableIds, timeFilterFrom, timeFilterTo, providerIds, types, companyIds, page, itemsPerPage) {
 
-        const devicesCount = await this.deviceRepository.countDevices(userAvailableIds, timeFilterFrom, timeFilterTo, providerIds, types)
+        const devicesCount = await this.deviceRepository.countDevices(userAvailableIds, timeFilterFrom, timeFilterTo, providerIds, types, companyIds)
         const paginationMetadata = paginationService.computePaginationMetadata(devicesCount, page, itemsPerPage)
 
         const offset = (paginationMetadata.page - 1) * paginationMetadata.pageSize;
         const limit = paginationMetadata.pageSize;
-        const devices = await this.deviceRepository.getDevices(userAvailableIds, timeFilterFrom, timeFilterTo, providerIds, types, offset, limit)
+        const devices = await this.deviceRepository.getDevices(userAvailableIds, timeFilterFrom, timeFilterTo, providerIds, types, companyIds, offset, limit)
         return {
             data: dtoConverter.convertDevicesDataWrapper(devices),
             pagination: paginationMetadata
