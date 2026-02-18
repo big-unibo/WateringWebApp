@@ -68,7 +68,7 @@ class FarmRepository {
                     WHERE user_id = :userId) p ON 
                     p.company_id = c.id
                     AND p.farm_id = f.id
-                    AND p.sector_id = s.id
+                    AND p.sector_id IS NOT DISTINCT FROM s.id
             WHERE f.id = :farmId AND (
                 :isAdmin = true
                 OR p.farm_id IS NOT NULL

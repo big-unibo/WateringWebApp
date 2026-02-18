@@ -49,7 +49,7 @@ class CompanyRepository {
                 LEFT JOIN (SELECT DISTINCT company_id, farm_id FROM master_data_permits 
                     WHERE user_id = :userId) p ON 
                     p.company_id = c.id
-                    AND p.farm_id = f.id
+                    AND p.farm_id IS NOT DISTINCT FROM f.id
             WHERE c.id = :companyId AND (
                 :isAdmin = true
                 OR p.company_id IS NOT NULL

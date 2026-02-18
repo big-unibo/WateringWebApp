@@ -12,7 +12,7 @@ function initService(sequelize) {
             autoIncrement: true
         },
         serviceName: {
-            type: DataTypes.STRING,
+            type: DataTypes.TEXT,
             allowNull: false,
             field: "service_name"
         }
