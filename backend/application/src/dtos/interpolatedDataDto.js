@@ -26,6 +26,23 @@ export class InterpolatedMeasureData {
     }
 }
 
+export class HumidityBin{
+    constructor(humidityBin, humidityBinDescription, lowerBound, upperBound) {
+        this.humidityBin = humidityBin;
+        this.humidityBinDescription = humidityBinDescription;
+        this.lowerBound = lowerBound;
+        this.upperBound = upperBound;
+    }
+}
+
+export class BinningInfo {
+    constructor(binningId, binningDescription, bins) {
+        this.id = binningId;
+        this.description = binningDescription;
+        this.bins = bins;
+    }
+}
+
 export class HumidityBinsDataResponse {
     constructor(thesisName, deviceId, measures) {
         this.thesisName = thesisName;

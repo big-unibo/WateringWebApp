@@ -1,4 +1,4 @@
-import { HumidityBinMeasureData, HumidityBinsDataResponse, InterpolatedDataResponse, InterpolatedImageData, InterpolatedMeanMeasureData, InterpolatedMeansData, InterpolatedMeasureData } from "../dtos/interpolatedDataDto.js";
+import { HumidityBinMeasureData, HumidityBinsDataResponse, InterpolatedDataResponse, InterpolatedImageData, InterpolatedMeanMeasureData, InterpolatedMeansData, InterpolatedMeasureData, HumidityBin, BinningInfo } from "../dtos/interpolatedDataDto.js";
 import { Organization, OrganizationData } from "../dtos/organizationDto.js";
 import { Company, CompanyData } from "../dtos/companyDto.js";
 import { SignalData, MeasureData, SignalTypeData } from '../dtos/dataDto.js';
@@ -588,6 +588,27 @@ class DtoConverter {
     convertServicesWrapper(services) {
         if (!Array.isArray(services)) return []
         return services.map(s => new Service(s.serviceName, s.id))
+    }
+
+    convertBinningInfoWrapper(binningData) {
+        if (!Array.isArray(binningData)) return []
+        const grouped = binningData.reduce((acc, curr) => {
+            if (!acc[curr.binningId]) {
+                acc[curr.binningId] = {
+                    id: curr.binningId,
+                    description: curr.binningDescription,
+                    bins: []
+                };
+            }
+            acc[curr.binningId].bins.push(new HumidityBin(curr.humidityBin, curr.humidityBinDescription, curr.lowerBound, curr.upperBound));
+            return acc;
+        }, {});
+
+
+        const binnings = Object.values(grouped).map(b => {
+            return new BinningInfo(b.id, b.description, b.bins);
+        });
+        return binnings;
     }
 }
 

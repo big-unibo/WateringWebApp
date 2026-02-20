@@ -755,6 +755,18 @@ components:
             items:
               $ref: "#/components/schemas/Thesis"
 
+    BinningInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+        description:
+          type: string
+        bins:
+          type: array
+          items:
+            $ref: "#/components/schemas/BinInfoData"
+
     BinInfoData:
       type: object
       properties:

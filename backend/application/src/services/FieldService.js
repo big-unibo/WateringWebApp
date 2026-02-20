@@ -205,7 +205,17 @@ class FieldService {
     }
 
     async getBinningInfo(binningId) {
-        return this.humidityBinsRepository.getBinningInfo(binningId);
+        return dtoConverter.convertBinningInfoWrapper(await this.humidityBinsRepository.getBinningInfo(binningId))?.[0];
+    }
+
+    async getAllBinningInfo() {
+        try {
+            const result = await this.humidityBinsRepository.getBinningInfo();
+            return dtoConverter.convertBinningInfoWrapper(result);
+        } catch (error) {
+            console.error(`Error retrieving binning info: ${error.message}`);
+            throw error;
+        }
     }
 
     async getSignalsByThesis(thesisId, timestamp, signalTypes) {

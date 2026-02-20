@@ -147,18 +147,19 @@ class HumidityBinsRepository {
     async getBinningInfo(binningId) {
         const query = `
             SELECT
+                id AS "binningId",
+                description AS "binningDescription",
                 ordinal as "humidityBin",
                 lower_bound as "lowerBound",
                 upper_bound as "upperBound",
-                '[' || lower_bound
-                    || ', '
-                    || upper_bound
-                    || ')' AS "humidityBinDescription"
+                '[' || lower_bound || ', ' || upper_bound || ')' AS "humidityBinDescription"
             FROM (
                 SELECT 
+                    pb.id,
+                    pb.description,
                     b.ordinal,
                     b.bound_value AS lower_bound,
-                    LEAD(b.bound_value) OVER (ORDER BY b.ordinal) AS upper_bound
+                    LEAD(b.bound_value) OVER (PARTITION BY pb.id ORDER BY b.ordinal) AS upper_bound
                 FROM public.profiles_bins pb
                 CROSS JOIN LATERAL (
                     VALUES 
@@ -170,8 +171,8 @@ class HumidityBinsRepository {
                         (pb.bound_5, 6),
                         (pb.bound_6, 7)
                 ) AS b(bound_value, ordinal)
-                WHERE pb.id = :binningId
-                AND bound_value IS NOT NULL
+                WHERE bound_value IS NOT NULL
+                ${binningId ? 'AND pb.id = :binningId' : ''}
             ) sub
             WHERE upper_bound IS NOT NULL
             ORDER BY ordinal;
