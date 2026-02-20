@@ -394,11 +394,11 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
 
     /**
      * @swagger
-     * /devices/{deviceId}/assign:
+     * /devices/{deviceId}/link:
      *   post:
-     *     summary: Assigns device to a given farm, sector, or thesis
+     *     summary: Links device to a given farm, sector, or thesis
      *     description: |
-     *       Assigns a device with its signals to a given farm, sector, or thesis.
+     *       Links a device with its signals to a given farm, sector, or thesis.
      *       
      *       **Required request parameters:**
      *       - **targetId** (*integer*): ID of the target entity
@@ -468,7 +468,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *                 message:
      *                   type: string
      *       '403':
-     *         description: Unauthorized (user not allowed to assign device)
+     *         description: Unauthorized (user not allowed to link device)
      *         content:
      *           application/json:
      *             schema:
@@ -486,7 +486,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *                 message:
      *                   type: string
      *       500:
-     *         description: Internal server error – unexpected error while assigning signals
+     *         description: Internal server error – unexpected error while linking signals
      *         content:
      *           application/json:
      *             schema:
@@ -495,7 +495,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *                 message:
      *                   type: string
      */
-    router.post('/:deviceId/assign', async (req, res) => {
+    router.post('/:deviceId/link', async (req, res) => {
         let requestUserData;
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -522,11 +522,149 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
 
             const deviceAssociation = new DeviceAssociation(deviceId, targetType, targetId, validFrom);
 
-            await deviceService.assignDevice(userId, deviceAssociation);
+            await deviceService.linkDevice(userId, deviceAssociation);
             return res.status(200).json({ message: 'Device successfully associated' });
         } catch (error) {
-            console.log(`Failed assigning device caused by: ${error.message}`);
-            return res.status(500).json({ message: "Error assigning device" });
+            console.log(`Failed linking device caused by: ${error.message}`);
+            return res.status(500).json({ message: "Error linking device" });
+        }
+    });
+
+    /**
+     * @swagger
+     * /devices/{deviceId}/unlink:
+     *   post:
+     *     summary: Unlinks device from a given farm, sector, or thesis
+     *     description: |
+     *       Unlinks a device with its signals from a given farm, sector, or thesis.
+     *       
+     *       **Required request parameters:**
+     *       - **targetId** (*integer*): ID of the target entity
+     *       - **targetType** (*string*): One of the following values:
+     *         - `farm`
+     *         - `sector`
+     *         - `thesis`
+     *       - **validTo** (*number*, optional): Timestamp (in seconds since 01/01/1970) indicating when the association becomes invalid
+     *       
+     *       Requires authentication and appropriate authorization.
+     *     tags:
+     *       - Devices
+     *     parameters:
+     *       - in: path
+     *         name: deviceId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of the device
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/SignalAssociation'
+     *     responses:
+     *       200:
+     *         description: Signal successfully unlinked
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to link device)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while linking signals
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.post('/:deviceId/unlink', async (req, res) => {
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        const userId = requestUserData.userId
+        const deviceId = req.params.deviceId
+        
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'DEVICE', deviceId))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
+
+        try {
+            const exists = await deviceService.deviceExists(deviceId);
+            if (!exists) {
+                return res.status(404).json({ message: 'Device not found' });
+            }
+
+            const targetType = req.body.targetType
+            const targetId = req.body.targetId
+            const validTo = req.body.validTo ?? Date.now() / 1000;
+
+            const deviceAssociation = new DeviceAssociation(deviceId, targetType, targetId, null, validTo);
+
+            await deviceService.unlinkDevice(userId, deviceAssociation);
+            return res.status(200).json({ message: 'Device successfully unlinked' });
+        } catch (error) {
+            console.log(`Failed unlinking device caused by: ${error.message}`);
+            return res.status(500).json({ message: "Error unlinking device" });
         }
     });
 

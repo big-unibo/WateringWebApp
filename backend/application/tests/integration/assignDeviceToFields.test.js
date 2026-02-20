@@ -7,6 +7,7 @@ describe('Device Assignment Integration Test', () => {
     let db, container, app, authToken
     
     const validFrom = (new Date(2025, 1, 25, 9, 0, 0)).valueOf() / 1000
+    const validTo = (new Date(2025, 1, 26, 9, 0, 0)).valueOf() / 1000
 
     const TEST_WEATHER_STATION_ID = 1
     const TEST_FLOW_METER_ID = 2
@@ -29,9 +30,9 @@ describe('Device Assignment Integration Test', () => {
         if (container) await container.stop()
     })
 
-    it('should assign WEATHER_STATION to the Farm', async () => {
+    it('should link WEATHER_STATION to the Farm', async () => {
         await request(app)
-            .post(`/devices/${TEST_WEATHER_STATION_ID}/assign`)
+            .post(`/devices/${TEST_WEATHER_STATION_ID}/link`)
             .set('Authorization', `Bearer ${authToken}`)
             .send({ targetId: TEST_FARM_ID, targetType: 'FARM', validFrom: validFrom })
             .expect(200)
@@ -41,9 +42,9 @@ describe('Device Assignment Integration Test', () => {
         expect(record).toBeDefined()
     })
 
-    it('should assign FLOW_METER to the Sector', async () => {
+    it('should link FLOW_METER to the Sector', async () => {
         await request(app)
-            .post(`/devices/${TEST_FLOW_METER_ID}/assign`)
+            .post(`/devices/${TEST_FLOW_METER_ID}/link`)
             .set('Authorization', `Bearer ${authToken}`)
             .send({ targetId: TEST_SECTOR_ID, targetType: 'SECTOR', validFrom: validFrom })
             .expect(200)
@@ -53,9 +54,9 @@ describe('Device Assignment Integration Test', () => {
         expect(record).toBeDefined()
     })
 
-    it('should assign SOIL_MOISTURE_GRID to the Thesis', async () => {
+    it('should link SOIL_MOISTURE_GRID to the Thesis', async () => {
         await request(app)
-            .post(`/devices/${TEST_SOIL_MOISTURE_GRID_ID}/assign`)
+            .post(`/devices/${TEST_SOIL_MOISTURE_GRID_ID}/link`)
             .set('Authorization', `Bearer ${authToken}`)
             .send({ targetId: TEST_THESIS_ID, targetType: 'THESIS', validFrom: validFrom })
             .expect(200)
@@ -67,9 +68,9 @@ describe('Device Assignment Integration Test', () => {
 
     /**
      * STEP 5: Integrity / Conflict Check
-     * Ensure we can't assign to a non-existent target
+     * Ensure we can't link to a non-existent target
      */
-    it('should fail when assigning to a non-existent entity or assigning a non-existent device', async () => {
+    it('should fail when linking to a non-existent entity or linking a non-existent device', async () => {
         const invalidId = 999999
         const payload = {
             targetId: invalidId,
@@ -78,13 +79,13 @@ describe('Device Assignment Integration Test', () => {
         }
 
         await request(app)
-            .post(`/devices/${TEST_WEATHER_STATION_ID}/assign`)
+            .post(`/devices/${TEST_WEATHER_STATION_ID}/link`)
             .set('Authorization', `Bearer ${authToken}`)
             .send(payload)
             .expect(500)
         
         await request(app)
-            .post(`/devices/${invalidId}/assign`)
+            .post(`/devices/${invalidId}/link`)
             .set('Authorization', `Bearer ${authToken}`)
             .send(payload)
             .expect(404)
@@ -114,4 +115,77 @@ describe('Device Assignment Integration Test', () => {
         const weatherStation = res.body.find(d => d.id === TEST_SOIL_MOISTURE_GRID_ID);
         expect(weatherStation.signals).toHaveLength(4);
     });
+
+    it('should unlink the Device from the Thesis and check it is no longer retrieved', async () => {
+        await request(app)
+            .post(`/devices/${TEST_SOIL_MOISTURE_GRID_ID}/unlink`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .send({ targetId: TEST_THESIS_ID, targetType: 'THESIS', validTo: validTo })
+            .expect(200)
+
+        const queryTimestamp = validTo + 1
+        const res = await request(app)
+            .get(`/theses/${TEST_THESIS_ID}/devices`)
+            .query({ 
+                timestamp: queryTimestamp,
+                includeAnchestors: false
+            })
+            .set('Authorization', `Bearer ${authToken}`)
+            .expect(200);
+
+        expect(res.body).toBeDefined();
+        expect(Array.isArray(res.body)).toBe(true);
+
+        const returnedDeviceIds = res.body.map(d => d.id);
+        expect(returnedDeviceIds).not.toContain(TEST_SOIL_MOISTURE_GRID_ID);
+    })
+
+    it('should unlink the Device from the Sector and check it is no longer retrieved', async () => {
+        await request(app)
+            .post(`/devices/${TEST_FLOW_METER_ID}/unlink`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .send({ targetId: TEST_SECTOR_ID, targetType: 'SECTOR', validTo: validTo })
+            .expect(200)
+
+        const queryTimestamp = validTo + 1
+        const res = await request(app)
+            .get(`/sectors/${TEST_SECTOR_ID}/devices`)
+            .query({ 
+                timestamp: queryTimestamp,
+                includeAnchestors: false,
+                includeDescendants: false
+            })
+            .set('Authorization', `Bearer ${authToken}`)
+            .expect(200);
+
+        expect(res.body).toBeDefined();
+        expect(Array.isArray(res.body)).toBe(true);
+
+        const returnedDeviceIds = res.body.map(d => d.id);
+        expect(returnedDeviceIds).not.toContain(TEST_FLOW_METER_ID);
+    })
+
+    it('should unlink the Device from the Farm and check it is no longer retrieved', async () => {
+        await request(app)
+            .post(`/devices/${TEST_WEATHER_STATION_ID}/unlink`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .send({ targetId: TEST_FARM_ID, targetType: 'FARM', validTo: validTo })
+            .expect(200)
+
+        const queryTimestamp = validTo + 1
+        const res = await request(app)
+            .get(`/farms/${TEST_FARM_ID}/devices`)
+            .query({ 
+                timestamp: queryTimestamp,
+                includeDescendants: false
+            })
+            .set('Authorization', `Bearer ${authToken}`)
+            .expect(200);
+
+        expect(res.body).toBeDefined();
+        expect(Array.isArray(res.body)).toBe(true);
+
+        const returnedDeviceIds = res.body.map(d => d.id);
+        expect(returnedDeviceIds).not.toContain(TEST_WEATHER_STATION_ID);
+    })
 })

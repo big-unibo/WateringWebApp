@@ -232,6 +232,9 @@ components:
         validFrom: 
           type: number
           description: Timestamp of association validity start (Seconds elapsed since 01/01/1970 - 00:00 )
+        validTo:
+          type: number
+          description: Timestamp of association validity end (Seconds elapsed since 01/01/1970 - 00:00 )
 
     Measurement:
       type: object

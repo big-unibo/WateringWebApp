@@ -44,7 +44,7 @@ describe('Device and Signal Setup Integration Test', () => {
      */
     it('should create a Device and persist it', async () => {
         const payload = {
-            type: 'WHEATER_STATION',
+            type: 'WEATHER_STATION',
             description: 'Main Field Station',
             companyId: 1,
             location: {
@@ -180,9 +180,11 @@ describe('Device and Signal Setup Integration Test', () => {
             .set('Authorization', `Bearer ${authToken}`)
             .expect(200)
 
+        console.log('Retrieved Device Info:', res.body)
+
         // Verify Device Data
         expect(res.body.id).toBe(deviceId)
-        expect(res.body.deviceType).toBe('WHEATER_STATION')
+        expect(res.body.type).toBe('WEATHER_STATION')
 
         // Verify Signals Array
         expect(res.body.signals).toBeDefined()

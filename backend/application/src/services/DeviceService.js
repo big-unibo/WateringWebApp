@@ -60,7 +60,7 @@ class DeviceService {
         return await this.deviceRepository.deviceExists(deviceId)
     }
 
-    async assignDevice(userId, deviceAssociation) {
+    async linkDevice(userId, deviceAssociation) {
         try {
 
             if (!deviceAssociation.sourceId) {
@@ -76,9 +76,9 @@ class DeviceService {
             const validFrom = deviceAssociation.validFrom ?? Date.now() / 1000;
 
             const assingFunctions = {
-                [DeviceTargetType.FARM]: async (args) => await this.deviceRepository.assignDeviceToFarm(args),
-                [DeviceTargetType.SECTOR]: async (args) => await this.deviceRepository.assignDeviceToSector(args),
-                [DeviceTargetType.THESIS]: async (args) => await this.deviceRepository.assignDeviceToThesis(args)
+                [DeviceTargetType.FARM]: async (args) => await this.deviceRepository.linkDeviceToFarm(args),
+                [DeviceTargetType.SECTOR]: async (args) => await this.deviceRepository.linkDeviceToSector(args),
+                [DeviceTargetType.THESIS]: async (args) => await this.deviceRepository.linkDeviceToThesis(args)
             }
 
             const logTables = {
@@ -87,15 +87,55 @@ class DeviceService {
                 [DeviceTargetType.THESIS]: THESES_DEVICES_LOG_TABLE
             }
 
-            const assignmentId = await assingFunctions[deviceAssociation.targetType]({
+            const linkId = await assingFunctions[deviceAssociation.targetType]({
                     deviceId: deviceAssociation.sourceId,
                     [deviceAssociation.targetType.toLowerCase() + "Id"]: deviceAssociation.targetId,
                     validFrom
             })
-            await this.userActionService.logCreation(userId, logTables[deviceAssociation.targetType], assignmentId, null)
+            await this.userActionService.logCreation(userId, logTables[deviceAssociation.targetType], linkId, null)
 
         } catch (error) {
-            console.error(`Error assigning signal: ${error.message}`);
+            console.error(`Error linking device: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async unlinkDevice(userId, deviceAssociation) {
+        try {
+
+            if (!deviceAssociation.sourceId) {
+                throw new Error("deviceId is required");
+            }
+            if (!deviceAssociation.targetId) {
+                throw new Error("targetId is required");
+            }
+            if (!Object.values(DeviceTargetType).includes(deviceAssociation.targetType)) {
+                throw new Error(`Invalid targetType: ${deviceAssociation.targetType}`);
+            }
+
+            const validTo = deviceAssociation.validTo ?? Date.now() / 1000;
+
+            const unlinkingFunctions = {
+                [DeviceTargetType.FARM]: async (args) => await this.deviceRepository.unlinkDeviceFromFarm(args),
+                [DeviceTargetType.SECTOR]: async (args) => await this.deviceRepository.unlinkDeviceFromSector(args),
+                [DeviceTargetType.THESIS]: async (args) => await this.deviceRepository.unlinkDeviceFromThesis(args)
+            }
+
+            const logTables = {
+                [DeviceTargetType.FARM]: FARMS_DEVICES_LOG_TABLE,
+                [DeviceTargetType.SECTOR]: SECTORS_DEVICES_LOG_TABLE,
+                [DeviceTargetType.THESIS]: THESES_DEVICES_LOG_TABLE
+            }
+
+            const linkId = await unlinkingFunctions[deviceAssociation.targetType]({
+                    deviceId: deviceAssociation.sourceId,
+                    [deviceAssociation.targetType.toLowerCase() + "Id"]: deviceAssociation.targetId,
+                    validTo
+            })
+            await this.userActionService.logDisabling(userId, logTables[deviceAssociation.targetType], linkId, null)
+
+        } catch (error) {
+            console.error(`Error unlinking device: ${error.message}`);
             throw error;
         }
     }

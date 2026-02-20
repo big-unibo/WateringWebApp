@@ -32,12 +32,14 @@ export class DeviceAssociation {
      * @param {DeviceTargetType} targetType - Type of the target of the signal association
      * @param {number} targetId - Id of the association target
      * @param {validFrom} - Start of the validy period of the association
+     * @param {validTo} - End of the validy period of the association
      */
-    constructor(sourceId, targetType, targetId, validFrom) {
+    constructor(sourceId, targetType, targetId, validFrom = null, validTo = null) {
     this.sourceId = sourceId;
     this.targetType = targetType; 
     this.targetId = targetId;
     this.validFrom = validFrom;
+    this.validTo = validTo;
   }
 }
 

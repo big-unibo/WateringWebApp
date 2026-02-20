@@ -204,7 +204,7 @@ class DeviceRepository {
         }
     }
 
-    async assignDeviceToFarm(associationData) {
+    async linkDeviceToFarm(associationData) {
         try {
             const model = await this.DeviceInFarm.create({
                 deviceId: associationData.deviceId,
@@ -217,7 +217,7 @@ class DeviceRepository {
         }
     }
 
-    async assignDeviceToSector(associationData) {
+    async linkDeviceToSector(associationData) {
         try {
             const model = await this.DeviceInSector.create({
                 deviceId: associationData.deviceId,
@@ -230,7 +230,7 @@ class DeviceRepository {
         }
     }
 
-    async assignDeviceToThesis(associationData) {
+    async linkDeviceToThesis(associationData) {
         try {
             const model = await this.DeviceInThesis.create({
                 deviceId: associationData.deviceId,
@@ -240,6 +240,79 @@ class DeviceRepository {
             return model.id;
         } catch (error) {
             throw new Error(`Error creating association between device and thesis: ${error.message}`);
+        }
+    }
+
+    async unlinkDeviceFromFarm(associationData) {
+        try {
+            const [_, updatedRecords] = await this.DeviceInFarm.update({
+                validTo: associationData.validTo
+            }, {
+                where: {
+                    deviceId: associationData.deviceId,
+                    farmId: associationData.farmId,
+                    validFrom: {
+                        [Op.lte]: associationData.validTo
+                    },
+                    [Op.or]: [
+                        { validTo: { [Op.gt]: associationData.validTo } },
+                        { validTo: null }
+                    ]
+                },
+                returning: ["id"]
+            });
+            return updatedRecords.map(record => record.id);
+        } catch (error) {
+            throw new Error(`Error unlinking device from farm: ${error.message}`);
+        }
+    }
+
+    async unlinkDeviceFromSector(associationData) {
+        try {
+            
+            const [_, updatedRecords] = await this.DeviceInSector.update({
+                validTo: associationData.validTo
+            }, {
+                where: {
+                    deviceId: associationData.deviceId,
+                    sectorId: associationData.sectorId,
+                    validFrom: {
+                        [Op.lte]: associationData.validTo
+                    },
+                    [Op.or]: [
+                        { validTo: { [Op.gt]: associationData.validTo } },
+                        { validTo: null }
+                    ]
+                },
+                returning: ["id"]
+            });
+            return updatedRecords.map(record => record.id);
+        } catch (error) {
+            throw new Error(`Error unlinking device from sector: ${error.message}`);
+        }
+    }
+
+    async unlinkDeviceFromThesis(associationData) {
+        try {
+            const [_, updatedRecords] = await this.DeviceInThesis.update({
+                validTo: associationData.validTo
+            }, {
+                where: {
+                    deviceId: associationData.deviceId,
+                    thesisId: associationData.thesisId,
+                    validFrom: {
+                        [Op.lte]: associationData.validTo
+                    },
+                    [Op.or]: [
+                        { validTo: { [Op.gt]: associationData.validTo } },
+                        { validTo: null }
+                    ]
+                },
+                returning: ["id"]
+            });
+            return updatedRecords.map(record => record.id);
+        } catch (error) {
+            throw new Error(`Error unlinking device from thesis: ${error.message}`);
         }
     }
 
