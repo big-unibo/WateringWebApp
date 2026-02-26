@@ -92,7 +92,7 @@ class OptimalDistanceRepository {
                 ON wd.watering_start 
                 BETWEEN fd.valid_from AND COALESCE(fd.valid_to, :timeFilterTo)
             JOIN interpolated_profiles ip 
-                ON ip.timestamp = a.image_timestamp
+                ON ip.timestamp = FLOOR(a.image_timestamp/3600)*3600
                 AND ip.grid_id = wd.device_id
             JOIN interpolated_cells ic 
                 ON ip.id = ic.profile_id
