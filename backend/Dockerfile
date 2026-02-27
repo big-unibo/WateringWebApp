@@ -1,5 +1,5 @@
 # Utilizza un'immagine di base Node.js
-FROM node:25.3-slim
+FROM node:25.7-slim
 
 # Imposta la directory di lavoro
 WORKDIR /backend

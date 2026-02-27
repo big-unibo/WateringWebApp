@@ -8,7 +8,7 @@ WORKDIR /app
 # Copia tutto il codice sorgente dell'app
 COPY . .
 
-WORKDIR /app/watering-platform-dasboard
+WORKDIR /app/watering-platform-dashboard
 
 RUN npm install
 
