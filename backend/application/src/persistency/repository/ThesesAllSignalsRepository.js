@@ -208,6 +208,7 @@ class ThesesAllSignalsRepository {
                 virtual,
                 unit,
                 x, y, z,
+                device_binning_id AS "binningId",
                 association_type AS "associationType"
             FROM theses_all_signals tas
             JOIN LATERAL(
@@ -286,6 +287,7 @@ class ThesesAllSignalsRepository {
                 virtual,
                 unit,
                 x, y, z,
+                device_binning_id AS "binningId",
                 association_type AS "associationType"
             FROM theses_all_signals tas
             JOIN LATERAL(
@@ -328,6 +330,7 @@ class ThesesAllSignalsRepository {
                 virtual,
                 unit,
                 x, y, z,
+                device_binning_id AS "binningId",
                 association_type AS "associationType"
             FROM theses_all_signals tas
             JOIN LATERAL(

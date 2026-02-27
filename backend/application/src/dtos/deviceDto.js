@@ -1,9 +1,10 @@
 export class Device {
-    constructor({deviceId, deviceType, deviceDescription, signals, location}){
+    constructor({deviceId, deviceType, deviceDescription, signals, location, binningId}){
         this.id = deviceId
         this.type = deviceType
         this.description = deviceDescription
         this.location = location,
+        this.binningId = binningId,
         this.signals = signals
     }
 }

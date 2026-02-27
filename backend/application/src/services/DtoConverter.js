@@ -296,6 +296,7 @@ class DtoConverter {
                     deviceId: curr.deviceId,
                     deviceType: curr.deviceType,
                     deviceDescription: curr.deviceDescription,
+                    binningId: curr.binningId,
                     signals: {}
                 };
             }
@@ -330,6 +331,7 @@ class DtoConverter {
                 deviceId: deviceGroup.deviceId,
                 deviceType: deviceGroup.deviceType,
                 deviceDescription: deviceGroup.deviceDescription,
+                binningId: deviceGroup.binningId,
                 signals: signalsArray
             });
         });
