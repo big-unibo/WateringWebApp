@@ -9,31 +9,21 @@ WORKDIR /app
 COPY . .
 
 WORKDIR /app/watering-platform-dashboard
-
 RUN npm install
-
-# Compila l'app per la produzione
 RUN npm run build
 
 WORKDIR /app/SMARTER-frontend
-
 RUN npm install
-
 RUN npm run build
-
-RUN mv dist/index.html SMARTER_frontend_index.html
 
 # Fase 2: Servire i file statici con Nginx
 # Usa un'immagine base di Nginx
 FROM nginx:1.29-alpine
 
-# Imposta la directory di lavoro per Nginx
-WORKDIR /usr/share/nginx/html
-
 # Copia i file di build dalla fase precedente nella directory di lavoro di Nginx
-COPY --from=build /app/watering-platform-dashboard/dist .
+COPY --from=build /app/watering-platform-dashboard/dist /usr/share/nginx/html/dashboard
 
-COPY --from=build /app/SMARTER-frontend/dist .
+COPY --from=build /app/SMARTER-frontend/dist /usr/share/nginx/html/dashboard
 
 # Copia il file di configurazione di Nginx
 COPY ./nginx.conf /etc/nginx/nginx.conf
