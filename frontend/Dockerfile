@@ -23,7 +23,7 @@ FROM nginx:1.29-alpine
 # Copia i file di build dalla fase precedente nella directory di lavoro di Nginx
 COPY --from=build /app/watering-platform-dashboard/dist /usr/share/nginx/html/dashboard
 
-COPY --from=build /app/SMARTER-frontend/dist /usr/share/nginx/html/dashboard
+COPY --from=build /app/SMARTER-frontend/dist /usr/share/nginx/html/smarter
 
 # Copia il file di configurazione di Nginx
 COPY ./nginx.conf /etc/nginx/nginx.conf
