@@ -19,8 +19,8 @@ class WateringScheduleService {
         return dtoConverter.convertCalendarWrapper(results)[0];
     }
 
-    async getUserWateringEvents(filteringSectorIds, timeFilterFrom, timeFilterTo) {
-        const results = await this.wateringScheduleRepository.getUserWateringEvents(filteringSectorIds, timeFilterFrom, timeFilterTo);
+    async getUserWateringEvents(filteringSectorIds, timeFilterFrom, timeFilterTo, userId) {
+        const results = await this.wateringScheduleRepository.getUserWateringEvents(filteringSectorIds, timeFilterFrom, timeFilterTo, userId);
         return dtoConverter.convertCalendarWrapper(results);
     }
 

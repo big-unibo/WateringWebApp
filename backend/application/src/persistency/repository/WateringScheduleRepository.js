@@ -75,7 +75,7 @@ class WateringScheduleRepository {
         }
     }
 
-    async getUserWateringEvents(filteringSectorIds, timeFilterFrom, timeFilterTo){
+    async getUserWateringEvents(filteringSectorIds, timeFilterFrom, timeFilterTo, userId){
         try {
             const query = `
                 SELECT DISTINCT
@@ -134,7 +134,8 @@ class WateringScheduleRepository {
                 replacements: { 
                     filteringSectorIds: filteringSectorIds, 
                     timeFilterFrom: timeFilterFrom, 
-                    timeFilterTo: timeFilterTo 
+                    timeFilterTo: timeFilterTo,
+                    userId
                 },
                 type: this.sequelize.QueryTypes.SELECT
             });

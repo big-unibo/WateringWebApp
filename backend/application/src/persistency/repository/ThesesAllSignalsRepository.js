@@ -304,7 +304,7 @@ class ThesesAllSignalsRepository {
         `;
         try {
             const results = await this.sequelize.query(query, {
-                replacements: { farmId: farmId, timestamp, deviceTypes },
+                replacements: { farmId: farmId, timestamp, deviceTypes, userId, isAdmin },
                 type: this.sequelize.QueryTypes.SELECT
             });
             return results;

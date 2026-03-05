@@ -868,7 +868,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
                 if (userAvailableSectorIds.includes('ALL')) {
                     userAvailableSectorIds = null
                 }
-                const result = await wateringScheduleService.getUserWateringEvents(userAvailableSectorIds, timeFilterFrom, timeFilterTo)
+                const result = await wateringScheduleService.getUserWateringEvents(userAvailableSectorIds, timeFilterFrom, timeFilterTo, requestUserData.userId)
                 res.status(200).json(result);
             } 
         } catch (error) {
