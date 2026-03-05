@@ -21,5 +21,6 @@ export default defineConfig({
   },
   devServer: {
     proxy: process.env.VITE_BACKEND_ADDRESS,
-  }
+  },
+  base: '/projects/watering/'
 })
