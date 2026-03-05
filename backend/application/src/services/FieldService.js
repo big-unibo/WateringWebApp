@@ -200,7 +200,7 @@ class FieldService {
     }
 
     async getDevicesByFarm(farmId, timestamp, deviceTypes, includeDescendants, userId, isAdmin){
-        const result = await this.thesesAllSignalsRepository.getDevicesByFarm(farmId, timestamp, deviceTypes, includeDescendants);
+        const result = await this.thesesAllSignalsRepository.getDevicesByFarm(farmId, timestamp, deviceTypes, includeDescendants, userId, isAdmin);
         return dtoConverter.convertDevicesDataWrapper(result);
     }
 

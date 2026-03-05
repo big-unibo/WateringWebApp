@@ -619,7 +619,7 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
 
             const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000
             const deviceTypes = req.query.deviceTypes;
-            const includeDescendants = req.query.includeDescendants ?? false
+            const includeDescendants = req.query.includeDescendants === 'true' ?? false
             const results = await fieldService.getDevicesByFarm(farmId, timestamp, deviceTypes, includeDescendants, requestUserData.userId, requestUserData.isAdmin);
             return res.status(200).json(results)
         } catch (error) {

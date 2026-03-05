@@ -249,7 +249,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
             }
 
             const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000
-            const includeAnchestors = req.query.includeAnchestors ?? false
+            const includeAnchestors = req.query.includeAnchestors === 'true' ?? false
             const deviceTypes = req.query.deviceTypes;
             const results = await fieldService.getDevicesByThesis(thesisId, timestamp, deviceTypes, includeAnchestors);
             return res.status(200).json(results)

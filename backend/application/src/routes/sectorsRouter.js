@@ -765,8 +765,8 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 
             const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000
             const deviceTypes = req.query.deviceTypes;
-            const includeDescendants = req.query.includeDescendants ?? false
-            const includeAnchestors = req.query.includeAnchestors ?? false
+            const includeDescendants = req.query.includeDescendants === 'true' ?? false
+            const includeAnchestors = req.query.includeAnchestors === 'true' ?? false
             const results = await fieldService.getDevicesBySector(sectorId, timestamp, deviceTypes, includeAnchestors, includeDescendants);
             return res.status(200).json(results)
         } catch (error) {
