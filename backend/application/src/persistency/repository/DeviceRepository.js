@@ -140,7 +140,7 @@ class DeviceRepository {
 
         try {
             const [results] = await this.sequelize.query(query, {
-                replacements: { timeFilterFrom, timeFilterTo, providerIds: providerIds.map(Number), types, companyIds: companyIds.map(Number), filteringIds },
+                replacements: { timeFilterFrom, timeFilterTo, providerIds, types, companyIds, filteringIds },
                 type: this.sequelize.QueryTypes.SELECT
             });
             return Number(results.total);
@@ -194,7 +194,7 @@ class DeviceRepository {
 
         try {
             const results = await this.sequelize.query(query, {
-                replacements: { timeFilterFrom, timeFilterTo, providerIds: providerIds.map(Number), types, companyIds: companyIds.map(Number), offset, limit, filteringIds},
+                replacements: { timeFilterFrom, timeFilterTo, providerIds, types, companyIds, offset, limit, filteringIds},
                 type: this.sequelize.QueryTypes.SELECT
             });
             return results;
