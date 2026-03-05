@@ -198,7 +198,9 @@ async function updateUserSectors() {
         companyName: group[0].company.name,
         farmName: group[0].farm.name,
         sectors: group.map(s => ({ id: s.id, name: s.name }))
-      }));
+      })).sort((a, b) =>
+        `${a.companyName}${a.fieldName}`.localeCompare(`${b.companyName}${b.fieldName}`)
+      );
     }
     catch (error) {
       console.log(error)
