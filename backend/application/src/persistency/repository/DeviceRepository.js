@@ -129,8 +129,8 @@ class DeviceRepository {
             FROM devices_signals_denormalized ds
             WHERE valid_from < :timeFilterTo
                 AND COALESCE(valid_to, 'infinity') > :timeFilterFrom
-                ${providerIds?.length > 0 ? "AND provider_id = ANY(ARRAY[:providerIds::int[]])" : ""}
-                ${companyIds?.length > 0 ? "AND device_company_id = ANY(ARRAY[:companyIds::int[]])" : ""}
+                ${providerIds?.length > 0 ? "AND provider_id = ANY(ARRAY[:providerIds]::int[])" : ""}
+                ${companyIds?.length > 0 ? "AND device_company_id = ANY(ARRAY[:companyIds]::int[])" : ""}
                 ${types?.length > 0 ? "AND device_type = ANY(ARRAY[:types])" : ""}
                 AND ${filteringIds === null
                 ? 'TRUE'
@@ -156,9 +156,9 @@ class DeviceRepository {
             FROM devices_signals_denormalized ds
             WHERE valid_from < :timeFilterTo
                 AND COALESCE(valid_to, 'infinity') > :timeFilterFrom
-                ${providerIds?.length > 0 ? "AND provider_id = ANY(ARRAY[:providerIds::int[]])" : ""}
+                ${providerIds?.length > 0 ? "AND provider_id = ANY(ARRAY[:providerIds]::int[])" : ""}
                 ${types?.length > 0 ? "AND device_type = ANY(ARRAY[:types])" : ""}
-                ${companyIds?.length > 0 ? "AND device_company_id = ANY(ARRAY[:companyIds::int[]])" : ""}
+                ${companyIds?.length > 0 ? "AND device_company_id = ANY(ARRAY[:companyIds]::int[])" : ""}
                 AND ${filteringIds === null
                 ? 'TRUE'
                 : filteringIds.length === 0
