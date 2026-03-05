@@ -20,6 +20,7 @@ let selectedTimestampTo = ref(getCurrentTimestampMinusDays(0))
 let customSelectedTimestampFrom = ref(getCurrentTimestampMinusDays(7))
 let customSelectedTimestampTo = ref(getCurrentTimestampMinusDays(0))
 
+let selectedFarmName = ref("Seleziona un podere")
 let selectedSectorName = ref("Seleziona un settore")
 let selectedThesisName = ref("Seleziona una tesi")
 let selectedTimeLabel = ref("")
@@ -35,6 +36,7 @@ const token = computed(() => props.token)
 const baseConnectionParams = ref("{}")
 
 const userPermissions = reactive({})
+const farms = ref({})
 const sectors = ref([])
 const theses = ref([])
 
@@ -161,9 +163,20 @@ async function selectSector(sector) {
   }
 }
 
+function selectFarm(farm){
+  selectedFarmName.value = createFarmName(farm)
+  sectors.value = farm.sectors
+  selectSector(sectors.value[0])
+}
+
+function createFarmName(item) {
+  if (!item) return ''
+  return `${item.companyName}; ${item.farmName}`
+}
+
 function createSectorName(item) {
   if (!item) return ''
-  return `${item.company.name}; ${item.farm.name}; ${item.name}`
+  return `Settore ${item.name}`
 }
 
 function createThesisName(item) {
@@ -178,17 +191,25 @@ function isLabelSelected(value) {
 async function updateUserSectors() {
   if (token.value) {
     try {
-      sectors.value = await authService.retrieveUserSectors(token.value, selectedTimestampFrom.value, selectedTimestampTo.value)
+      const data = await authService.retrieveUserSectors(token.value, selectedTimestampFrom.value, selectedTimestampTo.value)
+      const grouped = Object.groupBy(data, s => s.farm.id);
+
+      farms.value = Object.values(grouped).map(group => ({
+        companyName: group[0].company.name,
+        farmName: group[0].farm.name,
+        sectors: group.map(s => ({ id: s.id, name: s.name }))
+      }));
     }
-    catch {
+    catch (error) {
+      console.log(error)
       console.log("Errore recuperando i settori")
     }
   }
 }
 
 function resetSectorSelection() {
-  if (sectors.value && sectors.value.length > 0) {
-    selectSector(sectors.value[0])
+  if (farms.value && farms.value.length > 0) {
+    selectFarm(farms.value[0])
   }
 }
 
@@ -278,6 +299,20 @@ function selectedTime(time) {
 
     <div class="m-2 col-md-12 d-flex flex-row justify-content-center flex-wrap">
       <div class="d-flex align-items-center flex-wrap">
+        <p class="px-2 m-0">Podere:</p>
+        <button class="btn btn-secondary dropdown-toggle my-1 px-2" type="button" id="dropdownMenuFarm"
+          data-bs-toggle="dropdown" aria-expanded="false">
+          {{ selectedFarmName }}
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenuFarm">
+          <li v-for="(farm, idx) in farms" :key="idx">
+            <a class="dropdown-item" href="#" @click.prevent="selectFarm(farm)">
+              {{ createFarmName(farm) }}
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div v-if="sectors.length > 0" class="d-flex align-items-center flex-wrap">
         <p class="px-2 m-0">Settore:</p>
         <button class="btn btn-secondary dropdown-toggle my-1 px-2" type="button" id="dropdownMenuSector"
           data-bs-toggle="dropdown" aria-expanded="false">
