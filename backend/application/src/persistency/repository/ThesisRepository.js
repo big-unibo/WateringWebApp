@@ -72,18 +72,23 @@ class ThesisRepository {
     }
 
     async getThesisDetails(thesisId, timestamp) {
+        const timeFilter = {
+        }
+        if (timestamp) {
+            timeFilter["validFrom"] = {
+                [Op.lt]: timestamp
+            }
+            timeFilter[validTo] = {
+                [Op.or]: {
+                    [Op.is]: null,
+                    [Op.gt]: timestamp
+                },
+            }
+        }
         const result = await this.ThesisInSector.findOne({
             where: {
                 thesisId: thesisId,
-                validFrom: {
-                    [Op.lt]: timestamp
-                },
-                validTo: {
-                    [Op.or]: {
-                        [Op.is]: null,
-                        [Op.gt]: timestamp
-                    },
-                }
+                ...timeFilter
             },
             include: [{
                 model: this.Thesis,

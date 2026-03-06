@@ -105,7 +105,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
         }
 
         const thesisId = Number(req.params.thesisId)
-        const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000
+        const timestamp = Number(req.query.timestamp)
 
         if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'THESIS', thesisId))){
             return res.status(403).json({ message: 'Unauthorized request' });
