@@ -75,18 +75,8 @@ const organizationsRouter = ({ organizationService, authenticationService, autho
         }
 
         try {
-            let userAvailableIds = await authorizationService.getAvailableEntityIds(requestUserData.userId, 'ORGANIZATION', ROLES.VIEWER, requestUserData.isAdmin)
-            if (Array.isArray(userAvailableIds) && userAvailableIds.length > 0)
-            {
-                if(userAvailableIds.includes('ALL')){
-                    userAvailableIds = null
-                }
-                const organizations = await organizationService.getOrganizations(userAvailableIds)
-                return res.status(200).json(organizations)
-            }            
-            return res.status(404).json({
-                error: "User has no permission to view any company"
-            });
+            const organizations = await organizationService.getOrganizations()
+            return res.status(200).json(organizations)
         } catch (error) {
             console.log(`Fail retrieving organizations caused by: ${error.message}`);
             return res.status(500).json({ error: "Error while retrieving organizations" });
