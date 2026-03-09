@@ -9,7 +9,7 @@ const MONTH_TO_SECONDS = MINUTE_TO_SECONDS * 60 * 24 * 30
 
 class FieldService {
 
-    constructor(companyRepository, farmRepository, sectorRepository, thesisRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, deviceRepository, wateringScheduleRepository, userActionService) {
+    constructor(companyRepository, farmRepository, sectorRepository, thesisRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, deviceRepository, wateringScheduleRepository, optimalStateRepository, userActionService) {
         this.farmRepository = farmRepository
         this.companyRepository = companyRepository
         this.sectorRepository = sectorRepository
@@ -21,6 +21,7 @@ class FieldService {
         this.wateringAdviceRepository = wateringAdviceRepository
         this.deviceRepository = deviceRepository
         this.wateringScheduleRepository = wateringScheduleRepository
+        this.optimalStateRepository = optimalStateRepository
         this.userActionService = userActionService
     }
 
@@ -251,7 +252,7 @@ class FieldService {
     }
 
     async createMatrixOptimalState(userId, gridOptimalProfiles) {
-        const matrixData = await this.thesisRepository.createMatrixOptimalState(
+        const matrixData = await this.optimalStateRepository.createMatrixOptimalState(
             gridOptimalProfiles.gridId,
             gridOptimalProfiles.validFrom,
             gridOptimalProfiles.validTo,
@@ -266,14 +267,14 @@ class FieldService {
         const matrixId = matrixData.matrixId
 
         for (const optimalProfile of gridOptimalProfiles.optimalState) {
-            await this.thesisRepository.createMatrixProfile(matrixId, optimalProfile.x, optimalProfile.y, optimalProfile.z, optimalProfile.value, optimalProfile.weight)
+            await this.optimalStateRepository.createOptimalProfileCell(matrixId, optimalProfile.x, optimalProfile.y, optimalProfile.z, optimalProfile.value, optimalProfile.weight)
         }
         await this.userActionService.logCreation(userId, OPTIMAL_PROFILES_LOG_TABLE, matrixData.optimalProfileAssignmentId, null)
         return matrixData.optimalProfileAssignmentId
     }
 
     async setOptimalState(userId, gridId, validFrom, validTo, stopPercentage, optimalWetBound, optimalDryBound, profileId) {
-        const matrixData = await this.thesisRepository.createMatrixOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound, optimalDryBound, profileId)
+        const matrixData = await this.optimalStateRepository.createMatrixOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound, optimalDryBound, profileId)
         if (!matrixData.matrixId || !matrixData.optimalProfileAssignmentId) {
             throw Error("Impossible to create optimal matrix for this thesis")
         }
@@ -321,7 +322,7 @@ class FieldService {
     async disableThesis(userId, thesisId, timestamp) {
         try {
             const deviceId = await this.thesesAllSignalsRepository.getGridDeviceByThesis(thesisId, timestamp, timestamp)
-            const optimalProfileAssignmentId = await this.thesisRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp)
+            const optimalProfileAssignmentId = await this.optimalStateRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp)
             if (optimalProfileAssignmentId) {
                 this.userActionService.logDisabling(userId, OPTIMAL_PROFILES_LOG_TABLE, optimalProfileAssignmentId, null)
             }
@@ -332,7 +333,7 @@ class FieldService {
 
             const devices = await this.deviceRepository.getThesisAssociatedDevices(thesisId, timestamp)
             await Promise.all(devices.map(async (device) => {
-                const deviceAssignmentId = await this.deviceRepository.disableDeviceInThesis(device.id, timestamp);
+                const deviceAssignmentId = await this.deviceRepository.unlinkDeviceFromThesis({thesisId: thesisId, deviceId: device.id, validTo: timestamp});
                 if (deviceAssignmentId) {
                     await this.userActionService.logDisabling(userId, THESES_DEVICES_LOG_TABLE, deviceAssignmentId, null);
                 }
@@ -354,7 +355,7 @@ class FieldService {
             //Devices disabling
             const devices = await this.deviceRepository.getSectorAssociatedDevices(sectorId, timestamp);
             await Promise.all(devices.map(async (device) => {
-                const deviceAssignmentId = await this.deviceRepository.disableDeviceInSector(device.id, timestamp);
+                const deviceAssignmentId = await this.deviceRepository.unlinkDeviceFromSector({sectorId: sectorId, deviceId: device.id, validTo: timestamp});
                 if (deviceAssignmentId) {
                     await this.userActionService.logDisabling(userId, SECTORS_DEVICES_LOG_TABLE, deviceAssignmentId, null);
                 }
@@ -388,7 +389,7 @@ class FieldService {
         try {
             const devices = await this.deviceRepository.getFarmAssociatedDevices(farmId, timestamp);
             await Promise.all(devices.map(async (device) => {
-                const deviceAssignmentId = await this.deviceRepository.disableDeviceInFarm(device.id, timestamp);
+                const deviceAssignmentId = await this.deviceRepository.unlinkDeviceFromFarm({farmId: farmId, deviceId: device.id, validTo: timestamp});
                 if (deviceAssignmentId) {
                     await this.userActionService.logDisabling(userId, FARMS_DEVICES_LOG_TABLE, deviceAssignmentId, null);
                 }

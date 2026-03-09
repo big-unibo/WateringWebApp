@@ -820,7 +820,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
             const userId = requestUserData.userId
 
             const devices = await fieldService.getDevicesByThesis(thesisId, validFrom)
-            const device = devices.find(d => d.deviceType === HUMIDITY_DEVICE_TYPE);
+            const device = devices.find(d => d.type === HUMIDITY_DEVICE_TYPE);
 
             if (!device) {
                 return res.status(400).json({
@@ -828,7 +828,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
                 });
             }
 
-            const gridId = device.deviceId;
+            const gridId = device.id;
             let optimalProfileAssignmentId = null;
 
             if (req.query.optimalProfileId !== undefined) {

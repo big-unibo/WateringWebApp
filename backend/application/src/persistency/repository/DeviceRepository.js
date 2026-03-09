@@ -243,21 +243,29 @@ class DeviceRepository {
         }
     }
 
+    _getValidityConditions(deviceId, validTo) {
+        return {
+            deviceId: deviceId,
+            validFrom: {
+                [Op.lt]: validTo
+            },
+            validTo: {
+                [Op.or]: [
+                    { [Op.is]: null },
+                    { [Op.gt]: validTo }
+                ]
+            }
+        };
+    }
+
     async unlinkDeviceFromFarm(associationData) {
         try {
             const [_, updatedRecords] = await this.DeviceInFarm.update({
                 validTo: associationData.validTo
             }, {
                 where: {
-                    deviceId: associationData.deviceId,
-                    farmId: associationData.farmId,
-                    validFrom: {
-                        [Op.lte]: associationData.validTo
-                    },
-                    [Op.or]: [
-                        { validTo: { [Op.gt]: associationData.validTo } },
-                        { validTo: null }
-                    ]
+                    ...associationData.farmId !== "ALL" ? {farmId: associationData.farmId} : {},
+                    ...this._getValidityConditions(associationData.deviceId, associationData.validTo),
                 },
                 returning: ["id"]
             });
@@ -274,15 +282,8 @@ class DeviceRepository {
                 validTo: associationData.validTo
             }, {
                 where: {
-                    deviceId: associationData.deviceId,
-                    sectorId: associationData.sectorId,
-                    validFrom: {
-                        [Op.lte]: associationData.validTo
-                    },
-                    [Op.or]: [
-                        { validTo: { [Op.gt]: associationData.validTo } },
-                        { validTo: null }
-                    ]
+                    ...associationData.sectorId !== "ALL" ? {sectorId: associationData.sectorId} : {},
+                    ...this._getValidityConditions(associationData.deviceId, associationData.validTo),
                 },
                 returning: ["id"]
             });
@@ -298,15 +299,8 @@ class DeviceRepository {
                 validTo: associationData.validTo
             }, {
                 where: {
-                    deviceId: associationData.deviceId,
-                    thesisId: associationData.thesisId,
-                    validFrom: {
-                        [Op.lte]: associationData.validTo
-                    },
-                    [Op.or]: [
-                        { validTo: { [Op.gt]: associationData.validTo } },
-                        { validTo: null }
-                    ]
+                    ...associationData.thesisId !== "ALL" ? {thesisId: associationData.thesisId} : {},
+                    ...this._getValidityConditions(associationData.deviceId, associationData.validTo),
                 },
                 returning: ["id"]
             });
@@ -316,19 +310,47 @@ class DeviceRepository {
         }
     }
 
-    _getValidityConditions(deviceId, validTo) {
-        return {
-            deviceId: deviceId,
-            validFrom: {
-                [Op.lt]: validTo
-            },
-            validTo: {
-                [Op.or]: [
-                    { [Op.is]: null },
-                    { [Op.gt]: validTo }
-                ]
-            }
-        };
+    async _deleteFromModelByParams(model, where) {
+        const rows = await this.model.findAll({
+            where: where,
+            attributes: ['id'],
+            raw: true
+        });
+        const ids = rows.map(r => r.id);
+        await this.model.destroy({
+            where: where
+        });
+        return ids;
+    }
+
+    async deleteDeviceInFarm(deviceId) {
+        try {
+            return _deleteFromModelByParams(this.DeviceInFarm, {
+                deviceId: deviceId
+            })
+        } catch (error) {
+            throw new Error(`Error deleting device from farm: ${error.message}`);
+        }
+    }
+
+    async deleteDeviceInSector(deviceId) {
+        try {
+            return _deleteFromModelByParams(this.DeviceInSector, {
+                deviceId: deviceId
+            })
+        } catch (error) {
+            throw new Error(`Error deleting device from sector: ${error.message}`);
+        }
+    }
+
+    async deleteDeviceInThesis(deviceId) {
+        try {
+            return _deleteFromModelByParams(this.DeviceInThesis, {
+                deviceId: deviceId
+            })
+        } catch (error) {
+            throw new Error(`Error deleting device from thesis: ${error.message}`);
+        }
     }
 
     async disableDeviceSignals(deviceId, validTo){
@@ -349,60 +371,6 @@ class DeviceRepository {
             return null;
         } catch (error) {
             throw new Error(`Error disabling signals from device: ${error.message}`);
-        }
-    }
-
-    async disableDeviceInThesis(deviceId, validTo) {
-        try {
-            const [updatedCount, updatedRecords] = await this.DeviceInThesis.update(
-                { validTo: validTo },
-                {
-                    where: this._getValidityConditions(deviceId, validTo),
-                    returning: true
-                }
-            );
-
-            if (updatedRecords && updatedRecords.length > 0) {
-                return updatedRecords[0].id;
-            }
-        } catch (error) {
-            throw new Error(`Error disabling device in Thesis: ${error.message}`);
-        }
-    }
-
-    async disableDeviceInSector(deviceId, validTo) {
-        try {
-            const [updatedCount, updatedRecords] = await this.DeviceInSector.update(
-                { validTo: validTo },
-                {
-                    where: this._getValidityConditions(deviceId, validTo),
-                    returning: true
-                }
-            );
-
-            if (updatedRecords && updatedRecords.length > 0) {
-                return updatedRecords[0].id;
-            }
-        } catch (error) {
-            throw new Error(`Error disabling device in Sector: ${error.message}`);
-        }
-    }
-
-    async disableDeviceInFarm(deviceId, validTo) {
-        try {
-            const [updatedCount, updatedRecords] = await this.DeviceInFarm.update(
-                { validTo: validTo },
-                {
-                    where: this._getValidityConditions(deviceId, validTo),
-                    returning: true
-                }
-            );
-
-            if (updatedRecords && updatedRecords.length > 0) {
-                return updatedRecords[0].id;
-            }
-        } catch (error) {
-            throw new Error(`Error disabling device in Farm: ${error.message}`);
         }
     }
 

@@ -42,6 +42,7 @@ import WateringScheduleRepository2 from './persistency/repository/WateringSchedu
 import WateringScheduleService from './services/WateringScheduleService.js';
 import wateringScheduleRouter from './routes/wateringScheduleRouter.js';
 import OptimalDistanceRepository from './persistency/repository/OptimalDistanceRepository.js';
+import OptimalStateRepository from './persistency/repository/OptimalStateRepository.js';
 import logsRouter from './routes/logsRouter.js';
 import LogService from './services/LogService.js';
 import LogRepository from './persistency/repository/LogRepository.js';
@@ -108,6 +109,7 @@ const humidityBinsRepository = new HumidityBinsRepository(models, sequelize)
 const wateringAdviceRepository = new WateringAdviceRepository(models, sequelize)
 const wateringScheduleRepository = new WateringScheduleRepository2(models, sequelize)
 const optimalDistanceRepository = new OptimalDistanceRepository(models, sequelize)
+const optimalStateRepository = new OptimalStateRepository(models, sequelize)
 const logRepository = new LogRepository(models, sequelize)
 const userActionRepository = new UserActionRepository(models, sequelize)
 const authorizationRepository = new AuthorizationRepository(sequelize)
@@ -118,10 +120,10 @@ const organizationService = new OrganizationService(organizationRepository, user
 const userService = new UserService(userRepository, userActionService)
 const authenticationService = new AuthenticationService(userService)
 const companyService = new CompanyService(companyRepository, userActionService)
-const fieldService = new FieldService(companyRepository, farmRepository, sectorRepository, thesisRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, deviceRepository, wateringScheduleRepository, userActionService)
+const fieldService = new FieldService(companyRepository, farmRepository, sectorRepository, thesisRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, deviceRepository, wateringScheduleRepository, optimalStateRepository, userActionService)
 const sectorServicesService = new SectorServicesService(serviceRepository)
 const authorizationService = new AuthorizationService(userService, authorizationRepository)
-const deviceService = new DeviceService(deviceRepository, signalRepository, thesisRepository, userActionService)
+const deviceService = new DeviceService(deviceRepository, signalRepository, thesisRepository, interpolatedProfileRepository, optimalStateRepository, userActionService)
 const signalService = new SignalService(signalRepository, userActionService)
 const wateringScheduleService = new WateringScheduleService(wateringScheduleRepository, wateringAdviceRepository, userActionService)
 const wateringAdviceService = new WateringAdviceService(wateringAdviceRepository, sectorRepository, thesisRepository, interpolatedProfileRepository, optimalDistanceRepository, thesesAllSignalsRepository, userActionService)

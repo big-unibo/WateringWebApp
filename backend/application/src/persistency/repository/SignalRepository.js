@@ -154,6 +154,24 @@ class SignalRepository {
             throw new Error(`Error while retrieving signals types data caused by: ${error.message}`);
         }
     }
+
+    async deleteSignal(signalId){
+        try{
+            await this.DevicesSignals.destroy({
+                where: { signalId: signalId }
+            })
+            await this.Measurement.destroy({
+                where: { signalId: signalId }
+            })
+            await this.Signal.destroy({
+                where: {
+                    id: signalId
+                }
+            })
+        } catch (error) {
+            throw new Error(`Error deleting signal coused by: ${error.message}`);
+        }
+    }
 }
 
 export default SignalRepository;

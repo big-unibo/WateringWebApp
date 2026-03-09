@@ -7,11 +7,13 @@ const dtoConverter = new DtoConverter()
 const paginationService = new PaginationService()
 
 class DeviceService {
-    constructor(deviceRepository, signalRepository, thesisRepository, userActionService) {
+    constructor(deviceRepository, signalRepository, thesisRepository, interpolatedProfileRepository, optimalStateRepository, userActionService) {
         this.deviceRepository = deviceRepository;
         this.signalRepository = signalRepository;
         this.thesisRepository = thesisRepository;
         this.userActionService = userActionService;
+        this.interpolatedProfileRepository = interpolatedProfileRepository;
+        this.optimalStateRepository = optimalStateRepository;
     }
 
     async createDevice(userId, device) {
@@ -170,26 +172,26 @@ class DeviceService {
 
     async disableDevice(userId, deviceId, timestamp) {
         try {
-            const optimalProfileAssignmentId = await this.thesisRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp);
+            const optimalProfileAssignmentId = await this.optimalStateRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp);
             if (optimalProfileAssignmentId) {
                 await this.userActionService.logDisabling(userId, OPTIMAL_PROFILES_LOG_TABLE, optimalProfileAssignmentId, null);
             }
 
 
             // 1. Thesis
-            const thesisDevId = await this.deviceRepository.disableDeviceInThesis(deviceId, timestamp);
+            const thesisDevId = await this.deviceRepository.unlinkDeviceFromThesis({deviceId: deviceId, validTo: timestamp, thesisId: "ALL"});
             if (thesisDevId) {
                 await this.userActionService.logDisabling(userId, THESES_DEVICES_LOG_TABLE, thesisDevId, null);
             }
 
             // 2. Sector
-            const sectorDevId = await this.deviceRepository.disableDeviceInSector(deviceId, timestamp);
+            const sectorDevId = await this.deviceRepository.unlinkDeviceFromSector({deviceId: deviceId, validTo: timestamp, sectorId: "ALL"});
             if (sectorDevId) {
                 await this.userActionService.logDisabling(userId, SECTORS_DEVICES_LOG_TABLE, sectorDevId, null);
             }
 
             // 3. Farm
-            const farmDevId = await this.deviceRepository.disableDeviceInFarm(deviceId, timestamp);
+            const farmDevId = await this.deviceRepository.unlinkDeviceFromFarm({deviceId: deviceId, validTo: timestamp, farmId: "ALL"});
             if (farmDevId) {
                 await this.userActionService.logDisabling(userId, FARMS_DEVICES_LOG_TABLE, farmDevId, null);
             }
@@ -205,34 +207,38 @@ class DeviceService {
         }
     }
 
-    // async deleteDevice(userId, deviceId) {
-    //     try {
-    //         const signalDeviceIds = await this.getDevice(deviceId)?.signals?.map(signal => signal.id)
-    //         const signalsToDelete = []
-    //         for(const signalId of signalDeviceIds){
-    //             const deviceIds = new Set(...(await this.signalRepository.getSignalInfo(signalId, Date.now()/1000).map(s=> d.deviceId)))
-    //             if(deviceIds.size === 1 && deviceIds.has(deviceId)) {
-    //                 signalsToDelete.push(signalId)                    
-    //             }
-    //         }
-    //         await Promise.all(signalsToDelete.map(async id => await this.signalRepository.deleteSignal(id)))
-    //         await this.userActionService.logDeletion(userId, SIGNALS_LOG_TABLE, signalsToDelete, null)
+    async deleteDevice(userId, deviceId) {
+        try {
+            const signalDeviceIds = await this.getDevice(deviceId)?.signals?.map(signal => signal.id)
+            const signalsToDelete = []
+            for(const signalId of signalDeviceIds){
+                const deviceIds = new Set(...(await this.signalRepository.getSignalInfo(signalId, Date.now()/1000).map(s=> d.deviceId)))
+                if(deviceIds.size === 1 && deviceIds.has(deviceId)) {
+                    signalsToDelete.push(signalId)                    
+                }
+            }
+            await Promise.all(signalsToDelete.map(async id => await this.signalRepository.deleteSignal(id)))
+            await this.userActionService.logDeletion(userId, SIGNALS_LOG_TABLE, signalsToDelete, null)
 
-    //         const thesisDevId = await this.deviceRepository.deleteDeviceInThesis(deviceId);
-    //         if (thesisDevId) {
-    //             await this.userActionService.logDeletion(userId, THESES_DEVICES_LOG_TABLE, thesisDevId, null);
-    //         }
-    //         const sectorDevId = await this.deviceRepository.deleteDeviceInSector(deviceId);
-    //         if (sectorDevId) {
-    //             await this.userActionService.logDeletion(userId, SECTORS_DEVICES_LOG_TABLE, sectorDevId, null);
-    //         }
-    //         const farmDevId = await this.deviceRepository.deleteDeviceInFarm(deviceId, timestamp);
-    //         if (farmDevId) {
-    //             await this.userActionService.logDeletion(userId, FARMS_DEVICES_LOG_TABLE, farmDevId, null);
-    //         }
+            const thesisDevId = await this.deviceRepository.deleteDeviceInThesis(deviceId);
+            if (thesisDevId) {
+                await this.userActionService.logDeletion(userId, THESES_DEVICES_LOG_TABLE, thesisDevId, null);
+            }
+            const sectorDevId = await this.deviceRepository.deleteDeviceInSector(deviceId);
+            if (sectorDevId) {
+                await this.userActionService.logDeletion(userId, SECTORS_DEVICES_LOG_TABLE, sectorDevId, null);
+            }
+            const farmDevId = await this.deviceRepository.deleteDeviceInFarm(deviceId);
+            if (farmDevId) {
+                await this.userActionService.logDeletion(userId, FARMS_DEVICES_LOG_TABLE, farmDevId, null);
+            }
+            await this.interpolatedProfileRepository.deleteInterpolatedProfiles(deviceId)
             
-    //     }
-    // }
+         } catch (error) {
+            console.error(`Error deleting device: ${error.message}`);
+            throw error;
+        }
+    }
 
 }
 

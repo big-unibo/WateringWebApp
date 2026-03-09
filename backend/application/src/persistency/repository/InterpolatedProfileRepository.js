@@ -151,6 +151,32 @@ class InterpolatedProfileRepository {
         );
         return results;
     }
+
+    async deleteInterpolatedProfiles(gridId){
+        const query = `
+            SELECT id 
+            FROM interpolated_profiles
+            WHERE grid_id = :gridId`;
+        const results = await this.sequelize.query(query,
+            {
+                type: QueryTypes.SELECT,
+                replacements: {
+                    gridId
+                }
+            }
+        );
+        await Promise.all(results.map(async profile => {
+            const q = `DELETE FROM interpolated_cells WHERE profile_id=:profileId`
+            await this.sequelize.query(q, { type: QueryTypes.DELETE, replacements: { profileId: profile["id"] } })
+        }))
+        const deleteQuery = `
+            DELETE FROM interpolated_profiles WHERE grid_id = :gridId
+        `
+        await this.query(deleteQuery, {
+            type: QueryTypes.DELETE,
+            replacements: { gridId: gridId }
+        })
+    }
 }
 
 export default InterpolatedProfileRepository
