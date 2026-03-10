@@ -9,6 +9,10 @@ class CompanyService {
         this.userActionService = userActionService
     }
 
+    async companyExists(companyId) {
+        return await this.companyRepository.companyExists(companyId)
+    }
+
     async createCompany(userId,company){ 
         try {
             const companyCreated = await this.companyRepository.createCompany(company.name, company.address,company.organizationIds)
@@ -31,6 +35,25 @@ class CompanyService {
     async getCompanyDetails(companyId, userId, isAdmin) {
         const result = await this.companyRepository.getCompanyDetails(companyId, userId, isAdmin)
         return dtoConverter.convertCompanyDataWrapper(result)
+    }
+
+    async updateCompany(userId, company){
+        try {
+            const { id, ...fields } = company;
+
+            const updatedCompanyInstance = await this.companyRepository.updateCompany(
+                id,
+                Object.fromEntries(Object.entries(fields).filter(([_, v]) => v !== undefined))
+            )
+
+            if (updatedCompanyInstance) {
+                const companyData = updatedCompanyInstance.get({ plain: true });
+                await this.userActionService.logUpdate(userId, COMPANIES_LOG_TABLE, id, null, companyData)
+            }
+        } catch (error) {
+            console.error(`Error updating company: ${error.message}`);
+            throw error;
+        }
     }
 }
 

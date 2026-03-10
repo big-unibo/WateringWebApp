@@ -22,7 +22,7 @@ import initUserAction from './UserAction.js';
 import initProvider from './Provider.js';
 import initDevicesSignals from './DevicesSignals.js';
 import initSignalsDenormalized from './SignalsDenormalized.js';
-import initCompaniesOrganizations from './ComapaniesOrganizations.js';
+import initCompaniesOrganizations from './CompaniesOrganizations.js';
 import initService from './Service.js';
 import initSignalType from './SignalType.js';
 

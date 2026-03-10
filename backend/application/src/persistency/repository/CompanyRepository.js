@@ -9,6 +9,13 @@ class CompanyRepository {
         this.sequelize = sequelize
     }
 
+    async companyExists(companyId) {
+        const count = await this.Company.count({
+            where: { id: companyId }
+        });
+        return count > 0;
+    }
+
     async createCompany(companyName, address, organizationIds = []) {
         try {
             for(const organizationId of organizationIds){
@@ -87,6 +94,44 @@ class CompanyRepository {
             return companies;
         } catch (error) {
             throw new Error(`Error retrieving companies caused by: ${error.message}`);
+        }
+    }
+
+    async updateCompany(companyId, updates) {
+        try {
+            const company = await this.Company.findByPk(companyId);
+
+            if (!company) throw new Error("Company not found");
+
+            const {
+                name,
+                address,
+                organizationIds,
+            } = updates
+
+            if (organizationIds) {
+                for (const organizationId of organizationIds) {
+                    const organization = await this.Organization.findByPk(organizationId);
+                    if (!organization) {
+                        throw new Error(`Organization with ID ${organizationId} does not exist.`);
+                    }
+                }
+                await this.CompaniesOrganizations.destroy({
+                    where: {
+                        companyId: companyId
+                    }
+                })
+                for (const organizationId of organizationIds) {
+                    await this.CompaniesOrganizations.create({
+                        companyId: companyId,
+                        organizationId: organizationId
+                    })
+                }
+            }
+
+            return await company.update({companyName: name, address: address});
+        } catch (error) {
+            throw new Error(`Error while updating company caused by: ${error.message}`);
         }
     }
 }
