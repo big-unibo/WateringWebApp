@@ -84,6 +84,17 @@ class FarmRepository {
             throw new Error(`Error retrieving farm details: ${error.message}`);
         }
     }
+
+    async updateFarm(farmId, updates) {
+        try {
+            const farm = await this.Farm.findByPk(farmId);
+            if (!farm) throw new Error("Farm not found");
+            const { name, location } = updates
+            return await farm.update({ farmName: name, location: location });
+        } catch (error) {
+            throw new Error(`Error while updating farm caused by: ${error.message}`);
+        }
+    }
 }
 
 export default FarmRepository

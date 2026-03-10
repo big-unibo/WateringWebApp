@@ -630,6 +630,132 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
 
     /**
      * @swagger
+     * /farms/{farmId}/update:
+     *   put:
+     *     summary: Update a farm
+     *     description: Updates one or more properties of an existing farm (name, location). Requires authentication and proper authorization.
+     *     tags:
+     *       - Farms
+     *     parameters:
+     *       - in: path
+     *         name: farmId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of the farm to update
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/Farm'
+     *     responses:
+     *       200:
+     *         description: Farm updated successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to update farm)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while updating the farm
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     */
+
+    router.put('/:farmId/update', async (req, res) => {
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        const userId = requestUserData.userId;
+
+        const farmId = Number(req.params.farmId);
+        const exists = await fieldService.farmExists(farmId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Farm not found' });
+        }
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'FARM', farmId))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
+
+        const name = req.body.name;
+        const location = req.body.location;
+
+        try {
+            const farmUpdateData = new Farm(name, undefined, location, farmId)
+            await fieldService.updateFarm(userId, farmUpdateData);
+            return res.status(200).json({ message: 'Farm successfully updated' });
+        }
+        catch (error) {
+            console.log(`Fail updating farm caused by: ${error.message}`)
+            return res.status(500).json({ error: "Error on updating farm" })
+        }
+    });
+
+    /**
+     * @swagger
      * /farms:
      *   get:
      *     summary: Retrieve all farms available for the user

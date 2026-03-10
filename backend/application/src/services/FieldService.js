@@ -51,6 +51,29 @@ class FieldService {
         }
     }
 
+    async _updateEntity(userId, data, repositoryFunction, updateLogTable){
+        try {
+            const { id, ...fields } = data;
+
+            const updatedEntityInstance = await repositoryFunction(
+                id,
+                Object.fromEntries(Object.entries(fields).filter(([_, v]) => v !== undefined))
+            )
+
+            if (updatedEntityInstance) {
+                const entityData = updatedEntityInstance.get({ plain: true });
+                await this.userActionService.logUpdate(userId, updateLogTable, id, null, entityData)
+            }
+        } catch (error) {
+            console.error(`Error updating entity: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async updateFarm(userId, farm){
+        await this._updateEntity(userId, farm, this.farmRepository.updateFarm.bind(this.farmRepository), FARMS_LOG_TABLE)
+    }
+
     async getFarms(filteringIds) {
         const result = await this.farmRepository.getFarms(filteringIds);
         return dtoConverter.convertFarms(result);
@@ -72,6 +95,10 @@ class FieldService {
         }
     }
 
+    async updateSector(userId, sector){
+        await this._updateEntity(userId, sector, this.sectorRepository.updateSector.bind(this.sectorRepository), SECTORS_LOG_TABLE)
+    }
+
     async getSectorOwner(sectorId) {
         const result = await this.sectorRepository.getSectorDetails(sectorId, Date.now() / 1000);
 
@@ -90,6 +117,10 @@ class FieldService {
         const assignmentId = await this.thesisRepository.assignThesisToSector(newThesisId, thesis.sectorId, undefined, thesis.validFrom || Math.floor(Date.now() / 1000));
         await this.userActionService.logCreation(userId, THESES_IN_SECTORS_LOG_TABLE, assignmentId, null);
         return newThesisId;
+    }
+
+    async updateThesis(userId, thesis){
+        await this._updateEntity(userId, thesis, this.thesisRepository.updateThesis.bind(this.thesisRepository), THESES_LOG_TABLE)
     }
 
     async getFarmOwner(farmId) {

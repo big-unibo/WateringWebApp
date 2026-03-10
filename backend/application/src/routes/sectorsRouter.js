@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { Thesis } from '../dtos/thesisDto.js';
+import { SectorData} from '../dtos/sectorDto.js'
 import { ROLES } from '../commons/permissionRoles.js';
 
 const sectorsRouter = ({ authenticationService, authorizationService, fieldService }) => {
@@ -227,6 +228,137 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
         } catch (error) {
             console.log(`Fail retrieving sectors caused by: ${error.message}`)
             return res.status(500).json({ error: "Error while retrieving sectors" })
+        }
+    });
+
+    /**
+     * @swagger
+     * /sectors/{sectorId}/update:
+     *   put:
+     *     summary: Update a sector
+     *     description: Updates one or more properties of an existing sector (name, culture, cultureType, location, dripperCapacity, sprinklerCapacity, doubleWing). Requires authentication and proper authorization.
+     *     tags:
+     *       - Sectors
+     *     parameters:
+     *       - in: path
+     *         name: sectorId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of the sector to update
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/SectorBase'
+     *     responses:
+     *       200:
+     *         description: Company updated successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to update sector)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while updating the sector
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     */
+
+    router.put('/:sectorId/update', async (req, res) => {
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        const userId = requestUserData.userId;
+
+        const sectorId = Number(req.params.sectorId);
+        const exists = await fieldService.sectorExists(sectorId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Sector not found' });
+        }
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'SECTOR', sectorId))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
+
+        const name = req.body.name;
+        const culture = req.body.culture;
+        const cultureType = req.body.cultureType;
+        const location = req.body.location;
+        const dripperCapacity = req.body.dripperCapacity;
+        const sprinklerCapacity = req.body.sprinklerCapacity;
+        const doubleWing = req.body.doubleWing;
+
+        try {
+            const sectorUpdateData = new SectorData(sectorId, name, culture, cultureType, location, dripperCapacity, sprinklerCapacity, doubleWing)
+            await fieldService.updateSector(userId, sectorUpdateData);
+            return res.status(200).json({ message: 'Sector successfully updated' });
+        }
+        catch (error) {
+            console.log(`Fail updating sector caused by: ${error.message}`)
+            return res.status(500).json({ error: "Error on updating sector" })
         }
     });
 

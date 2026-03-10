@@ -197,6 +197,17 @@ class ThesisRepository {
             throw new Error(`Error disabling thesis from sector: ${error.message}`);
         }
     }
+
+    async updateThesis(thesisId, updates) {
+        try {
+            const thesis = await this.Thesis.findByPk(thesisId);
+            if (!thesis) throw new Error("Thesis not found");
+            const { name } = updates
+            return await thesis.update({ thesisName: name });
+        } catch (error) {
+            throw new Error(`Error while updating thesis caused by: ${error.message}`);
+        }
+    }
 }
 
 export default ThesisRepository

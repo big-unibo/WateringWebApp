@@ -316,7 +316,7 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
      * /companies/{companyId}/update:
      *   put:
      *     summary: Update a company
-     *     description: Updates one or more fields of an existing company (name, address, organizationIds). Requires authentication and proper authorization.
+     *     description: Updates one or more properties of an existing company (name, address, organizationIds). Requires authentication and proper authorization.
      *     tags:
      *       - Companies
      *     parameters:
@@ -376,7 +376,7 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
      *                 message:
      *                   type: string
      *       '403':
-     *         description: Unauthorized (user not allowed to update signals)
+     *         description: Unauthorized (user not allowed to update company)
      *         content:
      *           application/json:
      *             schema:

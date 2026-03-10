@@ -26,7 +26,8 @@ function initFarm(sequelize) {
             allowNull: true
         }
     }, {
-        modelName : 'farms',
+        tableName : 'farms', 
+        modelName : 'Farm',
         timestamps : false,
         sequelize
     });

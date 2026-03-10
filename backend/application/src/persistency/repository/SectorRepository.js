@@ -144,6 +144,17 @@ class SectorRepository {
         return results;
     }
 
+    async updateSector(sectorId, updates) {
+        try {
+            const sector = await this.Sector.findByPk(sectorId);
+            if (!sector) throw new Error("Sector not found");
+            const { name, culture, cultureType, location, dripperCapacity, sprinklerCapacity, doubleWing } = updates
+            return await sector.update({ sectorName: name, culture, cultureType, location, dripperCapacity, sprinklerCapacity, doubleWing });
+        } catch (error) {
+            throw new Error(`Error while updating sector caused by: ${error.message}`);
+        }
+    }
+
 }
 
 export default SectorRepository
