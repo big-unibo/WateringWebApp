@@ -92,6 +92,17 @@ class DeviceRepository {
         }
     }
 
+    async updateDevice(deviceId, updates) {
+        try {
+            console.log(deviceId, updates)
+            const device = await this.Device.findByPk(deviceId);
+            if (!device) throw new Error("Device not found");
+            return await device.update(updates);
+        } catch (error) {
+            throw new Error(`Error while updating device caused by: ${error.message}`);
+        }
+    }
+
     async getDeviceAssociationEntries(deviceId, timestamp, userId, isAdmin) {
         try {
             const query = `

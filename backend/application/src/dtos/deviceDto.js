@@ -26,6 +26,21 @@ export class CreateDevice {
     }
 }
 
+export class UpdateDevice {
+    /**
+     * @param {number} deviceId - Id of the device
+     * @param {string} description - Optional description
+     * @param {Object} location - GeoJSON Point
+     * @param {number} binningId  - Id of the binning profile
+     */
+    constructor(deviceId, description, location, binningId) {
+        this.id = deviceId;
+        this.description = description;
+        this.location = location;
+        this.binningId = binningId;
+    }
+}
+
 export class DeviceAssociation {
     /**
      * 

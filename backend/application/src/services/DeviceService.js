@@ -2,6 +2,7 @@ import { DEVICES_LOG_TABLE, FARMS_DEVICES_LOG_TABLE, SECTORS_DEVICES_LOG_TABLE, 
 import { DeviceTargetType } from "../dtos/deviceDto.js";
 import DtoConverter from './DtoConverter.js';
 import PaginationService from "./PaginationService.js";
+import { _updateEntity } from '../commons/entityServiceUtils.js';
 
 const dtoConverter = new DtoConverter()
 const paginationService = new PaginationService()
@@ -161,6 +162,10 @@ class DeviceService {
         if (Array.isArray(deviceData) && deviceData.length > 0) {
             return dtoConverter.convertDevicesDataWrapper(deviceData)[0]
         }
+    }
+
+    async updateDevice(userId, device){
+        await _updateEntity(userId, device, this.deviceRepository.updateDevice.bind(this.deviceRepository), this.userActionService, DEVICES_LOG_TABLE)
     }
 
     async getDeviceAssociations(deviceId, timestamp, userId, isAdmin) {

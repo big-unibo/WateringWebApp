@@ -78,11 +78,8 @@ components:
         location:
           $ref: '#/components/schemas/GeometryElement'
 
-    CreateSector:
+    SectorBase:
       type: object
-      required:
-        - name
-        - culture
       properties:
         name:
           type: string
@@ -107,6 +104,14 @@ components:
         doubleWing:
           type: boolean
           description: True if in the sector is present a double wing irrigation system
+    
+    CreateSector:
+      allOf:
+        - $ref: '#/components/schemas/SectorBase'
+        - type: object      
+          required:
+          - name
+          - culture
 
     CreateSignal:
       type: object
@@ -212,6 +217,18 @@ components:
         companyId:
           type: integer
           description: Company ID to which the device belongs
+        location:
+          $ref: '#/components/schemas/Point'
+        binningId:
+          type: integer
+          description: ID for the device's binning profile
+    
+    UpdateDevice:
+      type: object
+      properties:
+        description:
+          type: string
+          description: Description of the device
         location:
           $ref: '#/components/schemas/Point'
         binningId:
@@ -542,9 +559,6 @@ components:
     
     Farm:
       type: object
-      required:
-        - id
-        - name
       properties:
         id:
           type: number

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { CreateDevice, DeviceAssociation } from '../dtos/deviceDto.js';
+import { CreateDevice, UpdateDevice, DeviceAssociation } from '../dtos/deviceDto.js';
 import { ROLES } from '../commons/permissionRoles.js';
 
 const devicesRouter = ({ authenticationService, authorizationService, userService, deviceService }) => {
@@ -670,6 +670,133 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
 
     /**
      * @swagger
+     * /devices/{deviceId}/update:
+     *   put:
+     *     summary: Update a device
+     *     description: Updates one or more properties of an existing device (description, location, binningId). Requires authentication and proper authorization.
+     *     tags:
+     *       - Devices
+     *     parameters:
+     *       - in: path
+     *         name: deviceId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of the device to update
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/UpdateDevice'
+     *     responses:
+     *       200:
+     *         description: Device updated successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to update Device)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while updating the device
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     */
+
+    router.put('/:deviceId/update', async (req, res) => {
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        const userId = requestUserData.userId;
+
+        const deviceId = Number(req.params.deviceId);
+        const exists = await deviceService.deviceExists(deviceId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Device not found' });
+        }
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'DEVICE', deviceId))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
+
+        const description = req.body.description;
+        const location = req.body.location;
+        const binningId = req.body.binningId;
+
+        try {
+            const deviceUpdateData = new UpdateDevice(deviceId, description, location, binningId)
+            await deviceService.updateDevice(userId, deviceUpdateData);
+            return res.status(200).json({ message: 'Device successfully updated' });
+        }
+        catch (error) {
+            console.log(`Fail updating device caused by: ${error.message}`)
+            return res.status(500).json({ error: "Error on updating device" })
+        }
+    });
+
+    /**
+     * @swagger
      * /devices/{deviceId}/disable:
      *   post:
      *     summary: Disables all of the signals for a given device
@@ -799,6 +926,129 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
             return res.status(500).json({ error: "Internal error disabling device and its signals" })
         }
     })
+
+    /**
+     * @swagger
+     * /devices/{deviceId}/delete:
+     *   delete:
+     *     summary: Deletes a given device
+     *     tags: [Devices]
+     *     description: |
+     *       Deletes a device including:
+     *       - Deletion of farm associations.
+     *       - Deletion of the signals and measurements associated with the device, if not shared with other devices.
+     *       If is a device with profiles assigned, the deletion will also include:
+     *       - Deletion of interpolated profiles
+     *       - Deletion of optimal profile assignment.
+     * 
+     *       Requires Authentication and proper Authorization
+     *     parameters:
+     *       - in: path
+     *         name: deviceId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of device to disable
+     *     responses:
+     *       200:
+     *         description: Device successfully deleted.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Device successfully deleted.
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       401:
+     *         description: Authentication failed (Invalid or missing JWT).
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized request – user not allowed to end thesis validty.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error during the process.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    // router.post('/:deviceId/delete', async (req, res) => {
+    //     let requestUserData
+    //     try {
+    //         requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+    //     } catch (error) {
+    //         return res.status(401).json({ message: 'Authentication failed' });
+    //     }
+
+    //     const userId = requestUserData.userId
+    //     const deviceId = req.params.deviceId;
+
+    //     const exists = await deviceService.deviceExists(deviceId);
+    //     if (!exists) {
+    //         return res.status(404).json({ message: 'Device not found' });
+    //     }
+
+    //     if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'DEVICE', deviceId))) {
+    //         return res.status(403).json({ message: 'Unauthorized request' });
+    //     }
+
+    //     try {
+    //         await deviceService.deleteDevice(userId, deviceId)
+    //         return res.status(200).json({ message: `Device successfully deleted` })
+    //     } catch (error) {
+    //         console.log(`Failed deleting device: ${error.message}`)
+    //         return res.status(500).json({ error: "Internal error deleting device and its signals" })
+    //     }
+    // })
 
 
     /**

@@ -1,5 +1,6 @@
 import { SIGNALS_LOG_TABLE, DEVICES_SIGNALS_LOG_TABLE } from "../commons/constants.js";
 import DtoConverter from './DtoConverter.js';
+import { _updateEntity } from '../commons/entityServiceUtils.js';
 
 const dtoConverter = new DtoConverter();
 
@@ -21,24 +22,8 @@ class SignalService {
             throw error;
         }
     }
-
     async updateSignal(userId, signalUpdateData) {
-        try {
-            const { id, ...fields } = signalUpdateData;
-
-            const updatedSignalInstance = await this.signalRepository.updateSignal(
-                id,
-                Object.fromEntries(Object.entries(fields).filter(([_, v]) => v !== undefined))
-            )
-
-            if (updatedSignalInstance) {
-                const signalData = updatedSignalInstance.get({ plain: true });
-                await this.userActionService.logUpdate(userId, SIGNALS_LOG_TABLE, id, null, signalData)
-            }
-        } catch (error) {
-            console.error(`Error updating signal: ${error.message}`);
-            throw error;
-        }
+        await _updateEntity(userId, signalUpdateData, this.signalRepository.updateSignal.bind(this.signalRepository), this.userActionService, SIGNALS_LOG_TABLE)
     }
 
     async addMeasurements(measurementsData) {

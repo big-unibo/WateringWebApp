@@ -1,6 +1,7 @@
 import { FARMS_LOG_TABLE, FARMS_DEVICES_LOG_TABLE, OPTIMAL_PROFILES_LOG_TABLE, SECTORS_LOG_TABLE, SECTORS_DEVICES_LOG_TABLE, THESES_IN_SECTORS_LOG_TABLE, THESES_LOG_TABLE, THESES_DEVICES_LOG_TABLE, WATERING_ALGORITHM_LOG_TABLE, WATERING_EVENTS_LOG_TABLE } from '../commons/constants.js';
 import { OptimalStateData } from '../dtos/optStateDto.js';
 import DtoConverter from './DtoConverter.js';
+import { _updateEntity } from '../commons/entityServiceUtils.js';
 
 const dtoConverter = new DtoConverter();
 
@@ -51,27 +52,8 @@ class FieldService {
         }
     }
 
-    async _updateEntity(userId, data, repositoryFunction, updateLogTable){
-        try {
-            const { id, ...fields } = data;
-
-            const updatedEntityInstance = await repositoryFunction(
-                id,
-                Object.fromEntries(Object.entries(fields).filter(([_, v]) => v !== undefined))
-            )
-
-            if (updatedEntityInstance) {
-                const entityData = updatedEntityInstance.get({ plain: true });
-                await this.userActionService.logUpdate(userId, updateLogTable, id, null, entityData)
-            }
-        } catch (error) {
-            console.error(`Error updating entity: ${error.message}`);
-            throw error;
-        }
-    }
-
     async updateFarm(userId, farm){
-        await this._updateEntity(userId, farm, this.farmRepository.updateFarm.bind(this.farmRepository), FARMS_LOG_TABLE)
+        await _updateEntity(userId, farm, this.farmRepository.updateFarm.bind(this.farmRepository), this.userActionService, FARMS_LOG_TABLE)
     }
 
     async getFarms(filteringIds) {
@@ -96,7 +78,7 @@ class FieldService {
     }
 
     async updateSector(userId, sector){
-        await this._updateEntity(userId, sector, this.sectorRepository.updateSector.bind(this.sectorRepository), SECTORS_LOG_TABLE)
+        await _updateEntity(userId, sector, this.sectorRepository.updateSector.bind(this.sectorRepository), this.userActionService, SECTORS_LOG_TABLE)
     }
 
     async getSectorOwner(sectorId) {
@@ -120,7 +102,7 @@ class FieldService {
     }
 
     async updateThesis(userId, thesis){
-        await this._updateEntity(userId, thesis, this.thesisRepository.updateThesis.bind(this.thesisRepository), THESES_LOG_TABLE)
+        await _updateEntity(userId, thesis, this.thesisRepository.updateThesis.bind(this.thesisRepository), this.userActionService, THESES_LOG_TABLE)
     }
 
     async getFarmOwner(farmId) {
