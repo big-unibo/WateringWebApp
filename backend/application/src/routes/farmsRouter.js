@@ -341,7 +341,7 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
         }
 
         try {
-            await fieldService.disableFarm(userId, farmId, timestamp)
+            await fieldService.disableFarm(userId, requestUserData.isAdmin, farmId, timestamp)
             return res.status(200).json({ message: `Farm validity succesfully endend` })
         } catch (error) {
             console.log(`Failed disabling farm: ${error.message}`)

@@ -105,14 +105,6 @@ class FieldService {
         await _updateEntity(userId, thesis, this.thesisRepository.updateThesis.bind(this.thesisRepository), this.userActionService, THESES_LOG_TABLE)
     }
 
-    async getFarmOwner(farmId) {
-        const result = await this.farmRepository.getFarmDetails(farmId);
-        if (!result.company) {
-            throw new Error(`Company not found for farm ${farmId}`);
-        }
-        return dtoConverter.convertCompany(result.company);
-    }
-
     async getFarmDetails(farmId, userId, isAdmin) {
         const result = await this.farmRepository.getFarmDetails(farmId, userId, isAdmin);
         return dtoConverter.convertFarmDataWrapper(result);
@@ -398,7 +390,7 @@ class FieldService {
         }
     }
 
-    async disableFarm(userId, farmId, timestamp) {
+    async disableFarm(userId, isAdmin, farmId, timestamp) {
         try {
             const devices = await this.deviceRepository.getFarmAssociatedDevices(farmId, timestamp);
             await Promise.all(devices.map(async (device) => {
@@ -407,7 +399,7 @@ class FieldService {
                     await this.userActionService.logDisabling(userId, FARMS_DEVICES_LOG_TABLE, deviceAssignmentId, null);
                 }
             }));
-            const farmData = await this.farmRepository.getFarmDetails(farmId);
+            const farmData = await this.farmRepository.getFarmDetails(farmId, userId, isAdmin);
 
             if (farmData && farmData.sectors && Array.isArray(farmData.sectors)) {
                 await Promise.all(farmData.sectors.map(async sector => {
