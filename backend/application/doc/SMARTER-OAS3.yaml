@@ -742,6 +742,10 @@ components:
         description:
           type: string
           nullable: true
+        location:
+          $ref: '#/components/schemas/GeometryElement'
+        binningId:
+          type: integer
 
     Device:
       type: object

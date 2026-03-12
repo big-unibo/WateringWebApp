@@ -59,6 +59,8 @@ class DeviceRepository {
             ds.device_id AS "deviceId",
             ds.device_type AS "deviceType",
             ds.device_description AS "deviceDescription",
+            ds.device_binning_id AS "binningId",
+            d.location,
             ds.provider_id AS "providerId",
             ds.signal_id_on_provider AS "idOnProvider",
             ds.signal_id AS "signalId",
@@ -70,6 +72,7 @@ class DeviceRepository {
             ds.unit,
             ds.x, ds.y, ds.z
         FROM devices_signals_denormalized ds
+        JOIN devices d ON d.id = ds.device_id
         JOIN LATERAL (
             SELECT MAX(timestamp) AS measurement_timestamp
             FROM measurements m
@@ -78,8 +81,6 @@ class DeviceRepository {
         WHERE ds.device_id = :deviceId
             AND valid_from < :timestamp
             AND COALESCE(valid_to, 'infinity') > :timestamp`
-
-
         try {
             const results = await this.sequelize.query(query, {
                 replacements: { deviceId, timestamp },
