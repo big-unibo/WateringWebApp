@@ -290,7 +290,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      *         name: entityType
      *         schema:
      *           type: string
-     *           enum: [COMPANY, FARM, SECTOR, THESIS]
+     *           enum: [COMPANY, FARM, SECTOR, THESIS, DEVICE]
      *         description: Type of the entity on which is requested the authorization
      *       - in: query
      *         name: id
