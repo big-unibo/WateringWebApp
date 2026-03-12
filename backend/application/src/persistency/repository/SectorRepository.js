@@ -101,7 +101,7 @@ class SectorRepository {
         const replacements = { filteringIds };
 
         if (timeFilterTo) {
-            timeConditions += ` AND ts.valid_from <= :timeFilterTo`;
+            timeConditions += ` AND (ts.valid_from IS NULL OR ts.valid_from <= :timeFilterTo)`;
             replacements.timeFilterTo = timeFilterTo;
         }
 
