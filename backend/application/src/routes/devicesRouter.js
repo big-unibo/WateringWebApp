@@ -395,7 +395,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
     /**
      * @swagger
      * /devices/{deviceId}/disconnectSignals:
-     *   post:
+     *   put:
      *     summary: Disconnects signals from a device
      *     description: Disconnects signals from a device.  Requires authentication and proper authorization.
      *     tags:
@@ -487,7 +487,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *                   type: string
      *
      */
-    router.post('/:deviceId/disconnectSignals', async (req, res) => {
+    router.put('/:deviceId/disconnectSignals', async (req, res) => {
         let requestUserData;
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);

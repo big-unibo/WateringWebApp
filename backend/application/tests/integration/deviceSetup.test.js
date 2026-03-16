@@ -207,7 +207,7 @@ describe('Device and Signal Setup Integration Test', () => {
         }
 
         await request(app)
-            .post(`/devices/${deviceId}/disconnectSignals`)
+            .put(`/devices/${deviceId}/disconnectSignals`)
             .set('Authorization', `Bearer ${authToken}`)
             .send(payload)
             .expect(200)
