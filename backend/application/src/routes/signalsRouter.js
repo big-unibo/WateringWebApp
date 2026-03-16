@@ -409,39 +409,39 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
      *                   type: string
      */
 
-    router.post('/:signalId/disable', async (req, res) => {
-        let requestUserData;
-        try {
-            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-        } catch (error) {
-            return res.status(401).json({ message: 'Authentication failed' });
-        }
-        const userId = requestUserData.userId
+    // router.post('/:signalId/disable', async (req, res) => {
+    //     let requestUserData;
+    //     try {
+    //         requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+    //     } catch (error) {
+    //         return res.status(401).json({ message: 'Authentication failed' });
+    //     }
+    //     const userId = requestUserData.userId
 
-        const signalId = Number(req.params.signalId);
-        const exists = await signalService.signalExists(signalId);
-        if (!exists) {
-            return res.status(404).json({ message: 'Signal not found' });
-        }
+    //     const signalId = Number(req.params.signalId);
+    //     const exists = await signalService.signalExists(signalId);
+    //     if (!exists) {
+    //         return res.status(404).json({ message: 'Signal not found' });
+    //     }
 
-        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'SIGNAL', signalId))) {
-            return res.status(403).json({ message: 'Unauthorized request' });
-        }
+    //     if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'SIGNAL', signalId))) {
+    //         return res.status(403).json({ message: 'Unauthorized request' });
+    //     }
 
-        const currentTimestamp = Date.now() / 1000
-        const validTo = req.query.validTo ?? currentTimestamp;
-        try {
-            if (validTo < currentTimestamp) {
-                return res.status(400).json({ message: 'Invalid validTo timestamp provided. It must be a future timestamp' })
-            }
-            await signalService.disableSignal(userId, signalId, validTo);
-            return res.status(200).json({ message: 'Signal disabled successfully' });
-        }
-        catch (error) {
-            console.log(`Fail disabling signal caused by: ${error.message}`)
-            return res.status(500).json({ error: "Error on disabling signal" })
-        }
-    });
+    //     const currentTimestamp = Date.now() / 1000
+    //     const validTo = req.query.validTo ?? currentTimestamp;
+    //     try {
+    //         if (validTo < currentTimestamp) {
+    //             return res.status(400).json({ message: 'Invalid validTo timestamp provided. It must be a future timestamp' })
+    //         }
+    //         await signalService.disableSignal(userId, signalId, validTo);
+    //         return res.status(200).json({ message: 'Signal disabled successfully' });
+    //     }
+    //     catch (error) {
+    //         console.log(`Fail disabling signal caused by: ${error.message}`)
+    //         return res.status(500).json({ error: "Error on disabling signal" })
+    //     }
+    // });
 
     /**
      * @swagger

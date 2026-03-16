@@ -276,10 +276,10 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
 
     /**
      * @swagger
-     * /devices/{deviceId}/signals:
+     * /devices/{deviceId}/connectSignals:
      *   post:
-     *     summary: Attach signals to a device
-     *     description: Attaches signals to a device.  Requires authentication and proper authorization.
+     *     summary: Connects signals to a device
+     *     description: Connects signals to a device. Requires authentication and proper authorization.
      *     tags:
      *       - Devices
      *     parameters:
@@ -299,16 +299,16 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *               - signalIds
      *             properties:
      *               signalIds:
-     *                 description: List of signal IDs to attach to the device
+     *                 description: List of signal IDs to connect to the device
      *                 type: array
      *                 items:
      *                   type: integer
      *               timestamp:
      *                 type: number
-     *                 description: Timestamp indicating when the attachment is made (in seconds since 01/01/1970)
+     *                 description: Timestamp indicating when the connection is made (in seconds since 01/01/1970)
      *     responses:
      *       200:
-     *         description: Signals attached successfully
+     *         description: Signals conected successfully
      *         content:
      *           application/json:
      *             schema:
@@ -350,7 +350,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *                 message:
      *                   type: string
      *       '403':
-     *         description: Unauthorized (user not allowed to attach signals to devices)
+     *         description: Unauthorized (user not allowed to connect signals to devices)
      *         content:
      *           application/json:
      *             schema:
@@ -359,7 +359,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *                 message:
      *                   type: string
      *       500:
-     *         description: Internal server error – unexpected error while attaching signals to the device
+     *         description: Internal server error – unexpected error while connecting signals to the device
      *         content:
      *           application/json:
      *             schema:
@@ -369,7 +369,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *                   type: string
      *
      */
-    router.post('/:deviceId/signals', async (req, res) => {
+    router.post('/:deviceId/connectSignals', async (req, res) => {
         let requestUserData;
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -384,11 +384,129 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
 
             const validFrom = req.body.timestamp ?? Date.now() / 1000;
 
-            await deviceService.attachSignalsToDevice(userId, req.params.deviceId, req.body.signalIds, validFrom);
-            return res.status(200).json({ message: `Signals attached to device with success` });
+            await deviceService.connectSignalsToDevice(userId, req.params.deviceId, req.body.signalIds, validFrom);
+            return res.status(200).json({ message: `Signals connected to device with success` });
         } catch (error) {
-            console.log(`Failed attaching signals to Device caused by: ${error.message}`);
-            return res.status(500).json({ message: "Error on attaching signals to device" });
+            console.log(`Failed connecting signals to Device caused by: ${error.message}`);
+            return res.status(500).json({ message: "Error on connecting signals to device" });
+        }
+    });
+
+    /**
+     * @swagger
+     * /devices/{deviceId}/disconnectSignals:
+     *   post:
+     *     summary: Disconnects signals from a device
+     *     description: Disconnects signals from a device.  Requires authentication and proper authorization.
+     *     tags:
+     *       - Devices
+     *     parameters:
+     *       - in: path
+     *         name: deviceId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of the device
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - signalIds
+     *             properties:
+     *               signalIds:
+     *                 description: List of signal IDs to disconnect from the device
+     *                 type: array
+     *                 items:
+     *                   type: integer
+     *               timestamp:
+     *                 type: number
+     *                 description: Timestamp indicating when the disconnection is made (in seconds since 01/01/1970)
+     *     responses:
+     *       200:
+     *         description: Signals disconnected successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to disconnect signals from devices)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while disconnecting signals from the device
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *
+     */
+    router.post('/:deviceId/disconnectSignals', async (req, res) => {
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+        try {
+            const userId = requestUserData.userId
+            if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'DEVICE', req.params.deviceId))) {
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
+
+            const validTo = req.body.timestamp ?? Date.now() / 1000;
+
+            await deviceService.disconnectSignalsFromDevice(userId, req.params.deviceId, req.body.signalIds, validTo);
+            return res.status(200).json({ message: `Signals disconnected from device with success` });
+        } catch (error) {
+            console.log(`Failed disconnecting signals from Device caused by: ${error.message}`);
+            return res.status(500).json({ message: "Error disconnecting signals from device" });
         }
     });
 

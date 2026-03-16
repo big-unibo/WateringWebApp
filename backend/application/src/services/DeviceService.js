@@ -39,7 +39,7 @@ class DeviceService {
         }
     }
 
-    async attachSignalsToDevice(userId, deviceId, signalIds, validFrom) {
+    async connectSignalsToDevice(userId, deviceId, signalIds, validFrom) {
         try {
             if (!await this.deviceRepository.deviceExists(deviceId)) {
                 throw new Error(`Device with id ${deviceId} does not exist`)
@@ -49,12 +49,32 @@ class DeviceService {
                 throw new Error("One or more signals do not exist");
             }
 
-            const signalDeviceIds = await this.deviceRepository.attachSignalsToDevice(deviceId, signalIds, validFrom)
+            const signalDeviceIds = await this.deviceRepository.connectSignalsToDevice(deviceId, signalIds, validFrom)
             if (Array.isArray(signalDeviceIds) && signalDeviceIds.length > 0) {
                 await this.userActionService.logCreation(userId, DEVICES_SIGNALS_LOG_TABLE, signalDeviceIds, null)
             }
         } catch (error) {
-            console.error(`Error attaching signals to device: ${error.message}`)
+            console.error(`Error connecting signals to device: ${error.message}`)
+            throw error
+        }
+    }
+
+    async disconnectSignalsFromDevice(userId, deviceId, signalIds, validTo) {
+        try {
+            if (!await this.deviceRepository.deviceExists(deviceId)) {
+                throw new Error(`Device with id ${deviceId} does not exist`)
+            }
+
+            if (!(await Promise.all(signalIds.map(id => this.signalRepository.signalExists(id)))).every(Boolean)) {
+                throw new Error("One or more signals do not exist");
+            }
+
+            const signalDeviceIds = await this.deviceRepository.disconnectSignalsFromDevice(deviceId, signalIds, validTo)
+            if (Array.isArray(signalDeviceIds) && signalDeviceIds.length > 0) {
+                await this.userActionService.logDisabling(userId, DEVICES_SIGNALS_LOG_TABLE, signalDeviceIds, null)
+            }
+        } catch (error) {
+            console.error(`Error disconnecting signals from device: ${error.message}`)
             throw error
         }
     }

@@ -27,7 +27,6 @@ class OptimalStateRepository {
                 const maxId = await this.GridOptimalProfileAssignment.max('optimalProfileId')
                 newMatrixId = (maxId ?? 0) + 1;
             }
-            console.log(gridId)
 
             await this.GridOptimalProfileAssignment.update(
                 {

@@ -137,10 +137,10 @@ describe('Device and Signal Setup Integration Test', () => {
     })
 
     /**
-     * TEST 4: Attach Signals to Device
-     * Endpoint: POST /devices/{deviceId}/signals
+     * TEST 4: Connect Signals to Device
+     * Endpoint: POST /devices/{deviceId}/connectSignals
      */
-    it('should attach the Signals to the Device', async () => {
+    it('should connect the Signals to the Device', async () => {
         
         const payload = {
             signalIds: [tempSignalId, humiditySignalId],
@@ -148,7 +148,7 @@ describe('Device and Signal Setup Integration Test', () => {
         }
 
         await request(app)
-            .post(`/devices/${deviceId}/signals`)
+            .post(`/devices/${deviceId}/connectSignals`)
             .set('Authorization', `Bearer ${authToken}`)
             .send(payload)
             .expect(200)
@@ -173,14 +173,12 @@ describe('Device and Signal Setup Integration Test', () => {
      * TEST 5: Verify Full Device Info via API
      * Endpoint: GET /devices/{deviceId}
      */
-    it('should retrieve the Device and see attached signals', async () => {
+    it('should retrieve the Device and see connected signals', async () => {
         const res = await request(app)
             .get(`/devices/${deviceId}`)
             .query({ timestamp: timestamp + 1 })
             .set('Authorization', `Bearer ${authToken}`)
             .expect(200)
-
-        console.log('Retrieved Device Info:', res.body)
 
         // Verify Device Data
         expect(res.body.id).toBe(deviceId)
@@ -196,4 +194,45 @@ describe('Device and Signal Setup Integration Test', () => {
         expect(signalIds).toContain(tempSignalId)
         expect(signalIds).toContain(humiditySignalId)
     });
+
+    /**
+     * TEST 6: Disconnect Signals from Device
+     */
+    it('should disconnect Signals from the Device', async () => {
+
+        const validTo = timestamp + 3600
+        const payload = {
+            signalIds: [tempSignalId, humiditySignalId],
+            timestamp: validTo
+        }
+
+        await request(app)
+            .post(`/devices/${deviceId}/disconnectSignals`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .send(payload)
+            .expect(200)
+
+        // DB Persistence Check
+        // Verifying relationship via 'signals.device_id' column
+        const signalsConnected = await table(db, 'signals')
+            .join('devices_signals', 'signals.id', 'devices_signals.signal_id')
+            .whereIn('signals.id', [tempSignalId, humiditySignalId])
+            .andWhere('valid_from', '<', validTo - 1)
+            .andWhere(function () {
+                this.where('valid_to', '>', validTo - 1).orWhereNull('valid_to')})
+            .select('signal_id', 'device_id')
+
+        expect(signalsConnected).toHaveLength(2)
+
+        const signals = await table(db, 'signals')
+            .join('devices_signals', 'signals.id', 'devices_signals.signal_id')
+            .whereIn('signals.id', [tempSignalId, humiditySignalId])
+            .andWhere('valid_from', '<', validTo + 1)
+            .andWhere(function () {
+                this.where('valid_to', '>', validTo + 1).orWhereNull('valid_to')})
+            .select('signal_id', 'device_id')
+
+        expect(signals).toHaveLength(0)
+        
+    })
 });

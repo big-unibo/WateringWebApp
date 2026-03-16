@@ -35,7 +35,7 @@ class DeviceRepository {
         }
     }
 
-    async attachSignalsToDevice(deviceId, signalIds, validFrom) {
+    async connectSignalsToDevice(deviceId, signalIds, validFrom) {
         try {
 
             const attachedSignals = await this.DevicesSignals.bulkCreate(
@@ -49,7 +49,26 @@ class DeviceRepository {
             return attachedSignals.map(as => as.id);
             
         } catch (error) {
-            throw new Error(`Error attaching signals to device caused by: ${error.message}`);
+            throw new Error(`Error connecting signals to device caused by: ${error.message}`);
+        }
+    }
+
+    async disconnectSignalsFromDevice(deviceId, signalIds, validTo) {
+        try {
+            const [_, updatedRecords] = await this.DevicesSignals.update({
+                validTo: validTo
+            }, {
+                where: {
+                    deviceId: deviceId,
+                    signalId: {
+                        [Op.in]: [...signalIds]
+                    },
+                },
+                returning: ["id"]
+            });
+            return updatedRecords.map(record => record.id);  
+        } catch (error) {
+            throw new Error(`Error disconnecting signals from device caused by: ${error.message}`);
         }
     }
 
