@@ -1,4 +1,4 @@
-import { DEVICES_LOG_TABLE, FARMS_DEVICES_LOG_TABLE, SECTORS_DEVICES_LOG_TABLE, DEVICES_SIGNALS_LOG_TABLE, THESES_DEVICES_LOG_TABLE } from "../commons/constants.js";
+import { DEVICES_LOG_TABLE, FARMS_DEVICES_LOG_TABLE, SECTORS_DEVICES_LOG_TABLE, SIGNALS_LOG_TABLE, DEVICES_SIGNALS_LOG_TABLE, THESES_DEVICES_LOG_TABLE, OPTIMAL_PROFILES_LOG_TABLE } from "../commons/constants.js";
 import { DeviceTargetType } from "../dtos/deviceDto.js";
 import DtoConverter from './DtoConverter.js';
 import PaginationService from "./PaginationService.js";
@@ -234,14 +234,21 @@ class DeviceService {
 
     async deleteDevice(userId, deviceId) {
         try {
-            const signalDeviceIds = await this.getDevice(deviceId)?.signals?.map(signal => signal.id)
+            const signalIds = (await this.getDevice(deviceId))?.signals?.map(signal => signal.id)
             const signalsToDelete = []
-            for(const signalId of signalDeviceIds){
-                const deviceIds = new Set(...(await this.signalRepository.getSignalInfo(signalId, Date.now()/1000).map(s=> d.deviceId)))
+            for(const signalId of signalIds){
+                const deviceIds = new Set((await this.signalRepository.getSignalInfo(signalId, Date.now()/1000)).map(s=> s.deviceId))
                 if(deviceIds.size === 1 && deviceIds.has(deviceId)) {
-                    signalsToDelete.push(signalId)                    
+                    signalsToDelete.push(signalId)              
                 }
             }
+
+
+            const signalDeviceIds = await this.deviceRepository.deleteDeviceSignals(deviceId);
+            if (Array.isArray(signalDeviceIds) && signalDeviceIds.length > 0) {
+                await this.userActionService.logDeletion(userId, DEVICES_SIGNALS_LOG_TABLE, signalDeviceIds);
+            }
+
             await Promise.all(signalsToDelete.map(async id => await this.signalRepository.deleteSignal(id)))
             await this.userActionService.logDeletion(userId, SIGNALS_LOG_TABLE, signalsToDelete, null)
 
@@ -258,6 +265,14 @@ class DeviceService {
                 await this.userActionService.logDeletion(userId, FARMS_DEVICES_LOG_TABLE, farmDevId, null);
             }
             await this.interpolatedProfileRepository.deleteInterpolatedProfiles(deviceId)
+
+            const gridAssigmentId = await this.optimalStateRepository.deleteGridOptimalProfileAssignments(deviceId)
+            if (gridAssigmentId) {
+                await this.userActionService.logDeletion(userId, OPTIMAL_PROFILES_LOG_TABLE, gridAssigmentId)
+            }
+
+            await this.deviceRepository.deleteDevice(deviceId)
+            await this.userActionService.logDeletion(userId, DEVICES_LOG_TABLE, deviceId)
             
          } catch (error) {
             console.error(`Error deleting device: ${error.message}`);

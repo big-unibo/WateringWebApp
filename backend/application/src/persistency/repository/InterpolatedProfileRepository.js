@@ -172,7 +172,7 @@ class InterpolatedProfileRepository {
         const deleteQuery = `
             DELETE FROM interpolated_profiles WHERE grid_id = :gridId
         `
-        await this.query(deleteQuery, {
+        await this.sequelize.query(deleteQuery, {
             type: QueryTypes.DELETE,
             replacements: { gridId: gridId }
         })

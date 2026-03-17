@@ -1139,34 +1139,34 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *                 message:
      *                   type: string
      */
-    // router.post('/:deviceId/delete', async (req, res) => {
-    //     let requestUserData
-    //     try {
-    //         requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-    //     } catch (error) {
-    //         return res.status(401).json({ message: 'Authentication failed' });
-    //     }
+    router.delete('/:deviceId/delete', async (req, res) => {
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
 
-    //     const userId = requestUserData.userId
-    //     const deviceId = req.params.deviceId;
+        const userId = requestUserData.userId
+        const deviceId = req.params.deviceId;
 
-    //     const exists = await deviceService.deviceExists(deviceId);
-    //     if (!exists) {
-    //         return res.status(404).json({ message: 'Device not found' });
-    //     }
+        const exists = await deviceService.deviceExists(deviceId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Device not found' });
+        }
 
-    //     if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'DEVICE', deviceId))) {
-    //         return res.status(403).json({ message: 'Unauthorized request' });
-    //     }
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'DEVICE', deviceId))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
 
-    //     try {
-    //         await deviceService.deleteDevice(userId, deviceId)
-    //         return res.status(200).json({ message: `Device successfully deleted` })
-    //     } catch (error) {
-    //         console.log(`Failed deleting device: ${error.message}`)
-    //         return res.status(500).json({ error: "Internal error deleting device and its signals" })
-    //     }
-    // })
+        try {
+            await deviceService.deleteDevice(userId, deviceId)
+            return res.status(200).json({ message: `Device successfully deleted` })
+        } catch (error) {
+            console.log(`Failed deleting device: ${error.message}`)
+            return res.status(500).json({ error: "Internal error deleting device and its signals" })
+        }
+    })
 
 
     /**

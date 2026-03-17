@@ -1,4 +1,5 @@
-import { Op, Sequelize, QueryTypes } from 'sequelize';
+import { Op } from 'sequelize';
+import { _deleteFromModelByParams } from '../../commons/repositoryUtils';
 
 class OptimalStateRepository {
 
@@ -102,6 +103,16 @@ class OptimalStateRepository {
 
         } catch (error) {
             throw new Error(`Error setting validty end of the optimal profie: ${error.message}`);
+        }
+    }
+
+    async deleteGridOptimalProfileAssignments(gridId) {
+        try {
+            return _deleteFromModelByParams(this.GridOptimalProfileAssignment, {
+                gridId: gridId
+            })
+        } catch (error) {
+            throw new Error(`Error deleting device from farm: ${error.message}`);
         }
     }
 

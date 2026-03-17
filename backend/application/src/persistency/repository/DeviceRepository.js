@@ -1,4 +1,5 @@
 import { Op } from "sequelize";
+import { _deleteFromModelByParams } from "../../commons/repositoryUtils";
 
 class DeviceRepository {
     constructor(models, sequelize) {
@@ -98,8 +99,7 @@ class DeviceRepository {
             WHERE m.signal_id = ds.signal_id
         ) m ON true
         WHERE ds.device_id = :deviceId
-            AND valid_from < :timestamp
-            AND COALESCE(valid_to, 'infinity') > :timestamp`
+            ${timestamp ? "AND valid_from < :timestamp AND COALESCE(valid_to, 'infinity') > :timestamp" : ""}`
         try {
             const results = await this.sequelize.query(query, {
                 replacements: { deviceId, timestamp },
@@ -340,19 +340,6 @@ class DeviceRepository {
         }
     }
 
-    async _deleteFromModelByParams(model, where) {
-        const rows = await this.model.findAll({
-            where: where,
-            attributes: ['id'],
-            raw: true
-        });
-        const ids = rows.map(r => r.id);
-        await this.model.destroy({
-            where: where
-        });
-        return ids;
-    }
-
     async deleteDeviceInFarm(deviceId) {
         try {
             return _deleteFromModelByParams(this.DeviceInFarm, {
@@ -383,6 +370,16 @@ class DeviceRepository {
         }
     }
 
+    async deleteDevice(deviceId) {
+        try {
+            _deleteFromModelByParams(this.Device, {
+                id: deviceId
+            })
+        } catch (error) {
+            throw new Error(`Error deleting signals associations from device: ${error.message}`);
+        }
+    }
+
     async disableDeviceSignals(deviceId, validTo){
         try {
             const [updatedCount, updatedRecords] = await this.DevicesSignals.update(
@@ -401,6 +398,16 @@ class DeviceRepository {
             return null;
         } catch (error) {
             throw new Error(`Error disabling signals from device: ${error.message}`);
+        }
+    }
+
+    async deleteDeviceSignals(deviceId) {
+        try {
+            return _deleteFromModelByParams(this.DevicesSignals, {
+                deviceId: deviceId
+            })
+        } catch (error) {
+            throw new Error(`Error deleting signals associations from device: ${error.message}`);
         }
     }
 

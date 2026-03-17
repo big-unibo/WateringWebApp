@@ -20,6 +20,7 @@ describe('Device and Signal Setup Integration Test', () => {
     const PROVIDER_ID = 1        // Provider A
     const SIGNAL_TYPE_TEMP = 4   // AIR_TEMPERATURE
     const SIGNAL_TYPE_HUM = 5    // AIR_HUMIDITY
+    const TEST_DELETE_DEVICE_ID = 4
 
     beforeAll(async () => {
         // 1. Initialize DB and Container (Loads schema + data)
@@ -233,6 +234,27 @@ describe('Device and Signal Setup Integration Test', () => {
             .select('signal_id', 'device_id')
 
         expect(signals).toHaveLength(0)
-        
     })
+
+    /**
+     * TEST 6: Delete device and all related data
+     */
+    it('should delete a device and all related data', async () => {
+
+        await request(app)
+            .delete(`/devices/${TEST_DELETE_DEVICE_ID}/delete`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .expect(200)
+
+        // DB Persistence Check
+        // If no device found we can assume all related entity are correctly
+        // deleted otherwise foreign key checks prevents deletion
+        const devicePersistence = await table(db, 'devices')
+            .where('id', '=', TEST_DELETE_DEVICE_ID)
+            .select('*')
+
+        expect(devicePersistence).toHaveLength(0)
+    })
+
+
 });

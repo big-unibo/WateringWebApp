@@ -251,10 +251,10 @@ CREATE VIEW public.devices_signals_denormalized AS
     sig.sensor_technology,
     ds.valid_from,
     ds.valid_to
-   FROM (((public.signals sig
-     JOIN public.devices_signals ds ON ((ds.signal_id = sig.id)))
-     JOIN public.devices d ON ((ds.device_id = d.id)))
-     JOIN public.signal_types st ON ((sig.type_id = st.id)));
+   FROM (((public.devices d
+     LEFT JOIN public.devices_signals ds ON ((ds.device_id = d.id)))
+     LEFT JOIN public.signals sig ON ((ds.signal_id = sig.id)))
+     LEFT JOIN public.signal_types st ON ((sig.type_id = st.id)));
 
 
 ALTER VIEW public.devices_signals_denormalized OWNER TO postgres;
@@ -1548,7 +1548,7 @@ INSERT INTO public.sectors (id, sector_name, farm_id, culture, culture_type, loc
 VALUES (1, 'Test Sector 1', 1, 'Kiwi', 'G3', public.ST_GeomFromText('POLYGON((10.01 45.01, 10.05 45.01, 10.05 45.05, 10.01 45.05, 10.01 45.01))', 4326), 4.0, NULL, false);
 
 INSERT INTO public.theses (id, thesis_name) 
-VALUES (1, 'Thesis 1');
+VALUES (1, 'Thesis 1'), (2, 'Thesis 2');
 
 INSERT INTO public.theses_in_sectors (thesis_id, sector_id, valid_from) 
 VALUES (1, 1, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-20 7:00:00'));
@@ -1557,7 +1557,8 @@ INSERT INTO public.devices (id, type, description, binning_id, location, company
 VALUES
 (1, 'WEATHER_STATION', 'Farm 1 Station', NULL, public.ST_GeomFromText('POINT(10.05 45.05)', 4326), 1),
 (2, 'FLOW_METER', 'Sector 1 Pressure Switch',  NULL, public.ST_GeomFromText('POINT(10.02 45.02)', 4326), 1),
-(3, 'SOIL_MOISTURE_GRID', 'Thesis 1 Grid',   1, public.ST_GeomFromText('POINT(10.03 45.03)', 4326), 1);
+(3, 'SOIL_MOISTURE_GRID', 'Thesis 1 Grid',   1, public.ST_GeomFromText('POINT(10.03 45.03)', 4326), 1),
+(4, 'SOIL_MOISTURE_GRID', 'Thesis 2 Grid Test delete',   1, public.ST_GeomFromText('POINT(13.03 43.03)', 4326), 1);
 
 INSERT INTO public.signals (id, type_id, provider_id, id_on_provider, unit, description, x, y, z, virtual, sensor_technology)
 VALUES
@@ -1567,7 +1568,10 @@ VALUES
 (4, 2, 1, 'GRID-GES-0-20', 'cbar', 'Grid 3 Ges 20>0', 0, 20, 0, false, 'Gypsum Block'),
 (5, 2, 1, 'GRID-GES-0-60', 'cbar', 'Grid 3 Ges 60>0', 0, 60, 0, false, 'Gypsum Block'),
 (6, 2, 1, 'GRID-GES-40-20', 'cbar', 'Grid 3 Ges 20>40', 40, 20, 0, false, 'Gypsum Block'),
-(7, 2, 1, 'GRID-GES-40-60', 'cbar', 'Grid 3 Ges 60>40', 40, 60, 0, false, 'Gypsum Block');
+(7, 2, 1, 'GRID-GES-40-60', 'cbar', 'Grid 3 Ges 60>40', 40, 60, 0, false, 'Gypsum Block'),
+(8, 2, 1, 'GRID-2-GES-0-20', 'cbar', 'Grid 4 Ges 20>0', 0, 20, 0, false, 'Gypsum Block'),
+(9, 2, 1, 'GRID-2-GES-0-60', 'cbar', 'Grid 4 Ges 60>0', 0, 60, 0, false, 'Gypsum Block'),
+(10, 2, 1, 'GRID-2-GES-40-20', 'cbar', 'Grid 4 Ges 20>40', 40, 20, 0, false, 'Gypsum Block');
 
 INSERT INTO public.devices_signals (device_id, signal_id, valid_from)
 VALUES
@@ -1577,7 +1581,34 @@ VALUES
 (3, 4, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 10:00:00')),
 (3, 5, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 10:00:00')),
 (3, 6, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 10:00:00')),
-(3, 7, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 10:00:00'));
+(3, 7, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 10:00:00')),
+(4, 8, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 12:00:00')),
+(4, 9, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 12:00:00')),
+(4, 10, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 12:00:00')),
+(4, 7, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 12:00:00'));
+
+INSERT INTO public.measurements(signal_id, timestamp, computed, date, time, value, raw_value)
+VALUES 
+(8, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 13:00:00'), false, '2025-01-22', '13:00:00', 22, '22'),
+(7, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 13:00:00'), false, '2025-01-22', '13:00:00', 34.4, '34.4');
+
+INSERT INTO public.interpolated_profiles(id, grid_id, "timestamp", true_sensor_number)
+	VALUES (1, 4, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 13:30:00'), 2);
+
+INSERT INTO public.interpolated_cells(profile_id, x, y, z, value, value_source)
+VALUES 
+(1, 0, 20, 0, 22, 'Sensor Reading'),
+(1, 40, 60, 0, 34.4, 'Sensor Reading');
+
+INSERT INTO public.optimal_profiles(profile_id, x, y, z, value, weight)
+	VALUES (1, 0, 20, 0, 28, 1);
+
+INSERT INTO public.grid_optimal_profile_assignment(optimal_profile_id, grid_id, valid_from, valid_to, id, stop_percentage, optimal_wet_bound, optimal_dry_bound)
+	VALUES (1, 4, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 12:30:00'), NULL, 1, NULL, -20, -300);
+
+INSERT INTO public.theses_devices(
+	thesis_id, device_id, valid_from, valid_to, id)
+	VALUES (2, 4, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 12:00:00'), NULL, 1);
 
 INSERT INTO public.users (id, email, password, name)
 VALUES (
@@ -1614,14 +1645,14 @@ SELECT pg_catalog.setval('public.companies_id_seq', 2, true);
 -- Name: devices_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.devices_id_seq', 4, true);
+SELECT pg_catalog.setval('public.devices_id_seq', 5, true);
 
 
 --
 -- Name: devices_signals_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.devices_signals_id_seq', 8, false);
+SELECT pg_catalog.setval('public.devices_signals_id_seq', 12, false);
 
 
 --
@@ -1642,14 +1673,14 @@ SELECT pg_catalog.setval('public.farms_signals_id_seq', 1, true);
 -- Name: grid_optimal_profile_assignment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.grid_optimal_profile_assignment_id_seq', 1, false);
+SELECT pg_catalog.setval('public.grid_optimal_profile_assignment_id_seq', 2, false);
 
 
 --
 -- Name: interpolated_profiles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.interpolated_profiles_id_seq', 1, false);
+SELECT pg_catalog.setval('public.interpolated_profiles_id_seq', 2, false);
 
 
 --
@@ -1719,7 +1750,7 @@ SELECT pg_catalog.setval('public.signal_types_id_seq', 11, false);
 -- Name: signals_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.signals_id_seq', 8, true);
+SELECT pg_catalog.setval('public.signals_id_seq', 11, true);
 
 
 --
@@ -1740,7 +1771,7 @@ SELECT pg_catalog.setval('public.theses_in_sectors_id_seq', 2, true);
 -- Name: theses_signals_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.theses_signals_id_seq', 1, true);
+SELECT pg_catalog.setval('public.theses_signals_id_seq', 2, true);
 
 
 --
