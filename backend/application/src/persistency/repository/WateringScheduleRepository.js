@@ -252,8 +252,7 @@ class WateringScheduleRepository {
                 attributes: ['id'],
                 where: {
                     sectorId,
-                    wateringStart: { [Op.gt]: timestamp },
-                    advice: null
+                    wateringStart: { [Op.gt]: timestamp }
                 }
             });
 

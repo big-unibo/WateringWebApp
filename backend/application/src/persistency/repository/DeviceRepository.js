@@ -1,5 +1,6 @@
 import { Op } from "sequelize";
-import { _deleteFromModelByParams } from "../../commons/repositoryUtils";
+import { _deleteFromModelByParams } from "../../commons/repositoryUtils.js";
+import { removeUndefined } from "../../commons/utils.js";
 
 class DeviceRepository {
     constructor(models, sequelize) {
@@ -167,7 +168,6 @@ class DeviceRepository {
                 : filteringIds.length === 0
                     ? 'FALSE'
                     : 'ds.device_id = ANY(ARRAY[:filteringIds])'}`
-
         try {
             const [results] = await this.sequelize.query(query, {
                 replacements: { timeFilterFrom, timeFilterTo, providerIds, types, companyIds, filteringIds },
@@ -340,31 +340,25 @@ class DeviceRepository {
         }
     }
 
-    async deleteDeviceInFarm(deviceId) {
+    async deleteDeviceInFarm(farmId, deviceId) {
         try {
-            return _deleteFromModelByParams(this.DeviceInFarm, {
-                deviceId: deviceId
-            })
+            return _deleteFromModelByParams(this.DeviceInFarm, removeUndefined({ farmId, deviceId }))
         } catch (error) {
             throw new Error(`Error deleting device from farm: ${error.message}`);
         }
     }
 
-    async deleteDeviceInSector(deviceId) {
+    async deleteDeviceInSector(sectorId, deviceId) {
         try {
-            return _deleteFromModelByParams(this.DeviceInSector, {
-                deviceId: deviceId
-            })
+            return _deleteFromModelByParams(this.DeviceInSector, removeUndefined({ sectorId, deviceId }))
         } catch (error) {
             throw new Error(`Error deleting device from sector: ${error.message}`);
         }
     }
 
-    async deleteDeviceInThesis(deviceId) {
+    async deleteDeviceInThesis(thesisId, deviceId) {
         try {
-            return _deleteFromModelByParams(this.DeviceInThesis, {
-                deviceId: deviceId
-            })
+            return _deleteFromModelByParams(this.DeviceInThesis, removeUndefined({ thesisId, deviceId }))
         } catch (error) {
             throw new Error(`Error deleting device from thesis: ${error.message}`);
         }
@@ -504,6 +498,18 @@ class DeviceRepository {
 
         } catch (error) {
             throw new Error(`Error while retrieving farm devices: ${error.message}`);
+        }
+    }
+
+    async getDevicesByCompany(companyId){
+        try {
+            return await this.Device.findAll({
+                where: {
+                    companyId: companyId
+                }
+            })
+        } catch (error) {
+            throw new Error(`Error while retrieving farm devices: ${error.message}`)
         }
     }
 }

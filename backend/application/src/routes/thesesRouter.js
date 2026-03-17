@@ -1393,6 +1393,125 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
         }
     })
 
+    /**
+     * @swagger
+     * /theses/{thesisId}/delete:
+     *   delete:
+     *     summary: Deletes a given thesis
+     *     tags: [Theses]
+     *     description: |
+     *       Deletes a thesis including:
+     *       - Deletion of device associations.
+     *       - Deletion of advices and watering algorithm parameters.
+     * 
+     *       Requires Authentication and proper Authorization
+     *     parameters:
+     *       - in: path
+     *         name: thesisId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of thesis to delete
+     *     responses:
+     *       200:
+     *         description: Thesis successfully deleted.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Thesis successfully deleted.
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       401:
+     *         description: Authentication failed (Invalid or missing JWT).
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized request – user not allowed to delete this thesis.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error during the process.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.delete('/:thesisId/delete', async (req, res) => {
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        const userId = requestUserData.userId
+        const thesisId = req.params.thesisId;
+
+        const exists = await fieldService.thesisExists(thesisId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Thesis not found' });
+        }
+
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'THESIS', thesisId))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
+
+        try {
+            await fieldService.deleteThesis(userId, thesisId)
+            return res.status(200).json({ message: `Thesis successfully deleted` })
+        } catch (error) {
+            console.log(`Failed deleting thesis: ${error.message}`)
+            return res.status(500).json({ error: "Internal error deleting thesis" })
+        }
+    })
 
     function checkOptState(thesisPoints, newOptimalPoints) {
         if (thesisPoints.length !== newOptimalPoints.length) return false;

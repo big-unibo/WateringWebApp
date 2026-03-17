@@ -24,6 +24,7 @@ import initDevicesSignals from './DevicesSignals.js';
 import initSignalsDenormalized from './SignalsDenormalized.js';
 import initCompaniesOrganizations from './CompaniesOrganizations.js';
 import initService from './Service.js';
+import initSectorServices from './SectorServices.js';
 import initSignalType from './SignalType.js';
 
 
@@ -56,6 +57,7 @@ export default function initModels(sequelize) {
     UserAction : initUserAction(sequelize),
     Provider : initProvider(sequelize),
     Service: initService(sequelize),
+    SectorServices: initSectorServices(sequelize),
     SignalType: initSignalType(sequelize)
   };
 
@@ -116,6 +118,11 @@ export default function initModels(sequelize) {
 
   models.GridOptimalProfileAssignment.belongsTo(models.Device, {foreignKey: "gridId", as: "device" })
   models.Device.hasMany(models.GridOptimalProfileAssignment,{foreignKey: "gridId", as: "gridOptimalProfileAssignments" })
+
+  models.Sector.hasMany(models.SectorServices, {foreignKey: "sectorId", as: "services"});
+  models.SectorServices.belongsTo(models.Sector, {foreignKey: "sectorId", as: "sector"});
+  models.Service.hasMany(models.SectorServices, {foreignKey: "serviceId", as: "serviceSectors"});
+  models.SectorServices.belongsTo(models.Service, {foreignKey: "serviceId", as: "service"});
 
   return models;
 }

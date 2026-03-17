@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-import { _deleteFromModelByParams } from '../../commons/repositoryUtils';
+import { _deleteFromModelByParams } from '../../commons/repositoryUtils.js';
 
 class OptimalStateRepository {
 

@@ -1,4 +1,5 @@
 import { Op } from "sequelize";
+import { _deleteFromModelByParams } from "../../commons/repositoryUtils.js";
 
 class FarmRepository {
 
@@ -85,6 +86,14 @@ class FarmRepository {
         }
     }
 
+    async getFarmsByCompany(companyId) {
+        return await this.Farm.findAll({
+            where: {
+                companyId: companyId
+            }
+        })
+    }
+
     async updateFarm(farmId, updates) {
         try {
             const farm = await this.Farm.findByPk(farmId);
@@ -93,6 +102,14 @@ class FarmRepository {
             return await farm.update({ farmName: name, location: location });
         } catch (error) {
             throw new Error(`Error while updating farm caused by: ${error.message}`);
+        }
+    }
+
+    async deleteFarm(farmId) {
+        try {
+            return await _deleteFromModelByParams(this.Farm, { id: farmId })
+        } catch (error) {
+            throw new Error(`Error deleting farm: ${error.message}`);
         }
     }
 }

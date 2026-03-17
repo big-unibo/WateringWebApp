@@ -1,4 +1,5 @@
 import { Op } from "sequelize"
+import { _deleteFromModelByParams } from "../../commons/repositoryUtils.js"
 
 class CompanyRepository {
     constructor(models, sequelize) {
@@ -132,6 +133,15 @@ class CompanyRepository {
             return await company.update({companyName: name, address: address});
         } catch (error) {
             throw new Error(`Error while updating company caused by: ${error.message}`);
+        }
+    }
+
+    async deleteCompany(companyId) {
+        try {
+            await _deleteFromModelByParams(this.CompaniesOrganizations, { companyId: companyId })
+            await _deleteFromModelByParams(this.Company, { id: companyId })
+        } catch (error) {
+            throw new Error(`Error deleting farm: ${error.message}`);
         }
     }
 }

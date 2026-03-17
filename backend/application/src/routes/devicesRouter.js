@@ -1066,7 +1066,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *         required: true
      *         schema:
      *           type: integer
-     *         description: ID of device to disable
+     *         description: ID of device to delete
      *     responses:
      *       200:
      *         description: Device successfully deleted.
@@ -1112,7 +1112,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *                 message:
      *                   type: string
      *       403:
-     *         description: Unauthorized request – user not allowed to end thesis validty.
+     *         description: Unauthorized request – user not allowed to delete this device.
      *         content:
      *           application/json:
      *             schema:

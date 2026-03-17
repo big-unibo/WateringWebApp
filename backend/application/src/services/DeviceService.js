@@ -252,15 +252,15 @@ class DeviceService {
             await Promise.all(signalsToDelete.map(async id => await this.signalRepository.deleteSignal(id)))
             await this.userActionService.logDeletion(userId, SIGNALS_LOG_TABLE, signalsToDelete, null)
 
-            const thesisDevId = await this.deviceRepository.deleteDeviceInThesis(deviceId);
+            const thesisDevId = await this.deviceRepository.deleteDeviceInThesis(undefined, deviceId);
             if (thesisDevId) {
                 await this.userActionService.logDeletion(userId, THESES_DEVICES_LOG_TABLE, thesisDevId, null);
             }
-            const sectorDevId = await this.deviceRepository.deleteDeviceInSector(deviceId);
+            const sectorDevId = await this.deviceRepository.deleteDeviceInSector(undefined, deviceId);
             if (sectorDevId) {
                 await this.userActionService.logDeletion(userId, SECTORS_DEVICES_LOG_TABLE, sectorDevId, null);
             }
-            const farmDevId = await this.deviceRepository.deleteDeviceInFarm(deviceId);
+            const farmDevId = await this.deviceRepository.deleteDeviceInFarm(undefined, deviceId);
             if (farmDevId) {
                 await this.userActionService.logDeletion(userId, FARMS_DEVICES_LOG_TABLE, farmDevId, null);
             }

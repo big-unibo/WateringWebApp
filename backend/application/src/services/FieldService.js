@@ -1,4 +1,4 @@
-import { FARMS_LOG_TABLE, FARMS_DEVICES_LOG_TABLE, OPTIMAL_PROFILES_LOG_TABLE, SECTORS_LOG_TABLE, SECTORS_DEVICES_LOG_TABLE, THESES_IN_SECTORS_LOG_TABLE, THESES_LOG_TABLE, THESES_DEVICES_LOG_TABLE, WATERING_ALGORITHM_LOG_TABLE, WATERING_EVENTS_LOG_TABLE } from '../commons/constants.js';
+import { FARMS_LOG_TABLE, FARMS_DEVICES_LOG_TABLE, OPTIMAL_PROFILES_LOG_TABLE, SECTORS_LOG_TABLE, SECTORS_DEVICES_LOG_TABLE, SECTORS_SERVICE_LOG_TABLE, THESES_IN_SECTORS_LOG_TABLE, THESES_LOG_TABLE, THESES_DEVICES_LOG_TABLE, WATERING_ALGORITHM_LOG_TABLE, WATERING_EVENTS_LOG_TABLE } from '../commons/constants.js';
 import { OptimalStateData } from '../dtos/optStateDto.js';
 import DtoConverter from './DtoConverter.js';
 import { _updateEntity } from '../commons/entityServiceUtils.js';
@@ -10,7 +10,7 @@ const MONTH_TO_SECONDS = MINUTE_TO_SECONDS * 60 * 24 * 30
 
 class FieldService {
 
-    constructor(companyRepository, farmRepository, sectorRepository, thesisRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, deviceRepository, wateringScheduleRepository, optimalStateRepository, userActionService) {
+    constructor(companyRepository, farmRepository, sectorRepository, thesisRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, deviceRepository, wateringScheduleRepository, optimalStateRepository, sectorServiceRepository, userActionService) {
         this.farmRepository = farmRepository
         this.companyRepository = companyRepository
         this.sectorRepository = sectorRepository
@@ -23,6 +23,7 @@ class FieldService {
         this.deviceRepository = deviceRepository
         this.wateringScheduleRepository = wateringScheduleRepository
         this.optimalStateRepository = optimalStateRepository
+        this.sectorServiceRepository = sectorServiceRepository
         this.userActionService = userActionService
     }
 
@@ -354,6 +355,32 @@ class FieldService {
         }
     }
 
+    async deleteThesis(userId, thesisId) {
+        try {
+            const algorithmParamsIds = await this.wateringAdviceRepository.deleteWateringAlgorithmParams(thesisId);
+            if (algorithmParamsIds) {
+                await this.userActionService.logDeletion(userId, WATERING_ALGORITHM_LOG_TABLE, algorithmParamsIds);
+            }
+            await this.wateringAdviceRepository.deleteWateringAdvices(thesisId);
+
+            const thesisDevId = await this.deviceRepository.deleteDeviceInThesis(thesisId);
+            if (thesisDevId) {
+                await this.userActionService.logDeletion(userId, THESES_DEVICES_LOG_TABLE, thesisDevId);
+            }
+            const sectorAssignmentsIds = await this.thesisRepository.deleteThesisFromSectors(thesisId)
+            if (sectorAssignmentsIds) {
+                await this.userActionService.logDeletion(userId, THESES_IN_SECTORS_LOG_TABLE, sectorAssignmentsIds);
+            }
+
+            await this.thesisRepository.deleteThesis(thesisId)
+            await this.userActionService.logDeletion(userId, THESES_LOG_TABLE, thesisId)
+
+        } catch (error) {
+            console.error(`Error deleting thesis: ${error.message}`);
+            throw error;
+        }
+    }
+
 
     async disableSector(userId, sectorId, timestamp) {
         try {
@@ -390,6 +417,41 @@ class FieldService {
         }
     }
 
+    async deleteSector(userId, sectorId) {
+        try {
+
+            const deletedEventsIds = await this.wateringScheduleRepository.deleteWateringEvents(sectorId, 0)
+            if (deletedEventsIds) {
+                await this.userActionService.logDeletion(userId, WATERING_EVENTS_LOG_TABLE, deletedEventsIds);
+            }
+
+            const sectorDevId = await this.deviceRepository.deleteDeviceInSector(sectorId);
+            if (sectorDevId) {
+                await this.userActionService.logDeletion(userId, SECTORS_DEVICES_LOG_TABLE, sectorDevId);
+            }
+
+            const sectorServiceIds = await this.sectorServiceRepository.deleteSectorServices(sectorId);
+            if(sectorServiceIds) {
+                await this.userActionService.logDeletion(userId, SECTORS_SERVICE_LOG_TABLE, sectorId)
+            }
+
+            const sectorData = await this.getSectorDetails(sectorId);
+            console.log(sectorData)
+            if (sectorData && sectorData.theses && Array.isArray(sectorData.theses)) {
+                await Promise.all(sectorData.theses.map(thesis =>
+                    this.deleteThesis(userId, thesis.id)
+                ));
+            }
+
+            await this.sectorRepository.deleteSector(sectorId)
+            await this.userActionService.logDeletion(userId, SECTORS_LOG_TABLE, sectorId)
+
+        } catch (error) {
+            console.error(`Error deleting sector: ${error.message}`);
+            throw error;
+        }
+    }
+
     async disableFarm(userId, isAdmin, farmId, timestamp) {
         try {
             const devices = await this.deviceRepository.getFarmAssociatedDevices(farmId, timestamp);
@@ -413,6 +475,29 @@ class FieldService {
 
         } catch (error) {
             console.error(`Error disabling farm: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async deleteFarm(userId, farmId) {
+        try {
+            const farmDevId = await this.deviceRepository.deleteDeviceInFarm(farmId);
+            if (farmDevId) {
+                await this.userActionService.logDeletion(userId, FARMS_DEVICES_LOG_TABLE, farmDevId);
+            }
+
+            const farmData = await this.sectorRepository.getSectorsByFarm(farmId);
+            if (farmData && Array.isArray(farmData)) {
+                await Promise.all(farmData.map(sector =>
+                    this.deleteSector(userId, sector.id)
+                ));
+            }
+
+            await this.farmRepository.deleteFarm(farmId)
+            await this.userActionService.logDeletion(userId, FARMS_LOG_TABLE, farmId)
+
+        } catch (error) {
+            console.error(`Error deleting farm: ${error.message}`);
             throw error;
         }
     }

@@ -4,8 +4,12 @@ import DtoConverter from "./DtoConverter.js";
 const dtoConverter = new DtoConverter();
 
 class CompanyService {
-    constructor(companyRepository, userActionService) {
+    constructor(companyRepository, farmRepository, deviceRepository, deviceService, fieldService, userActionService) {
         this.companyRepository = companyRepository
+        this.farmRepository = farmRepository
+        this.deviceRepository = deviceRepository
+        this.deviceService = deviceService
+        this.fieldService = fieldService
         this.userActionService = userActionService
     }
 
@@ -52,6 +56,30 @@ class CompanyService {
             }
         } catch (error) {
             console.error(`Error updating company: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async deleteCompany(userId, companyId) {
+        try {
+            const companyDevices = await this.deviceRepository.getDevicesByCompany(companyId);
+            if (companyDevices && Array.isArray(companyDevices)){
+                await Promise.all(companyDevices.map(device=>{
+                    this.deviceService.deleteDevice(userId, device.id)
+                }))
+            }
+
+            const companyFarms = await this.farmRepository.getFarmsByCompany(companyId);
+            if (companyFarms && Array.isArray(companyFarms)) {
+                await Promise.all(companyFarms.map(farm =>
+                    this.fieldService.deleteFarm(userId, farm.id)
+                ));
+            }
+
+            await this.companyRepository.deleteCompany(companyId)
+            await this.userActionService.logDeletion(userId, COMPANIES_LOG_TABLE, companyId)
+        } catch (error) {
+            console.error(`Error deleting farm: ${error.message}`);
             throw error;
         }
     }

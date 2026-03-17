@@ -1,4 +1,5 @@
 import { Op} from 'sequelize';
+import { _deleteFromModelByParams } from '../../commons/repositoryUtils';
 
 class SectorRepository {
 
@@ -144,6 +145,14 @@ class SectorRepository {
         return results;
     }
 
+    async getSectorsByFarm(farmId){
+        return await this.Sector.findAll({
+            where: {
+                farmId: farmId
+            }
+        })
+    }
+
     async updateSector(sectorId, updates) {
         try {
             const sector = await this.Sector.findByPk(sectorId);
@@ -152,6 +161,14 @@ class SectorRepository {
             return await sector.update({ sectorName: name, culture, cultureType, location, dripperCapacity, sprinklerCapacity, doubleWing });
         } catch (error) {
             throw new Error(`Error while updating sector caused by: ${error.message}`);
+        }
+    }
+
+    async deleteSector(sectorId) {
+        try {
+            return await _deleteFromModelByParams(this.Sector, { id: sectorId })
+        } catch (error) {
+            throw new Error(`Error deleting sector: ${error.message}`);
         }
     }
 

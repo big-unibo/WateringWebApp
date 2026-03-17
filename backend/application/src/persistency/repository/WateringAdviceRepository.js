@@ -1,4 +1,5 @@
 import { Op, Sequelize, QueryTypes } from 'sequelize';
+import { _deleteFromModelByParams } from '../../commons/repositoryUtils.js';
 
 class WateringAdviceRepository {
 
@@ -145,6 +146,28 @@ class WateringAdviceRepository {
 
         } catch (error) {
             throw new Error(`Error ending watering algorithm params validity: ${error.message}`);
+        }
+    }
+
+    async deleteWateringAlgorithmParams(thesisId) {
+        try {
+            return _deleteFromModelByParams(this.WateringAlgorithmParams, {
+                thesisId: thesisId
+            })
+        } catch (error) {
+            throw new Error(`Error deleting watering algorithm parameters: ${error.message}`);
+        }
+    }
+
+    async deleteWateringAdvices(thesisId) {
+        try {
+            await this.Advice.destroy({
+                where: {
+                    thesisId: thesisId
+                }
+            });
+        } catch (error) {
+            throw new Error(`Error deleting advices for thesis: ${error.message}`);
         }
     }
 }

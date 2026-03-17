@@ -119,12 +119,12 @@ const userActionService = new UserActionService(userActionRepository)
 const organizationService = new OrganizationService(organizationRepository, userActionService)
 const userService = new UserService(userRepository, userActionService)
 const authenticationService = new AuthenticationService(userService)
-const companyService = new CompanyService(companyRepository, userActionService)
-const fieldService = new FieldService(companyRepository, farmRepository, sectorRepository, thesisRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, deviceRepository, wateringScheduleRepository, optimalStateRepository, userActionService)
+const fieldService = new FieldService(companyRepository, farmRepository, sectorRepository, thesisRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, deviceRepository, wateringScheduleRepository, optimalStateRepository, serviceRepository, userActionService)
 const sectorServicesService = new SectorServicesService(serviceRepository)
 const authorizationService = new AuthorizationService(userService, authorizationRepository)
 const deviceService = new DeviceService(deviceRepository, signalRepository, thesisRepository, interpolatedProfileRepository, optimalStateRepository, userActionService)
 const signalService = new SignalService(signalRepository, userActionService)
+const companyService = new CompanyService(companyRepository, farmRepository, deviceRepository, deviceService, fieldService, userActionService)
 const wateringScheduleService = new WateringScheduleService(wateringScheduleRepository, wateringAdviceRepository, userActionService)
 const wateringAdviceService = new WateringAdviceService(wateringAdviceRepository, sectorRepository, thesisRepository, interpolatedProfileRepository, optimalDistanceRepository, thesesAllSignalsRepository, userActionService)
 const logService = new LogService(logRepository, userActionService)
@@ -203,7 +203,6 @@ app.use(
 
 app.use((err, req, res, next) => {
   if (err.status && err.errors) {
-    //console.error('Validation Error:', err.errors);
     if (err.status == 401) {
       return res.status(err.status).json({
         message: 'Authentication failed',

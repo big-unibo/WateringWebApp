@@ -351,6 +351,126 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
 
     /**
      * @swagger
+     * /farms/{farmId}/delete:
+     *   delete:
+     *     summary: Deletes a given farm
+     *     tags: [Farms]
+     *     description: |
+     *       Deletes a farm including:
+     *       - Deletion of device associations.
+     *       - Deletion of all sectors of the farm.
+     * 
+     *       Requires Authentication and proper Authorization
+     *     parameters:
+     *       - in: path
+     *         name: farmId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of farm to delete
+     *     responses:
+     *       200:
+     *         description: Farm successfully deleted.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Farm successfully deleted.
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       401:
+     *         description: Authentication failed (Invalid or missing JWT).
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized request – user not allowed to delete this farm.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error during the process.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.delete('/:farmId/delete', async (req, res) => {
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        const userId = requestUserData.userId
+        const farmId = req.params.farmId;
+
+        const exists = await fieldService.farmExists(farmId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Farm not found' });
+        }
+
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'FARM', farmId))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
+
+        try {
+            await fieldService.deleteFarm(userId, farmId)
+            return res.status(200).json({ message: `Farm successfully deleted` })
+        } catch (error) {
+            console.log(`Failed deleting farm: ${error.message}`)
+            return res.status(500).json({ error: "Internal error deleting farm" })
+        }
+    })
+
+    /**
+     * @swagger
      * /farms/{farmId}/createSector:
      *   post:
      *     summary: Creates a new sector

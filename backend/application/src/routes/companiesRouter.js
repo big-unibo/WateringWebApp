@@ -438,6 +438,126 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
         }
     });
 
+    /**
+     * @swagger
+     * /companies/{companyId}/delete:
+     *   delete:
+     *     summary: Deletes a given company
+     *     tags: [Companies]
+     *     description: |
+     *       Deletes a company including:
+     *       - Deletion of all the device belonging to it with all signal data.
+     *       - Deletion of all farms.
+     * 
+     *       Requires Authentication and proper Authorization
+     *     parameters:
+     *       - in: path
+     *         name: companyId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of company to delete
+     *     responses:
+     *       200:
+     *         description: Company successfully deleted.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Company successfully deleted.
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       401:
+     *         description: Authentication failed (Invalid or missing JWT).
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized request – user not allowed to delete this company.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error during the process.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.delete('/:companyId/delete', async (req, res) => {
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        const userId = requestUserData.userId
+        const companyId = req.params.companyId;
+
+        const exists = await companyService.companyExists(companyId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Company not found' });
+        }
+
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'COMPANY', companyId))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
+
+        try {
+            await companyService.deleteCompany(userId, companyId)
+            return res.status(200).json({ message: `Company successfully deleted` })
+        } catch (error) {
+            console.log(`Failed deleting company: ${error.message}`)
+            return res.status(500).json({ error: "Internal error deleting company" })
+        }
+    })
+
     return router;
 };
 

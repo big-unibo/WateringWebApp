@@ -1,5 +1,6 @@
 import { Op, Sequelize, QueryTypes } from 'sequelize';
 import { HUMIDITY_DEVICE_TYPE } from '../../commons/constants.js';
+import { _deleteFromModelByParams } from '../../commons/repositoryUtils.js';
 
 class ThesisRepository {
 
@@ -198,6 +199,14 @@ class ThesisRepository {
         }
     }
 
+    async deleteThesisFromSectors(thesisId) {
+        try {
+            return await _deleteFromModelByParams(this.ThesisInSector, { thesisId: thesisId })
+        } catch (error) {
+            throw new Error(`Error deleting thesis from sector: ${error.message}`);
+        }
+    }
+
     async updateThesis(thesisId, updates) {
         try {
             const thesis = await this.Thesis.findByPk(thesisId);
@@ -206,6 +215,14 @@ class ThesisRepository {
             return await thesis.update({ thesisName: name });
         } catch (error) {
             throw new Error(`Error while updating thesis caused by: ${error.message}`);
+        }
+    }
+
+    async deleteThesis(thesisId) {
+        try {
+            return await _deleteFromModelByParams(this.Thesis, { id: thesisId })
+        } catch (error) {
+            throw new Error(`Error deleting thesis: ${error.message}`);
         }
     }
 }
