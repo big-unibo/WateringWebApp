@@ -141,7 +141,7 @@ class CompanyRepository {
             await _deleteFromModelByParams(this.CompaniesOrganizations, { companyId: companyId })
             await _deleteFromModelByParams(this.Company, { id: companyId })
         } catch (error) {
-            throw new Error(`Error deleting farm: ${error.message}`);
+            throw new Error(`Error deleting company: ${error.message}`);
         }
     }
 }

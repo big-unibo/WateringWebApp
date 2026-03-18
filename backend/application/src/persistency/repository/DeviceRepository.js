@@ -342,7 +342,7 @@ class DeviceRepository {
 
     async deleteDeviceInFarm(farmId, deviceId) {
         try {
-            return _deleteFromModelByParams(this.DeviceInFarm, removeUndefined({ farmId, deviceId }))
+            return await _deleteFromModelByParams(this.DeviceInFarm, removeUndefined({ farmId, deviceId }))
         } catch (error) {
             throw new Error(`Error deleting device from farm: ${error.message}`);
         }
@@ -350,7 +350,7 @@ class DeviceRepository {
 
     async deleteDeviceInSector(sectorId, deviceId) {
         try {
-            return _deleteFromModelByParams(this.DeviceInSector, removeUndefined({ sectorId, deviceId }))
+            return await _deleteFromModelByParams(this.DeviceInSector, removeUndefined({ sectorId, deviceId }))
         } catch (error) {
             throw new Error(`Error deleting device from sector: ${error.message}`);
         }
@@ -358,7 +358,7 @@ class DeviceRepository {
 
     async deleteDeviceInThesis(thesisId, deviceId) {
         try {
-            return _deleteFromModelByParams(this.DeviceInThesis, removeUndefined({ thesisId, deviceId }))
+            return await _deleteFromModelByParams(this.DeviceInThesis, removeUndefined({ thesisId, deviceId }))
         } catch (error) {
             throw new Error(`Error deleting device from thesis: ${error.message}`);
         }
@@ -366,7 +366,7 @@ class DeviceRepository {
 
     async deleteDevice(deviceId) {
         try {
-            _deleteFromModelByParams(this.Device, {
+            await _deleteFromModelByParams(this.Device, {
                 id: deviceId
             })
         } catch (error) {
@@ -397,7 +397,7 @@ class DeviceRepository {
 
     async deleteDeviceSignals(deviceId) {
         try {
-            return _deleteFromModelByParams(this.DevicesSignals, {
+            return await _deleteFromModelByParams(this.DevicesSignals, {
                 deviceId: deviceId
             })
         } catch (error) {

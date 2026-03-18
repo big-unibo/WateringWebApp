@@ -151,7 +151,7 @@ class WateringAdviceRepository {
 
     async deleteWateringAlgorithmParams(thesisId) {
         try {
-            return _deleteFromModelByParams(this.WateringAlgorithmParams, {
+            return await _deleteFromModelByParams(this.WateringAlgorithmParams, {
                 thesisId: thesisId
             })
         } catch (error) {

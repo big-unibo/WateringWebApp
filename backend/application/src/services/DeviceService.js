@@ -45,7 +45,7 @@ class DeviceService {
                 throw new Error(`Device with id ${deviceId} does not exist`)
             }
 
-            if (!(await Promise.all(signalIds.map(id => this.signalRepository.signalExists(id)))).every(Boolean)) {
+            if (!(await Promise.all(signalIds.map(async id => await this.signalRepository.signalExists(id)))).every(Boolean)) {
                 throw new Error("One or more signals do not exist");
             }
 
@@ -65,7 +65,7 @@ class DeviceService {
                 throw new Error(`Device with id ${deviceId} does not exist`)
             }
 
-            if (!(await Promise.all(signalIds.map(id => this.signalRepository.signalExists(id)))).every(Boolean)) {
+            if (!(await Promise.all(signalIds.map(async id => await this.signalRepository.signalExists(id)))).every(Boolean)) {
                 throw new Error("One or more signals do not exist");
             }
 

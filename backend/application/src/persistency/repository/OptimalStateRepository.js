@@ -108,7 +108,7 @@ class OptimalStateRepository {
 
     async deleteGridOptimalProfileAssignments(gridId) {
         try {
-            return _deleteFromModelByParams(this.GridOptimalProfileAssignment, {
+            return await _deleteFromModelByParams(this.GridOptimalProfileAssignment, {
                 gridId: gridId
             })
         } catch (error) {

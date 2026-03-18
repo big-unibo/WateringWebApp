@@ -397,8 +397,8 @@ class FieldService {
                 //Thesis disabling
                 const sectorData = await this.getSectorDetails(sectorId, timestamp);
                 if (sectorData && sectorData.theses && Array.isArray(sectorData.theses)) {
-                    await Promise.all(sectorData.theses.map(thesis =>
-                        this.disableThesis(userId, thesis.id, timestamp)
+                    await Promise.all(sectorData.theses.map(async thesis =>
+                        await this.disableThesis(userId, thesis.id, timestamp)
                     ));
                 }
             } catch (innerError) {
@@ -437,8 +437,8 @@ class FieldService {
 
             const sectorData = await this.getSectorDetails(sectorId);
             if (sectorData && sectorData.theses && Array.isArray(sectorData.theses)) {
-                await Promise.all(sectorData.theses.map(thesis =>
-                    this.deleteThesis(userId, thesis.id)
+                await Promise.all(sectorData.theses.map(async thesis =>
+                    await this.deleteThesis(userId, thesis.id)
                 ));
             }
 
@@ -487,8 +487,8 @@ class FieldService {
 
             const farmData = await this.sectorRepository.getSectorsByFarm(farmId);
             if (farmData && Array.isArray(farmData)) {
-                await Promise.all(farmData.map(sector =>
-                    this.deleteSector(userId, sector.id)
+                await Promise.all(farmData.map(async sector =>
+                    await this.deleteSector(userId, sector.id)
                 ));
             }
 

@@ -17,7 +17,7 @@ class SectorServiceRepository {
 
     async deleteSectorServices(sectorId) {
         try {
-            return _deleteFromModelByParams(this.SectorServices, {
+            return await _deleteFromModelByParams(this.SectorServices, {
                 sectorId: sectorId
             })
         } catch (error) {

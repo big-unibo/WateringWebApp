@@ -64,22 +64,22 @@ class CompanyService {
         try {
             const companyDevices = await this.deviceRepository.getDevicesByCompany(companyId);
             if (companyDevices && Array.isArray(companyDevices)){
-                await Promise.all(companyDevices.map(device=>{
-                    this.deviceService.deleteDevice(userId, device.id)
+                await Promise.all(companyDevices.map(async device=>{
+                    await this.deviceService.deleteDevice(userId, device.id)
                 }))
             }
 
             const companyFarms = await this.farmRepository.getFarmsByCompany(companyId);
             if (companyFarms && Array.isArray(companyFarms)) {
-                await Promise.all(companyFarms.map(farm =>
-                    this.fieldService.deleteFarm(userId, farm.id)
+                await Promise.all(companyFarms.map(async farm =>
+                    await this.fieldService.deleteFarm(userId, farm.id)
                 ));
             }
 
             await this.companyRepository.deleteCompany(companyId)
             await this.userActionService.logDeletion(userId, COMPANIES_LOG_TABLE, companyId)
         } catch (error) {
-            console.error(`Error deleting farm: ${error.message}`);
+            console.error(`Error deleting company: ${error.message}`);
             throw error;
         }
     }
