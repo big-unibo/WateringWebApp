@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
 import { loginUser, setupDb, table } from '../utils';
 import { ADMIN_EMAIL, ADMIN_PASSWORD } from '../const';
+import { DeviceTargetType } from '../../src/dtos/deviceDto.js';
 
 describe('Entity Cascading Deletion Integration Test', () => {
     let db;
@@ -14,6 +15,14 @@ describe('Entity Cascading Deletion Integration Test', () => {
     let farmId;
     let sectorId;
     let thesisId;
+
+    // Reference Data Constants
+    const TEST_DELETE_COMPANY_ID = 2
+    const TEST_DELETE_FARM_ID = 2
+    const TEST_DELETE_SECTOR_ID = 2
+    const TEST_DELETE_THESIS_ID = 3
+    const TEST_DELETE_DEVICE_ASSOCIATED_ID = 5
+
 
     beforeAll(async () => {
         const setup = await setupDb();
@@ -30,106 +39,157 @@ describe('Entity Cascading Deletion Integration Test', () => {
     });
 
     /**
-     * SETUP: Create a full hierarchy
-     */
-    it('should setup a full hierarchy for cascading tests', async () => {
-        // Create Company
-        const compRes = await request(app)
-            .post('/companies/create')
-            .set('Authorization', `Bearer ${authToken}`)
-            .send({ name: 'Cascade Parent Corp' });
-        companyId = compRes.body.id;
-
-        // Create Farm
-        const farmRes = await request(app)
-            .post('/farms/create')
-            .set('Authorization', `Bearer ${authToken}`)
-            .send({ name: 'Cascade Farm', companyId });
-        farmId = farmRes.body.id;
-
-        // Create Sector
-        const sectorRes = await request(app)
-            .post(`/farms/${farmId}/createSector`)
-            .set('Authorization', `Bearer ${authToken}`)
-            .send({ name: 'Cascade Sector', culture: 'Wheat' });
-        sectorId = sectorRes.body.id;
-
-        // Create Thesis
-        const thesisRes = await request(app)
-            .post(`/sectors/${sectorId}/createThesis`)
-            .set('Authorization', `Bearer ${authToken}`)
-            .send({ name: 'Cascade Thesis'});
-        thesisId = thesisRes.body.id;
-
-        expect(thesisId).toBeDefined();
-    });
-
-    /**
-     * TEST: Deleting a leaf node (Thesis)
+     * TEST: Deleting a Thesis and related entity
      */
     it('should delete a thesis without affecting parent entities', async () => {
+
+        expect(await table(db, 'theses').where('id', TEST_DELETE_THESIS_ID).first()).toBeDefined();
+        expect(await table(db, 'sectors').where('id', TEST_DELETE_SECTOR_ID).first()).toBeDefined();
+        expect(await table(db, 'theses_devices').where('thesis_id', TEST_DELETE_THESIS_ID).first()).toBeDefined();
+        expect(await table(db, 'advices').where('thesis_id', TEST_DELETE_THESIS_ID).first()).toBeDefined();
+        expect(await table(db, 'watering_algorithm_params').where('thesis_id', TEST_DELETE_THESIS_ID).first()).toBeDefined();
+
         await request(app)
-            .delete(`/theses/${thesisId}/delete`)
+            .delete(`/theses/${TEST_DELETE_THESIS_ID}/delete`)
             .set('Authorization', `Bearer ${authToken}`)
             .expect(200);
 
-        // Thesis should be gone
-        const thesis = await table(db, 'theses').where('id', thesisId).first();
+        const thesis = await table(db, 'theses').where('id', TEST_DELETE_THESIS_ID).first();
         expect(thesis).toBeUndefined();
 
-        // Sector should still exist
-        const sector = await table(db, 'sectors').where('id', sectorId).first();
+        const thesisSector = await table(db, 'theses_in_sectors').where('thesis_id', TEST_DELETE_THESIS_ID).first();
+        expect(thesisSector).toBeUndefined();
+
+        const thesisDeviceAssociation = await table(db, 'theses_devices').where('thesis_id', TEST_DELETE_THESIS_ID).first();
+        expect(thesisDeviceAssociation).toBeUndefined();
+
+        const device = await table(db, 'devices').where('id', TEST_DELETE_DEVICE_ASSOCIATED_ID).first();
+        expect(device).toBeDefined();
+
+        const advice = await table(db, 'advices').where('thesis_id', TEST_DELETE_THESIS_ID).first();
+        expect(advice).toBeUndefined();
+
+        const wateringParams = await table(db, 'watering_algorithm_params').where('thesis_id', TEST_DELETE_THESIS_ID).first();
+        expect(wateringParams).toBeUndefined();
+
+        const sector = await table(db, 'sectors').where('id', TEST_DELETE_SECTOR_ID).first();
         expect(sector).toBeDefined();
     });
 
     /**
-     * TEST: Cascading Effect (Deleting a Farm)
+     * TEST: Deleting a Sector and related entity
      */
-    it('should delete a farm and cascade deletion to its sectors and their theses', async () => {
-        // Re-create a thesis for the sector first since we deleted it above
-        const thesisRes = await request(app)
-            .post(`/sectors/${sectorId}/createThesis`)
-            .set('Authorization', `Bearer ${authToken}`)
-            .send({ name: 'New Cascade Thesis'});
-        const newThesisId = thesisRes.body.id;
+    it('should delete a thesis without affecting parent entities', async () => {
 
-        // Delete the Farm
+        expect(await table(db, 'sectors').where('id', TEST_DELETE_SECTOR_ID).first()).toBeDefined();
+        const thesisId = (await table(db, 'theses_in_sectors').where('sector_id', TEST_DELETE_SECTOR_ID).first())?.thesis_id
+        expect(thesisId).toBeDefined();
+
         await request(app)
-            .delete(`/farms/${farmId}/delete`)
+            .post(`/devices/${TEST_DELETE_DEVICE_ASSOCIATED_ID}/link`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .send({ targetId: TEST_DELETE_SECTOR_ID, targetType: DeviceTargetType.SECTOR, validFrom: Math.floor(Date.now() / 1000) })
+            .expect(200);
+
+        expect(await table(db, 'sectors_devices').where('sector_id', TEST_DELETE_SECTOR_ID).first()).toBeDefined();
+        expect(await table(db, 'watering_events').where('sector_id', TEST_DELETE_SECTOR_ID).first()).toBeDefined();
+        expect(await table(db, 'sectors_services').where('sector_id', TEST_DELETE_SECTOR_ID).first()).toBeDefined();
+
+        await request(app)
+            .delete(`/sectors/${TEST_DELETE_SECTOR_ID}/delete`)
             .set('Authorization', `Bearer ${authToken}`)
             .expect(200);
 
-        // CHECK CASCADE: Farm, Sector, and Thesis should all be gone
-        const farm = await table(db, 'farms').where('id', farmId).first();
-        const sector = await table(db, 'sectors').where('id', sectorId).first();
-        const thesis = await table(db, 'theses').where('id', newThesisId).first();
-
-        expect(farm).toBeUndefined();
+        const sector = await table(db, 'sectors').where('id', TEST_DELETE_SECTOR_ID).first();
         expect(sector).toBeUndefined();
+
+        const thesisSector = await table(db, 'theses_in_sectors').where('sector_id', TEST_DELETE_SECTOR_ID).first();
+        expect(thesisSector).toBeUndefined();
+
+        const thesis = await table(db, 'theses').where('id', thesisId).first();
         expect(thesis).toBeUndefined();
+
+        const sectorDevice = await table(db, 'sectors_devices').where('sector_id', TEST_DELETE_SECTOR_ID).first();
+        expect(sectorDevice).toBeUndefined();
+
+        const device = await table(db, 'devices').where('id', TEST_DELETE_DEVICE_ASSOCIATED_ID).first();
+        expect(device).toBeDefined();
+
+        const wateringEvent = await table(db, 'watering_events').where('sector_id', TEST_DELETE_SECTOR_ID).first();
+        expect(wateringEvent).toBeUndefined();
+
+        const sectorService = await table(db, 'sectors_services').where('sector_id', TEST_DELETE_SECTOR_ID).first();
+        expect(sectorService).toBeUndefined();
+
     });
 
     /**
-     * TEST: Deleting the top-level Company
+     * TEST: Deleting a Farm
      */
-    it('should delete a company and all its associated child entities', async () => {
-        // Setup new chain for company test
-        const compRes = await request(app).post('/companies/create').set('Authorization', `Bearer ${authToken}`).send({ name: 'Final Corp' });
-        const cId = compRes.body.id;
-        const fRes = await request(app).post('/farms/create').set('Authorization', `Bearer ${authToken}`).send({ name: 'Final Farm', companyId: cId });
-        const fId = fRes.body.id;
+    it('should delete a farm and cascade deletion to its sectors and their theses', async () => {
+        
+        expect(await table(db, 'farms').where('id', TEST_DELETE_FARM_ID).first()).toBeDefined();
+        const sectorId = (await table(db, 'sectors').where('farm_id', TEST_DELETE_FARM_ID).first())?.id
+        expect(sectorId).toBeDefined();
 
-        // Delete Company
         await request(app)
-            .delete(`/companies/${cId}/delete`)
+            .post(`/devices/${TEST_DELETE_DEVICE_ASSOCIATED_ID}/link`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .send({ targetId: TEST_DELETE_FARM_ID, targetType: DeviceTargetType.FARM, validFrom: Math.floor(Date.now() / 1000) })
+            .expect(200);
+
+        expect(await table(db, 'farms_devices').where('farm_id', TEST_DELETE_FARM_ID).first()).toBeDefined();
+
+        await request(app)
+            .delete(`/farms/${TEST_DELETE_FARM_ID}/delete`)
             .set('Authorization', `Bearer ${authToken}`)
             .expect(200);
 
-        // Verify company and farm are gone
-        const companyRecord = await table(db, 'companies').where('id', cId).first();
-        const farmRecord = await table(db, 'farms').where('id', fId).first();
+        const farm = await table(db, 'farms').where('id', TEST_DELETE_FARM_ID).first();
+        expect(farm).toBeUndefined();
 
-        expect(companyRecord).toBeUndefined();
-        expect(farmRecord).toBeUndefined();
+        const sector = await table(db, 'sectors').where('id', sectorId).first();
+        expect(sector).toBeUndefined();
+
+        const farmDevice = await table(db, 'farms_devices').where('farm_id', TEST_DELETE_FARM_ID).first();
+        expect(farmDevice).toBeUndefined();
+
+        const device = await table(db, 'devices').where('id', TEST_DELETE_DEVICE_ASSOCIATED_ID).first();
+        expect(device).toBeDefined();
+    });
+
+    /**
+     * TEST: Deleting the Company
+     */
+    it('should delete a company and all its associated child entities', async () => {
+        expect(await table(db, 'companies').where('id', TEST_DELETE_COMPANY_ID).first()).toBeDefined();
+        const farmId = (await table(db, 'farms').where('company_id', TEST_DELETE_COMPANY_ID).first())?.id
+        expect(farmId).toBeDefined();
+        const sectorId = (await table(db, 'sectors').where('farm_id', farmId).first())?.id
+        expect(sectorId).toBeDefined();
+        const thesisId = (await table(db, 'theses_in_sectors').where('sector_id', sectorId).first())?.id
+        expect(thesisId).toBeDefined();
+
+        expect(await table(db, 'devices').where('company_id', TEST_DELETE_COMPANY_ID).first()).toBeDefined();
+
+        await request(app)
+            .delete(`/companies/${TEST_DELETE_COMPANY_ID}/delete`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .expect(200);
+        
+        const company = await table(db, 'companies').where('id', TEST_DELETE_COMPANY_ID).first();
+        expect(company).toBeUndefined();
+
+        const farm = await table(db, 'farms').where('id', farmId).first();
+        expect(farm).toBeUndefined();
+
+        const sector = await table(db, 'sectors').where('id', sectorId).first();
+        expect(sector).toBeUndefined();
+
+        const thesis = await table(db, 'theses').where('id', thesisId).first();
+        expect(thesis).toBeUndefined();
+
+        const device = await table(db, 'devices').where('company_id', TEST_DELETE_COMPANY_ID).first();
+        expect(device).toBeUndefined();
     });
 });

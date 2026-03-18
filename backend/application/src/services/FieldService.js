@@ -436,7 +436,6 @@ class FieldService {
             }
 
             const sectorData = await this.getSectorDetails(sectorId);
-            console.log(sectorData)
             if (sectorData && sectorData.theses && Array.isArray(sectorData.theses)) {
                 await Promise.all(sectorData.theses.map(thesis =>
                     this.deleteThesis(userId, thesis.id)

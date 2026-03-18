@@ -250,8 +250,7 @@ describe('Device and Signal Setup Integration Test', () => {
         // If no device found we can assume all related entity are correctly
         // deleted otherwise foreign key checks prevents deletion
         const devicePersistence = await table(db, 'devices')
-            .where('id', '=', TEST_DELETE_DEVICE_ID)
-            .select('*')
+            .where('id', TEST_DELETE_DEVICE_ID)
 
         expect(devicePersistence).toHaveLength(0)
     })
