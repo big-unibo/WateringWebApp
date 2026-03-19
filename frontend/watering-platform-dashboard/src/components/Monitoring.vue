@@ -67,7 +67,7 @@ function updateConnectionParams() {
         timeFilterTo: selectedTimestampTo.value,
       },
     }
-    baseConnectionParams.value = JSON.stringify(params)
+    baseConnectionParams.value = params
   }
 }
 
@@ -160,6 +160,8 @@ async function selectSector(sector) {
   theses.value = sectorInfo?.theses ?? []
   if (theses.value.length > 0) {
     selectThesis(theses.value[0])
+  } else {
+    selectThesis(-1)
   }
 }
 
@@ -395,12 +397,24 @@ function selectedTime(time) {
 
     <div v-if="selectedThesis.thesisId" class="my-3 container col-md-12">
       <div class="groundwaterpot-card card">
-        <div class="card-header">Potenziale idrico</div>
+       <div class="card-header">Potenziale idrico</div>
         <div class="card-body">
-          <groundwaterpot-chart-smarter style="height: 320px" :config="baseConnectionParams" :extraParams="JSON.stringify({
-            signalTypes: ['SOIL_WATER_CONTENT', 'SOIL_WATER_POTENTIAL'],
-            aggregationType: 'AVG'
-          })" />
+          <signals-linechart-chart-smarter style="height: 320px" :config="{
+            ...baseConnectionParams,
+            params: {
+              ...(baseConnectionParams.params ?? {}),
+              signalTypes: ['SOIL_WATER_CONTENT', 'SOIL_WATER_POTENTIAL'],
+              aggregationType: 'AVG'
+            }
+          }" :hideOnMissingData="false" />
+          <signals-linechart-chart-smarter style="height: 320px" :config="{
+            ...baseConnectionParams,
+            params: {
+              ...(baseConnectionParams.params ?? {}),
+              signalTypes: ['ELECT_COND'],
+              aggregationType: 'AVG'
+            }
+          }" :hideOnMissingSignal="true" />
         </div>
       </div>
     </div>
@@ -414,12 +428,16 @@ function selectedTime(time) {
         </div>
         <div v-if="!showDetailedWatering">
           <water-aggregate-chart-smarter :config="baseConnectionParams"></water-aggregate-chart-smarter>
-        </div>
+       </div>
         <div v-else>
-          <dripperandpluv-chart-smarter :config="baseConnectionParams" :extraParams="JSON.stringify({
-            signalTypes: ['DRIPPER', 'PLUV_CURR', 'SPRINKLER'],
-            aggregationType: 'SUM'
-          })">
+          <dripperandpluv-chart-smarter :config="{
+            ...baseConnectionParams,
+            params: {
+              ...(baseConnectionParams.params ?? {}),
+              signalTypes: ['DRIPPER', 'PLUV_CURR', 'SPRINKLER'],
+              aggregationType: 'SUM'
+            }
+          }">
           </dripperandpluv-chart-smarter>
         </div>
       </div>
@@ -431,7 +449,7 @@ function selectedTime(time) {
           <span>Calendario Irrigazione</span>
         </div>
         <div class="card-body p-1">
-          <calendar-smarter :config="baseConnectionParams"></calendar-smarter>
+          <calendar-smarter :config="JSON.stringify(baseConnectionParams)"></calendar-smarter>
         </div>
       </div>
     </div>
@@ -465,11 +483,15 @@ function selectedTime(time) {
     <div v-if="selectedThesis.thesisId" class="my-3 container col-md-12">
       <div class="card">
         <div class="card-header">Temperatura dell'aria</div>
-        <div class="card-body">
-          <airtemperature-chart-smarter style="height: 300px" :config="baseConnectionParams" :extraParams="JSON.stringify({
-            signalTypes: ['AIR_TEMP'],
-            aggregationType: 'AVG'
-          })"></airtemperature-chart-smarter>
+       <div class="card-body">
+          <airtemperature-chart-smarter style="height: 300px" :config="{
+            ...baseConnectionParams,
+            params: {
+              ...(baseConnectionParams.params ?? {}),
+              signalTypes: ['AIR_TEMP'],
+              aggregationType: 'AVG'
+            }
+          }"></airtemperature-chart-smarter>
         </div>
       </div>
     </div>

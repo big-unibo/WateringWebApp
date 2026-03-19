@@ -13,14 +13,14 @@ const showLogs = ref(false)
 
 watchEffect(async () => {
     if (props.config) {
-        const parsed = JSON.parse(props.config);
+        const configStr = JSON.stringify(props.config);
         groupedLogs.value = []
 
         loadingFlag.value = true;
         showLogs.value = false;
 
-        const logs = await communicationService.getLogs(parsed.environment, logsEndpoint, parsed.paths, parsed.params)
-        if (JSON.stringify(parsed) !== props.config) {
+        const logs = await communicationService.getLogs(props.config.environment, logsEndpoint, props.config.paths, props.config.params)
+        if (configStr !== JSON.stringify(props.config)) {
             return
         }
         loadingFlag.value = false;
