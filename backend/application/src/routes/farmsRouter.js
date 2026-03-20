@@ -456,7 +456,7 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
             return res.status(404).json({ message: 'Farm not found' });
         }
 
-        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'FARM', farmId))) {
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ADMINISTRATOR, requestUserData.isAdmin, 'FARM', farmId))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 

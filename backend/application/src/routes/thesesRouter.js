@@ -1500,7 +1500,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
             return res.status(404).json({ message: 'Thesis not found' });
         }
 
-        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'THESIS', thesisId))) {
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ADMINISTRATOR, requestUserData.isAdmin, 'THESIS', thesisId))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 

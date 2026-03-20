@@ -545,7 +545,7 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
             return res.status(404).json({ message: 'Company not found' });
         }
 
-        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'COMPANY', companyId))) {
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ADMINISTRATOR, requestUserData.isAdmin, 'COMPANY', companyId))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 

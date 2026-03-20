@@ -1155,7 +1155,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
             return res.status(404).json({ message: 'Device not found' });
         }
 
-        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'DEVICE', deviceId))) {
+        if (!(await authorizationService.isUserAuthorized(userId, ROLES.ADMINISTRATOR, requestUserData.isAdmin, 'DEVICE', deviceId))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
