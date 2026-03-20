@@ -1,4 +1,4 @@
-import { SCHEDULE_SAFE_INTERVAL, WATERING_EVENTS_LOG_TABLE } from "../commons/constants.js";
+import { TABLES } from "../commons/constants.js";
 import { WateringEvent, WateringScheduleResponse } from "../dtos/wateringScheduleDto.js";
 import DtoConverter from "./DtoConverter.js";
 
@@ -28,7 +28,7 @@ class WateringScheduleService {
         const updatedEventInstance = await this.wateringScheduleRepository.updateWateringEvent(eventId, fieldsToUpdate);
         if (updatedEventInstance) {
             const eventData = updatedEventInstance.get({ plain: true });
-            await this.userActionService.logUpdate(userId, WATERING_EVENTS_LOG_TABLE, eventId, null, eventData);
+            await this.userActionService.logUpdate(userId, TABLES.WATERING_EVENT, eventId, null, eventData);
             return eventId;
         }
         return null;
@@ -37,7 +37,7 @@ class WateringScheduleService {
     async scheduleWateringEvent(userId, eventId) {
         const updatedEventInstance = await this.wateringScheduleRepository.updateWateringEvent(eventId, {scheduled: true});
         if (updatedEventInstance) {
-            await this.userActionService.logScheduling(userId, WATERING_EVENTS_LOG_TABLE, eventId, null);
+            await this.userActionService.logScheduling(userId, TABLES.WATERING_EVENT, eventId, null);
             return eventId;
         }
         return null;
@@ -70,7 +70,7 @@ class WateringScheduleService {
     async createWateringEvent(userId, event) {
         const newEventId = await this.wateringScheduleRepository.createWateringEvent(event)
         if (newEventId) {
-            await this.userActionService.logCreation(userId, WATERING_EVENTS_LOG_TABLE, newEventId, null);
+            await this.userActionService.logCreation(userId, TABLES.WATERING_EVENT, newEventId, null);
         }
         return newEventId
     }
@@ -122,7 +122,7 @@ class WateringScheduleService {
     async deleteWateringEvents(userId, sectorId, timestamp) {
         const deletedEventsIds = await this.wateringScheduleRepository.deleteWateringEvents(sectorId, timestamp)
         if (deletedEventsIds) {
-            await this.userActionService.logDeletion(userId, WATERING_EVENTS_LOG_TABLE, deletedEventsIds, null);
+            await this.userActionService.logDeletion(userId, TABLES.WATERING_EVENT, deletedEventsIds, null);
         }
         return deletedEventsIds
     }

@@ -1,4 +1,4 @@
-import { SIGNALS_LOG_TABLE, DEVICES_SIGNALS_LOG_TABLE } from "../commons/constants.js";
+import { TABLES } from "../commons/constants.js";
 import DtoConverter from './DtoConverter.js';
 import { _updateEntity } from '../commons/entityServiceUtils.js';
 
@@ -14,7 +14,7 @@ class SignalService {
         try {
             const signalId = await this.signalRepository.createSignal(signal);
             if (signalId) {
-                this.userActionService.logCreation(userId, SIGNALS_LOG_TABLE, signalId, null);
+                this.userActionService.logCreation(userId, TABLES.SIGNAL, signalId, null);
                 return signalId
             }
         } catch (error) {
@@ -23,7 +23,7 @@ class SignalService {
         }
     }
     async updateSignal(userId, signalUpdateData) {
-        await _updateEntity(userId, signalUpdateData, this.signalRepository.updateSignal.bind(this.signalRepository), this.userActionService, SIGNALS_LOG_TABLE)
+        await _updateEntity(userId, signalUpdateData, this.signalRepository.updateSignal.bind(this.signalRepository), this.userActionService, TABLES.SIGNAL)
     }
 
     async addMeasurements(measurementsData) {
@@ -56,7 +56,7 @@ class SignalService {
             const disabledDeviceSignalIds = await this.signalRepository.disableSignalInDevices(signalId, validTo);
             if (disabledDeviceSignalIds.length > 0) {
                 await disabledDeviceSignalIds.map(async (dsId) => {
-                    await this.userActionService.logDisabling(userId, DEVICES_SIGNALS_LOG_TABLE, dsId, null);
+                    await this.userActionService.logDisabling(userId, TABLES.DEVICE_SIGNAL, dsId, null);
                 })
             }
         }

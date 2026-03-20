@@ -1,4 +1,4 @@
-import { FARMS_LOG_TABLE, FARMS_DEVICES_LOG_TABLE, OPTIMAL_PROFILES_LOG_TABLE, SECTORS_LOG_TABLE, SECTORS_DEVICES_LOG_TABLE, SECTORS_SERVICE_LOG_TABLE, THESES_IN_SECTORS_LOG_TABLE, THESES_LOG_TABLE, THESES_DEVICES_LOG_TABLE, WATERING_ALGORITHM_LOG_TABLE, WATERING_EVENTS_LOG_TABLE } from '../commons/constants.js';
+import { TABLES } from '../commons/constants.js';
 import { OptimalStateData } from '../dtos/optStateDto.js';
 import DtoConverter from './DtoConverter.js';
 import { _updateEntity } from '../commons/entityServiceUtils.js';
@@ -44,7 +44,7 @@ class FieldService {
             const farmCreated = await this.farmRepository.createFarm(farm.name, farm.companyId, farm.location);
             const farmId = farmCreated.id;
             if (farmId) {
-                this.userActionService.logCreation(userId, FARMS_LOG_TABLE, farmId, null)
+                this.userActionService.logCreation(userId, TABLES.FARM, farmId, null)
                 return farmId
             }
         } catch (error) {
@@ -54,7 +54,7 @@ class FieldService {
     }
 
     async updateFarm(userId, farm){
-        await _updateEntity(userId, farm, this.farmRepository.updateFarm.bind(this.farmRepository), this.userActionService, FARMS_LOG_TABLE)
+        await _updateEntity(userId, farm, this.farmRepository.updateFarm.bind(this.farmRepository), this.userActionService, TABLES.FARM)
     }
 
     async getFarms(filteringIds) {
@@ -69,7 +69,7 @@ class FieldService {
 
             const sectorId = sectorCreated.id;
             if (sectorId) {
-                this.userActionService.logCreation(userId, SECTORS_LOG_TABLE, sectorId, null)
+                this.userActionService.logCreation(userId, TABLES.SECTOR, sectorId, null)
                 return sectorId
             }
         } catch (error) {
@@ -79,7 +79,7 @@ class FieldService {
     }
 
     async updateSector(userId, sector){
-        await _updateEntity(userId, sector, this.sectorRepository.updateSector.bind(this.sectorRepository), this.userActionService, SECTORS_LOG_TABLE)
+        await _updateEntity(userId, sector, this.sectorRepository.updateSector.bind(this.sectorRepository), this.userActionService, TABLES.SECTOR)
     }
 
     async getSectorOwner(sectorId) {
@@ -96,14 +96,14 @@ class FieldService {
         if (!newThesisId) {
             throw Error("Impossible to create thesis")
         }
-        await this.userActionService.logCreation(userId, THESES_LOG_TABLE, newThesisId, null);
+        await this.userActionService.logCreation(userId, TABLES.THESIS, newThesisId, null);
         const assignmentId = await this.thesisRepository.assignThesisToSector(newThesisId, thesis.sectorId, undefined, thesis.validFrom || Math.floor(Date.now() / 1000));
-        await this.userActionService.logCreation(userId, THESES_IN_SECTORS_LOG_TABLE, assignmentId, null);
+        await this.userActionService.logCreation(userId, TABLES.THESIS_IN_SECTOR, assignmentId, null);
         return newThesisId;
     }
 
     async updateThesis(userId, thesis){
-        await _updateEntity(userId, thesis, this.thesisRepository.updateThesis.bind(this.thesisRepository), this.userActionService, THESES_LOG_TABLE)
+        await _updateEntity(userId, thesis, this.thesisRepository.updateThesis.bind(this.thesisRepository), this.userActionService, TABLES.THESIS)
     }
 
     async getFarmDetails(farmId, userId, isAdmin) {
@@ -275,7 +275,7 @@ class FieldService {
         for (const optimalProfile of gridOptimalProfiles.optimalState) {
             await this.optimalStateRepository.createOptimalProfileCell(matrixId, optimalProfile.x, optimalProfile.y, optimalProfile.z, optimalProfile.value, optimalProfile.weight)
         }
-        await this.userActionService.logCreation(userId, OPTIMAL_PROFILES_LOG_TABLE, matrixData.optimalProfileAssignmentId, null)
+        await this.userActionService.logCreation(userId, TABLES.OPTIMAL_PROFILE, matrixData.optimalProfileAssignmentId, null)
         return matrixData.optimalProfileAssignmentId
     }
 
@@ -284,7 +284,7 @@ class FieldService {
         if (!matrixData.matrixId || !matrixData.optimalProfileAssignmentId) {
             throw Error("Impossible to create optimal matrix for this thesis")
         }
-        await this.userActionService.logCreation(userId, OPTIMAL_PROFILES_LOG_TABLE, matrixData.optimalProfileAssignmentId, null)
+        await this.userActionService.logCreation(userId, TABLES.OPTIMAL_PROFILE, matrixData.optimalProfileAssignmentId, null)
         return matrixData.optimalProfileAssignmentId
     }
 
@@ -305,22 +305,22 @@ class FieldService {
         await thesesContributions.forEach(async t => {
             const sectorAssignmentsIds = await this.thesisRepository.disableThesisInSector(sectorId, t.id, validFrom)
             if (sectorAssignmentsIds) {
-                await this.userActionService.logDisabling(userId, THESES_IN_SECTORS_LOG_TABLE, sectorAssignmentsIds, null);
+                await this.userActionService.logDisabling(userId, TABLES.THESIS_IN_SECTOR, sectorAssignmentsIds, null);
             }
 
             const assignmentId = await this.sectorRepository.assignThesisToSector(t.id, sectorId, t.weight, validFrom, validTo)
             if (assignmentId) {
-                await this.userActionService.logCreation(userId, THESES_IN_SECTORS_LOG_TABLE, assignmentId, null);
+                await this.userActionService.logCreation(userId, TABLES.THESIS_IN_SECTOR, assignmentId, null);
             }
         })
         await [...thesesIds].filter(id => !paramThesisIds.has(id)).forEach(async id => {
             const sectorAssignmentsIds = await this.thesisRepository.disableThesisInSector(sectorId, id, validFrom)
             if (sectorAssignmentsIds) {
-                await this.userActionService.logDisabling(userId, THESES_IN_SECTORS_LOG_TABLE, sectorAssignmentsIds, null);
+                await this.userActionService.logDisabling(userId, TABLES.THESIS_IN_SECTOR, sectorAssignmentsIds, null);
             }
             const assignmentId = await this.thesisRepository.assignThesisToSector(id, sectorId, 0, validFrom, validTo)
             if (assignmentId) {
-                await this.userActionService.logCreation(userId, THESES_IN_SECTORS_LOG_TABLE, assignmentId, null);
+                await this.userActionService.logCreation(userId, TABLES.THESIS_IN_SECTOR, assignmentId, null);
             }
         })
     }
@@ -330,24 +330,24 @@ class FieldService {
             const deviceId = await this.thesesAllSignalsRepository.getGridDeviceByThesis(thesisId, timestamp, timestamp)
             const optimalProfileAssignmentId = await this.optimalStateRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp)
             if (optimalProfileAssignmentId) {
-                this.userActionService.logDisabling(userId, OPTIMAL_PROFILES_LOG_TABLE, optimalProfileAssignmentId, null)
+                this.userActionService.logDisabling(userId, TABLES.OPTIMAL_PROFILE, optimalProfileAssignmentId, null)
             }
             const algorithmId = await this.wateringAdviceRepository.setWateringAlgorithmParamsEndDate(thesisId, timestamp)
             if (algorithmId) {
-                this.userActionService.logDisabling(userId, WATERING_ALGORITHM_LOG_TABLE, algorithmId, null)
+                this.userActionService.logDisabling(userId, TABLES.WATERING_ALGORITHM, algorithmId, null)
             }
 
             const devices = await this.deviceRepository.getThesisAssociatedDevices(thesisId, timestamp)
             await Promise.all(devices.map(async (device) => {
                 const deviceAssignmentId = await this.deviceRepository.unlinkDeviceFromThesis({thesisId: thesisId, deviceId: device.id, validTo: timestamp});
                 if (deviceAssignmentId) {
-                    await this.userActionService.logDisabling(userId, THESES_DEVICES_LOG_TABLE, deviceAssignmentId, null);
+                    await this.userActionService.logDisabling(userId, TABLES.THESIS_DEVICE, deviceAssignmentId, null);
                 }
             }));
 
             const sectorAssignmentsIds = await this.thesisRepository.disableThesisFromSectors(thesisId, timestamp)
             if (sectorAssignmentsIds) {
-                await this.userActionService.logDisabling(userId, THESES_IN_SECTORS_LOG_TABLE, sectorAssignmentsIds, null);
+                await this.userActionService.logDisabling(userId, TABLES.THESIS_IN_SECTOR, sectorAssignmentsIds, null);
             }
         } catch (error) {
             console.error(`Error disabling Thesis: ${error.message}`);
@@ -359,21 +359,21 @@ class FieldService {
         try {
             const algorithmParamsIds = await this.wateringAdviceRepository.deleteWateringAlgorithmParams(thesisId);
             if (algorithmParamsIds) {
-                await this.userActionService.logDeletion(userId, WATERING_ALGORITHM_LOG_TABLE, algorithmParamsIds);
+                await this.userActionService.logDeletion(userId, TABLES.WATERING_ALGORITHM, algorithmParamsIds);
             }
             await this.wateringAdviceRepository.deleteWateringAdvices(thesisId);
 
             const thesisDevId = await this.deviceRepository.deleteDeviceInThesis(thesisId);
             if (thesisDevId) {
-                await this.userActionService.logDeletion(userId, THESES_DEVICES_LOG_TABLE, thesisDevId);
+                await this.userActionService.logDeletion(userId, TABLES.THESIS_DEVICE, thesisDevId);
             }
             const sectorAssignmentsIds = await this.thesisRepository.deleteThesisFromSectors(thesisId)
             if (sectorAssignmentsIds) {
-                await this.userActionService.logDeletion(userId, THESES_IN_SECTORS_LOG_TABLE, sectorAssignmentsIds);
+                await this.userActionService.logDeletion(userId, TABLES.THESIS_IN_SECTOR, sectorAssignmentsIds);
             }
 
             await this.thesisRepository.deleteThesis(thesisId)
-            await this.userActionService.logDeletion(userId, THESES_LOG_TABLE, thesisId)
+            await this.userActionService.logDeletion(userId, TABLES.THESIS, thesisId)
 
         } catch (error) {
             console.error(`Error deleting thesis: ${error.message}`);
@@ -389,7 +389,7 @@ class FieldService {
             await Promise.all(devices.map(async (device) => {
                 const deviceAssignmentId = await this.deviceRepository.unlinkDeviceFromSector({sectorId: sectorId, deviceId: device.id, validTo: timestamp});
                 if (deviceAssignmentId) {
-                    await this.userActionService.logDisabling(userId, SECTORS_DEVICES_LOG_TABLE, deviceAssignmentId, null);
+                    await this.userActionService.logDisabling(userId, TABLES.SECTOR_DEVICE, deviceAssignmentId, null);
                 }
             }));
 
@@ -408,7 +408,7 @@ class FieldService {
             //Deletion of scheduled events for the sector
             const deletedEventsIds = await this.wateringScheduleRepository.deleteWateringEvents(sectorId, timestamp)
             if (deletedEventsIds) {
-                await this.userActionService.logDeletion(userId, WATERING_EVENTS_LOG_TABLE, deletedEventsIds, null);
+                await this.userActionService.logDeletion(userId, TABLES.WATERING_EVENT, deletedEventsIds, null);
             }
 
         } catch (error) {
@@ -422,17 +422,17 @@ class FieldService {
 
             const deletedEventsIds = await this.wateringScheduleRepository.deleteWateringEvents(sectorId, 0)
             if (deletedEventsIds) {
-                await this.userActionService.logDeletion(userId, WATERING_EVENTS_LOG_TABLE, deletedEventsIds);
+                await this.userActionService.logDeletion(userId, TABLES.WATERING_EVENT, deletedEventsIds);
             }
 
             const sectorDevId = await this.deviceRepository.deleteDeviceInSector(sectorId);
             if (sectorDevId) {
-                await this.userActionService.logDeletion(userId, SECTORS_DEVICES_LOG_TABLE, sectorDevId);
+                await this.userActionService.logDeletion(userId, TABLES.SECTOR_DEVICE, sectorDevId);
             }
 
             const sectorServiceIds = await this.sectorServiceRepository.deleteSectorServices(sectorId);
             if(sectorServiceIds) {
-                await this.userActionService.logDeletion(userId, SECTORS_SERVICE_LOG_TABLE, sectorId)
+                await this.userActionService.logDeletion(userId, TABLES.SECTOR_SERVICE, sectorId)
             }
 
             const sectorData = await this.getSectorDetails(sectorId);
@@ -443,7 +443,7 @@ class FieldService {
             }
 
             await this.sectorRepository.deleteSector(sectorId)
-            await this.userActionService.logDeletion(userId, SECTORS_LOG_TABLE, sectorId)
+            await this.userActionService.logDeletion(userId, TABLES.SECTOR, sectorId)
 
         } catch (error) {
             console.error(`Error deleting sector: ${error.message}`);
@@ -457,7 +457,7 @@ class FieldService {
             await Promise.all(devices.map(async (device) => {
                 const deviceAssignmentId = await this.deviceRepository.unlinkDeviceFromFarm({farmId: farmId, deviceId: device.id, validTo: timestamp});
                 if (deviceAssignmentId) {
-                    await this.userActionService.logDisabling(userId, FARMS_DEVICES_LOG_TABLE, deviceAssignmentId, null);
+                    await this.userActionService.logDisabling(userId, TABLES.FARM_DEVICE, deviceAssignmentId, null);
                 }
             }));
             const farmData = await this.farmRepository.getFarmDetails(farmId, userId, isAdmin);
@@ -482,7 +482,7 @@ class FieldService {
         try {
             const farmDevId = await this.deviceRepository.deleteDeviceInFarm(farmId);
             if (farmDevId) {
-                await this.userActionService.logDeletion(userId, FARMS_DEVICES_LOG_TABLE, farmDevId);
+                await this.userActionService.logDeletion(userId, TABLES.FARM_DEVICE, farmDevId);
             }
 
             const farmData = await this.sectorRepository.getSectorsByFarm(farmId);
@@ -493,7 +493,7 @@ class FieldService {
             }
 
             await this.farmRepository.deleteFarm(farmId)
-            await this.userActionService.logDeletion(userId, FARMS_LOG_TABLE, farmId)
+            await this.userActionService.logDeletion(userId, TABLES.FARM, farmId)
 
         } catch (error) {
             console.error(`Error deleting farm: ${error.message}`);

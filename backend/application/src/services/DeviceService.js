@@ -1,4 +1,4 @@
-import { DEVICES_LOG_TABLE, FARMS_DEVICES_LOG_TABLE, SECTORS_DEVICES_LOG_TABLE, SIGNALS_LOG_TABLE, DEVICES_SIGNALS_LOG_TABLE, THESES_DEVICES_LOG_TABLE, OPTIMAL_PROFILES_LOG_TABLE } from "../commons/constants.js";
+import { TABLES } from "../commons/constants.js";
 import { DeviceTargetType } from "../dtos/deviceDto.js";
 import DtoConverter from './DtoConverter.js';
 import PaginationService from "./PaginationService.js";
@@ -30,7 +30,7 @@ class DeviceService {
             if (!createdDeviceId) {
                 throw new Error("Device creation failed");
             }
-            await this.userActionService.logCreation(userId, DEVICES_LOG_TABLE, createdDeviceId, null);
+            await this.userActionService.logCreation(userId, TABLES.DEVICE, createdDeviceId, null);
             return createdDeviceId
 
         } catch (error) {
@@ -51,7 +51,7 @@ class DeviceService {
 
             const signalDeviceIds = await this.deviceRepository.connectSignalsToDevice(deviceId, signalIds, validFrom)
             if (Array.isArray(signalDeviceIds) && signalDeviceIds.length > 0) {
-                await this.userActionService.logCreation(userId, DEVICES_SIGNALS_LOG_TABLE, signalDeviceIds, null)
+                await this.userActionService.logCreation(userId, TABLES.DEVICE_SIGNAL, signalDeviceIds, null)
             }
         } catch (error) {
             console.error(`Error connecting signals to device: ${error.message}`)
@@ -71,7 +71,7 @@ class DeviceService {
 
             const signalDeviceIds = await this.deviceRepository.disconnectSignalsFromDevice(deviceId, signalIds, validTo)
             if (Array.isArray(signalDeviceIds) && signalDeviceIds.length > 0) {
-                await this.userActionService.logDisabling(userId, DEVICES_SIGNALS_LOG_TABLE, signalDeviceIds, null)
+                await this.userActionService.logDisabling(userId, TABLES.DEVICE_SIGNAL, signalDeviceIds, null)
             }
         } catch (error) {
             console.error(`Error disconnecting signals from device: ${error.message}`)
@@ -105,9 +105,9 @@ class DeviceService {
             }
 
             const logTables = {
-                [DeviceTargetType.FARM]: FARMS_DEVICES_LOG_TABLE,
-                [DeviceTargetType.SECTOR]: SECTORS_DEVICES_LOG_TABLE,
-                [DeviceTargetType.THESIS]: THESES_DEVICES_LOG_TABLE
+                [DeviceTargetType.FARM]: TABLES.FARM_DEVICE,
+                [DeviceTargetType.SECTOR]: TABLES.SECTOR_DEVICE,
+                [DeviceTargetType.THESIS]: TABLES.THESIS_DEVICE
             }
 
             const linkId = await assingFunctions[deviceAssociation.targetType]({
@@ -145,9 +145,9 @@ class DeviceService {
             }
 
             const logTables = {
-                [DeviceTargetType.FARM]: FARMS_DEVICES_LOG_TABLE,
-                [DeviceTargetType.SECTOR]: SECTORS_DEVICES_LOG_TABLE,
-                [DeviceTargetType.THESIS]: THESES_DEVICES_LOG_TABLE
+                [DeviceTargetType.FARM]: TABLES.FARM_DEVICE,
+                [DeviceTargetType.SECTOR]: TABLES.SECTOR_DEVICE,
+                [DeviceTargetType.THESIS]: TABLES.THESIS_DEVICE
             }
 
             const linkId = await unlinkingFunctions[deviceAssociation.targetType]({
@@ -185,7 +185,7 @@ class DeviceService {
     }
 
     async updateDevice(userId, device){
-        await _updateEntity(userId, device, this.deviceRepository.updateDevice.bind(this.deviceRepository), this.userActionService, DEVICES_LOG_TABLE)
+        await _updateEntity(userId, device, this.deviceRepository.updateDevice.bind(this.deviceRepository), this.userActionService, TABLES.DEVICE)
     }
 
     async getDeviceAssociations(deviceId, timestamp, userId, isAdmin) {
@@ -199,31 +199,31 @@ class DeviceService {
         try {
             const optimalProfileAssignmentId = await this.optimalStateRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp);
             if (optimalProfileAssignmentId) {
-                await this.userActionService.logDisabling(userId, OPTIMAL_PROFILES_LOG_TABLE, optimalProfileAssignmentId, null);
+                await this.userActionService.logDisabling(userId, TABLES.OPTIMAL_PROFILE, optimalProfileAssignmentId, null);
             }
 
 
             // 1. Thesis
             const thesisDevId = await this.deviceRepository.unlinkDeviceFromThesis({deviceId: deviceId, validTo: timestamp, thesisId: "ALL"});
             if (thesisDevId) {
-                await this.userActionService.logDisabling(userId, THESES_DEVICES_LOG_TABLE, thesisDevId, null);
+                await this.userActionService.logDisabling(userId, TABLES.THESIS_DEVICE, thesisDevId, null);
             }
 
             // 2. Sector
             const sectorDevId = await this.deviceRepository.unlinkDeviceFromSector({deviceId: deviceId, validTo: timestamp, sectorId: "ALL"});
             if (sectorDevId) {
-                await this.userActionService.logDisabling(userId, SECTORS_DEVICES_LOG_TABLE, sectorDevId, null);
+                await this.userActionService.logDisabling(userId, TABLES.SECTOR_DEVICE, sectorDevId, null);
             }
 
             // 3. Farm
             const farmDevId = await this.deviceRepository.unlinkDeviceFromFarm({deviceId: deviceId, validTo: timestamp, farmId: "ALL"});
             if (farmDevId) {
-                await this.userActionService.logDisabling(userId, FARMS_DEVICES_LOG_TABLE, farmDevId, null);
+                await this.userActionService.logDisabling(userId, TABLES.FARM_DEVICE, farmDevId, null);
             }
 
             const signalDeviceIds = await this.deviceRepository.disableDeviceSignals(deviceId, timestamp);
             if (Array.isArray(signalDeviceIds) && signalDeviceIds.length > 0) {
-                await this.userActionService.logDisabling(userId, DEVICES_SIGNALS_LOG_TABLE, signalDeviceIds, null);
+                await this.userActionService.logDisabling(userId, TABLES.DEVICE_SIGNAL, signalDeviceIds, null);
             }
 
         } catch (error) {
@@ -246,33 +246,33 @@ class DeviceService {
 
             const signalDeviceIds = await this.deviceRepository.deleteDeviceSignals(deviceId);
             if (Array.isArray(signalDeviceIds) && signalDeviceIds.length > 0) {
-                await this.userActionService.logDeletion(userId, DEVICES_SIGNALS_LOG_TABLE, signalDeviceIds);
+                await this.userActionService.logDeletion(userId, TABLES.DEVICE_SIGNAL, signalDeviceIds);
             }
 
             await Promise.all(signalsToDelete.map(async id => await this.signalRepository.deleteSignal(id)))
-            await this.userActionService.logDeletion(userId, SIGNALS_LOG_TABLE, signalsToDelete, null)
+            await this.userActionService.logDeletion(userId, TABLES.SIGNAL, signalsToDelete, null)
 
             const thesisDevId = await this.deviceRepository.deleteDeviceInThesis(undefined, deviceId);
             if (thesisDevId) {
-                await this.userActionService.logDeletion(userId, THESES_DEVICES_LOG_TABLE, thesisDevId, null);
+                await this.userActionService.logDeletion(userId, TABLES.THESIS_DEVICE, thesisDevId, null);
             }
             const sectorDevId = await this.deviceRepository.deleteDeviceInSector(undefined, deviceId);
             if (sectorDevId) {
-                await this.userActionService.logDeletion(userId, SECTORS_DEVICES_LOG_TABLE, sectorDevId, null);
+                await this.userActionService.logDeletion(userId, TABLES.SECTOR_DEVICE, sectorDevId, null);
             }
             const farmDevId = await this.deviceRepository.deleteDeviceInFarm(undefined, deviceId);
             if (farmDevId) {
-                await this.userActionService.logDeletion(userId, FARMS_DEVICES_LOG_TABLE, farmDevId, null);
+                await this.userActionService.logDeletion(userId, TABLES.FARM_DEVICE, farmDevId, null);
             }
             await this.interpolatedProfileRepository.deleteInterpolatedProfiles(deviceId)
 
             const gridAssigmentId = await this.optimalStateRepository.deleteGridOptimalProfileAssignments(deviceId)
             if (gridAssigmentId) {
-                await this.userActionService.logDeletion(userId, OPTIMAL_PROFILES_LOG_TABLE, gridAssigmentId)
+                await this.userActionService.logDeletion(userId, TABLES.OPTIMAL_PROFILE, gridAssigmentId)
             }
 
             await this.deviceRepository.deleteDevice(deviceId)
-            await this.userActionService.logDeletion(userId, DEVICES_LOG_TABLE, deviceId)
+            await this.userActionService.logDeletion(userId, TABLES.DEVICE, deviceId)
             
          } catch (error) {
             console.error(`Error deleting device: ${error.message}`);

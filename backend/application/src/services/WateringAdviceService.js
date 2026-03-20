@@ -1,4 +1,4 @@
-import { WATERING_ALGORITHM_LOG_TABLE } from '../commons/constants.js';
+import { TABLES } from '../commons/constants.js';
 import { WateringAdvice } from '../dtos/wateringAdviceDto.js';
 
 
@@ -154,7 +154,7 @@ export class WateringAdviceService {
     async setWateringAlgorithmParams(userId, thesisId, wateringParams, validFrom, validTo) {
         const algorithmId = await this.wateringAdviceRepository.setWateringAlgorithmParams(thesisId, wateringParams, validFrom, validTo)
         if (algorithmId) {
-            this.userActionService.logCreation(userId, WATERING_ALGORITHM_LOG_TABLE, algorithmId, null);
+            this.userActionService.logCreation(userId, TABLES.WATERING_ALGORITHM, algorithmId, null);
         }
     }
 

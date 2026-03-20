@@ -1,4 +1,4 @@
-import { COMPANIES_LOG_TABLE } from "../commons/constants.js";
+import { TABLES } from "../commons/constants.js";
 import DtoConverter from "./DtoConverter.js";
 
 const dtoConverter = new DtoConverter();
@@ -22,7 +22,7 @@ class CompanyService {
             const companyCreated = await this.companyRepository.createCompany(company.name, company.address,company.organizationIds)
             const companyId = companyCreated.id
             if (companyId) {
-                await this.userActionService.logCreation(userId, COMPANIES_LOG_TABLE, companyId, null)
+                await this.userActionService.logCreation(userId, TABLES.COMPANY, companyId, null)
                 return companyId
             }
         } catch (error) {
@@ -52,7 +52,7 @@ class CompanyService {
 
             if (updatedCompanyInstance) {
                 const companyData = updatedCompanyInstance.get({ plain: true });
-                await this.userActionService.logUpdate(userId, COMPANIES_LOG_TABLE, id, null, companyData)
+                await this.userActionService.logUpdate(userId, TABLES.COMPANY, id, null, companyData)
             }
         } catch (error) {
             console.error(`Error updating company: ${error.message}`);
@@ -77,7 +77,7 @@ class CompanyService {
             }
 
             await this.companyRepository.deleteCompany(companyId)
-            await this.userActionService.logDeletion(userId, COMPANIES_LOG_TABLE, companyId)
+            await this.userActionService.logDeletion(userId, TABLES.COMPANY, companyId)
         } catch (error) {
             console.error(`Error deleting company: ${error.message}`);
             throw error;

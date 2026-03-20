@@ -1,4 +1,4 @@
-import { USERS_LOG_TABLE } from "../commons/constants.js";
+import { TABLES } from "../commons/constants.js";
 import { User } from "../dtos/userDto.js";
 import { UserRole, UserPermits } from "../dtos/userPermitsDto.js";
 
@@ -32,7 +32,7 @@ class UserService {
                     if (newUser && newUser.id) {
                         await this.userActionService.logCreation(
                             userId,
-                            USERS_LOG_TABLE,
+                            TABLES.USER,
                             newUser.id,
                             null
                         );

@@ -1,4 +1,4 @@
-import { ORGANIZATIONS_LOG_TABLE } from "../commons/constants.js";
+import { TABLES } from "../commons/constants.js";
 import DtoConverter from "./DtoConverter.js";
 
 const dtoConverter = new DtoConverter();
@@ -14,7 +14,7 @@ class OrganizationService {
             const organizationCreated = await this.organizationRepository.createOrganization(organizationName);
             const organizationId =  organizationCreated.id;
             if(organizationId){
-                this.userActionService.logCreation(userId, ORGANIZATIONS_LOG_TABLE, organizationId, null);
+                this.userActionService.logCreation(userId, TABLES.ORGANIZATION, organizationId, null);
                 return organizationId
             }
         } catch (error) {
