@@ -384,6 +384,125 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
         }
     })
 
+    /**
+     * @swagger
+     * /users/permissions:
+     *   post:
+     *     summary: Grant a permission to a user on a resource
+     *     tags: [Users]
+     *     description: |
+     *       Creates a new permission associating a user with a *role* on a specific resource.
+     *       This action overwrites previous permits on related entities. 
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/GrantPermissionRequest'      
+     *     responses:
+     *       '200':
+     *         description: Permission granted successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *                 - errors
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed – invalid or missing JWT token.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized – user does not have permission to add user permissions.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '500':
+     *         description: Internal Server Error – unexpected error while adding user permission
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     */
+    router.post('/permissions', async (req, res) => {
+        let requestUserData;
+
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization)
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' })
+        }
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, requestUserData.isAdmin))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
+
+        try {
+            const userId = requestUserData.userId
+            const targetUserId = req.body.userId
+            const role = req.body.role.toLowerCase()
+            const entityType = req.body.entityType
+            const entityId = req.body.entityId
+
+            if (! await userService.getUserData(targetUserId)) {
+                return re.status(404).json({ message: "User not found" })
+            }
+
+            await authorizationService.grantUser(userId, targetUserId, role, entityType, entityId)
+
+            return res.status(200).json({ message: 'Permission granted successfully!' })
+        } catch (error) {
+            console.error(`Fail while creating user permission caused by: ${error.message}`);
+            return res.status(500).json({ error: 'Error while creating user permission' });
+        }
+    })
+
     return router;
 }
 

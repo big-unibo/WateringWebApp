@@ -1,11 +1,15 @@
 import { COMPANIES_PERMITS_COLUMN_MAPPING, DEVICE_PERMITS_COLUMN_MAPPING } from "../../commons/permissionRoles.js";
+import { TABLES } from "../../commons/constants.js"
+import { Op, QueryTypes } from "sequelize"
+import { _deleteFromModelByParams } from "../../commons/repositoryUtils.js"
 
 class AuthorizationRepository {
-    constructor(sequelize){
+    constructor(models, sequelize) {
+        this.Permit = models.Permit
         this.sequelize = sequelize
     }
 
-    async getUserFieldAvailableIds(userId, entity, service){
+    async getUserFieldAvailableIds(userId, entity, service) {
         try {
             const query = `
                 SELECT DISTINCT role, ${COMPANIES_PERMITS_COLUMN_MAPPING[entity]} AS id
@@ -25,7 +29,7 @@ class AuthorizationRepository {
         }
     }
 
-    async getUserDeviceAvailableIds(userId, entity){
+    async getUserDeviceAvailableIds(userId, entity) {
         try {
             const query = `
                 SELECT DISTINCT role, ${DEVICE_PERMITS_COLUMN_MAPPING[entity]} AS id
@@ -81,6 +85,90 @@ class AuthorizationRepository {
         } catch (error) {
             console.error(`Fail retrieving authorization data: ${error.message}`);
             throw error;
+        }
+    }
+
+    async grantUser(userId, entityType, entityId, role) {
+        try {
+
+            const existQuery = `SELECT * FROM ${TABLES[entityType]} WHERE id=:entityId`
+            const results = await this.sequelize.query(existQuery, {
+                replacements: { entityId },
+                type: this.sequelize.QueryTypes.SELECT
+            });
+            if (results.length > 0) {
+                return await this.Permit.create({
+                    userId: userId,
+                    table: TABLES[entityType],
+                    idKey: entityId,
+                    role: role
+                });
+            } else {
+                throw Error("Reqested entity does not exist")
+            }
+        } catch (error) {
+            throw new Error(`Error saving new user permits caused by: ${error.message}`);
+        }
+    }
+
+    async removeOldPermits(userId, entityType, entityId) {
+        try {
+            let companyIds = [];
+            let sectorIds = [];
+
+            if (entityType === 'COMPANY') {
+                companyIds = [entityId];
+                const sectorRows = await this.sequelize.query(
+                    `SELECT DISTINCT "sector_id"
+                    FROM master_data_permits
+                    WHERE "user_id" = :userId
+                        AND "company_id" = :companyId
+                        AND "sector_id" IS NOT NULL
+                    `,
+                    {
+                        replacements: { userId, companyId: entityId },
+                        type: QueryTypes.SELECT
+                    }
+                );
+                sectorIds = sectorRows.map(r => r.sector_id);
+            } else if (entityType === 'SECTOR') {
+                sectorIds = [entityId];
+                const companyRows = await this.sequelize.query(
+                    `SELECT DISTINCT "company_id"
+                    FROM master_data_permits
+                    WHERE "user_id" = :userId
+                        AND "sector_id" = :sectorId
+                        AND "company_id" IS NOT NULL
+                    `,
+                    {
+                        replacements: { userId, sectorId: entityId },
+                        type: QueryTypes.SELECT
+                    }
+                );
+                companyIds = companyRows.map(r => r.company_id);
+            } else {
+                throw new Error(`Unsupported entityType: ${entityType}`);
+            }
+            const orConditions = [];
+            if (companyIds.length > 0) {
+                orConditions.push({
+                    table: TABLES['COMPANY'],
+                    id_key: { [Op.in]: companyIds },
+                });
+            }
+            if (sectorIds.length > 0) {
+                orConditions.push({
+                    table: TABLES['SECTOR'],
+                    id_key: { [Op.in]: sectorIds },
+                });
+            }
+
+            return await _deleteFromModelByParams(this.Permit, {
+                userId,
+                [Op.or]: orConditions,
+            })
+        } catch (error) {
+            throw new Error(`Error saving new user permits caused by: ${error.message}`);
         }
     }
 

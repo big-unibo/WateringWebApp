@@ -41,6 +41,35 @@ components:
         name:
           type: string
 
+    GrantPermissionRequest:
+      type: object
+      properties:
+        userId:
+          type: integer
+          description: Identifier of the user receiving the permission
+        entityType:
+          type: string
+          description: Type of entity on which the permission is granted
+          enum:
+            - COMPANY
+            - SECTOR
+        entityId:
+          type: integer
+          description: Identifier of the target entity
+        role:
+          type: string
+          description: Role granted to the user on the entity
+          enum:
+            - VIEWER
+            - PLANNER
+            - ACCOUNTER
+      required:
+        - userId
+        - entityType
+        - entityId
+        - role
+
+
     CompanyBase:
       type: object
       properties:

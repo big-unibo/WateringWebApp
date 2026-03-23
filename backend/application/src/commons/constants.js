@@ -22,5 +22,6 @@ export const TABLES = Object.freeze({
   THESIS_DEVICE: 'theses_devices',
   THESIS_IN_SECTOR: 'theses_in_sectors',
   USER: 'users',
-  SECTOR_SERVICE: 'sectors_services'
+  SECTOR_SERVICE: 'sectors_services',
+  PERMIT: 'permits'
 });
