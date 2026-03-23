@@ -120,7 +120,7 @@ const organizationService = new OrganizationService(organizationRepository, user
 const userService = new UserService(userRepository, userActionService)
 const authenticationService = new AuthenticationService(userService)
 const fieldService = new FieldService(companyRepository, farmRepository, sectorRepository, thesisRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, deviceRepository, wateringScheduleRepository, optimalStateRepository, serviceRepository, userActionService)
-const sectorServicesService = new SectorServicesService(serviceRepository)
+const sectorServicesService = new SectorServicesService(serviceRepository, userActionService)
 const authorizationService = new AuthorizationService(userService, authorizationRepository, userActionService)
 const deviceService = new DeviceService(deviceRepository, signalRepository, thesisRepository, interpolatedProfileRepository, optimalStateRepository, userActionService)
 const signalService = new SignalService(signalRepository, userActionService)
@@ -153,7 +153,7 @@ app.use(
 
 app.use(
   '/sectors',
-  sectorsRouter({ userService, authenticationService, authorizationService, fieldService })
+  sectorsRouter({ userService, authenticationService, authorizationService, fieldService, sectorServicesService })
 );
 
 app.use(

@@ -68,7 +68,7 @@ class DeviceRepository {
                 },
                 returning: ["id"]
             });
-            return updatedRecords.map(record => record.id);  
+            return updatedRecords?.map(record => record.id);  
         } catch (error) {
             throw new Error(`Error disconnecting signals from device caused by: ${error.message}`);
         }
@@ -299,7 +299,7 @@ class DeviceRepository {
                 },
                 returning: ["id"]
             });
-            return updatedRecords.map(record => record.id);
+            return updatedRecords?.map(record => record.id);
         } catch (error) {
             throw new Error(`Error unlinking device from farm: ${error.message}`);
         }
@@ -317,7 +317,7 @@ class DeviceRepository {
                 },
                 returning: ["id"]
             });
-            return updatedRecords.map(record => record.id);
+            return updatedRecords?.map(record => record.id);
         } catch (error) {
             throw new Error(`Error unlinking device from sector: ${error.message}`);
         }
@@ -334,7 +334,7 @@ class DeviceRepository {
                 },
                 returning: ["id"]
             });
-            return updatedRecords.map(record => record.id);
+            return updatedRecords?.map(record => record.id);
         } catch (error) {
             throw new Error(`Error unlinking device from thesis: ${error.message}`);
         }

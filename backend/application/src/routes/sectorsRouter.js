@@ -4,7 +4,7 @@ import { Thesis } from '../dtos/thesisDto.js';
 import { SectorData} from '../dtos/sectorDto.js'
 import { ROLES } from '../commons/permissionRoles.js';
 
-const sectorsRouter = ({ authenticationService, authorizationService, fieldService }) => {
+const sectorsRouter = ({ authenticationService, authorizationService, fieldService, sectorServicesService }) => {
     const router = Router();
 
 
@@ -737,7 +737,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
                 return res.status(404).json({ message: 'Sector not found' });
             }
 
-            if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.PLANNER, requestUserData.isAdmin, 'SECTOR', sectorId, 'Watering Advice'))){
+            if(!(await authorizationService.isUserAuthorized(userId, ROLES.PLANNER, requestUserData.isAdmin, 'SECTOR', sectorId, 'Watering Advice'))){
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
@@ -1026,6 +1026,275 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
         } catch (error) {
             console.log(`Fail retrieving devices data: ${error.message}`);
             return res.status(500).json({ error: "Error while retrieving devices data" });
+        }
+    });
+
+    /**
+     * @swagger
+     * /sectors/{sectorId}/service/{serviceId}:
+     *   put:
+     *     security:
+     *       - bearerAuth: []
+     *     summary: Enables a service in a sector in a given period.
+     *     description: Enables a service in a sector in a given period.
+     *     tags: [Sectors]
+     *     parameters:
+     *       - in: path
+     *         name: sectorId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: Id of sector in which enable service
+     *       - in: path
+     *         name: serviceId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: Id of service to enable in sectors
+     *       - in: query
+     *         name: validFrom
+     *         schema:
+     *           type: number
+     *         description: Timestamp indicating the start date of the service validity, if not set take actual timestamp (Seconds elapsed since 1/1/1970).
+     *       - in: query
+     *         name: validTo
+     *         schema:
+     *           type: number
+     *         description: Timestamp for the end date of service validity (Seconds elapsed since 1/1/1970).
+     *     responses:
+     *       200:
+     *         description: Service enabled in sector with success
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string  
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to add services in the given sector)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while updating sector services
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.put('/:sectorId/service/:serviceId', async (req, res) => {
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        try {
+            const userId = requestUserData.userId
+            const sectorId = req.params.sectorId
+            const serviceId = req.params.serviceId
+
+            const sectorExists = await fieldService.sectorExists(sectorId);
+            if (!sectorExists) {
+                return res.status(404).json({ message: 'Sector not found' });
+            }
+
+            if(!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'SECTOR', sectorId))){
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
+
+            const validFrom = req.query.validFrom ?? Date.now() / 1000
+            const validTo = req.query.validTo
+
+            await sectorServicesService.enableSectorService(userId, sectorId, serviceId, validFrom, validTo)
+
+            return res.status(200).json({ message: `Service enabled with success` })
+
+        } catch (error) {
+            console.log(`Fail updating sector services: ${error.message}`)
+            return res.status(500).json({ error: "Error updating sector services" })
+        }
+    });
+
+    /**
+     * @swagger
+     * /sectors/{sectorId}/service/{serviceId}:
+     *   delete:
+     *     security:
+     *       - bearerAuth: []
+     *     summary: Disable a service in a sector in a given instant.
+     *     description: Disable a service in a sector in a given instant.
+     *     tags: [Sectors]
+     *     parameters:
+     *       - in: path
+     *         name: sectorId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: Id of sector in which disable service
+     *       - in: path
+     *         name: serviceId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: Id of service to disable in sectors
+     *       - in: query
+     *         name: validTo
+     *         schema:
+     *           type: number
+     *         description: Timestamp for the end date of service validity in sector (Seconds elapsed since 1/1/1970).
+     *     responses:
+     *       200:
+     *         description: Service disabled in sector with success
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string  
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to disable services for the given sector)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while updating sector services
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.delete('/:sectorId/service/:serviceId', async (req, res) => {
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        try {
+            const userId = requestUserData.userId
+            const sectorId = req.params.sectorId
+            const serviceId = req.params.serviceId
+
+            const sectorExists = await fieldService.sectorExists(sectorId);
+            if (!sectorExists) {
+                return res.status(404).json({ message: 'Sector not found' });
+            }
+
+            if(!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'SECTOR', sectorId))){
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
+
+            const validTo = req.query.validTo ?? Date.now() / 1000
+            await sectorServicesService.disableSectorService(userId, sectorId, serviceId, validTo)
+
+            return res.status(200).json({ message: `Service disabled with success` })
+
+        } catch (error) {
+            console.log(`Fail updating sector services: ${error.message}`)
+            return res.status(500).json({ error: "Error updating sector services" })
         }
     });
 

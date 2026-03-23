@@ -139,7 +139,6 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
-            console.log(error)
             return res.status(401).json({ message: 'Authentication failed' });
         }
 
