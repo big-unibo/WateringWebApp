@@ -4,12 +4,13 @@ import { _deleteFromModelByParams } from "../../commons/repositoryUtils.js";
 class SectorServiceRepository {
     constructor(models, sequelize) {
         this.SectorServices = models.SectorServices;
+        this.Service = models.Service;
         this.sequelize = sequelize;
     }
 
     async getSectorServices() {
         try {
-            const services = await this.SectorServices.findAll()
+            const services = await this.Service.findAll()
             return services;
         } catch (error) {
             throw new Error(`Error retrieving sector services caused by: ${error.message}`);

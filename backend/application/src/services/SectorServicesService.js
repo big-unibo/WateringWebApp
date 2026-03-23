@@ -9,8 +9,8 @@ class SectorServicesService {
         this.userActionService = userActionService;
     }
 
-    async getServices() {
-        const result = await this.serviceRepository.getServices();
+    async getSectorServices() {
+        const result = await this.serviceRepository.getSectorServices();
         return dtoConverter.convertServices(result);
     }
 

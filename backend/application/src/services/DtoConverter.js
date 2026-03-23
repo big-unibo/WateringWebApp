@@ -589,7 +589,7 @@ class DtoConverter {
         return new InterpolatedMeansData(thesisName, deviceId, binningId, measures);
     }
 
-    convertServicesWrapper(services) {
+    convertServices(services) {
         if (!Array.isArray(services)) return []
         return services.map(s => new Service(s.serviceName, s.id))
     }

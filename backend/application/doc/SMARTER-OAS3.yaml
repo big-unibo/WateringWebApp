@@ -1124,6 +1124,16 @@ components:
               weight:
                 type: number
                 description: Weight of the thesis inside a sector
+    
+    Service:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Id of a service that can be activate on a sector
+        name:
+          type: string
+          description: Name of the service
            
     Log:
       type: object

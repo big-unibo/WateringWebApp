@@ -53,6 +53,7 @@ import ThesisRepository from './persistency/repository/ThesisRepository.js';
 import AuthorizationRepository from './persistency/repository/AuthorizationRepository.js'
 import SectorServicesService from './services/SectorServicesService.js';
 import SectorServiceRepository from './persistency/repository/SectorServiceRepository.js';
+import sectorServicesRouter from './routes/servicesRouter.js';
 
 dotenv.config()
 
@@ -199,6 +200,11 @@ app.use(
 app.use(
   '/logs',
   logsRouter({ authenticationService, authorizationService, logService, fieldService })
+)
+
+app.use(
+  '/services',
+  sectorServicesRouter({ authenticationService, authorizationService, sectorServicesService })
 )
 
 app.use((err, req, res, next) => {
