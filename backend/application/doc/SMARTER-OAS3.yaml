@@ -1134,6 +1134,16 @@ components:
         name:
           type: string
           description: Name of the service
+    
+    ServiceSectorAssociation:
+      allOf:
+        - $ref: '#/components/schemas/Service'
+        - type: object
+          properties:
+            validFrom:
+              type: number
+            validTo:
+              type: number
            
     Log:
       type: object

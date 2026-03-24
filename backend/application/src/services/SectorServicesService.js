@@ -32,6 +32,13 @@ class SectorServicesService {
         }
     }
 
+    async deleteSectorService(userId, sectorId, serviceId){
+        const sectorServicesIds = await this.serviceRepository.deleteSectorService(sectorId, serviceId)
+        if (sectorServicesIds){
+            await this.userActionService.logDeletion(userId, TABLES.SECTOR_SERVICE, sectorServicesIds)
+        }
+    }
+
 }
 
 export default SectorServicesService

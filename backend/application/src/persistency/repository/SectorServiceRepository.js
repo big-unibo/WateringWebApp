@@ -1,5 +1,6 @@
 import { Op, where } from "sequelize";
 import { _deleteFromModelByParams } from "../../commons/repositoryUtils.js";
+import { removeUndefined } from "../../commons/utils.js";
 
 class SectorServiceRepository {
     constructor(models, sequelize) {
@@ -78,11 +79,9 @@ class SectorServiceRepository {
         }
     }
 
-    async deleteSectorServices(sectorId) {
+    async deleteSectorServices(sectorId, serviceId) {
         try {
-            return await _deleteFromModelByParams(this.SectorServices, {
-                sectorId: sectorId
-            })
+            return await _deleteFromModelByParams(this.SectorServices, removeUndefined({ sectorId, serviceId }))
         } catch (error) {
             throw new Error(`Error deleting sector services: ${error.message}`);
         }

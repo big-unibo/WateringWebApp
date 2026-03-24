@@ -1299,8 +1299,8 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 
     /**
      * @swagger
-     * /sectors/{sectorId}/service/{serviceId}:
-     *   delete:
+     * /sectors/{sectorId}/service/{serviceId}/disable:
+     *   post:
      *     security:
      *       - bearerAuth: []
      *     summary: Disable a service in a sector in a given instant.
@@ -1395,7 +1395,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *                 message:
      *                   type: string
      */
-    router.delete('/:sectorId/service/:serviceId', async (req, res) => {
+    router.post('/:sectorId/service/:serviceId/disable', async (req, res) => {
         let requestUserData
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
@@ -1425,6 +1425,131 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
         } catch (error) {
             console.log(`Fail updating sector services: ${error.message}`)
             return res.status(500).json({ error: "Error updating sector services" })
+        }
+    });
+
+    /**
+     * @swagger
+     * /sectors/{sectorId}/service/{serviceId}/:
+     *   delete:
+     *     security:
+     *       - bearerAuth: []
+     *     summary: Delete a service in a sector.
+     *     description: Delete a service in a sector.
+     *     tags: [Sectors]
+     *     parameters:
+     *       - in: path
+     *         name: sectorId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: Id of sector in which disable service
+     *       - in: path
+     *         name: serviceId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: Id of service to disable in sectors
+     *     responses:
+     *       200:
+     *         description: Service deleted in sector with success
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string  
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to delete services for the given sector)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while deleting sector services
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.delete('/:sectorId/service/:serviceId', async (req, res) => {
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        try {
+            const userId = requestUserData.userId
+            const sectorId = req.params.sectorId
+            const serviceId = req.params.serviceId
+
+            const sectorExists = await fieldService.sectorExists(sectorId);
+            if (!sectorExists) {
+                return res.status(404).json({ message: 'Sector not found' });
+            }
+
+            if(!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'SECTOR', sectorId))){
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
+
+            await sectorServicesService.deleteSectorService(userId, sectorId, serviceId)
+
+            return res.status(200).json({ message: `Service deleted with success` })
+
+        } catch (error) {
+            console.log(`Fail dleting sector services: ${error.message}`)
+            return res.status(500).json({ error: "Error deleting sector services" })
         }
     });
 
