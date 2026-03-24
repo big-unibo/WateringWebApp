@@ -9,9 +9,14 @@ class SectorServicesService {
         this.userActionService = userActionService;
     }
 
-    async getSectorServices() {
-        const result = await this.serviceRepository.getSectorServices();
+    async getServices() {
+        const result = await this.serviceRepository.getServices();
         return dtoConverter.convertServices(result);
+    }
+
+    async getSectorService(sectorId, timeFilterFrom, timeFilterTo){
+        const result = await this.serviceRepository.getSectorServices(sectorId, timeFilterFrom, timeFilterTo);
+        return dtoConverter.convertSectorServices(result);
     }
 
     async enableSectorService(userId, sectorId, serviceId, validFrom, validTo){

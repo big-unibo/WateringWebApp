@@ -1169,6 +1169,136 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 
     /**
      * @swagger
+     * /sectors/{sectorId}/service:
+     *   get:
+     *     security:
+     *       - bearerAuth: []
+     *     summary: Retrieve all services of a sector in a given period.
+     *     description: Retrieve all services of a sector in a given period.
+     *     tags: [Sectors]
+     *     parameters:
+     *       - in: path
+     *         name: sectorId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: Id of sector in which find services
+     *       - in: query
+     *         name: timeFilterFrom
+     *         schema:
+     *           type: number
+     *         description: Time filter start, if not set take actual timestamp (timestamp in seconds since 01/01/1970)
+     *       - in: query
+     *         name: validTo
+     *         schema:
+     *           type: number
+     *         description: Time filter end, if not set take actual timestamp (Seconds elapsed since 1/1/1970).
+     *     responses:
+     *       200:
+     *         description: List of services enabled in the sector for given period
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                  $ref: '#/components/schemas/ServiceSectorAssociation'       
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized (user not allowed to retrieve services of the given sector)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while retrieving sector services
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.get('/:sectorId/service', async (req, res) => {
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        try {
+            const userId = requestUserData.userId
+            const sectorId = req.params.sectorId
+
+            const sectorExists = await fieldService.sectorExists(sectorId);
+            if (!sectorExists) {
+                return res.status(404).json({ message: 'Sector not found' });
+            }
+
+            if(!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'SECTOR', sectorId))){
+                return res.status(403).json({ message: 'Unauthorized request' });
+            }
+
+            const timeFilterFrom = req.query.timeFilterFrom ?? Date.now() / 1000
+            const timeFilterTo = req.query.timeFilterTo ?? Date.now() / 1000
+
+            const result = await sectorServicesService.getSectorService(sectorId, timeFilterFrom, timeFilterTo)
+
+            return res.status(200).json(result)
+
+        } catch (error) {
+            console.log(`Fail retrieving sector services: ${error.message}`)
+            return res.status(500).json({ error: "Error retrieving sector services" })
+        }
+    });
+
+    /**
+     * @swagger
      * /sectors/{sectorId}/service/{serviceId}:
      *   delete:
      *     security:

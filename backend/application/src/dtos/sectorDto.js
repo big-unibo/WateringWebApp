@@ -79,3 +79,11 @@ export class Service {
     this.id = serviceId
   }
 }
+
+export class SectorService extends Service {
+  constructor(serviceName, serviceId, validFrom, validTo){
+    super(serviceName, serviceId);
+    this.validFrom = validFrom;
+    this.validTo = validTo;
+  }
+}

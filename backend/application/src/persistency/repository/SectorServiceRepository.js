@@ -8,10 +8,36 @@ class SectorServiceRepository {
         this.sequelize = sequelize;
     }
 
-    async getSectorServices() {
+    async getServices() {
         try {
             const services = await this.Service.findAll()
             return services;
+        } catch (error) {
+            throw new Error(`Error retrieving sector services caused by: ${error.message}`);
+        }
+    }
+
+    async getSectorServices(sectorId, timeFilterFrom, timeFilterTo){
+        try {
+            const sectorServices = await this.SectorServices.findAll({
+                where: {
+                    sectorId: sectorId,
+                    validFrom: { [Op.lte]: timeFilterTo },
+                    validTo: {
+                        [Op.or]: [
+                            { [Op.is]: null },
+                            { [Op.gt]:  timeFilterFrom}
+                        ]
+                    }
+                },
+                include: [
+                    {
+                        model: this.Service,
+                        as: 'service'
+                    }
+                ]
+            })
+            return sectorServices;
         } catch (error) {
             throw new Error(`Error retrieving sector services caused by: ${error.message}`);
         }

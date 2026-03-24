@@ -5,7 +5,7 @@ import { SignalData, MeasureData, SignalTypeData } from '../dtos/dataDto.js';
 import { WateringScheduleResponse, WateringEventData, ThesisContributionData } from "../dtos/wateringScheduleDto.js";
 import { DistanceValue, OptimalDistanceData, DistanceProfile, OptimalProfileData, OptimalStateData } from "../dtos/optStateDto.js";
 import { WateringAdvice } from "../dtos/wateringAdviceDto.js";
-import { SectorCompact, SectorData, Service } from "../dtos/sectorDto.js";
+import { SectorCompact, SectorData, SectorService, Service } from "../dtos/sectorDto.js";
 import { Device, DeviceTargetType } from "../dtos/deviceDto.js";
 import { Signal, SignalInfo, SignalType } from "../dtos/signalDto.js";
 import { ThesisData, ThesisRef } from "../dtos/thesisDto.js";
@@ -592,6 +592,11 @@ class DtoConverter {
     convertServices(services) {
         if (!Array.isArray(services)) return []
         return services.map(s => new Service(s.serviceName, s.id))
+    }
+
+    convertSectorServices(result) {
+        if (!Array.isArray(result)) return []
+        return result.map(s => new SectorService(s.service.serviceName, s.service.id, s.validFrom, s.validTo))
     }
 
     convertBinningInfoWrapper(binningData) {

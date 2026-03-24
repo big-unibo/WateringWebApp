@@ -79,7 +79,7 @@
         }
         
         try {
-            const results = await sectorServicesService.getSectorServices();
+            const results = await sectorServicesService.getServices();
             return res.status(200).json(results);
         } catch (error) {
             return res.status(500).json({ message: error.message });
