@@ -1189,7 +1189,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *           type: number
      *         description: Time filter start, if not set take actual timestamp (timestamp in seconds since 01/01/1970)
      *       - in: query
-     *         name: validTo
+     *         name: timeFilterTo
      *         schema:
      *           type: number
      *         description: Time filter end, if not set take actual timestamp (Seconds elapsed since 1/1/1970).
@@ -1430,7 +1430,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 
     /**
      * @swagger
-     * /sectors/{sectorId}/service/{serviceId}/:
+     * /sectors/{sectorId}/service/{serviceId}:
      *   delete:
      *     security:
      *       - bearerAuth: []
@@ -1450,6 +1450,11 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *         schema:
      *           type: integer
      *         description: Id of service to disable in sectors
+     *       - in: query
+     *         name: timestamp
+     *         schema:
+     *           type: number
+     *         description: Timestamp in which find the service to delete
      *     responses:
      *       200:
      *         description: Service deleted in sector with success
@@ -1543,12 +1548,13 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
-            await sectorServicesService.deleteSectorService(userId, sectorId, serviceId)
+            const timestamp = req.query.timestamp ?? Date.now()/1000
+            await sectorServicesService.deleteSectorService(userId, sectorId, serviceId, timestamp)
 
             return res.status(200).json({ message: `Service deleted with success` })
 
         } catch (error) {
-            console.log(`Fail dleting sector services: ${error.message}`)
+            console.log(`Fail deleting sector services: ${error.message}`)
             return res.status(500).json({ error: "Error deleting sector services" })
         }
     });

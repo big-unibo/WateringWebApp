@@ -20,6 +20,9 @@ class SectorServicesService {
     }
 
     async enableSectorService(userId, sectorId, serviceId, validFrom, validTo){
+        if(validTo && validFrom >= validTo){
+            throw Error("Invalid sector service validity period")
+        }
         this.disableSectorService(userId, sectorId, serviceId, validFrom)
         const serviceAssociationId = await this.serviceRepository.enableSectorService(sectorId, serviceId, validFrom, validTo)
         await this.userActionService.logCreation(userId, TABLES.SECTOR_SERVICE, serviceAssociationId)
@@ -32,8 +35,8 @@ class SectorServicesService {
         }
     }
 
-    async deleteSectorService(userId, sectorId, serviceId){
-        const sectorServicesIds = await this.serviceRepository.deleteSectorService(sectorId, serviceId)
+    async deleteSectorService(userId, sectorId, serviceId, timestamp){
+        const sectorServicesIds = await this.serviceRepository.deleteSectorServices(sectorId, serviceId, timestamp)
         if (sectorServicesIds){
             await this.userActionService.logDeletion(userId, TABLES.SECTOR_SERVICE, sectorServicesIds)
         }

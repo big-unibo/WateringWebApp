@@ -63,7 +63,7 @@ class SectorServiceRepository {
                     sectorId,
                     serviceId,
                     validFrom: {
-                        [Op.lt]: validTo
+                        [Op.lte]: validTo
                     },
                     validTo: {
                         [Op.or]: [
@@ -79,9 +79,22 @@ class SectorServiceRepository {
         }
     }
 
-    async deleteSectorServices(sectorId, serviceId) {
+    async deleteSectorServices(sectorId, serviceId, timestamp) {
         try {
-            return await _deleteFromModelByParams(this.SectorServices, removeUndefined({ sectorId, serviceId }))
+            return await _deleteFromModelByParams(this.SectorServices, removeUndefined({
+                sectorId, serviceId, ...(timestamp ?
+                    {
+                        validFrom: {
+                            [Op.lte]: timestamp
+                        },
+                        validTo: {
+                            [Op.or]: [
+                                { [Op.is]: null },
+                                { [Op.gt]: timestamp }
+                            ]
+                        }
+                    } : undefined)
+            }))
         } catch (error) {
             throw new Error(`Error deleting sector services: ${error.message}`);
         }
