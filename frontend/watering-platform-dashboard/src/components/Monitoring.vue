@@ -6,6 +6,7 @@ import UpdateOptimalStateComponent from './UpdateOptimalStateComponent.vue';
 import { useRouter } from "vue-router";
 import authService from '@/services/auth.service';
 import WateringAdviceSimulatorComponent from './WateringAdviceSimulatorComponent.vue';
+import communicationService from "@/services/communication.service";
 
 
 const router = useRouter()
@@ -156,7 +157,7 @@ async function selectSector(sector) {
   selectedSectorName.value = createSectorName(sector)
   selectedThesis.value.sectorId = sector.id
   updateConnectionParams()
-  const sectorInfo = await authService.getSectorInfo(token.value, sector.id)
+  const sectorInfo = await communicationService.getSectorInfo(token.value, sector.id, selectedTimestampTo.value)
   theses.value = sectorInfo?.theses ?? []
   if (theses.value.length > 0) {
     selectThesis(theses.value[0])

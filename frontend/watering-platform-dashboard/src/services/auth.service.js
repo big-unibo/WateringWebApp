@@ -74,22 +74,6 @@ class AuthService {
         });
     }
 
-
-    async getSectorInfo(token, sectorId) {
-        return await axiosInstance.get(`/sectors/${sectorId}`, {
-            headers: {
-                'Authorization': 'Bearer ' + token
-            }
-        }).then(response => {
-            if (response.data)
-                return response.data
-        }).catch(error => {
-            console.log(error)
-            console.error(`Get fields request failed: ${error.message}`)
-            this.logout()
-        });
-    }
-
 }
 
 export default new AuthService();

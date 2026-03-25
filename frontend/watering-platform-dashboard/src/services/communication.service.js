@@ -50,6 +50,24 @@ export class CommunicationService {
         }
     }
 
+    async getSectorInfo(token, sectorId, timestamp) {
+        return await axiosInstance.get(`/sectors/${sectorId}`, {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            },
+            params: {
+                timestamp: timestamp
+            }
+        }).then(response => {
+            if (response.data)
+                return response.data
+        }).catch(error => {
+            console.log(error)
+            console.error(`Get fields request failed: ${error.message}`)
+            this.logout()
+        });
+    }
+
     async getWateringAdvice(environment, endpoint, paths, params) {
         const thesisId = paths.thesisId
         const token = environment.token
@@ -125,3 +143,5 @@ export class CommunicationService {
         }
     }
 }
+
+export default new CommunicationService();
