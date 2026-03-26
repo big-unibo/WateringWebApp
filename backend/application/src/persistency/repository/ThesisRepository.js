@@ -77,7 +77,7 @@ class ThesisRepository {
             timeFilter["validFrom"] = {
                 [Op.lt]: timestamp
             }
-            timeFilter[validTo] = {
+            timeFilter["validTo"] = {
                 [Op.or]: {
                     [Op.is]: null,
                     [Op.gt]: timestamp

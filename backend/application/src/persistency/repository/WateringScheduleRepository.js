@@ -220,7 +220,8 @@ class WateringScheduleRepository {
         wateringStart, 
         expectedWater, 
         note, 
-        enabled = true
+        enabled = true,
+        scheduled = false
     }) {
         try {
             let date = null;

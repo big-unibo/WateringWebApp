@@ -26,15 +26,14 @@ function hideModal() {
 async function simulateAdvice() {
   adviceError.value = false;
   advice.value = null;
-  const configParsed = JSON.parse(props.config);
   isLoading.value = true;
   const e = expectedWater.value;
 
   try {
     advice.value = await communicationService.getWateringAdvice(
-      configParsed.environment,
+      props.config.environment,
       endpoint,
-      configParsed.paths,
+      props.config.paths,
       { expectedWater: e, timestamp: Number(props.selectedTimestamp) + 60 }
     )
     advice.value.expectedWater = e;
