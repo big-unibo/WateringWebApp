@@ -123,11 +123,11 @@ class WateringScheduleRepository {
                 JOIN users usr
                     ON usr.id = :userId
                 WHERE we.watering_start BETWEEN :timeFilterFrom AND :timeFilterTo
-                    AND ${filteringIds === null
+                    AND ${filteringSectorIds === null
                 ? 'TRUE'
-                : filteringIds.length === 0
+                : filteringSectorIds.length === 0
                     ? 'FALSE'
-                    : 's.id = ANY(ARRAY[:filteringIds])'}
+                    : 's.id = ANY(ARRAY[:filteringSectorIds])'}
             `;
 
             const results = await this.sequelize.query(query, {
