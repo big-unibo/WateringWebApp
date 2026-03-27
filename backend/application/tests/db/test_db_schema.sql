@@ -77,7 +77,8 @@ ALTER TABLE public.anomalies_logs OWNER TO postgres;
 CREATE TABLE public.companies (
     id integer NOT NULL,
     company_name text NOT NULL,
-    address text
+    address text,
+    disabled_at double precision
 );
 
 
@@ -150,7 +151,8 @@ CREATE TABLE public.devices (
     description text,
     location public.geometry,
     binning_id integer,
-    company_id integer
+    company_id integer,
+    disabled_at double precision
 );
 
 
@@ -221,7 +223,8 @@ CREATE TABLE public.signals (
     unit text,
     id_on_provider text,
     sensor_technology text,
-    provider_id integer
+    provider_id integer,
+    disabled_at double precision
 );
 
 
@@ -289,7 +292,8 @@ CREATE TABLE public.farms (
     id integer NOT NULL,
     farm_name text NOT NULL,
     company_id integer NOT NULL,
-    location public.geometry
+    location public.geometry,
+    disabled_at double precision
 );
 
 
@@ -475,7 +479,8 @@ CREATE TABLE public.sectors (
     location public.geometry,
     dripper_capacity double precision,
     sprinkler_capacity double precision,
-    double_wing boolean
+    double_wing boolean,
+    disabled_at double precision
 );
 
 
@@ -856,7 +861,8 @@ ALTER SEQUENCE public.signals_id_seq OWNED BY public.signals.id;
 
 CREATE TABLE public.theses (
     id integer NOT NULL,
-    thesis_name text NOT NULL
+    thesis_name text NOT NULL,
+    disabled_at double precision
 );
 
 
@@ -990,6 +996,7 @@ ALTER VIEW public.theses_all_signals OWNER TO postgres;
 CREATE VIEW public.master_data_permits AS
   SELECT permits.user_id,
     permits.role,
+    permits.extra_attributes,
     sectors.company_id,
     sectors.farm_id,
     sectors.sector_id,
@@ -1009,7 +1016,7 @@ CREATE VIEW public.master_data_permits AS
              LEFT JOIN ( SELECT DISTINCT theses_in_sectors.sector_id,
                     theses_in_sectors.thesis_id
                    FROM public.theses_in_sectors) ts ON ts.sector_id = s.id) sectors ON permits."table" = 'companies'::text AND permits.id_key = sectors.company_id OR permits."table" = 'sectors'::text AND permits.id_key = sectors.sector_id
-  GROUP BY permits.user_id, permits.role, sectors.company_id, sectors.farm_id, sectors.sector_id, sectors.thesis_id;
+  GROUP BY permits.user_id, permits.role, permits.extra_attributes, sectors.company_id, sectors.farm_id, sectors.sector_id, sectors.thesis_id;
 
 
 ALTER VIEW public.master_data_permits OWNER TO postgres;
@@ -1185,7 +1192,8 @@ CREATE TABLE public.users (
     email text NOT NULL,
     password text NOT NULL,
     name text,
-    phone text
+    phone text,
+    disabled_at double precision
 );
 
 
