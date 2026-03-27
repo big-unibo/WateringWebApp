@@ -1280,7 +1280,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
                 return res.status(404).json({ message: 'Sector not found' });
             }
 
-            if(!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'SECTOR', sectorId))){
+            if(!(await authorizationService.isUserAuthorized(userId, ROLES.VIEWER, requestUserData.isAdmin, 'SECTOR', sectorId))){
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
