@@ -374,6 +374,24 @@ class DeviceRepository {
         }
     }
 
+    async disableDevice(deviceId, validTo) {
+        try {
+            await this.Device.update(
+                {
+                    disabledAt: validTo
+                },
+                {
+                    where: {
+                        id: deviceId
+                    }
+                }
+            );
+        } catch (error) {
+            throw new Error(`Error disabling device: ${error.message}`);
+        }
+    }
+
+
     async disableDeviceSignals(deviceId, validTo){
         try {
             const [updatedCount, updatedRecords] = await this.DevicesSignals.update(

@@ -916,17 +916,15 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      * @swagger
      * /devices/{deviceId}/disable:
      *   post:
-     *     summary: Disables all of the signals for a given device
+     *     summary: Disable a given device
      *     tags: [Devices]
      *     description: |
-     *       Disables a device by:
-     *       
-     *       - Ending the validity period of device in farm associations.
+     *       Disables a device and all associated signals by:
+     *       - Ending the validity period of device in fields associations.
      *       - Ending validity period of the signals associated with the device.
      *       - Ending optimal profile assignment.
      * 
      *       Requires Authentication and proper Authorization
-     *  
      * 
      *     parameters:
      *       - in: path
@@ -936,7 +934,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *           type: integer
      *         description: ID of device to disable
      *       - in: query
-     *         name: timestamp
+     *         name: validTo
      *         required: false
      *         schema:
      *           type: number
@@ -1029,14 +1027,18 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
             return res.status(404).json({ message: 'Device not found' });
         }
 
-        const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
+        const currentTimestamp = Math.floor(Date.now() / 1000);
+        const validTo = req.query.validTo ?? currentTimestamp;
 
         if (!(await authorizationService.isUserAuthorized(userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'DEVICE', deviceId))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
         try {
-            await deviceService.disableDevice(userId, deviceId, timestamp)
+            if (validTo < currentTimestamp - (24 * 60 * 60)) {
+                return res.status(400).json({ message: 'Invalid validTo timestamp provided. It must be a timestamp in the last 24 hours' })
+            }
+            await deviceService.disableDevice(userId, deviceId, validTo)
             return res.status(200).json({ message: `Device validity succesfully endend` })
         } catch (error) {
             console.log(`Failed disabling device: ${error.message}`)

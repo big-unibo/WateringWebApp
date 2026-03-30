@@ -13,6 +13,7 @@ describe('Device and Signal Setup Integration Test', () => {
     let deviceId;
     let tempSignalId;
     let humiditySignalId;
+    let windSignalId;
     const timestamp = (new Date(2025, 1, 20, 9, 0, 0)).valueOf() / 1000
 
     // Reference Data Constants 
@@ -20,6 +21,7 @@ describe('Device and Signal Setup Integration Test', () => {
     const PROVIDER_ID = 1        // Provider A
     const SIGNAL_TYPE_TEMP = 4   // AIR_TEMPERATURE
     const SIGNAL_TYPE_HUM = 5    // AIR_HUMIDITY
+    const SIGNAL_TYPE_WIND = 8   // WIND_SPEED
     const TEST_DELETE_DEVICE_ID = 4
 
     beforeAll(async () => {
@@ -113,10 +115,10 @@ describe('Device and Signal Setup Integration Test', () => {
     })
 
     /**
-     * TEST 3: Create Signal (Air Humidity)
+     * TEST 3: Create other signals (Air Humidity, Wind Speed)
      * Endpoint: POST /signals/create
      */
-    it('should create an Air Humidity Signal', async () => {
+    it('should create an Air Humidity and Wind Speed Signal', async () => {
         const payload = {
             typeId: SIGNAL_TYPE_HUM,
             description: 'Sensor 2 - Air Hum',
@@ -135,6 +137,25 @@ describe('Device and Signal Setup Integration Test', () => {
 
         expect(res.body).toHaveProperty('id')
         humiditySignalId = res.body.id
+
+        const payloadBis = {
+            typeId: SIGNAL_TYPE_WIND,
+            description: 'Sensor 3 - Wind Speed',
+            virtual: false,
+            unit: 'm/s',
+            providerId: PROVIDER_ID,
+            idOnProvider: 'SENS-001-W',
+            sensorTechnology: 'LoraWAN'
+        }
+
+        const resBis = await request(app)
+            .post('/signals/create')
+            .set('Authorization', `Bearer ${authToken}`)
+            .send(payloadBis)
+            .expect(200)
+
+        expect(resBis.body).toHaveProperty('id')
+        windSignalId = resBis.body.id
     })
 
     /**
@@ -237,8 +258,79 @@ describe('Device and Signal Setup Integration Test', () => {
     })
 
     /**
-     * TEST 6: Delete device and all related data
+     *  TEST 7: Disable a Signal
      */
+    it('should disable a Signal and check it is no more connected to the Device', async () => {
+        const validTo = Date.now()/1000 + 7200
+        const response = await request(app)
+            .post(`/signals/${windSignalId}/disable`)
+            .query({ validTo})
+            .set('Authorization', `Bearer ${authToken}`)
+            .expect(200)
+
+        await table(db, 'signals')
+            .where('id', windSignalId)
+            .first()
+            .then(record => {
+                expect(record.disabled_at).toBe(validTo)
+            })
+        
+        await table(db, 'devices_signals').where('signal_id', windSignalId)
+            .andWhere('valid_from', '<', validTo + 1)
+            .andWhere(function () {
+                this.where('valid_to', '>', validTo + 1).orWhereNull('valid_to')})
+            .select('signal_id', 'device_id')
+            .then(records => {
+                expect(records).toHaveLength(0)
+            })
+    })
+
+    /**
+     * TEST 8: Disable a Device and check all signals are disconnected
+     */
+    it('should disable a Device and check all signals are disconnected', async () => {
+
+        const validTo = Date.now()/1000
+        await request(app)
+            .post(`/devices/${TEST_DELETE_DEVICE_ID}/disable`)
+            .query({ validTo })
+            .set('Authorization', `Bearer ${authToken}`)
+            .expect(200)
+
+        await table(db, 'devices')
+            .where('id', TEST_DELETE_DEVICE_ID)
+            .first()
+            .then(record => {
+                expect(record.disabled_at).toBe(validTo)
+            })
+
+        await table(db, 'devices_signals').where('device_id', TEST_DELETE_DEVICE_ID)
+            .andWhere('valid_from', '<', validTo + 1)
+            .andWhere(function () {
+                this.where('valid_to', '>', validTo + 1).orWhereNull('valid_to')})
+            .select('signal_id', 'device_id')
+            .then(records => {
+                expect(records).toHaveLength(0)
+            })
+        await table(db, 'grid_optimal_profile_assignment').where('grid_id', TEST_DELETE_DEVICE_ID)
+            .andWhere('valid_from', '<', validTo + 1)
+            .andWhere(function () {
+                this.where('valid_to', '>', validTo + 1).orWhereNull('valid_to')})
+            .then(records => {
+                expect(records).toHaveLength(0)
+            })
+        await table(db, 'theses_all_signals').where('device_id', TEST_DELETE_DEVICE_ID)
+            .andWhere('valid_from', '<', validTo + 1)
+            .andWhere(function () {
+                this.where('valid_to', '>', validTo + 1).orWhereNull('valid_to')})
+            .then(records => {
+                expect(records).toHaveLength(0)
+            })
+    })
+
+    /**
+     * TEST 9: Delete device and all related data
+     */ 
     it('should delete a device and all related data', async () => {
 
         await request(app)

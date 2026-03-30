@@ -56,9 +56,11 @@ class SignalService {
             const disabledDeviceSignalIds = await this.signalRepository.disableSignalInDevices(signalId, validTo);
             if (disabledDeviceSignalIds.length > 0) {
                 await disabledDeviceSignalIds.map(async (dsId) => {
-                    await this.userActionService.logDisabling(userId, TABLES.DEVICE_SIGNAL, dsId, null);
+                    await this.userActionService.logDisabling(userId, TABLES.DEVICE_SIGNAL, dsId);
                 })
             }
+            await this.signalRepository.disableSignal(signalId, validTo);
+            await this.userActionService.logDisabling(userId, TABLES.SIGNAL, signalId);
         }
         catch (error) {
             throw error;

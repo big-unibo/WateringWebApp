@@ -26,6 +26,23 @@ class SignalRepository {
         }
     }
 
+    async disableSignal(signalId, validTo) {
+        try {
+            await this.Signal.update(
+                {
+                    disabledAt: validTo
+                },
+                {
+                    where: {
+                        id: signalId
+                    }
+                }
+            );
+        } catch (error) {
+            throw new Error(`Error disabling signal caused by: ${error.message}`);
+        }
+    }
+
     async disableSignalInDevices(signalId, validTo) {
         try {
             const [updatedCount, updatedRecords] = await this.DevicesSignals.update(

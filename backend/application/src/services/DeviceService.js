@@ -199,32 +199,35 @@ class DeviceService {
         try {
             const optimalProfileAssignmentId = await this.optimalStateRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp);
             if (optimalProfileAssignmentId) {
-                await this.userActionService.logDisabling(userId, TABLES.OPTIMAL_PROFILE, optimalProfileAssignmentId, null);
+                await this.userActionService.logDisabling(userId, TABLES.OPTIMAL_PROFILE, optimalProfileAssignmentId);
             }
 
 
             // 1. Thesis
             const thesisDevId = await this.deviceRepository.unlinkDeviceFromThesis({deviceId: deviceId, validTo: timestamp, thesisId: "ALL"});
             if (thesisDevId) {
-                await this.userActionService.logDisabling(userId, TABLES.THESIS_DEVICE, thesisDevId, null);
+                await this.userActionService.logDisabling(userId, TABLES.THESIS_DEVICE, thesisDevId);
             }
 
             // 2. Sector
             const sectorDevId = await this.deviceRepository.unlinkDeviceFromSector({deviceId: deviceId, validTo: timestamp, sectorId: "ALL"});
             if (sectorDevId) {
-                await this.userActionService.logDisabling(userId, TABLES.SECTOR_DEVICE, sectorDevId, null);
+                await this.userActionService.logDisabling(userId, TABLES.SECTOR_DEVICE, sectorDevId);
             }
 
             // 3. Farm
             const farmDevId = await this.deviceRepository.unlinkDeviceFromFarm({deviceId: deviceId, validTo: timestamp, farmId: "ALL"});
             if (farmDevId) {
-                await this.userActionService.logDisabling(userId, TABLES.FARM_DEVICE, farmDevId, null);
+                await this.userActionService.logDisabling(userId, TABLES.FARM_DEVICE, farmDevId);
             }
 
             const signalDeviceIds = await this.deviceRepository.disableDeviceSignals(deviceId, timestamp);
             if (Array.isArray(signalDeviceIds) && signalDeviceIds.length > 0) {
-                await this.userActionService.logDisabling(userId, TABLES.DEVICE_SIGNAL, signalDeviceIds, null);
+                await this.userActionService.logDisabling(userId, TABLES.DEVICE_SIGNAL, signalDeviceIds);
             }
+
+            await this.deviceRepository.disableDevice(deviceId, timestamp)
+            await this.userActionService.logDisabling(userId, TABLES.DEVICE, deviceId)
 
         } catch (error) {
             console.error(`Error disabling device: ${error.message}`);
