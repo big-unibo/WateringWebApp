@@ -791,7 +791,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *         description: Timestamp indicating end date of the sector validity, if not set take actual timestamp (Seconds elapsed since 1/1/1970).
      *     responses:
      *       200:
-     *         description: Sector succesfuly disabled.
+     *         description: Sector successfully disabled.
      *         content:
      *           application/json:
      *             schema:
@@ -799,7 +799,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *               properties:
      *                 message:
      *                   type: string
-     *                   example: Sector succesfuly disabled.
+     *                   example: Sector successfully disabled.
      *       '400':
      *         description: Input validation error (Bad Request)
      *         content:
@@ -887,7 +887,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
                 return res.status(400).json({ message: 'Invalid validTo timestamp provided. It must be a timestamp in the last 24 hours' })
             }
             await fieldService.disableSector(userId, sectorId, validTo)
-            return res.status(200).json({ message: `Sector validity succesfully endend` })
+            return res.status(200).json({ message: `Sector validity successfully endend` })
         } catch (error) {
             console.log(`Failed disabling Sector: ${error.message}`)
             return res.status(500).json({ error: "Internal error disablingthesis" })

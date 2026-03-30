@@ -24,6 +24,11 @@ function initFarm(sequelize) {
         location: {
             type: DataTypes.GEOMETRY,
             allowNull: true
+        },
+        disabledAt: {
+            type: DataTypes.DOUBLE,
+            allowNull: true,
+            field: "disabled_at"
         }
     }, {
         tableName : 'farms', 

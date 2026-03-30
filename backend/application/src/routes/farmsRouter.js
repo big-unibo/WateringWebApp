@@ -242,14 +242,14 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
      *           type: integer
      *         description: ID of farm to disable
      *       - in: query
-     *         name: timestamp
+     *         name: validTo
      *         required: false
      *         schema:
      *           type: number
      *         description: Timestamp indicating end date of the farm validity, if not set takes actual timestamp (Seconds elapsed since 1/1/1970).
      *     responses:
      *       200:
-     *         description: Farm succesfuly disabled.
+     *         description: Farm successfully disabled.
      *         content:
      *           application/json:
      *             schema:
@@ -257,7 +257,7 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
      *               properties:
      *                 message:
      *                   type: string
-     *                   example: Farm succesfuly disabled.
+     *                   example: Farm successfully disabled.
      *       '400':
      *         description: Input validation error (Bad Request)
      *         content:
@@ -334,15 +334,19 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
             return res.status(404).json({ message: 'Farm not found' });
         }
 
-        const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
+        const currentTimestamp = Math.floor(Date.now() / 1000);
+        const validTo = req.query.validTo ?? currentTimestamp;
 
         if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'FARM', farmId))){
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
         try {
-            await fieldService.disableFarm(userId, requestUserData.isAdmin, farmId, timestamp)
-            return res.status(200).json({ message: `Farm validity succesfully endend` })
+            if (validTo < currentTimestamp - (24 * 60 * 60)) {
+                return res.status(400).json({ message: 'Invalid validTo timestamp provided. It must be a timestamp in the last 24 hours' })
+            }
+            await fieldService.disableFarm(userId, requestUserData.isAdmin, farmId, validTo)
+            return res.status(200).json({ message: `Farm validity successfully endend` })
         } catch (error) {
             console.log(`Failed disabling farm: ${error.message}`)
             return res.status(500).json({ error: "Internal error disabling thesis" })

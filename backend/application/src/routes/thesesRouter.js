@@ -1294,7 +1294,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
      *         description: Timestamp indicating end date of the thesis validity, if not set take actual timestamp (Seconds elapsed since 1/1/1970).
      *     responses:
      *       200:
-     *         description: Thesis succesfuly disabled.
+     *         description: Thesis successfully disabled.
      *         content:
      *           application/json:
      *             schema:
@@ -1302,7 +1302,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
      *               properties:
      *                 message:
      *                   type: string
-     *                   example: Thesis succesfuly disabled.
+     *                   example: Thesis successfully disabled.
      *       '400':
      *         description: Input validation error (Bad Request)
      *         content:
@@ -1389,7 +1389,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
                 return res.status(400).json({ message: 'Invalid validTo timestamp provided. It must be a timestamp in the last 24 hours' })
             }
             await fieldService.disableThesis(userId, thesisId, validTo)
-            return res.status(200).json({ message: `Thesis validity succesfully endend` })
+            return res.status(200).json({ message: `Thesis validity successfully endend` })
         } catch (error) {
             console.log(`Failed disabling thesis: ${error.message}`)
             return res.status(500).json({ error: "Internal error disablingthesis" })

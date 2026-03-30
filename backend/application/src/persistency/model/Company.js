@@ -19,6 +19,11 @@ function initCompany(sequelize) {
         address: {
             type: DataTypes.TEXT,
             allowNull: true
+        },
+        disabledAt: {
+            type: DataTypes.DOUBLE,
+            allowNull: true,
+            field: "disabled_at"
         }
     }, {
         tableName : 'companies',

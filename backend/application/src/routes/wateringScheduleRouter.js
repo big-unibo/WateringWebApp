@@ -554,7 +554,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
      *         description: Timestamp of watering season end (timestamp in seconds elapsed since 1/1/1970)
      *     responses:
      *       200:
-     *         description: Succesfully deleted watering events
+     *         description: successfully deleted watering events
      *         content:
      *           application/json:
      *             schema:
@@ -562,7 +562,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
      *               properties:
      *                 message:
      *                   type: string
-     *                   example: Succesfully deleted watering events
+     *                   example: successfully deleted watering events
      *       '400':
      *         description: Input validation error (Bad Request)
      *         content:

@@ -136,6 +136,23 @@ class CompanyRepository {
         }
     }
 
+    async disableCompany(companyId, timestamp) {
+        try {
+            await this.Company.update(
+                {
+                    disabledAt: timestamp
+                },
+                {
+                    where: {
+                        id: companyId,
+                    }
+                }
+            )
+        } catch (error) {
+            throw new Error(`Error disabling company: ${error.message}`);
+        }
+    }
+
     async deleteCompany(companyId) {
         try {
             await _deleteFromModelByParams(this.CompaniesOrganizations, { companyId: companyId })

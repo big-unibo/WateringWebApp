@@ -105,6 +105,17 @@ class FarmRepository {
         }
     }
 
+    async disableFarm(farmId, timestamp) {
+        try {
+            await this.Farm.update(
+                { disabledAt: timestamp },
+                { where: { id: farmId } }
+            );
+        } catch (error) {
+            throw new Error(`Error while disabling farm caused by: ${error.message}`);
+        }
+    }
+
     async deleteFarm(farmId) {
         try {
             return await _deleteFromModelByParams(this.Farm, { id: farmId })

@@ -440,6 +440,138 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
 
     /**
      * @swagger
+     * /companies/{companyId}/disable:
+     *   post:
+     *     summary: Disables a company.
+     *     tags: [Companies]
+     *     description: |
+     *       Disables a company by:
+     *       
+     *       - Disabling all of the devices associated with the company.
+     *       - Disabling all of the farms associated with the company.
+     * 
+     *       Requires authentication and proper authorization.
+     *     parameters:
+     *       - in: path
+     *         name: companyId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of company to disable
+     *       - in: query
+     *         name: validTo
+     *         required: false
+     *         schema:
+     *           type: number
+     *         description: Timestamp indicating end date of the company validity, if not set takes actual timestamp (Seconds elapsed since 1/1/1970).
+     *     responses:
+     *       200:
+     *         description: Company successfully disabled.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Company successfully disabled.
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       401:
+     *         description: Authentication failed (Invalid or missing JWT).
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized request – user not allowed to end farm validity.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error during the process.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.post('/:companyId/disable', async (req, res) => {
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+        const userId = requestUserData.userId;
+
+        const companyId = req.params.companyId;
+        const exists = await companyService.companyExists(companyId);
+        if (!exists) {
+            return res.status(404).json({ message: 'Company not found' });
+        }
+
+        const currentTimestamp = Math.floor(Date.now() / 1000);
+        const validTo = req.query.validTo ?? currentTimestamp;
+
+        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'COMPANY', companyId))){
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
+
+        try {
+            if (validTo < currentTimestamp - (24 * 60 * 60)) {
+                return res.status(400).json({ message: 'Invalid validTo timestamp provided. It must be a timestamp in the last 24 hours' })
+            }
+            await companyService.disableCompany(userId, requestUserData.isAdmin, companyId, validTo)
+            return res.status(200).json({ message: `Company validity successfully ended` })
+        } catch (error) {
+            console.log(`Failed disabling company: ${error.message}`)
+            return res.status(500).json({ error: "Internal error disabling company" })
+        }
+    })
+
+    /**
+     * @swagger
      * /companies/{companyId}/delete:
      *   delete:
      *     summary: Deletes a given company

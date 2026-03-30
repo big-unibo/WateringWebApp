@@ -483,6 +483,9 @@ class FieldService {
                 }));
             }
 
+            await this.farmRepository.disableFarm(farmId, timestamp)
+            await this.userActionService.logDisabling(userId, TABLES.FARM, farmId);
+
         } catch (error) {
             console.error(`Error disabling farm: ${error.message}`);
             throw error;

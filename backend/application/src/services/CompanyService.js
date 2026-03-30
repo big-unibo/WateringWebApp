@@ -60,6 +60,30 @@ class CompanyService {
         }
     }
 
+    async disableCompany(userId, isAdmin, companyId, validTo) {
+        try {
+            const companyDevices = await this.deviceRepository.getDevicesByCompany(companyId);
+            if (companyDevices && Array.isArray(companyDevices)){
+                await Promise.all(companyDevices.map(async device=>{
+                    await this.deviceService.disableDevice(userId, device.id, validTo)
+                }))
+            }
+
+            const companyFarms = await this.farmRepository.getFarmsByCompany(companyId);
+            if (companyFarms && Array.isArray(companyFarms)) {
+                await Promise.all(companyFarms.map(async farm =>
+                    await this.fieldService.disableFarm(userId, isAdmin, farm.id, validTo)
+                ));
+            }
+
+            await this.companyRepository.disableCompany(companyId, validTo)
+            await this.userActionService.logDisabling(userId, TABLES.COMPANY, companyId)
+        } catch (error) {
+            console.error(`Error disabling company: ${error.message}`);
+            throw error;
+        }
+    }
+
     async deleteCompany(userId, companyId) {
         try {
             const companyDevices = await this.deviceRepository.getDevicesByCompany(companyId);

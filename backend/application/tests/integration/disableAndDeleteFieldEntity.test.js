@@ -232,6 +232,48 @@ describe('Entity Cascading Deletion Integration Test', () => {
     });
 
     /**
+     * Disabling a Farm and related entity
+     */
+     it('should disable a farm and its associations', async () => {
+        const validTo = Math.floor(Date.now() / 1000);
+        await request(app)
+            .post(`/devices/${TEST_DELETE_DEVICE_ASSOCIATED_ID}/link`)
+            .set('Authorization', `Bearer ${authToken}`)
+            .send({ targetId: TEST_DELETE_FARM_ID, targetType: DeviceTargetType.FARM, validFrom: validTo - 1000 })
+            .expect(200);
+
+        expect(await table(db, 'sectors').where('farm_id', TEST_DELETE_FARM_ID).first()).toBeDefined();
+        expect(await table(db, 'farms_devices').where('farm_id', TEST_DELETE_FARM_ID).andWhere(function () {
+            this.where('valid_to', '>', validTo + 1).orWhereNull('valid_to')
+        }).first()).toBeDefined();
+
+        await request(app)
+            .post(`/farms/${TEST_DELETE_FARM_ID}/disable`)
+            .query({ validTo })
+            .set('Authorization', `Bearer ${authToken}`)
+            .expect(200);
+        
+        await table(db, 'farms')
+            .where('id', TEST_DELETE_FARM_ID)
+            .first()
+            .then(record => {
+                expect(record.disabled_at).toBe(validTo)
+            })
+        expect(await table(db, 'sectors')
+            .where('farm_id', TEST_DELETE_FARM_ID)
+            .andWhere('disabled_at', '>', validTo)
+            .first()).toBeUndefined()
+        await table(db, 'farms_devices')
+            .where('farm_id', TEST_DELETE_FARM_ID)
+            .andWhere('valid_from', '<', validTo + 1)
+            .andWhere(function () {
+                this.where('valid_to', '>', validTo + 1).orWhereNull('valid_to')})
+            .then(records => {
+                expect(records).toHaveLength(0)
+            })
+     })
+
+    /**
      * Deleting a Farm
      */
     it('should delete a farm and cascade deletion to its sectors and their theses', async () => {
@@ -265,6 +307,34 @@ describe('Entity Cascading Deletion Integration Test', () => {
         const device = await table(db, 'devices').where('id', TEST_DELETE_DEVICE_ASSOCIATED_ID).first();
         expect(device).toBeDefined();
     });
+
+    /**
+     * Disabling a Company and related entity
+     */
+
+    it('should disable a company and its associations', async () => {
+        const validTo = Math.floor(Date.now() / 1000);
+        await request(app).post(`/companies/${TEST_DELETE_COMPANY_ID}/disable`)
+            .query({ validTo }).set('Authorization', `Bearer ${authToken}`)
+            .expect(200);
+        
+        await table(db, 'companies')
+            .where('id', TEST_DELETE_COMPANY_ID)
+            .first()
+            .then(record => {
+                expect(record.disabled_at).toBe(validTo)
+            })
+
+        expect(await table(db, 'farms').where('company_id', TEST_DELETE_COMPANY_ID).andWhere(function () {
+            this.where('disabled_at', '>', validTo + 1).orWhereNull('disabled_at')
+        }).first()).toBeUndefined()
+
+        await table(db, 'devices').where('company_id', TEST_DELETE_COMPANY_ID).then(devices => {
+            devices.forEach(device => {
+                expect(device.disabled_at).toBeLessThanOrEqual(validTo)
+            })
+        })
+    })
 
     /**
      * Deleting the Company
