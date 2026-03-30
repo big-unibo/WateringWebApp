@@ -772,6 +772,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *       
      *       - Ending validity period of the devices associated with the sector.
      *       - Disabling all of the theses associated with the sector.
+     *       - Deleting all the services associated with the sector.
      *       - Ending the irrigation season (Deleting the scheduled watering event).
      * 
      *       Requires authentication and proper authorization.
@@ -783,7 +784,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *           type: integer
      *         description: ID of sector to disable
      *       - in: query
-     *         name: timestamp
+     *         name: validTo
      *         required: false
      *         schema:
      *           type: number
@@ -875,14 +876,17 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
             return res.status(404).json({ message: 'Sector not found' });
         }
 
-        const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
-
+        const currentTimestamp = Math.floor(Date.now() / 1000);
+        const validTo = req.query.validTo ?? currentTimestamp;
         if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'SECTOR', sectorId))){
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
         try {
-            await fieldService.disableSector(userId, sectorId, timestamp)
+            if (validTo < currentTimestamp - (24 * 60 * 60)) {
+                return res.status(400).json({ message: 'Invalid validTo timestamp provided. It must be a timestamp in the last 24 hours' })
+            }
+            await fieldService.disableSector(userId, sectorId, validTo)
             return res.status(200).json({ message: `Sector validity succesfully endend` })
         } catch (error) {
             console.log(`Failed disabling Sector: ${error.message}`)
@@ -1287,7 +1291,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
             const timeFilterFrom = req.query.timeFilterFrom ?? Date.now() / 1000
             const timeFilterTo = req.query.timeFilterTo ?? Date.now() / 1000
 
-            const result = await sectorServicesService.getSectorService(sectorId, timeFilterFrom, timeFilterTo)
+            const result = await sectorServicesService.getSectorServices(sectorId, timeFilterFrom, timeFilterTo)
 
             return res.status(200).json(result)
 

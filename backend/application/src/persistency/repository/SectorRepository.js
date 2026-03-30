@@ -164,6 +164,18 @@ class SectorRepository {
         }
     }
 
+    async disableSector(sectorId, validTo) {
+        try {
+            await this.Sector.update(
+                { disabledAt: validTo },
+                { where: { id: sectorId } }
+            );
+        } catch (error) {
+            throw new Error(`Error while disabling sector caused by: ${error.message}`);
+        }
+    }
+
+
     async deleteSector(sectorId) {
         try {
             return await _deleteFromModelByParams(this.Sector, { id: sectorId })

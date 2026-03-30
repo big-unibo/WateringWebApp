@@ -1668,7 +1668,8 @@ INSERT INTO public.advices(thesis_id, watering_start, image_timestamp, advice, d
 	VALUES (3, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 14:10:00'), EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 13:30:00'), 5, 100, 0.5, NULL, 0, 0);
 
 INSERT INTO public.watering_events(id, sector_id, date, watering_start, watering_end, advice, duration, expected_water, note, enabled, scheduled)
-	VALUES (1, 2, '2025-01-22', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 14:10:00'), EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 15:50:00'), 5, 100, 0, NULL, true, true);
+	VALUES (1, 2, '2025-01-22', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 14:10:00'), EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 15:50:00'), 5, 100, 0, NULL, true, true),
+    (2, 2, '2199-12-31', EXTRACT(EPOCH FROM TIMESTAMP '2199-12-31 23:59:59'), NULL, NULL, NULL, NULL, NULL, true, false);
 
 INSERT INTO public.watering_algorithm_params(id, thesis_id, min_watering, max_watering, watering_baseline, ki, kp, description, valid_from, valid_to, error_function, watering_frequency)
 	VALUES (1, 3, 1, 10, 2, 3, 7, NULL, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 12:00:00'), NULL, 'potential_error', 24);
@@ -1841,7 +1842,7 @@ SELECT pg_catalog.setval('public.watering_algorithm_params_id_seq', 1, false);
 -- Name: watering_events_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.watering_events_id_seq', 2, true);
+SELECT pg_catalog.setval('public.watering_events_id_seq', 3, true);
 
 
 --

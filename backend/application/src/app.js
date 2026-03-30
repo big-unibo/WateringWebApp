@@ -120,8 +120,8 @@ const userActionService = new UserActionService(userActionRepository)
 const organizationService = new OrganizationService(organizationRepository, userActionService)
 const userService = new UserService(userRepository, userActionService)
 const authenticationService = new AuthenticationService(userService)
-const fieldService = new FieldService(companyRepository, farmRepository, sectorRepository, thesisRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, deviceRepository, wateringScheduleRepository, optimalStateRepository, serviceRepository, userActionService)
 const sectorServicesService = new SectorServicesService(serviceRepository, userActionService)
+const fieldService = new FieldService(companyRepository, farmRepository, sectorRepository, thesisRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, deviceRepository, wateringScheduleRepository, optimalStateRepository, serviceRepository, sectorServicesService, userActionService)
 const authorizationService = new AuthorizationService(userService, authorizationRepository, userActionService)
 const deviceService = new DeviceService(deviceRepository, signalRepository, thesisRepository, interpolatedProfileRepository, optimalStateRepository, userActionService)
 const signalService = new SignalService(signalRepository, userActionService)
@@ -129,6 +129,15 @@ const companyService = new CompanyService(companyRepository, farmRepository, dev
 const wateringScheduleService = new WateringScheduleService(wateringScheduleRepository, wateringAdviceRepository, userActionService)
 const wateringAdviceService = new WateringAdviceService(wateringAdviceRepository, sectorRepository, thesisRepository, interpolatedProfileRepository, optimalDistanceRepository, thesesAllSignalsRepository, userActionService)
 const logService = new LogService(logRepository, userActionService)
+
+
+import fs from 'fs'
+
+fs.writeFileSync(
+  './swagger.json',
+  JSON.stringify(swaggerSpec, null, 2),
+  'utf8'
+)
 
 app.use(express.json());
 app.use(cors());

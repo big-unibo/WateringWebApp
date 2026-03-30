@@ -10,7 +10,7 @@ const MONTH_TO_SECONDS = MINUTE_TO_SECONDS * 60 * 24 * 30
 
 class FieldService {
 
-    constructor(companyRepository, farmRepository, sectorRepository, thesisRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, deviceRepository, wateringScheduleRepository, optimalStateRepository, sectorServiceRepository, userActionService) {
+    constructor(companyRepository, farmRepository, sectorRepository, thesisRepository, thesesAllSignalsRepository, interpolatedProfileRepository, humidityBinsRepository, optimalDistanceRepository, wateringAdviceRepository, deviceRepository, wateringScheduleRepository, optimalStateRepository, sectorServiceRepository, sectorServicesService, userActionService) {
         this.farmRepository = farmRepository
         this.companyRepository = companyRepository
         this.sectorRepository = sectorRepository
@@ -24,6 +24,7 @@ class FieldService {
         this.wateringScheduleRepository = wateringScheduleRepository
         this.optimalStateRepository = optimalStateRepository
         this.sectorServiceRepository = sectorServiceRepository
+        this.sectorServicesService = sectorServicesService
         this.userActionService = userActionService
     }
 
@@ -327,28 +328,31 @@ class FieldService {
 
     async disableThesis(userId, thesisId, timestamp) {
         try {
-            const deviceId = await this.thesesAllSignalsRepository.getGridDeviceByThesis(thesisId, timestamp, timestamp)
-            const optimalProfileAssignmentId = await this.optimalStateRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp)
-            if (optimalProfileAssignmentId) {
-                this.userActionService.logDisabling(userId, TABLES.OPTIMAL_PROFILE, optimalProfileAssignmentId, null)
-            }
+            // const deviceId = await this.thesesAllSignalsRepository.getGridDeviceByThesis(thesisId, timestamp, timestamp)
+            // const optimalProfileAssignmentId = await this.optimalStateRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp)
+            // if (optimalProfileAssignmentId) {
+            //     this.userActionService.logDisabling(userId, TABLES.OPTIMAL_PROFILE, optimalProfileAssignmentId, null)
+            // }
             const algorithmId = await this.wateringAdviceRepository.setWateringAlgorithmParamsEndDate(thesisId, timestamp)
             if (algorithmId) {
-                this.userActionService.logDisabling(userId, TABLES.WATERING_ALGORITHM, algorithmId, null)
+                this.userActionService.logDisabling(userId, TABLES.WATERING_ALGORITHM, algorithmId)
             }
 
             const devices = await this.deviceRepository.getThesisAssociatedDevices(thesisId, timestamp)
             await Promise.all(devices.map(async (device) => {
                 const deviceAssignmentId = await this.deviceRepository.unlinkDeviceFromThesis({thesisId: thesisId, deviceId: device.id, validTo: timestamp});
                 if (deviceAssignmentId) {
-                    await this.userActionService.logDisabling(userId, TABLES.THESIS_DEVICE, deviceAssignmentId, null);
+                    await this.userActionService.logDisabling(userId, TABLES.THESIS_DEVICE, deviceAssignmentId);
                 }
             }));
 
             const sectorAssignmentsIds = await this.thesisRepository.disableThesisFromSectors(thesisId, timestamp)
             if (sectorAssignmentsIds) {
-                await this.userActionService.logDisabling(userId, TABLES.THESIS_IN_SECTOR, sectorAssignmentsIds, null);
+                await this.userActionService.logDisabling(userId, TABLES.THESIS_IN_SECTOR, sectorAssignmentsIds);
             }
+
+            await this.thesisRepository.disableThesis(thesisId, timestamp)
+            await this.userActionService.logDisabling(userId, TABLES.THESIS, thesisId);
         } catch (error) {
             console.error(`Error disabling Thesis: ${error.message}`);
             throw error;
@@ -393,16 +397,20 @@ class FieldService {
                 }
             }));
 
-            try {
-                //Thesis disabling
-                const sectorData = await this.getSectorDetails(sectorId, timestamp);
-                if (sectorData && sectorData.theses && Array.isArray(sectorData.theses)) {
-                    await Promise.all(sectorData.theses.map(async thesis =>
-                        await this.disableThesis(userId, thesis.id, timestamp)
-                    ));
-                }
-            } catch (innerError) {
-                console.warn(`Skipping thesis disable for sector ${sectorId}: ${innerError.message}`);
+            //Thesis disabling
+            const sectorData = await this.getSectorDetails(sectorId, timestamp);
+            if (sectorData && sectorData.theses && Array.isArray(sectorData.theses)) {
+                await Promise.all(sectorData.theses.map(async thesis =>
+                    await this.disableThesis(userId, thesis.id, timestamp)
+                ));
+            }
+            const sectorServices = await this.sectorServicesService.getSectorServices(sectorId, timestamp, 9999999999)
+            console.log("Sector services to disable: ", sectorServices)
+            if (Array.isArray(sectorServices)) {
+                await Promise.all(sectorServices.map(async service => {
+                    console.log(`Disabling service ${service.name} in sector ${sectorId}`)
+                    await this.sectorServicesService.disableSectorService(userId, sectorId, service.id, timestamp);
+                }))
             }
 
             //Deletion of scheduled events for the sector
@@ -410,6 +418,9 @@ class FieldService {
             if (deletedEventsIds) {
                 await this.userActionService.logDeletion(userId, TABLES.WATERING_EVENT, deletedEventsIds, null);
             }
+
+            await this.sectorRepository.disableSector(sectorId, timestamp)
+            await this.userActionService.logDisabling(userId, TABLES.SECTOR, sectorId);
 
         } catch (error) {
             console.error(`Error disabling sector ${sectorId}: ${error.message}`);

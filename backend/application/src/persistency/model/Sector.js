@@ -48,6 +48,11 @@ function initSector(sequelize) {
             type: DataTypes.BOOLEAN,
             allowNull: true,
             field : "double_wing"
+        },
+        disabledAt: {
+            type: DataTypes.DOUBLE,
+            allowNull: true,
+            field: "disabled_at"
         }
     }, {
         modelName:'Sector',

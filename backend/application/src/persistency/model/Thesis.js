@@ -16,7 +16,11 @@ function initThesis(sequelize) {
             allowNull: false,
             field: "thesis_name"
         },
-
+        disabledAt: {
+            type: DataTypes.DOUBLE,
+            allowNull: true,
+            field: "disabled_at"
+        }
     }, {
         tableName : 'theses',
         modelName : 'Thesis',

@@ -1274,9 +1274,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
      *     tags: [Theses]
      *     description: |
      *       Disables a thesis by:
-     *       
      *       - Ending validity period of the signals associated with the thesis.
-     *       - Ending optimal profile assignment.
      *       - Ending watering algorithm validity.
      *       - Ending thesis validity from sector.
      * 
@@ -1289,7 +1287,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
      *           type: integer
      *         description: ID of thesis to disable
      *       - in: query
-     *         name: timestamp
+     *         name: validTo
      *         required: false
      *         schema:
      *           type: number
@@ -1379,13 +1377,18 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
         if (!exists) {
             return res.status(404).json({ message: 'Thesis not found' });
         }
-        const timestamp = req.query.timestamp ? req.query.timestamp : Date.now() / 1000;
+
+        const currentTimestamp = Math.floor(Date.now() / 1000);
+        const validTo = req.query.validTo ?? currentTimestamp;
 
         try {
             if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'THESIS', thesisId))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
-            await fieldService.disableThesis(userId, thesisId, timestamp)
+            if (validTo < currentTimestamp - (24 * 60 * 60)) {
+                return res.status(400).json({ message: 'Invalid validTo timestamp provided. It must be a timestamp in the last 24 hours' })
+            }
+            await fieldService.disableThesis(userId, thesisId, validTo)
             return res.status(200).json({ message: `Thesis validity succesfully endend` })
         } catch (error) {
             console.log(`Failed disabling thesis: ${error.message}`)

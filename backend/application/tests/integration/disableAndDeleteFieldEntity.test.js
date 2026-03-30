@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
-import { loginUser, setupDb, table } from '../utils';
-import { ADMIN_EMAIL, ADMIN_PASSWORD } from '../const';
+import { loginUser, setupDb, table } from '../utils.js';
+import { ADMIN_EMAIL, ADMIN_PASSWORD } from '../const.js';
 import { DeviceTargetType } from '../../src/dtos/deviceDto.js';
 
 describe('Entity Cascading Deletion Integration Test', () => {
@@ -39,7 +39,50 @@ describe('Entity Cascading Deletion Integration Test', () => {
     });
 
     /**
-     * TEST: Deleting a Thesis and related entity
+     * Disabling a Thesis and related entity
+     */
+     it('should disable a thesis and its associations', async () => {
+        const validTo = Math.floor(Date.now() / 1000);
+        await request(app)
+            .post(`/theses/${TEST_DELETE_THESIS_ID}/disable`)
+            .query({ validTo })
+            .set('Authorization', `Bearer ${authToken}`)
+            .expect(200);
+
+        await table(db, 'theses')
+            .where('id', TEST_DELETE_THESIS_ID)
+            .first()
+            .then(record => {
+                expect(record.disabled_at).toBe(validTo)
+            })
+        await table(db, 'theses_in_sectors')
+            .where('thesis_id', TEST_DELETE_THESIS_ID)
+            .andWhere('valid_from', '<', validTo + 1)
+            .andWhere(function () {
+                this.where('valid_to', '>', validTo + 1).orWhereNull('valid_to')})
+            .then(records => {
+                expect(records).toHaveLength(0)
+            })
+        await table(db, 'theses_devices')
+            .where('thesis_id', TEST_DELETE_THESIS_ID)
+            .andWhere('valid_from', '<', validTo + 1)
+            .andWhere(function () {
+                this.where('valid_to', '>', validTo + 1).orWhereNull('valid_to')})
+            .then(records => {
+                expect(records).toHaveLength(0)
+            })
+        await table(db, 'watering_algorithm_params')
+            .where('thesis_id', TEST_DELETE_THESIS_ID)
+            .andWhere('valid_from', '<', validTo + 1)
+            .andWhere(function () {
+                this.where('valid_to', '>', validTo + 1).orWhereNull('valid_to')})
+            .then(records => {
+                expect(records).toHaveLength(0)
+            })
+     })
+
+    /**
+     * Deleting a Thesis and related entity
      */
     it('should delete a thesis without affecting parent entities', async () => {
 
@@ -77,19 +120,84 @@ describe('Entity Cascading Deletion Integration Test', () => {
     });
 
     /**
-     * TEST: Deleting a Sector and related entity
+     * DIsabling a Sector and related entity
+     */
+     it('should disable a sector and its associations', async () => {
+        const validTo = Math.floor(Date.now() / 1000);
+
+        await request(app)
+            .post(`/devices/${TEST_DELETE_DEVICE_ASSOCIATED_ID}/link`)
+            .set('Authorization', `Bearer ${authToken}`)
+             .send({ targetId: TEST_DELETE_SECTOR_ID, targetType: DeviceTargetType.SECTOR, validFrom: validTo - 1000 })
+             .expect(200);
+
+         expect(await table(db, 'theses_in_sectors').where('sector_id', TEST_DELETE_SECTOR_ID).andWhere(function () {
+             this.where('valid_to', '>', validTo + 1).orWhereNull('valid_to')
+         }).first()).toBeDefined();
+         expect(await table(db, 'sectors_devices').where('sector_id', TEST_DELETE_SECTOR_ID).andWhere(function () {
+             this.where('valid_to', '>', validTo + 1).orWhereNull('valid_to')
+         }).first()).toBeDefined();
+         expect(await table(db, 'sectors_services').where('sector_id', TEST_DELETE_SECTOR_ID).andWhere(function () {
+             this.where('valid_to', '>', validTo + 1).orWhereNull('valid_to')
+         }).first()).toBeDefined();
+         expect(await table(db, 'watering_events').where('sector_id', TEST_DELETE_SECTOR_ID).andWhere('watering_start', '>', validTo + 1).first()).toBeDefined();
+
+         await request(app)
+             .post(`/sectors/${TEST_DELETE_SECTOR_ID}/disable`)
+            .query({ validTo })
+            .set('Authorization', `Bearer ${authToken}`)
+            .expect(200);
+        
+        await table(db, 'sectors')
+            .where('id', TEST_DELETE_SECTOR_ID)
+            .first()
+            .then(record => {
+                expect(record.disabled_at).toBe(validTo)
+            })
+        
+        await table(db, 'theses_in_sectors')
+            .where('sector_id', TEST_DELETE_SECTOR_ID)
+            .andWhere('valid_from', '<', validTo + 1)
+            .andWhere(function () {
+                this.where('valid_to', '>', validTo + 1).orWhereNull('valid_to')})
+            .then(records => {
+                expect(records).toHaveLength(0)
+            })
+        
+        await table(db, 'sectors_devices')
+            .where('sector_id', TEST_DELETE_SECTOR_ID)
+            .andWhere('valid_from', '<', validTo + 1)
+            .andWhere(function () {
+                this.where('valid_to', '>', validTo + 1).orWhereNull('valid_to')})
+            .then(records => {
+                expect(records).toHaveLength(0)
+            })
+
+        await table(db, 'sectors_services')
+            .where('sector_id', TEST_DELETE_SECTOR_ID)
+            .andWhere('valid_from', '<', validTo + 1)
+            .andWhere(function () {
+                this.where('valid_to', '>', validTo + 1).orWhereNull('valid_to')})
+            .then(records => {
+                expect(records).toHaveLength(0)
+            })
+
+        await table(db, 'watering_events')
+            .where('sector_id', TEST_DELETE_SECTOR_ID)
+            .andWhere('watering_start', '>', validTo + 1)
+            .then(records => {
+                expect(records).toHaveLength(0)
+            })
+     })
+
+    /**
+     * Deleting a Sector and related entity
      */
     it('should delete a thesis without affecting parent entities', async () => {
 
         expect(await table(db, 'sectors').where('id', TEST_DELETE_SECTOR_ID).first()).toBeDefined();
         const thesisId = (await table(db, 'theses_in_sectors').where('sector_id', TEST_DELETE_SECTOR_ID).first())?.thesis_id
         expect(thesisId).toBeDefined();
-
-        await request(app)
-            .post(`/devices/${TEST_DELETE_DEVICE_ASSOCIATED_ID}/link`)
-            .set('Authorization', `Bearer ${authToken}`)
-            .send({ targetId: TEST_DELETE_SECTOR_ID, targetType: DeviceTargetType.SECTOR, validFrom: Math.floor(Date.now() / 1000) })
-            .expect(200);
 
         expect(await table(db, 'sectors_devices').where('sector_id', TEST_DELETE_SECTOR_ID).first()).toBeDefined();
         expect(await table(db, 'watering_events').where('sector_id', TEST_DELETE_SECTOR_ID).first()).toBeDefined();
@@ -124,7 +232,7 @@ describe('Entity Cascading Deletion Integration Test', () => {
     });
 
     /**
-     * TEST: Deleting a Farm
+     * Deleting a Farm
      */
     it('should delete a farm and cascade deletion to its sectors and their theses', async () => {
         
@@ -159,7 +267,7 @@ describe('Entity Cascading Deletion Integration Test', () => {
     });
 
     /**
-     * TEST: Deleting the Company
+     * Deleting the Company
      */
     it('should delete a company and all its associated child entities', async () => {
         expect(await table(db, 'companies').where('id', TEST_DELETE_COMPANY_ID).first()).toBeDefined();

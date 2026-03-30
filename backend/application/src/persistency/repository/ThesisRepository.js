@@ -218,6 +218,23 @@ class ThesisRepository {
         }
     }
 
+    async disableThesis(thesisId, timestamp) {
+        try {
+            await this.Thesis.update(
+                {
+                    disabledAt: timestamp
+                },
+                {
+                    where: {
+                        id: thesisId,
+                    }
+                }
+            )
+        } catch (error) {
+            throw new Error(`Error disabling thesis: ${error.message}`);
+        }
+    }
+
     async deleteThesis(thesisId) {
         try {
             return await _deleteFromModelByParams(this.Thesis, { id: thesisId })
