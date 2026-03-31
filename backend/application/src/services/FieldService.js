@@ -408,12 +408,10 @@ class FieldService {
             console.log("Sector services to disable: ", sectorServices)
             if (Array.isArray(sectorServices)) {
                 await Promise.all(sectorServices.map(async service => {
-                    console.log(`Disabling service ${service.name} in sector ${sectorId}`)
                     await this.sectorServicesService.disableSectorService(userId, sectorId, service.id, timestamp);
                 }))
             }
 
-            //Deletion of scheduled events for the sector
             const deletedEventsIds = await this.wateringScheduleRepository.deleteWateringEvents(sectorId, timestamp)
             if (deletedEventsIds) {
                 await this.userActionService.logDeletion(userId, TABLES.WATERING_EVENT, deletedEventsIds, null);

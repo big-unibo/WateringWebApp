@@ -133,7 +133,10 @@ class WateringAdviceRepository {
                             [Op.lt]: timestamp
                         },
                         validTo: {
-                            [Op.is]: null
+                            [Op.or]: [
+                                { [Op.is]: null },
+                                { [Op.gt]: timestamp }
+                            ]
                         },
                     },
                     returning: true 

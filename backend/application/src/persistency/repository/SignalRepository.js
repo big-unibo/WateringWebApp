@@ -34,7 +34,10 @@ class SignalRepository {
                 },
                 {
                     where: {
-                        id: signalId
+                        id: signalId,
+                        disabledAt: {
+                            [Op.is]: null
+                        }
                     }
                 }
             );

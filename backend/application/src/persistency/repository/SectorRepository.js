@@ -168,7 +168,7 @@ class SectorRepository {
         try {
             await this.Sector.update(
                 { disabledAt: validTo },
-                { where: { id: sectorId } }
+                { where: { id: sectorId, disabledAt: { [Op.is]: null } } }
             );
         } catch (error) {
             throw new Error(`Error while disabling sector caused by: ${error.message}`);

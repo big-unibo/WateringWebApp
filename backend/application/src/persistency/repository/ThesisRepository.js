@@ -227,6 +227,9 @@ class ThesisRepository {
                 {
                     where: {
                         id: thesisId,
+                        disabledAt: {
+                            [Op.is]: null
+                        }
                     }
                 }
             )

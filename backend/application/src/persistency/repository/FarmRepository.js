@@ -17,12 +17,12 @@ class FarmRepository {
         return count > 0;
     }
 
-    async getFarms(filteringIds){
+    async getFarms(filteringIds) {
         try {
             const where = {};
 
             if (Array.isArray(filteringIds)) {
-                if (filteringIds.length > 0){
+                if (filteringIds.length > 0) {
                     where.id = {
                         [Op.in]: filteringIds
                     }
@@ -77,7 +77,7 @@ class FarmRepository {
             GROUP BY c.id, c.company_name, f.id, f.farm_name, f.location`
 
             const results = await this.sequelize.query(query, {
-                replacements: { userId, farmId, isAdmin},
+                replacements: { userId, farmId, isAdmin },
                 type: this.sequelize.QueryTypes.SELECT
             });
             return results?.[0];
@@ -109,7 +109,7 @@ class FarmRepository {
         try {
             await this.Farm.update(
                 { disabledAt: timestamp },
-                { where: { id: farmId } }
+                { where: { id: farmId, disabledAt: { [Op.is]: null } } }
             );
         } catch (error) {
             throw new Error(`Error while disabling farm caused by: ${error.message}`);

@@ -382,7 +382,10 @@ class DeviceRepository {
                 },
                 {
                     where: {
-                        id: deviceId
+                        id: deviceId,
+                        disabledAt: {
+                            [Op.is]: null
+                        }
                     }
                 }
             );

@@ -145,6 +145,9 @@ class CompanyRepository {
                 {
                     where: {
                         id: companyId,
+                        disabledAt: {
+                            [Op.is]: null
+                        }
                     }
                 }
             )
