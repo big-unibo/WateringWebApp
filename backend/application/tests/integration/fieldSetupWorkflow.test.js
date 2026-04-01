@@ -75,7 +75,8 @@ describe('Field Setup Creation Integration Test', () => {
         const payload = {
             name: 'Mario Rossi Agro Company',
             address: 'via Roma, 1588 Bologna (BO)',
-            organizationIds: [organizationId]
+            organizationIds: [organizationId],
+            createdAt: Math.floor(Date.now() / 1000)
         }
 
         const res = await request(app)
@@ -92,6 +93,7 @@ describe('Field Setup Creation Integration Test', () => {
         expect(record).toBeDefined()
         expect(record.company_name).toBe(payload.name)
         expect(record.address).toBe(payload.address)
+        expect(record.created_at).toBe(payload.createdAt)
         
         const organizations = await table(db, 'companies_organizations').where({company_id: companyId})
         const ids = organizations.map(o => o.organization_id)

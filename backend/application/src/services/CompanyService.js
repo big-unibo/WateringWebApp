@@ -19,7 +19,7 @@ class CompanyService {
 
     async createCompany(userId,company){ 
         try {
-            const companyCreated = await this.companyRepository.createCompany(company.name, company.address,company.organizationIds)
+            const companyCreated = await this.companyRepository.createCompany(company.name, company.address,company.organizationIds, company.createdAt)
             const companyId = companyCreated.id
             if (companyId) {
                 await this.userActionService.logCreation(userId, TABLES.COMPANY, companyId, null)
@@ -31,8 +31,8 @@ class CompanyService {
         }    
     }
 
-    async getCompanies(filteringIds) {
-        const result = await this.companyRepository.getCompanies(filteringIds);
+    async getCompanies(filteringIds, timeFilterFrom, timeFilterTo) {
+        const result = await this.companyRepository.getCompanies(filteringIds, timeFilterFrom, timeFilterTo);
         return dtoConverter.convertCompanies(result);
     }
 

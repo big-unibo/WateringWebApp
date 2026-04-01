@@ -14,6 +14,19 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
      *     description: | 
      *       Retrieve all companies available for the user.
      *       Requires Authentication and proper authorization
+     *     parameters:
+     *       - in: query
+     *         name: timeFilterFrom
+     *         required: false
+     *         schema:
+     *           type: number
+     *         description: Timestamp to filter companies with activity after it (Seconds elapsed since 1/1/1970).
+     *       - in: query
+     *         name: timeFilterTo
+     *         required: false
+     *         schema:
+     *           type: number
+     *         description: Timestamp to filter companies with activity before it (Seconds elapsed since 1/1/1970).
      *     responses:
      *       200:
      *         description: List of companies for the user
@@ -22,7 +35,7 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
      *             schema:
      *               type: array
      *               items:
-     *                 $ref: '#/components/schemas/Company'
+     *                 $ref: '#/components/schemas/CompanyBase'
      *       '400':
      *         description: Input validation error (Bad Request)
      *         content:
@@ -81,7 +94,9 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
                 if(userAvailableIds.includes('ALL')){
                     userAvailableIds = null
                 }
-                const companies = await companyService.getCompanies(userAvailableIds);
+                const timeFilterFrom = req.query.timeFilterFrom ?? Math.floor(Date.now()/1000);
+                const timeFilterTo = req.query.timeFilterTo ?? Math.ceil(Date.now()/1000);
+                const companies = await companyService.getCompanies(userAvailableIds, timeFilterFrom, timeFilterTo);
                 return res.status(200).json(companies);
             }            
             return res.status(404).json({
@@ -301,7 +316,8 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
             const companyName = req.body.name
             const address = req.body.address
             const organizationIds = req.body.organizationIds
-            const company = new Company(companyName, address, organizationIds);
+            const createdAt = req.body.createdAt ?? Math.floor(Date.now() / 1000);
+            const company = new Company(companyName, address, organizationIds, null, createdAt);
 
             const companyId = await companyService.createCompany(userId, company);
             return res.status(200).json({ message: `Company created with success`, id: companyId });
@@ -331,7 +347,7 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
      *       content:
      *         application/json:
      *           schema:
-     *             $ref: '#/components/schemas/CompanyBase'
+     *             $ref: '#/components/schemas/CompanyAttributes'
      *     responses:
      *       200:
      *         description: Company updated successfully

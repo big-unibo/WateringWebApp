@@ -42,7 +42,9 @@ class DtoConverter {
             company.companyName,
             company.address,
             company.organizationIds,
-            company.id
+            company.id,
+            company.createdAt,
+            company.disabledAt
         );
     }
 
@@ -58,7 +60,9 @@ class DtoConverter {
             companyData.companyName,
             companyData.address,
             organizations,
-            farms
+            farms,
+            companyData.createdAt,
+            companyData.disabledAt
         );
     }
 

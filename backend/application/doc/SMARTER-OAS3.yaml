@@ -70,7 +70,7 @@ components:
         - role
 
 
-    CompanyBase:
+    CompanyAttributes:
       type: object
       properties:
         name:
@@ -79,16 +79,21 @@ components:
         address:
           type: string
           description: Address of the company
-        organizationIds:
-          type: array
-          items:
-            type: integer
-          description: ID of the organizations to associate
+        
 
     CreateCompany:
       allOf:
-        - $ref: '#/components/schemas/CompanyBase'
+        - $ref: '#/components/schemas/CompanyAttributes'
         - type: object
+          properties:
+            createdAt:
+              type: number
+              description: Timestamp of company creation (optional)
+            organizationIds:
+              type: array
+              items:
+                type: integer
+              description: ID of the organizations to associate
           required:
             - name
       
@@ -495,7 +500,7 @@ components:
           $ref: '#/components/schemas/GeometryElement'
           description: Location of the farm
         company:
-            $ref: "#/components/schemas/Company"
+            $ref: "#/components/schemas/CompanyIdentifier"
             description: Company owning the farm
         sectors:
           type: array
@@ -526,7 +531,7 @@ components:
               - description: farm the sector belongs to
             company:
               allOf:
-              - $ref: "#/components/schemas/Company"
+              - $ref: "#/components/schemas/CompanyIdentifier"
               - description: Company owning the farm
             theses:
               type: array
@@ -572,7 +577,7 @@ components:
         weight:
           type: number
         company:
-          $ref: "#/components/schemas/Company"
+          $ref: "#/components/schemas/CompanyIdentifier"
           description: Company owning the farm
         farm:
           $ref: "#/components/schemas/Farm"
@@ -599,7 +604,7 @@ components:
           $ref: '#/components/schemas/GeometryElement'
           description: Location of the farm
     
-    Company:
+    CompanyIdentifier:
       type: object
       properties:
         id:
@@ -608,11 +613,26 @@ components:
         name:
           type: string
           description: Name of the company
+
+    CompanyBase:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/CompanyIdentifier"
+        - $ref: "#/components/schemas/CompanyAttributes"
+        - type: object
+          properties:
+            createdAt:
+              type: number
+              description: Timestamp of company creation (optional)
+            disabledAt:
+              type: number
+              description: Timestamp of company disablement (optional)
+    
     
     CompanyData:
       type: object
       allOf:
-        - $ref: "#/components/schemas/Company"
+        - $ref: "#/components/schemas/CompanyBase"
         - type: object
           properties:
             organizations:
@@ -647,7 +667,7 @@ components:
               type: array
               description: List of companies belonging to the organization
               items:
-                $ref: "#/components/schemas/Company"
+                $ref: "#/components/schemas/CompanyIdentifier"
 
     SectorIdentifier:
       type: object
@@ -684,7 +704,7 @@ components:
             $ref: "#/components/schemas/Farm"
             description: Farm the sector belongs to
           company:
-            $ref: "#/components/schemas/Company"
+            $ref: "#/components/schemas/CompanyIdentifier"
             description: Company owning the farm
       
     SectorsCompact:

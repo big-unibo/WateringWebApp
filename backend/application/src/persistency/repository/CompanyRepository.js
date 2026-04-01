@@ -17,7 +17,7 @@ class CompanyRepository {
         return count > 0;
     }
 
-    async createCompany(companyName, address, organizationIds = []) {
+    async createCompany(companyName, address, organizationIds = [], createdAt) {
         try {
             for(const organizationId of organizationIds){
                 const organization = await this.Organization.findByPk(organizationId);
@@ -28,7 +28,8 @@ class CompanyRepository {
 
             const companyCreated = await this.Company.create({
                 companyName,
-                address
+                address,
+                createdAt
             });
 
             for(const organizationId of organizationIds){
@@ -47,7 +48,7 @@ class CompanyRepository {
     async getCompanyDetails(companyId, userId, isAdmin) {
         try {
             const query = `
-            SELECT c.id, c.company_name AS "companyName", c.address,
+            SELECT c.id, c.company_name AS "companyName", c.address, c.created_at AS "createdAt", c.disabled_at AS "disabledAt",
                 json_agg(DISTINCT jsonb_build_object('id', o.id, 'organizationName', o.organization_name)) FILTER (WHERE o.id IS NOT NULL) AS organizations, 
                 json_agg(DISTINCT jsonb_build_object('id', f.id, 'farmName', f.farm_name)) FILTER (WHERE f.id IS NOT NULL) AS farms 
             FROM companies c
@@ -62,7 +63,7 @@ class CompanyRepository {
                 :isAdmin = true
                 OR p.company_id IS NOT NULL
             )
-            GROUP BY c.id, c.company_name, c.address`
+            GROUP BY c.id, c.company_name, c.address, c.created_at, c.disabled_at`;
 
             const results = await this.sequelize.query(query, {
                 replacements: { userId, companyId, isAdmin},
@@ -77,9 +78,19 @@ class CompanyRepository {
     /**
      * Returns companies filtered by given ids, if filteringIds is not defined it returns all the companies, if it is empty return empty
      */
-    async getCompanies(filteringIds) {
+    async getCompanies(filteringIds, timeFilterFrom, timeFilterTo) {
         try {
-            const where = {};
+            const where = {
+                createdAt: {
+                    [Op.lt]: timeFilterTo,
+                },
+                disabledAt: {
+                    [Op.or]: {
+                        [Op.gt]: timeFilterFrom,
+                        [Op.is]: null
+                    }
+                }
+            };
 
             if (Array.isArray(filteringIds)) {
                 if (filteringIds.length > 0){
@@ -147,6 +158,9 @@ class CompanyRepository {
                         id: companyId,
                         disabledAt: {
                             [Op.is]: null
+                        },
+                        createdAt: {
+                            [Op.lt]: timestamp
                         }
                     }
                 }

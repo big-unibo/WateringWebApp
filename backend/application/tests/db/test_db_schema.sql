@@ -78,7 +78,8 @@ CREATE TABLE public.companies (
     id integer NOT NULL,
     company_name text NOT NULL,
     address text,
-    disabled_at double precision
+    disabled_at double precision,
+    created_at double precision
 );
 
 
@@ -152,7 +153,8 @@ CREATE TABLE public.devices (
     location public.geometry,
     binning_id integer,
     company_id integer,
-    disabled_at double precision
+    disabled_at double precision,
+    created_at double precision
 );
 
 
@@ -224,7 +226,8 @@ CREATE TABLE public.signals (
     id_on_provider text,
     sensor_technology text,
     provider_id integer,
-    disabled_at double precision
+    disabled_at double precision,
+    created_at double precision
 );
 
 
@@ -293,7 +296,8 @@ CREATE TABLE public.farms (
     farm_name text NOT NULL,
     company_id integer NOT NULL,
     location public.geometry,
-    disabled_at double precision
+    disabled_at double precision,
+    created_at double precision
 );
 
 
@@ -480,7 +484,8 @@ CREATE TABLE public.sectors (
     dripper_capacity double precision,
     sprinkler_capacity double precision,
     double_wing boolean,
-    disabled_at double precision
+    disabled_at double precision,
+    created_at double precision
 );
 
 
@@ -862,7 +867,8 @@ ALTER SEQUENCE public.signals_id_seq OWNED BY public.signals.id;
 CREATE TABLE public.theses (
     id integer NOT NULL,
     thesis_name text NOT NULL,
-    disabled_at double precision
+    disabled_at double precision,
+    created_at double precision
 );
 
 
@@ -1193,7 +1199,8 @@ CREATE TABLE public.users (
     password text NOT NULL,
     name text,
     phone text,
-    disabled_at double precision
+    disabled_at double precision,
+    created_at double precision
 );
 
 
@@ -1546,23 +1553,27 @@ VALUES (1, -10000, -1500, -300, -200, -100, -30, 0, 'Soil water potential'),
 INSERT INTO public.organizations (id, organization_name) 
 VALUES (1, 'Test Organization 1');
 
-INSERT INTO public.companies (id, company_name, address) 
-VALUES (1, 'Test Company 1', 'via XXV Aprile, 45 Faenza (Ra)'),
-(2, 'Test Company 2', 'via Roma, 33 Cesena (Fc)');
+INSERT INTO public.companies (id, company_name, address, created_at) 
+VALUES (1, 'Test Company 1', 'via XXV Aprile, 45 Faenza (Ra)', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(2, 'Test Company 2', 'via Roma, 33 Cesena (Fc)', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00'));
 
-INSERT INTO public.farms (id, farm_name, company_id, location) 
-VALUES (1, 'Test Farm 1', 1, public.ST_GeomFromText('POLYGON((10 45, 10.1 45, 10.1 45.1, 10 45.1, 10 45))', 4326)),
-(2, 'Test Farm 2', 2, public.ST_GeomFromText('POLYGON((12 45, 12.1 45, 12.1 48.1, 12 45.1, 12 45))', 4326)),
-(3, 'Test Farm 3', 2, public.ST_GeomFromText('POLYGON((12 45, 12.1 45, 12.1 48.1, 12 45.1, 12 45))', 4326));
+INSERT INTO public.farms (id, farm_name, company_id, location, created_at) 
+VALUES (1, 'Test Farm 1', 1, public.ST_GeomFromText('POLYGON((10 45, 10.1 45, 10.1 45.1, 10 45.1, 10 45))', 4326), EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(2, 'Test Farm 2', 2, public.ST_GeomFromText('POLYGON((12 45, 12.1 45, 12.1 48.1, 12 45.1, 12 45))', 4326), EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(3, 'Test Farm 3', 2, public.ST_GeomFromText('POLYGON((12 45, 12.1 45, 12.1 48.1, 12 45.1, 12 45))', 4326), EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00'));
 
-INSERT INTO public.sectors (id, sector_name, farm_id, culture, culture_type, location, dripper_capacity, sprinkler_capacity, double_wing) 
-VALUES (1, 'Test Sector 1', 1, 'Kiwi', 'G3', public.ST_GeomFromText('POLYGON((10.01 45.01, 10.05 45.01, 10.05 45.05, 10.01 45.05, 10.01 45.01))', 4326), 4.0, NULL, false),
-(2, 'Test Sector 2', 2, 'Kiwi', 'G3', NULL, 2.0, NULL, false),
-(3, 'Test Sector 3', 2, 'Kiwi', 'G3', NULL, 3.0, NULL, false),
-(4, 'Test Sector 4', 3, 'Kiwi', 'G3', NULL, 3.0, NULL, false);
+INSERT INTO public.sectors (id, sector_name, farm_id, culture, culture_type, location, dripper_capacity, sprinkler_capacity, double_wing, created_at) 
+VALUES (1, 'Test Sector 1', 1, 'Kiwi', 'G3', public.ST_GeomFromText('POLYGON((10.01 45.01, 10.05 45.01, 10.05 45.05, 10.01 45.05, 10.01 45.01))', 4326), 4.0, NULL, false, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(2, 'Test Sector 2', 2, 'Kiwi', 'G3', NULL, 2.0, NULL, false, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(3, 'Test Sector 3', 2, 'Kiwi', 'G3', NULL, 3.0, NULL, false, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(4, 'Test Sector 4', 3, 'Kiwi', 'G3', NULL, 3.0, NULL, false, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00'));
 
-INSERT INTO public.theses (id, thesis_name) 
-VALUES (1, 'Thesis 1'), (2, 'Thesis 2'), (3, 'Thesis 3'), (4, 'Thesis 4'), (5, 'Thesis 5');
+INSERT INTO public.theses (id, thesis_name, created_at) 
+VALUES (1, 'Thesis 1', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-20 7:00:00')),
+(2, 'Thesis 2', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-20 7:00:00')),
+(3, 'Thesis 3', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-20 7:00:00')),
+(4, 'Thesis 4', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-20 7:00:00')),
+(5, 'Thesis 5', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-20 7:00:00'));
 
 INSERT INTO public.theses_in_sectors (thesis_id, sector_id, valid_from) 
 VALUES (1, 1, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-20 7:00:00')),
@@ -1571,30 +1582,30 @@ VALUES (1, 1, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-20 7:00:00')),
 (4, 3, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-20 7:00:00')),
 (5, 4, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-20 7:00:00'));
 
-INSERT INTO public.devices (id, type, description, binning_id, location, company_id)
+INSERT INTO public.devices (id, type, description, binning_id, location, company_id, created_at)
 VALUES
-(1, 'WEATHER_STATION', 'Farm 1 Station', NULL, public.ST_GeomFromText('POINT(10.05 45.05)', 4326), 1),
-(2, 'FLOW_METER', 'Sector 1 Pressure Switch',  NULL, public.ST_GeomFromText('POINT(10.02 45.02)', 4326), 1),
-(3, 'SOIL_MOISTURE_GRID', 'Thesis 1 Grid',   1, public.ST_GeomFromText('POINT(10.03 45.03)', 4326), 1),
-(4, 'SOIL_MOISTURE_GRID', 'Thesis 2 Grid Test delete device',   1, public.ST_GeomFromText('POINT(13.03 43.03)', 4326), 1),
-(5, 'SOIL_MOISTURE_GRID', 'Thesis 3 Grid Test delete thesis',   1, public.ST_GeomFromText('POINT(14.03 44.03)', 4326), 2);
+(1, 'WEATHER_STATION', 'Farm 1 Station', NULL, public.ST_GeomFromText('POINT(10.05 45.05)', 4326), 1, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(2, 'FLOW_METER', 'Sector 1 Pressure Switch',  NULL, public.ST_GeomFromText('POINT(10.02 45.02)', 4326), 1, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(3, 'SOIL_MOISTURE_GRID', 'Thesis 1 Grid',   1, public.ST_GeomFromText('POINT(10.03 45.03)', 4326), 1, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(4, 'SOIL_MOISTURE_GRID', 'Thesis 2 Grid Test delete device',   1, public.ST_GeomFromText('POINT(13.03 43.03)', 4326), 1, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(5, 'SOIL_MOISTURE_GRID', 'Thesis 3 Grid Test delete thesis',   1, public.ST_GeomFromText('POINT(14.03 44.03)', 4326), 2, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00'));
 
-INSERT INTO public.signals (id, type_id, provider_id, id_on_provider, unit, description, x, y, z, virtual, sensor_technology)
+INSERT INTO public.signals (id, type_id, provider_id, id_on_provider, unit, description, x, y, z, virtual, sensor_technology, created_at)
 VALUES
-(1, 4, 2, 'WS-TEMP-001', '°C', 'Station 1 Air Temp', 0, 200, 0, false, 'RTD'),
-(2, 5, 2, 'WS-HUM-001',  '%',  'Station 1 Humidity', NULL, NULL, NULL, false, 'Resistive'),
-(3, 1, 1, 'DRIP-SWC-01', 'L',  'Computed liter NPRESS01', 0, 0, 0, false, 'Pressure Sensor'),
-(4, 2, 1, 'GRID-GES-0-20', 'cbar', 'Grid 3 Ges 20>0', 0, 20, 0, false, 'Gypsum Block'),
-(5, 2, 1, 'GRID-GES-0-60', 'cbar', 'Grid 3 Ges 60>0', 0, 60, 0, false, 'Gypsum Block'),
-(6, 2, 1, 'GRID-GES-40-20', 'cbar', 'Grid 3 Ges 20>40', 40, 20, 0, false, 'Gypsum Block'),
-(7, 2, 1, 'GRID-GES-40-60', 'cbar', 'Grid 3 Ges 60>40', 40, 60, 0, false, 'Gypsum Block'),
-(8, 2, 1, 'GRID-2-GES-0-20', 'cbar', 'Grid 4 Ges 20>0', 0, 20, 0, false, 'Gypsum Block'),
-(9, 2, 1, 'GRID-2-GES-0-60', 'cbar', 'Grid 4 Ges 60>0', 0, 60, 0, false, 'Gypsum Block'),
-(10, 2, 1, 'GRID-2-GES-40-20', 'cbar', 'Grid 4 Ges 20>40', 40, 20, 0, false, 'Gypsum Block'),
-(11, 2, 1, 'GRID-3-0-20', 'cbar', 'Grid 5 Ges 20>0', 0, 20, 0, false, 'Gypsum Block'),
-(12, 2, 1, 'GRID-3-0-60', 'cbar', 'Grid 5 Ges 60>0', 0, 60, 0, false, 'Gypsum Block'),
-(13, 2, 1, 'GRID-3-40-20', 'cbar', 'Grid 5 Ges 20>40', 40, 20, 0, false, 'Gypsum Block'),
-(14, 2, 1, 'GRID-3-40-60', 'cbar', 'Grid 5 Ges 60>40', 40, 60, 0, false, 'Gypsum Block');
+(1, 4, 2, 'WS-TEMP-001', '°C', 'Station 1 Air Temp', 0, 200, 0, false, 'RTD', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(2, 5, 2, 'WS-HUM-001',  '%',  'Station 1 Humidity', NULL, NULL, NULL, false, 'Resistive', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(3, 1, 1, 'DRIP-SWC-01', 'L',  'Computed liter NPRESS01', 0, 0, 0, false, 'Pressure Sensor', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(4, 2, 1, 'GRID-GES-0-20', 'cbar', 'Grid 3 Ges 20>0', 0, 20, 0, false, 'Gypsum Block', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(5, 2, 1, 'GRID-GES-0-60', 'cbar', 'Grid 3 Ges 60>0', 0, 60, 0, false, 'Gypsum Block', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(6, 2, 1, 'GRID-GES-40-20', 'cbar', 'Grid 3 Ges 20>40', 40, 20, 0, false, 'Gypsum Block', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(7, 2, 1, 'GRID-GES-40-60', 'cbar', 'Grid 3 Ges 60>40', 40, 60, 0, false, 'Gypsum Block', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(8, 2, 1, 'GRID-2-GES-0-20', 'cbar', 'Grid 4 Ges 20>0', 0, 20, 0, false, 'Gypsum Block', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(9, 2, 1, 'GRID-2-GES-0-60', 'cbar', 'Grid 4 Ges 60>0', 0, 60, 0, false, 'Gypsum Block', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(10, 2, 1, 'GRID-2-GES-40-20', 'cbar', 'Grid 4 Ges 20>40', 40, 20, 0, false, 'Gypsum Block', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(11, 2, 1, 'GRID-3-0-20', 'cbar', 'Grid 5 Ges 20>0', 0, 20, 0, false, 'Gypsum Block', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(12, 2, 1, 'GRID-3-0-60', 'cbar', 'Grid 5 Ges 60>0', 0, 60, 0, false, 'Gypsum Block', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(13, 2, 1, 'GRID-3-40-20', 'cbar', 'Grid 5 Ges 20>40', 40, 20, 0, false, 'Gypsum Block', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00')),
+(14, 2, 1, 'GRID-3-40-60', 'cbar', 'Grid 5 Ges 60>40', 40, 60, 0, false, 'Gypsum Block', EXTRACT(EPOCH FROM TIMESTAMP '2025-01-01 0:00:00'));
 
 INSERT INTO public.devices_signals (device_id, signal_id, valid_from)
 VALUES
