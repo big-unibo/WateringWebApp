@@ -126,10 +126,15 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *           type: integer
      *         description: ID of the sector to retrieve information for
      *       - in: query
-     *         name: timestamp
+     *         name: timeFilterFrom
      *         schema:
      *           type: number
-     *         description: The timestamp in which find the information
+     *         description: The timestamp from which find the information
+     *       - in: query
+     *         name: timeFilterTo
+     *         schema:
+     *           type: number
+     *         description: The timestamp to which find the information
      *     responses:
      *       200:
      *         description: Detailed sector information
@@ -208,15 +213,15 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
         }
 
         const sectorId = Number(req.params.sectorId)
-        const timestamp = req.query.timestamp ?? null
-        
+        const timeFilterFrom = req.query.timeFilterFrom ?? null
+        const timeFilterTo = req.query.timeFilterTo ?? null
 
         if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'SECTOR', sectorId))){
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
         try {
-            const sectorData = await fieldService.getSectorDetails(sectorId, timestamp)
+            const sectorData = await fieldService.getSectorDetails(sectorId, timeFilterFrom, timeFilterTo)
 
             if (!sectorData) {
                 return res.status(404).json({

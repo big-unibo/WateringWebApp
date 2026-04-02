@@ -1,10 +1,12 @@
 export class Device {
-    constructor({deviceId, deviceType, deviceDescription, signals, location, binningId}){
+    constructor({deviceId, deviceType, deviceDescription, signals, location, binningId, createdAt, disabledAt}) {
         this.id = deviceId
         this.type = deviceType
         this.description = deviceDescription
         this.location = location,
         this.binningId = binningId,
+        this.createdAt = createdAt,
+        this.disabledAt = disabledAt,
         this.signals = signals
     }
 }
@@ -16,13 +18,15 @@ export class CreateDevice {
      * @param {number} companyId - Company that devices belongs to
      * @param {Object} location - GeoJSON Point
      * @param {number} binningId  - Id of the binning profile
+     * @param {number} createdAt - Timestamp of device creation
      */
-    constructor(type, description, companyId, location, binningId) {
+    constructor(type, description, companyId, location, binningId, createdAt) {
         this.type = type;
         this.description = description;
         this.companyId = companyId;
         this.location = location;
         this.binningId = binningId;
+        this.createdAt = createdAt;
     }
 }
 

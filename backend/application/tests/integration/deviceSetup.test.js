@@ -53,7 +53,8 @@ describe('Device and Signal Setup Integration Test', () => {
             location: {
                 type: 'Point',
                 coordinates: [10.50, 45.50]
-            }
+            },
+            createdAt: Math.floor(Date.now()/1000),
         }
 
         const res = await request(app)
@@ -73,6 +74,7 @@ describe('Device and Signal Setup Integration Test', () => {
 
         expect(record).toBeDefined()
         expect(record.type).toBe(payload.type)
+        expect(record.created_at).toBe(payload.createdAt)
 
         const storedGeo = JSON.parse(record.location_json)
         expect(storedGeo.type).toBe('Point')

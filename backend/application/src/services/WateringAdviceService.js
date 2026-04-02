@@ -84,7 +84,7 @@ export class WateringAdviceService {
                 console.warn("Thesis details or algorithm params not found, returning empty advice");
                 throw new Error("Thesis details or algorithm params not found");
             }
-            const sectorDetails = await this.sectorRepository.getSectorDetails(thesisDetails.sector.id, timestamp)
+            const sectorDetails = await this.sectorRepository.getSectorDetails(thesisDetails.sector.id, timestamp, timestamp)
             if (!sectorDetails) {
                 console.warn("Sector details not found, returning empty advice");
                 throw new Error("Sector details not found");

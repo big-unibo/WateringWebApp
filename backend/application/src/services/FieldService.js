@@ -42,7 +42,7 @@ class FieldService {
 
     async createFarm(userId, farm) {
         try {
-            const farmCreated = await this.farmRepository.createFarm(farm.name, farm.companyId, farm.location);
+            const farmCreated = await this.farmRepository.createFarm(farm.name, farm.companyId, farm.location, farm.createdAt);
             const farmId = farmCreated.id;
             if (farmId) {
                 this.userActionService.logCreation(userId, TABLES.FARM, farmId, null)
@@ -83,15 +83,6 @@ class FieldService {
         await _updateEntity(userId, sector, this.sectorRepository.updateSector.bind(this.sectorRepository), this.userActionService, TABLES.SECTOR)
     }
 
-    async getSectorOwner(sectorId) {
-        const result = await this.sectorRepository.getSectorDetails(sectorId, Date.now() / 1000);
-
-        if (!result || !result.farm || !result.farm.company) {
-            throw new Error(`Company not found for sector ${sectorId}`);
-        }
-        return dtoConverter.convertCompany(result.farm.company);
-    }
-
     async createThesis(userId, thesis) {
         const newThesisId = await this.thesisRepository.createThesis(thesis.name);
         if (!newThesisId) {
@@ -107,8 +98,8 @@ class FieldService {
         await _updateEntity(userId, thesis, this.thesisRepository.updateThesis.bind(this.thesisRepository), this.userActionService, TABLES.THESIS)
     }
 
-    async getFarmDetails(farmId, userId, isAdmin) {
-        const result = await this.farmRepository.getFarmDetails(farmId, userId, isAdmin);
+    async getFarmDetails(farmId, timeFilterFrom, timeFilterTo, userId, isAdmin) {
+        const result = await this.farmRepository.getFarmDetails(farmId, timeFilterFrom, timeFilterTo, userId, isAdmin);
         return dtoConverter.convertFarmDataWrapper(result);
     }
 
@@ -185,8 +176,8 @@ class FieldService {
         return dtoConverter.convertSectorsDataWrapper(result);
     }
 
-    async getSectorDetails(sectorId, timestamp) {
-        const result = await this.sectorRepository.getSectorDetails(sectorId, timestamp);
+    async getSectorDetails(sectorId, timeFilterFrom, timeFilterTo) {
+        const result = await this.sectorRepository.getSectorDetails(sectorId, timeFilterFrom, timeFilterTo);
         return dtoConverter.convertSectorDataWrapper(result);
     }
 
@@ -294,7 +285,7 @@ class FieldService {
     }
 
     async setThesesContributions(userId, sectorId, thesesContributions, validFrom, validTo) {
-        const thesesIds = new Set((await this.getSectorDetails(sectorId, validFrom)).theses.map(t => t.id))
+        const thesesIds = new Set((await this.getSectorDetails(sectorId, validFrom, validFrom)).theses.map(t => t.id))
         const paramThesisIds = new Set(thesesContributions.map(t => t.id))
 
         //Find invalid params (present in params but NOT in DB)
@@ -398,7 +389,7 @@ class FieldService {
             }));
 
             //Thesis disabling
-            const sectorData = await this.getSectorDetails(sectorId, timestamp);
+            const sectorData = await this.getSectorDetails(sectorId, timestamp, timestamp);
             if (sectorData && sectorData.theses && Array.isArray(sectorData.theses)) {
                 await Promise.all(sectorData.theses.map(async thesis =>
                     await this.disableThesis(userId, thesis.id, timestamp)
@@ -444,7 +435,7 @@ class FieldService {
                 await this.userActionService.logDeletion(userId, TABLES.SECTOR_SERVICE, sectorId)
             }
 
-            const sectorData = await this.getSectorDetails(sectorId);
+            const sectorData = await this.getSectorDetails(sectorId, 0, 9999999999);
             if (sectorData && sectorData.theses && Array.isArray(sectorData.theses)) {
                 await Promise.all(sectorData.theses.map(async thesis =>
                     await this.deleteThesis(userId, thesis.id)
@@ -469,7 +460,7 @@ class FieldService {
                     await this.userActionService.logDisabling(userId, TABLES.FARM_DEVICE, deviceAssignmentId, null);
                 }
             }));
-            const farmData = await this.farmRepository.getFarmDetails(farmId, userId, isAdmin);
+            const farmData = await this.farmRepository.getFarmDetails(farmId, timestamp, timestamp, userId, isAdmin);
 
             if (farmData && farmData.sectors && Array.isArray(farmData.sectors)) {
                 await Promise.all(farmData.sectors.map(async sector => {

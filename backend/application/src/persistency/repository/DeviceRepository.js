@@ -28,7 +28,8 @@ class DeviceRepository {
                 description: deviceData.description,
                 location: deviceData.location,
                 binningId: deviceData.binningId,
-                companyId: deviceData.companyId
+                companyId: deviceData.companyId,
+                createdAt: deviceData.createdAt
             });
 
             return device.id;
@@ -82,6 +83,8 @@ class DeviceRepository {
             ds.device_description AS "deviceDescription",
             ds.device_binning_id AS "binningId",
             d.location,
+            d.created_at AS "createdAt",
+            d.disabled_at AS "disabledAt",
             ds.provider_id AS "providerId",
             ds.signal_id_on_provider AS "idOnProvider",
             ds.signal_id AS "signalId",
@@ -156,18 +159,18 @@ class DeviceRepository {
     }
 
     async countDevices(filteringIds, timeFilterFrom, timeFilterTo, providerIds, types, companyIds) {
-        const query = ` SELECT COUNT(DISTINCT ds.device_id) AS total
-            FROM devices_signals_denormalized ds
-            WHERE valid_from < :timeFilterTo
-                AND COALESCE(valid_to, 'infinity') > :timeFilterFrom
+        const query = ` SELECT COUNT(DISTINCT id) AS total
+            FROM devices
+            WHERE created_at < :timeFilterTo
+                AND COALESCE(disabled_at, 'infinity') > :timeFilterFrom
                 ${providerIds?.length > 0 ? "AND provider_id = ANY(ARRAY[:providerIds]::int[])" : ""}
-                ${companyIds?.length > 0 ? "AND device_company_id = ANY(ARRAY[:companyIds]::int[])" : ""}
-                ${types?.length > 0 ? "AND device_type = ANY(ARRAY[:types])" : ""}
+                ${companyIds?.length > 0 ? "AND company_id = ANY(ARRAY[:companyIds]::int[])" : ""}
+                ${types?.length > 0 ? "AND type = ANY(ARRAY[:types])" : ""}
                 AND ${filteringIds === null
                 ? 'TRUE'
                 : filteringIds.length === 0
                     ? 'FALSE'
-                    : 'ds.device_id = ANY(ARRAY[:filteringIds])'}`
+                    : 'id = ANY(ARRAY[:filteringIds])'}`
         try {
             const [results] = await this.sequelize.query(query, {
                 replacements: { timeFilterFrom, timeFilterTo, providerIds, types, companyIds, filteringIds },
@@ -182,19 +185,19 @@ class DeviceRepository {
 
     async getDevices(filteringIds, timeFilterFrom, timeFilterTo, providerIds, types, companyIds, offset, limit) {
         const query = `WITH paginated_devices AS (
-            SELECT DISTINCT ds.device_id
-            FROM devices_signals_denormalized ds
-            WHERE valid_from < :timeFilterTo
-                AND COALESCE(valid_to, 'infinity') > :timeFilterFrom
+            SELECT DISTINCT id, created_at AS "createdAt", disabled_at AS "disabledAt"
+            FROM devices
+            WHERE created_at < :timeFilterTo
+                AND COALESCE(disabled_at, 'infinity') > :timeFilterFrom
                 ${providerIds?.length > 0 ? "AND provider_id = ANY(ARRAY[:providerIds]::int[])" : ""}
-                ${types?.length > 0 ? "AND device_type = ANY(ARRAY[:types])" : ""}
-                ${companyIds?.length > 0 ? "AND device_company_id = ANY(ARRAY[:companyIds]::int[])" : ""}
+                ${companyIds?.length > 0 ? "AND company_id = ANY(ARRAY[:companyIds]::int[])" : ""}
+                ${types?.length > 0 ? "AND type = ANY(ARRAY[:types])" : ""}
                 AND ${filteringIds === null
                 ? 'TRUE'
                 : filteringIds.length === 0
                     ? 'FALSE'
-                    : 'ds.device_id = ANY(ARRAY[:filteringIds])'}
-            ORDER BY ds.device_id
+                    : 'id = ANY(ARRAY[:filteringIds])'}
+            ORDER BY id
             LIMIT :limit
             OFFSET :offset
         )
@@ -211,9 +214,11 @@ class DeviceRepository {
             m.measurement_timestamp AS "lastMeasurementTimestamp",
             ds.virtual,
             ds.unit,
-            ds.x, ds.y, ds.z
+            ds.x, ds.y, ds.z,
+            pd."createdAt",
+            pd."disabledAt"
         FROM devices_signals_denormalized ds
-        JOIN paginated_devices pd ON pd.device_id = ds.device_id
+        JOIN paginated_devices pd ON pd.id = ds.device_id
         JOIN LATERAL (
             SELECT MAX(timestamp) AS measurement_timestamp
             FROM measurements m
@@ -385,6 +390,9 @@ class DeviceRepository {
                         id: deviceId,
                         disabledAt: {
                             [Op.is]: null
+                        },
+                        createdAt: {
+                            [Op.lt]: validTo
                         }
                     }
                 }

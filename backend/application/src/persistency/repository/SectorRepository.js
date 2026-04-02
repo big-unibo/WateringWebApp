@@ -27,7 +27,8 @@ class SectorRepository {
         location,
         dripperCapacity,
         sprinklerCapacity,
-        doubleWing
+        doubleWing,
+        createdAt
     }) {
         try {
             const farm = await this.Farm.findByPk(farmId);
@@ -42,7 +43,8 @@ class SectorRepository {
                 location,
                 dripperCapacity,
                 sprinklerCapacity,
-                doubleWing
+                doubleWing,
+                createdAt
             });
 
             return sectorCreated;
@@ -51,9 +53,9 @@ class SectorRepository {
         }
     }
 
-    async getSectorDetails(sectorId, timestamp) {
+    async getSectorDetails(sectorId, timeFilterFrom, timeFilterTo) {
         const sector = await this.Sector.findByPk(sectorId, {
-            attributes: ['id', 'sectorName', 'culture', 'cultureType', 'farmId', 'location', 'dripperCapacity', 'sprinklerCapacity', 'doubleWing'],
+            attributes: ['id', 'sectorName', 'culture', 'cultureType', 'farmId', 'location', 'dripperCapacity', 'sprinklerCapacity', 'doubleWing', 'createdAt', 'disabledAt'],
             include: [
                 {
                     model: this.Farm,
@@ -71,7 +73,7 @@ class SectorRepository {
                     model: this.ThesisInSector,
                     as: 'thesisInSector',
                     attributes: ['thesisId'],
-                    required: timestamp ? true : false,
+                    required: false,
                     include: [
                         {
                             model: this.Thesis,
@@ -79,15 +81,15 @@ class SectorRepository {
                             attributes: ['thesisName']
                         }
                     ],
-                    where: timestamp ? {
-                        validFrom: { [Op.lt]: timestamp },
+                    where: {
+                        validFrom: { [Op.lt]: timeFilterTo },
                         validTo: {
                             [Op.or]: [
                                 { [Op.is]: null },
-                                { [Op.gt]: timestamp }
+                                { [Op.gt]: timeFilterFrom }
                             ]
                         }
-                    } : undefined 
+                    }
                 }
             ]
         });
@@ -120,7 +122,9 @@ class SectorRepository {
                 s.sector_name AS "sectorName",
                 s.culture AS "culture",
                 s.culture_type AS "cultureType",
-                s.location AS "location"
+                s.location AS "location",
+                s.created_at AS "createdAt",
+                s.disabled_at AS "disabledAt"
             FROM sectors s
             JOIN farms f
                 ON f.id = s.farm_id
@@ -128,12 +132,14 @@ class SectorRepository {
                 ON c.id = f.company_id
             LEFT JOIN theses_in_sectors ts
                 ON ts.sector_id = s.id
+                ${timeConditions}
             WHERE ${filteringIds === null
                 ? 'TRUE'
                 : filteringIds.length === 0
                     ? 'FALSE'
                     : 's.id = ANY(ARRAY[:filteringIds])'}
-                ${timeConditions}
+                AND s.created_at < :timeFilterTo
+                AND (s.disabled_at > :timeFilterFrom OR s.disabled_at IS NULL)
             ORDER BY "companyName", "farmName", "sectorName";
         `;
 

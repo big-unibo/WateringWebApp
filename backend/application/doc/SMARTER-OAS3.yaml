@@ -111,6 +111,9 @@ components:
           description: ID of the company to associate the farm with
         location:
           $ref: '#/components/schemas/GeometryElement'
+        createdAt:
+              type: number
+              description: Timestamp of company creation (optional)
 
     SectorBase:
       type: object
@@ -138,6 +141,9 @@ components:
         doubleWing:
           type: boolean
           description: True if in the sector is present a double wing irrigation system
+        createdAt:
+          type: number
+          description: Timestamp of sector creation (optional)
     
     CreateSector:
       allOf:
@@ -256,6 +262,9 @@ components:
         binningId:
           type: integer
           description: ID for the device's binning profile
+        createdAt:
+              type: number
+              description: Timestamp of company creation (optional)
     
     UpdateDevice:
       type: object
@@ -499,6 +508,10 @@ components:
         location:
           $ref: '#/components/schemas/GeometryElement'
           description: Location of the farm
+        createdAt:
+          type: number
+        disabledAt:
+          type: number
         company:
             $ref: "#/components/schemas/CompanyIdentifier"
             description: Company owning the farm
@@ -525,6 +538,9 @@ components:
             id:
               type: number
               description: Id of the sector
+            disabledAt:
+              type: number
+              description: Timestamp of sector disablement (optional)
             farm:
               allOf:
               - $ref: "#/components/schemas/Farm"
@@ -700,6 +716,10 @@ components:
           location:
             $ref: '#/components/schemas/GeometryElement'
             description: Location of the farm
+          createdAt:
+            type: number
+          disabledAt:
+            type: number
           farm:
             $ref: "#/components/schemas/Farm"
             description: Farm the sector belongs to
@@ -795,6 +815,10 @@ components:
           $ref: '#/components/schemas/GeometryElement'
         binningId:
           type: integer
+        createdAt:
+          type: number
+        disabledAt:
+          type: number
 
     Device:
       type: object

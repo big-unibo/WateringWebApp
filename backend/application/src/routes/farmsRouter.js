@@ -29,6 +29,18 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
      *         schema:
      *           type: integer
      *         description: ID of farm to reterieve
+     *       - in: query
+     *         name: timeFilterFrom
+     *         required: false
+     *         schema:
+     *           type: number
+     *         description: Timestamp to filter farm relation after (Seconds elapsed since 1/1/1970).
+     *       - in: query
+     *         name: timeFilterTo
+     *         required: false
+     *         schema:
+     *           type: number
+     *         description: Timestamp to filter farm relation before (Seconds elapsed since 1/1/1970).
      *     responses:
      *       200:
      *         description: Detailed farm information
@@ -97,13 +109,15 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
         }
         
         const farmId = req.params.farmId;
+        const timeFilterFrom = req.query.timeFilterFrom ?? Math.floor(Date.now()/1000);
+        const timeFilterTo = req.query.timeFilterTo ?? Math.ceil(Date.now()/1000);
 
         if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'FARM', farmId))){
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
         try {
-            const result = await fieldService.getFarmDetails(farmId, requestUserData.userId, requestUserData.isAdmin)
+            const result = await fieldService.getFarmDetails(farmId, timeFilterFrom, timeFilterTo, requestUserData.userId, requestUserData.isAdmin)
             return res.status(200).json(result)
         } catch (error) {
             console.log(`Failed retrieving farm data: ${error.message}`)
@@ -210,7 +224,8 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
 
             const farmLocation = req.body.location
             const farmName = req.body.name
-            const farm = new Farm(farmName, companyId, farmLocation);
+            const createdAt = req.body.createdAt
+            const farm = new Farm(farmName, companyId, farmLocation, null, createdAt);
 
             const farmId = await fieldService.createFarm(userId, farm);
             return res.status(200).json({ message: `Farm created with success`, id: farmId })
@@ -597,7 +612,8 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
                 location,
                 dripperCapacity,
                 sprinklerCapacity,
-                doubleWing
+                doubleWing,
+                createdAt
             } = req.body;
 
             const sector = new Sector(
@@ -608,7 +624,8 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
                 location,
                 dripperCapacity,
                 sprinklerCapacity,
-                doubleWing
+                doubleWing,
+                createdAt
             );
 
             const sectorId = await fieldService.createSector(userId, sector);

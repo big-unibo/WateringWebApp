@@ -24,7 +24,8 @@ class DeviceService {
                 description: device.description,
                 location: device.location,
                 binningId: device.binningId,
-                companyId: device.companyId
+                companyId: device.companyId,
+                createdAt: device.createdAt
             });
 
             if (!createdDeviceId) {
@@ -201,7 +202,6 @@ class DeviceService {
             if (optimalProfileAssignmentId) {
                 await this.userActionService.logDisabling(userId, TABLES.OPTIMAL_PROFILE, optimalProfileAssignmentId);
             }
-
 
             // 1. Thesis
             const thesisDevId = await this.deviceRepository.unlinkDeviceFromThesis({deviceId: deviceId, validTo: timestamp, thesisId: "ALL"});

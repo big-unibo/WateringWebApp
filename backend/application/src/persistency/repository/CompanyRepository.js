@@ -45,14 +45,17 @@ class CompanyRepository {
         }
     }
 
-    async getCompanyDetails(companyId, userId, isAdmin) {
+    async getCompanyDetails(companyId, timeFilterFrom, timeFilterTo, userId, isAdmin) {
         try {
             const query = `
             SELECT c.id, c.company_name AS "companyName", c.address, c.created_at AS "createdAt", c.disabled_at AS "disabledAt",
                 json_agg(DISTINCT jsonb_build_object('id', o.id, 'organizationName', o.organization_name)) FILTER (WHERE o.id IS NOT NULL) AS organizations, 
-                json_agg(DISTINCT jsonb_build_object('id', f.id, 'farmName', f.farm_name)) FILTER (WHERE f.id IS NOT NULL) AS farms 
+                json_agg(DISTINCT jsonb_build_object('id', f.id, 'farmName', f.farm_name, 'createdAt', f.created_at, 'disabledAt', f.disabled_at)) FILTER (WHERE f.id IS NOT NULL) AS farms 
             FROM companies c
-                LEFT JOIN farms f ON f.company_id = c.id
+                LEFT JOIN farms f 
+                    ON f.company_id = c.id
+                    AND f.created_at < :timeFilterTo 
+                    AND (f.disabled_at > :timeFilterFrom OR f.disabled_at IS NULL)
                 LEFT JOIN companies_organizations co ON co.company_id = c.id
                 LEFT JOIN organizations o ON o.id = co.organization_id
                 LEFT JOIN (SELECT DISTINCT company_id, farm_id FROM master_data_permits 
@@ -66,7 +69,7 @@ class CompanyRepository {
             GROUP BY c.id, c.company_name, c.address, c.created_at, c.disabled_at`;
 
             const results = await this.sequelize.query(query, {
-                replacements: { userId, companyId, isAdmin},
+                replacements: { userId, timeFilterFrom, timeFilterTo, companyId, isAdmin},
                 type: this.sequelize.QueryTypes.SELECT
             });
             return results?.[0];

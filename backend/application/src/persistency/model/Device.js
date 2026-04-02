@@ -37,6 +37,11 @@ function initDevice(sequelize) {
             allowNull: true,
             field: "company_id"
         },
+        createdAt: {
+            type: DataTypes.DOUBLE,
+            allowNull: false,
+            field: "created_at"
+        },
         disabledAt: {
             type: DataTypes.DOUBLE,
             allowNull: true,

@@ -49,6 +49,11 @@ function initSector(sequelize) {
             allowNull: true,
             field : "double_wing"
         },
+        createdAt: {
+            type: DataTypes.DOUBLE,
+            allowNull: false,
+            field: "created_at"
+        },
         disabledAt: {
             type: DataTypes.DOUBLE,
             allowNull: true,

@@ -53,7 +53,9 @@ class DtoConverter {
         const organizations = (companyData.organizations || []).map((organization)=>new Organization(organization.organizationName, organization.id))
         const farms = (companyData.farms || []).map(farm => ({
             id: farm.id,
-            name: farm.farmName
+            name: farm.farmName,
+            createdAt: farm.createdAt,
+            disabledAt: farm.disabledAt
         }));
         return new CompanyData(
             companyData.id,
@@ -82,7 +84,9 @@ class DtoConverter {
             {
                 id: s.companyId,
                 name: s.companyName
-            }
+            },
+            s.createdAt,
+            s.disabledAt
         ));
     }
 
@@ -91,7 +95,9 @@ class DtoConverter {
     convertSectorDataWrapper(sectorData) {
         const theses = sectorData.thesisInSector?.map(t => ({
             id: t.thesisId,
-            name: t.thesis?.thesisName
+            name: t.thesis?.thesisName,
+            createdAt: t.thesis?.createdAt,
+            disabledAt: t.thesis?.disabledAt
         })) || [];
 
         const uniqueTheses = Array.from(new Map(theses.map(t => [t.id, t])).values());
@@ -120,12 +126,14 @@ class DtoConverter {
             sectorData.doubleWing,
             farm,
             company,
-            thesisDtos
+            thesisDtos,
+            sectorData.createdAt,
+            sectorData.disabledAt
         );
     }
 
     convertFarms(farmsData){
-        return farmsData.map(farm => new Farm(farm.farmName, farm.companyId, farm.location, farm.id))
+        return farmsData.map(farm => new Farm(farm.farmName, farm.companyId, farm.location, farm.id, farm.createdAt, farm.disabledAt))
     }
 
     convertFarmDataWrapper(farmData) {
@@ -137,7 +145,9 @@ class DtoConverter {
 
         const sectors = (farmData.sectors || []).map(sector => ({
             id: sector.id,
-            name: sector.sectorName
+            name: sector.sectorName,
+            createdAt: sector.createdAt,
+            disabledAt: sector.disabledAt
         }));
 
         return new FarmData(
@@ -145,7 +155,9 @@ class DtoConverter {
             farmData.farmName,
             farmData.location,
             company,
-            sectors
+            sectors,
+            farmData.createdAt,
+            farmData.disabledAt
         );
     }
 
@@ -302,6 +314,8 @@ class DtoConverter {
                     deviceDescription: curr.deviceDescription,
                     binningId: curr.binningId,
                     location: curr.location,
+                    createdAt: curr.createdAt,
+                    disabledAt: curr.disabledAt,
                     signals: {}
                 };
             }
@@ -338,6 +352,8 @@ class DtoConverter {
                 deviceDescription: deviceGroup.deviceDescription,
                 binningId: deviceGroup.binningId,
                 location: deviceGroup.location,
+                createdAt: deviceGroup.createdAt,
+                disabledAt: deviceGroup.disabledAt,
                 signals: signalsArray
             });
         });

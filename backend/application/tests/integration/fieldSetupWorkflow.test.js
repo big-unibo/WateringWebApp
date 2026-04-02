@@ -107,14 +107,15 @@ describe('Field Setup Creation Integration Test', () => {
      */
     it('should create a Farm linked to the Company with GeoJSON', async () => {
         const payload = {
-        name: 'Farm North 01',
-        companyId: companyId,
-        location: {
-            type: 'Polygon',
-            coordinates: [[
-                [10.1, 45.1], [10.2, 45.1], [10.2, 45.2], [10.1, 45.2], [10.1, 45.1]
-            ]]
-        }
+            name: 'Farm North 01',
+            companyId: companyId,
+            location: {
+                type: 'Polygon',
+                coordinates: [[
+                    [10.1, 45.1], [10.2, 45.1], [10.2, 45.2], [10.1, 45.2], [10.1, 45.1]
+                ]]
+            },
+            createdAt: Math.floor(Date.now() / 1000)
         }
 
         const res = await request(app)
@@ -136,6 +137,7 @@ describe('Field Setup Creation Integration Test', () => {
         expect(record).toBeDefined()
         expect(record.farm_name).toBe(payload.name)
         expect(record.company_id).toBe(companyId)
+        expect(record.created_at).toBe(payload.createdAt)
 
         // Verify Geometry
         const storedGeo = JSON.parse(record.location_json)
@@ -148,17 +150,18 @@ describe('Field Setup Creation Integration Test', () => {
      */
     it('should create a Sector linked to the Farm', async () => {
         const payload = {
-        name: 'Sector T1',
-        culture: 'Kiwi',
-        cultureType: 'G3',
-        dripperCapacity: 2.5,
-        doubleWing: false,
-        location: {
-            type: 'Polygon',
-            coordinates: [[
-                [10.15, 45.15], [10.2, 45.15], [10.2, 45.25], [10.15, 45.25], [10.15, 45.15]
-            ]]
-        }
+            name: 'Sector T1',
+            culture: 'Kiwi',
+            cultureType: 'G3',
+            dripperCapacity: 2.5,
+            doubleWing: false,
+            location: {
+                type: 'Polygon',
+                coordinates: [[
+                    [10.15, 45.15], [10.2, 45.15], [10.2, 45.25], [10.15, 45.25], [10.15, 45.15]
+                ]]
+            },
+            createdAt: Math.floor(Date.now() / 1000)
         };
 
         const res = await request(app)
@@ -176,6 +179,7 @@ describe('Field Setup Creation Integration Test', () => {
         expect(record.sector_name).toBe(payload.name)
         expect(record.farm_id).toBe(farmId)
         expect(record.culture).toBe('Kiwi')
+        expect(record.created_at).toBe(payload.createdAt)
     })
 
     /**
@@ -208,6 +212,7 @@ describe('Field Setup Creation Integration Test', () => {
         expect(record.thesis_name).toBe(payload.name)
         expect(record.sector_id).toBe(sectorId)
         expect(record.valid_from).toBeCloseTo(startTimestamp, 1)
+        expect(record.created_at).toBeCloseTo(payload.validFrom, 1)
     });
 
     /**

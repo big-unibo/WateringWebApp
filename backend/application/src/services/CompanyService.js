@@ -36,8 +36,8 @@ class CompanyService {
         return dtoConverter.convertCompanies(result);
     }
 
-    async getCompanyDetails(companyId, userId, isAdmin) {
-        const result = await this.companyRepository.getCompanyDetails(companyId, userId, isAdmin)
+    async getCompanyDetails(companyId, timeFilterFrom, timeFilterTo, userId, isAdmin) {
+        const result = await this.companyRepository.getCompanyDetails(companyId, timeFilterFrom, timeFilterTo, userId, isAdmin)
         return dtoConverter.convertCompanyDataWrapper(result)
     }
 

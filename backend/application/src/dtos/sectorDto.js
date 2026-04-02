@@ -8,6 +8,7 @@ export class Sector {
    * @param {number} [dripperCapacity] - Optional dripper capacity
    * @param {number} [sprinklerCapacity] - Optional sprinkler capacity
    * @param {boolean} [doubleWing] - Optional double wing flag
+   * @param {number} [createdAt] - Timestamp of sector creation (optional)
    */
   constructor(
     sectorName,
@@ -17,7 +18,8 @@ export class Sector {
     location,
     dripperCapacity,
     sprinklerCapacity,
-    doubleWing
+    doubleWing,
+    createdAt
   ) {
     this.name = sectorName;
     this.farmId = farmId;
@@ -27,20 +29,22 @@ export class Sector {
     this.dripperCapacity = dripperCapacity;
     this.sprinklerCapacity = sprinklerCapacity;
     this.doubleWing = doubleWing;
+    this.createdAt = createdAt;
   }
 }
 
 
 export class SectorCompact{
-  constructor(sectorId, sectorName, culture, cultureType, location, farm, company, organization) {
+  constructor(sectorId, sectorName, culture, cultureType, location, farm, company, createdAt, disabledAt){
     this.id = sectorId;
     this.name = sectorName;
     this.culture = culture;
     this.cultureType = cultureType;
     this.location = location;
+    this.createdAt = createdAt;
+    this.disabledAt = disabledAt;
     this.farm = farm;
     this.company = company;
-    this.organization = organization;
   }
 }
 
@@ -57,7 +61,9 @@ export class SectorData {
         doubleWing,
         farm,
         company,
-        theses
+        theses,
+        createdAt,
+        disabledAt
     ) {
         this.id = sectorId;
         this.name = sectorName;
@@ -70,6 +76,8 @@ export class SectorData {
         this.farm = farm;
         this.company = company;
         this.theses = theses;
+        this.createdAt = createdAt;
+        this.disabledAt = disabledAt;
     }
 }
 

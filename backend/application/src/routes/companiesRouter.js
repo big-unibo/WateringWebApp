@@ -124,6 +124,18 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
      *         schema:
      *           type: integer
      *         description: ID of company to retrieve
+     *       - in: query
+     *         name: timeFilterFrom
+     *         required: false
+     *         schema:
+     *           type: number
+     *         description: Timestamp to filter company relations after it (Seconds elapsed since 1/1/1970).
+     *       - in: query
+     *         name: timeFilterTo
+     *         required: false
+     *         schema:
+     *           type: number
+     *         description: Timestamp to filter company relations before it (Seconds elapsed since 1/1/1970).
      *     responses:
      *       200:
      *         description: Detailed company information
@@ -201,13 +213,14 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
         }
         
         const companyId = req.params.companyId;
-
+        const timeFilterFrom = req.query.timeFilterFrom ?? Math.floor(Date.now()/1000);
+        const timeFilterTo = req.query.timeFilterTo ?? Math.ceil(Date.now()/1000);
         if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'COMPANY', companyId))){
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
         try {
-            const result = await companyService.getCompanyDetails(companyId, requestUserData.userId, requestUserData.isAdmin)
+            const result = await companyService.getCompanyDetails(companyId, timeFilterFrom, timeFilterTo, requestUserData.userId, requestUserData.isAdmin)
             if (!result) {
                 return res.status(404).json({ error: "Company not found" })
             }
