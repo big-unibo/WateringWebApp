@@ -67,8 +67,9 @@ export class CreateSignal {
      * @param {string} unit - Measurement unit
      * @param {string} idOnProvider  - Signal id for the provider
      * @param {string} sensorTechnology - Sensor technology
+     * @param {number} [createdAt] - Timestamp of signal creation (optional)
      */
-    constructor({typeId, description, x, y, z, virtual, unit, providerId, idOnProvider, sensorTechnology}) {
+    constructor({typeId, description, x, y, z, virtual, unit, providerId, idOnProvider, sensorTechnology, createdAt}) {
         this.typeId = typeId;
         this.description = description;
         this.x = x;
@@ -79,6 +80,7 @@ export class CreateSignal {
         this.providerId = providerId;
         this.idOnProvider = idOnProvider;
         this.sensorTechnology = sensorTechnology;
+        this.createdAt = createdAt;
     }
 }
 

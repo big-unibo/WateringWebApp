@@ -99,20 +99,6 @@ class SectorRepository {
     }
 
     async getSectors(filteringIds, timeFilterFrom, timeFilterTo) {
-
-        let timeConditions = "";
-        const replacements = { filteringIds };
-
-        if (timeFilterTo) {
-            timeConditions += ` AND (ts.valid_from IS NULL OR ts.valid_from <= :timeFilterTo)`;
-            replacements.timeFilterTo = timeFilterTo;
-        }
-
-        if (timeFilterFrom) {
-            timeConditions += ` AND (ts.valid_to IS NULL OR ts.valid_to >= :timeFilterFrom)`;
-            replacements.timeFilterFrom = timeFilterFrom;
-        }
-
         const query = `
             SELECT DISTINCT c.id AS "companyId",
                 c.company_name AS "companyName",
@@ -132,7 +118,8 @@ class SectorRepository {
                 ON c.id = f.company_id
             LEFT JOIN theses_in_sectors ts
                 ON ts.sector_id = s.id
-                ${timeConditions}
+                AND (ts.valid_from IS NULL OR ts.valid_from <= :timeFilterTo)
+                AND (ts.valid_to IS NULL OR ts.valid_to >= :timeFilterFrom)
             WHERE ${filteringIds === null
                 ? 'TRUE'
                 : filteringIds.length === 0
@@ -144,7 +131,7 @@ class SectorRepository {
         `;
 
         const results = await this.sequelize.query(query, {
-            replacements: replacements,
+            replacements: {filteringIds, timeFilterFrom, timeFilterTo},
             type: this.sequelize.QueryTypes.SELECT
         });
 

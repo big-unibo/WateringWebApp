@@ -22,11 +22,15 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
      *           type: integer
      *         description: ID of the thesis
      *       - in: query
-     *         name: timestamp
-     *         required: false
+     *         name: timeFilterFrom
      *         schema:
      *           type: number
-     *         description: Timestamp in which find the information (Unix timestamp in seconds elapsed since 1/1/1970)
+     *         description: The timestamp from which find the information
+     *       - in: query
+     *         name: timeFilterTo
+     *         schema:
+     *           type: number
+     *         description: The timestamp to which find the information
      *     responses:
      *       200:
      *         description: Deteiled thesis information
@@ -105,14 +109,15 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
         }
 
         const thesisId = Number(req.params.thesisId)
-        const timestamp = Number(req.query.timestamp)
+        const timeFilterFrom = Number(req.query.timeFilterFrom) ?? Math.floor(Date.now() / 1000);
+        const timeFilterTo = Number(req.query.timeFilterTo) ?? Math.ceil(Date.now() / 1000);
 
         if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'THESIS', thesisId))){
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
         try {
-            const result = await fieldService.getThesisDetails(thesisId, timestamp);
+            const result = await fieldService.getThesisDetails(thesisId, timeFilterFrom, timeFilterTo);
             if (result) {
                 return res.status(200).json(result)
             } else {

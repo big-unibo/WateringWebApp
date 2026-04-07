@@ -62,6 +62,11 @@ function initSignal(sequelize) {
             allowNull: true,
             field: "sensor_technology"
         },
+        createdAt: {
+            type: DataTypes.DOUBLE,
+            allowNull: false,
+            field: "created_at"
+        },
         disabledAt: {
             type: DataTypes.DOUBLE,
             allowNull: true,

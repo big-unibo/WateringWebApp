@@ -179,7 +179,7 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
             return res.status(403).json({ message: 'Unauthorized request' });
         }
         try {
-            const signal = new CreateSignal(req.body)
+            const signal = new CreateSignal({ createdAt: Math.ceil(Date.now() / 1000), ...req.body })
             const signalId = await signalService.createSignal(userId, signal)
             return res.status(200).json({ message: 'Signal successfully created', id: signalId })
         }

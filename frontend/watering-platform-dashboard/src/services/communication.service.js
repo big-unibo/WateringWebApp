@@ -56,7 +56,8 @@ export class CommunicationService {
                 'Authorization': 'Bearer ' + token
             },
             params: {
-                timestamp: timestamp
+                timeFilterFrom: timestamp,
+                timeFilterTo: timestamp
             }
         }).then(response => {
             if (response.data)

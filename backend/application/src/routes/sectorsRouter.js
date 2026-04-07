@@ -213,8 +213,8 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
         }
 
         const sectorId = Number(req.params.sectorId)
-        const timeFilterFrom = req.query.timeFilterFrom ?? null
-        const timeFilterTo = req.query.timeFilterTo ?? null
+        const timeFilterFrom = req.query.timeFilterFrom ?? Math.floor(Date.now()/1000)
+        const timeFilterTo = req.query.timeFilterTo ?? Math.ceil(Date.now()/1000)
 
         if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'SECTOR', sectorId))){
             return res.status(403).json({ message: 'Unauthorized request' });
@@ -606,7 +606,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
             return res.status(404).json({ message: 'Sector not found' });
         }
 
-        const thesis = new Thesis(req.body.name, sectorId, undefined, req.body.validFrom ?? Date.now()/1000);
+        const thesis = new Thesis(req.body.name, sectorId, undefined, req.body.validFrom ?? Math.floor(Date.now()/1000));
 
         if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'SECTOR', sectorId))){
             return res.status(403).json({ message: 'Unauthorized request' });

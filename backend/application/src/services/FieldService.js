@@ -58,8 +58,8 @@ class FieldService {
         await _updateEntity(userId, farm, this.farmRepository.updateFarm.bind(this.farmRepository), this.userActionService, TABLES.FARM)
     }
 
-    async getFarms(filteringIds) {
-        const result = await this.farmRepository.getFarms(filteringIds);
+    async getFarms(filteringIds, timeFilterFrom, timeFilterTo) {
+        const result = await this.farmRepository.getFarms(filteringIds, timeFilterFrom, timeFilterTo);
         return dtoConverter.convertFarms(result);
     }
 
@@ -84,7 +84,7 @@ class FieldService {
     }
 
     async createThesis(userId, thesis) {
-        const newThesisId = await this.thesisRepository.createThesis(thesis.name);
+        const newThesisId = await this.thesisRepository.createThesis(thesis);
         if (!newThesisId) {
             throw Error("Impossible to create thesis")
         }
@@ -181,8 +181,8 @@ class FieldService {
         return dtoConverter.convertSectorDataWrapper(result);
     }
 
-    async getThesisDetails(thesisId, timestamp) {
-        const result = await this.thesisRepository.getThesisDetails(thesisId, timestamp)
+    async getThesisDetails(thesisId, timeFilterFrom, timeFilterTo) {
+        const result = await this.thesisRepository.getThesisDetails(thesisId, timeFilterFrom, timeFilterTo)
         if (result) {
             return dtoConverter.convertThesisDataWrapper(result)
         }

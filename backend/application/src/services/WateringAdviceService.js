@@ -78,7 +78,7 @@ export class WateringAdviceService {
 
             let r
 
-            const thesisDetails = await this.thesisRepository.getThesisDetails(thesisId, timestamp)
+            const thesisDetails = await this.thesisRepository.getThesisDetails(thesisId, timestamp, timestamp)
             const algorithmParams = await this.wateringAdviceRepository.getWateringAlgorithmParams(thesisId, timestamp)
             if (!thesisDetails || !algorithmParams) {
                 console.warn("Thesis details or algorithm params not found, returning empty advice");

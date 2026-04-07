@@ -188,6 +188,9 @@ components:
         sensorTechnology:
           type: string
           description: Sensor technology
+        createdAt:
+          type: number
+          description: Timestamp of signal creation (optional)
 
     UpdateSignal:
       type: object

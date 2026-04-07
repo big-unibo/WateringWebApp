@@ -1,4 +1,4 @@
-import { Op, Sequelize, QueryTypes } from 'sequelize';
+import { Op, Sequelize, QueryTypes, where } from 'sequelize';
 import { HUMIDITY_DEVICE_TYPE } from '../../commons/constants.js';
 import { _deleteFromModelByParams } from '../../commons/repositoryUtils.js';
 
@@ -20,9 +20,9 @@ class ThesisRepository {
         return count > 0;
     }
 
-    async createThesis(thesisName) {
+    async createThesis(thesisData) {
         try {
-            const thesis = await this.Thesis.create({ thesisName: thesisName });
+            const thesis = await this.Thesis.create({ thesisName: thesisData.name, createdAt: thesisData.validFrom });
             return thesis.id;
         } catch (error) {
             throw new Error(`Error creating thesis: ${error.message}`);
@@ -70,29 +70,35 @@ class ThesisRepository {
         return null;
     }
 
-    async getThesisDetails(thesisId, timestamp) {
-        const timeFilter = {
-        }
-        if (timestamp) {
-            timeFilter["validFrom"] = {
-                [Op.lt]: timestamp
-            }
-            timeFilter["validTo"] = {
-                [Op.or]: {
-                    [Op.is]: null,
-                    [Op.gt]: timestamp
-                },
-            }
-        }
+    async getThesisDetails(thesisId, timeFilterFrom, timeFilterTo) {
         const result = await this.ThesisInSector.findOne({
             where: {
                 thesisId: thesisId,
-                ...timeFilter
+                validFrom: {
+                    [Op.lt]: timeFilterTo
+                },
+                validTo: {
+                    [Op.or]: {
+                        [Op.is]: null,
+                        [Op.gt]: timeFilterFrom
+                    }
+                }   
             },
             include: [{
                 model: this.Thesis,
                 as: "thesis",
-                attributes: []
+                attributes: ['thesisName', 'createdAt', 'disabledAt'],
+                where: {
+                    createdAt: {
+                        [Op.lt]: timeFilterTo
+                    },
+                    disabledAt: {
+                        [Op.or]: {
+                            [Op.is]: null,
+                            [Op.gt]: timeFilterFrom
+                        }
+                    }
+                } 
             }, {
                 model: this.Sector,
                 as: "sector",
@@ -111,11 +117,6 @@ class ThesisRepository {
                     },
                 ]
             }],
-            attributes: {
-                include: [
-                    [Sequelize.col("thesis.thesis_name"), "thesisName"]
-                ]
-            },
             raw: true,
             nest: true
         })

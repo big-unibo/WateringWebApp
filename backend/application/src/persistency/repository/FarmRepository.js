@@ -17,9 +17,15 @@ class FarmRepository {
         return count > 0;
     }
 
-    async getFarms(filteringIds) {
+    async getFarms(filteringIds, timeFilterFrom, timeFilterTo) {
         try {
-            const where = {};
+            const where = {
+                createdAt: { [Op.lt]: timeFilterTo },
+                [Op.or]: [
+                    { disabledAt: { [Op.gt]: timeFilterFrom } },
+                    { disabledAt: { [Op.is]: null } }
+                ]
+            };
 
             if (Array.isArray(filteringIds)) {
                 if (filteringIds.length > 0) {

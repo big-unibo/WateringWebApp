@@ -904,6 +904,19 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
      *     description: | 
      *       Retrieve all farms available for the user.
      *       Requires Authentication and proper authorization
+     *     parameters:
+     *       - in: query
+     *         name: timeFilterFrom
+     *         required: false
+     *         schema:
+     *           type: number
+     *         description: Timestamp to filter farms with activity after it (Seconds elapsed since 1/1/1970).
+     *       - in: query
+     *         name: timeFilterTo
+     *         required: false
+     *         schema:
+     *           type: number
+     *         description: Timestamp to filter farms with activity before it (Seconds elapsed since 1/1/1970).
      *     responses:
      *       200:
      *         description: List of farms for the user
@@ -970,7 +983,9 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
                 if (userAvailableIds.includes('ALL')) {
                     userAvailableIds = null
                 }
-                const farms = await fieldService.getFarms(userAvailableIds);
+                const timeFilterFrom = req.query.timeFilterFrom ?? Math.floor(Date.now()/1000);
+                const timeFilterTo = req.query.timeFilterTo ?? Math.ceil(Date.now()/1000);
+                const farms = await fieldService.getFarms(userAvailableIds, timeFilterFrom, timeFilterTo);
                 return res.status(200).json(farms);
             }
             return res.status(404).json({
