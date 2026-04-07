@@ -1,8 +1,10 @@
 import { TABLES } from "../commons/constants.js";
 import DtoConverter from './DtoConverter.js';
 import { _updateEntity } from '../commons/entityServiceUtils.js';
+import PaginationService from "./PaginationService.js";
 
 const dtoConverter = new DtoConverter();
+const paginationService = new PaginationService()
 
 class SignalService {
     constructor(signalRepository, userActionService) {
@@ -65,6 +67,20 @@ class SignalService {
         catch (error) {
             throw error;
         }
+    }
+
+    async getSignals(userAvailableIds, timeFilterFrom, timeFilterTo, providerIds, typeIds, companyIds, deviceIds, page, itemsPerPage){
+        const signalsCount = await this.signalRepository.countSignals(userAvailableIds, timeFilterFrom, timeFilterTo, providerIds, typeIds, companyIds, deviceIds)
+        const paginationMetadata = paginationService.computePaginationMetadata(signalsCount, page, itemsPerPage)
+
+        const offset = (paginationMetadata.page - 1) * paginationMetadata.pageSize;
+        const limit = paginationMetadata.pageSize;
+        const signals = await this.signalRepository.getSignals(userAvailableIds, timeFilterFrom, timeFilterTo, providerIds, typeIds, companyIds, deviceIds, offset, limit)
+        return {
+            data: dtoConverter.convertSignalWrapper(signals),
+            pagination: paginationMetadata
+        }
+        
     }
 
     async getSignalInfo(signalId, timestamp) {

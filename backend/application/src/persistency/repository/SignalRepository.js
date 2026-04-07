@@ -99,6 +99,88 @@ class SignalRepository {
         }
     }
 
+    async countSignals(filteringIds, timeFilterFrom, timeFilterTo, providerIds, typeIds, companyIds, deviceIds){
+
+        const query = ` SELECT COUNT(DISTINCT id) AS total
+            FROM signals s
+            JOIN devices_signals_denormalized ds ON ds.signal_id = s.id
+            WHERE created_at < :timeFilterTo
+                AND COALESCE(disabled_at, 'infinity') > :timeFilterFrom
+                ${providerIds?.length > 0 ? "AND s.provider_id = ANY(ARRAY[:providerIds]::int[])" : ""}
+                ${companyIds?.length > 0 ? "AND device_company_id = ANY(ARRAY[:companyIds]::int[])" : ""}
+                ${deviceIds?.length > 0 ? "AND device_id = ANY(ARRAY[:deviceIds]::int[])" : ""}
+                ${typeIds?.length > 0 ? "AND type_id = ANY(ARRAY[:typeIds]::int[])" : ""}
+                AND ${filteringIds === null
+                ? 'TRUE'
+                : filteringIds.length === 0
+                    ? 'FALSE'
+                    : 'id = ANY(ARRAY[:filteringIds])'}`
+        try {
+            const [results] = await this.sequelize.query(query, {
+                replacements: { timeFilterFrom, timeFilterTo, providerIds, typeIds, companyIds, deviceIds, filteringIds },
+                type: this.sequelize.QueryTypes.SELECT
+            });
+            return Number(results.total);
+        } catch (error) {
+            console.error(`Fail counting signals data: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async getSignals(filteringIds, timeFilterFrom, timeFilterTo, providerIds, typeIds, companyIds, deviceIds, offset, limit) {
+        const query = `WITH paginated_signals AS (
+            SELECT DISTINCT id, created_at AS "createdAt", disabled_at AS "disabledAt"
+            FROM signals s
+            JOIN devices_signals_denormalized ds ON ds.signal_id = s.id
+            WHERE created_at < :timeFilterTo
+                AND COALESCE(disabled_at, 'infinity') > :timeFilterFrom
+                ${providerIds?.length > 0 ? "AND s.provider_id = ANY(ARRAY[:providerIds]::int[])" : ""}
+                ${companyIds?.length > 0 ? "AND device_company_id = ANY(ARRAY[:companyIds]::int[])" : ""}
+                ${deviceIds?.length > 0 ? "AND device_id = ANY(ARRAY[:deviceIds]::int[])" : ""}
+                ${typeIds?.length > 0 ? "AND type_id = ANY(ARRAY[:typeIds]::int[])" : ""}
+                AND ${filteringIds === null
+                ? 'TRUE'
+                : filteringIds.length === 0
+                    ? 'FALSE'
+                    : 'id = ANY(ARRAY[:filteringIds])'}
+            ORDER BY id
+            LIMIT :limit
+            OFFSET :offset
+        )
+        SELECT DISTINCT
+            s.provider_id AS "providerId",
+            s.signal_id_on_provider AS "idOnProvider",
+            s.signal_id AS "signalId",
+            s.signal_description AS "signalDescription",
+            s.signal_type AS "signalType",
+            s.signal_type_description AS "signalTypeDescription",
+            s.sensor_technology AS "sensorTechnology",
+            m.measurement_timestamp AS "lastMeasurementTimestamp",
+            s.virtual,
+            s.unit,
+            s.x, s.y, s.z,
+            ps."createdAt",
+            ps."disabledAt"
+        FROM devices_signals_denormalized s
+        JOIN paginated_signals ps ON ps.id = s.signal_id
+        JOIN LATERAL (
+            SELECT MAX(timestamp) AS measurement_timestamp
+            FROM measurements m
+            WHERE m.signal_id = s.signal_id
+        ) m ON true`
+
+        try {
+            const results = await this.sequelize.query(query, {
+                replacements: { timeFilterFrom, timeFilterTo, providerIds, typeIds, companyIds, offset, deviceIds, limit, filteringIds},
+                type: this.sequelize.QueryTypes.SELECT
+            });
+            return results;
+        } catch (error) {
+            console.error(`Fail retrieving signals data: ${error.message}`);
+            throw error;
+        }
+    }
+
     async getSignalInfo(signalId, timestamp) {
         try {
             const signalInfo = await this.SignalsDenormalized.findAll({
@@ -121,7 +203,12 @@ class SignalRepository {
                 attributes: ['timestamp'],
                 raw: true
             })
-            return signalInfo.map(signal => ({...signal, lastMeasurementTimestamp: lastMeasurementTimestamp?.timestamp || null}))
+
+            const validity = await this.Signal.findByPk(signalId, {
+                attributes: ['createdAt', 'disabledAt'],
+                raw: true
+            })
+            return signalInfo.map(signal => ({...signal, lastMeasurementTimestamp: lastMeasurementTimestamp?.timestamp || null, ...validity}))
         } catch (error) {
             throw new Error(`Error while retrieving signal info caused by: ${error.message}`);
         }   

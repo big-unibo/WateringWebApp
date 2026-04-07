@@ -324,7 +324,6 @@ class DtoConverter {
             if (!acc[deviceKey].signals[signalKey]) {
                 acc[deviceKey].signals[signalKey] = {
                     signalId: curr.signalId,
-                    deviceId: curr.deviceId,
                     signalDescription: curr.signalDescription,
                     signalType: curr.signalType,
                     signalTypeDescription: curr.signalTypeDescription,
@@ -342,9 +341,7 @@ class DtoConverter {
         }, {});
 
         const devicesArray = Object.values(grouped).map(deviceGroup => {
-            const signalsArray = Object.values(deviceGroup.signals).map(signalGroup => {
-                return new Signal(signalGroup);
-            });
+            const signalsArray = this.convertSignalWrapper(Object.values(deviceGroup.signals))
 
             return new Device({
                 deviceId: deviceGroup.deviceId,
@@ -377,6 +374,8 @@ class DtoConverter {
                     sensorTechnology: curr.sensorTechnology,
                     idOnProvider: curr.idOnProvider,
                     lastMeasurementTimestamp: curr.lastMeasurementTimestamp,
+                    createdAt: curr.createdAt,
+                    disabledAt: curr.disabledAt,
                     devices: []
                 };
             }
@@ -387,6 +386,10 @@ class DtoConverter {
         }, {});
 
         return Object.values(signals).map(s => new SignalInfo(s));
+    }
+
+    convertSignalWrapper(signalWrappers) {
+        return signalWrappers.map(s => new Signal(s))
     }
 
     convertSignalsDataWrapper(wrappers) {

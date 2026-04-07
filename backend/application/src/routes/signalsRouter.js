@@ -5,7 +5,7 @@ import { ROLES } from '../commons/permissionRoles.js';
 const signalsRouter = ({ authenticationService, authorizationService, signalService }) => {
     const router = Router();
 
-        /**
+    /**
      * @swagger
      * /signals/providers:
      *   get:
@@ -765,6 +765,176 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
             return res.status(500).json({ message: "Error finding signal info" })
         }
     })
+
+    /**
+     * @swagger
+     * /signals:
+     *   get:
+     *     summary: Retrieve all signals available for the user
+     *     tags: 
+     *       - Signals
+     *     description: Retrieve all signals available for the user, filtered by a time range if specified otherwise active now. Results are paginated
+     *     parameters:
+     *       - in: query
+     *         name: timeFilterFrom
+     *         schema:
+     *           type: number
+     *         description: Time filter start (timestamp in seconds since 01/01/1970)
+     *       - in: query
+     *         name: timeFilterTo
+     *         schema:
+     *           type: number
+     *         description: Time filter end (timestamp in seconds since 01/01/1970)
+     *       - in: query
+     *         name: providerIds
+     *         schema:
+     *           type: array
+     *           items:
+     *             type: integer
+     *         style: form
+     *         explode: true
+     *         description: Providers to include
+     *       - in: query
+     *         name: typeIds
+     *         schema:
+     *           type: array
+     *           items:
+     *             type: number
+     *         style: form
+     *         explode: true
+     *         description: Signal type ids to include
+     *       - in: query
+     *         name: companyIds
+     *         schema:
+     *           type: array
+     *           items:
+     *             type: integer
+     *         description: Company IDs to include
+     *       - in: query
+     *         name: deviceIds
+     *         schema:
+     *           type: array
+     *           items:
+     *             type: integer
+     *         description: Device IDs to include
+     *       - in: query
+     *         name: page
+     *         schema:
+     *           type: number
+     *           minimum: 1
+     *           default: 1
+     *         description: Number of page for signals to return
+     *       - in: query
+     *         name: itemsPerPage
+     *         schema:
+     *           type: number
+     *           minimum: 1
+     *           maximum: 500
+     *           default: 50
+     *         description: Number of signals to include in a response. Max signal in a single request 500
+     *     responses:
+     *       200:
+     *         description: List of signals for the user
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 data:
+     *                   type: array
+     *                   items:
+     *                      $ref: '#/components/schemas/Signal'
+     *                 pagination:
+     *                   type: object
+     *                   $ref: '#/components/schemas/PaginationMetadata'
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed (invalid or missing JWT)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       404:
+     *         description: No signals found for the current user and time filter
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error while retrieving signals
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     */
+    router.get('/', async (req, res) => {
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        const timeFilterFrom = req.query.timeFilterFrom ?? Math.floor(Date.now() / 1000)
+        const timeFilterTo = req.query.timeFilterTo ?? Math.ceil(Date.now() / 1000)
+        const providerIds = req.query.providerIds
+        const typeIds = req.query.typeIds
+        const companyIds = req.query.companyIds
+        const deviceIds = req.query.deviceIds
+        const page = req.query.page ?? 1
+        const itemsPerPage = req.query.itemsPerPage ?? 50
+
+        try {
+            let userAvailableIds = await authorizationService.getAvailableEntityIds(requestUserData.userId, 'SIGNAL', ROLES.VIEWER, requestUserData.isAdmin)
+            if (Array.isArray(userAvailableIds) && userAvailableIds.length > 0)
+            {
+                if (userAvailableIds.includes('ALL')) {
+                    userAvailableIds = null
+                }
+                const signals = await signalService.getSignals(userAvailableIds, timeFilterFrom, timeFilterTo, providerIds, typeIds, companyIds, deviceIds, page, itemsPerPage);
+                return res.status(200).json(signals);
+            }
+            return res.status(404).json({
+                error: "User has no permission to view any signals"
+            });
+
+        } catch (error) {
+            console.log(`Fail retrieving signals caused by: ${error.message}`);
+            return res.status(500).json({ error: "Error while retrieving signals" });
+        }
+    });
 
     return router
 }

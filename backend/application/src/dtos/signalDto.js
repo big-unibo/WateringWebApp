@@ -1,6 +1,6 @@
 
 export class Signal {
-    constructor({signalId, signalDescription, signalType, signalTypeDescription, x, y, z, virtual, unit, lastMeasurementTimestamp, providerId, idOnProvider, sensorTechnology}) {
+    constructor({signalId, signalDescription, signalType, signalTypeDescription, x, y, z, virtual, unit, lastMeasurementTimestamp, providerId, idOnProvider, sensorTechnology, createdAt, disabledAt}) {
         this.id = signalId
         this.description = signalDescription
         this.signalType = signalType
@@ -14,6 +14,8 @@ export class Signal {
         this.providerId = providerId
         this.idOnProvider = idOnProvider
         this.sensorTechnology = sensorTechnology
+        this.createdAt = createdAt
+        this.disabledAt = disabledAt
     }
 }
 
@@ -85,7 +87,7 @@ export class CreateSignal {
 }
 
 export class SignalInfo {
-    constructor({signalId, signalDescription, signalType, signalTypeDescription, x, y, z, virtual, unit, lastMeasurementTimestamp, providerId, idOnProvider, devices}) {
+    constructor({signalId, signalDescription, signalType, signalTypeDescription, x, y, z, virtual, unit, lastMeasurementTimestamp, providerId, idOnProvider, devices, createdAt, disabledAt}) {
         this.id = signalId
         this.description = signalDescription
         this.signalType = signalType
@@ -98,6 +100,8 @@ export class SignalInfo {
         this.lastMeasurementTimestamp = lastMeasurementTimestamp
         this.providerId = providerId
         this.idOnProvider = idOnProvider
+        this.createdAt = createdAt
+        this.disabledAt = disabledAt
         this.devices = devices
     }
 }

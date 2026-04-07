@@ -13,17 +13,15 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
      *     summary: Retrieve all devices available for the user
      *     tags: 
      *       - Devices
-     *     description: Retrieve all devicess available for the user, filtered by a time range. Results are paginated
+     *     description: Retrieve all devices available for the user, filtered by a time range if specified otherwise active now. Results are paginated
      *     parameters:
      *       - in: query
      *         name: timeFilterFrom
-     *         required: true
      *         schema:
      *           type: number
      *         description: Time filter start (timestamp in seconds since 01/01/1970)
      *       - in: query
      *         name: timeFilterTo
-     *         required: true
      *         schema:
      *           type: number
      *         description: Time filter end (timestamp in seconds since 01/01/1970)
