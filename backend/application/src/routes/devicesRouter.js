@@ -140,8 +140,8 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
             return res.status(401).json({ message: 'Authentication failed' });
         }
 
-        const timeFilterFrom = Number(req.query.timeFilterFrom)
-        const timeFilterTo = Number(req.query.timeFilterTo)
+        const timeFilterFrom = req.query.timeFilterFrom ?? Math.floor(Date.now() / 1000)
+        const timeFilterTo = req.query.timeFilterTo ?? Math.ceil(Date.now() / 1000)
         const providerIds = req.query.providerIds
         const types = req.query.types
         const companyIds = req.query.companyIds
