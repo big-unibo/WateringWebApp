@@ -159,18 +159,19 @@ class DeviceRepository {
     }
 
     async countDevices(filteringIds, timeFilterFrom, timeFilterTo, providerIds, types, companyIds) {
-        const query = ` SELECT COUNT(DISTINCT id) AS total
-            FROM devices
-            WHERE created_at < :timeFilterTo
-                AND COALESCE(disabled_at, 'infinity') > :timeFilterFrom
-                ${providerIds?.length > 0 ? "AND provider_id = ANY(ARRAY[:providerIds]::int[])" : ""}
-                ${companyIds?.length > 0 ? "AND company_id = ANY(ARRAY[:companyIds]::int[])" : ""}
-                ${types?.length > 0 ? "AND type = ANY(ARRAY[:types])" : ""}
+        const query = ` SELECT COUNT(DISTINCT d.id) AS total
+            FROM devices d
+            JOIN devices_signals_denormalized ds ON ds.device_id = d.id
+            WHERE d.created_at < :timeFilterTo
+                AND COALESCE(d.disabled_at, 'infinity') > :timeFilterFrom
+                ${providerIds?.length > 0 ? "AND ds.provider_id = ANY(ARRAY[:providerIds]::int[])" : ""}
+                ${companyIds?.length > 0 ? "AND d.company_id = ANY(ARRAY[:companyIds]::int[])" : ""}
+                ${types?.length > 0 ? "AND d.type = ANY(ARRAY[:types])" : ""}
                 AND ${filteringIds === null
                 ? 'TRUE'
                 : filteringIds.length === 0
                     ? 'FALSE'
-                    : 'id = ANY(ARRAY[:filteringIds])'}`
+                    : 'd.id = ANY(ARRAY[:filteringIds])'}`
         try {
             const [results] = await this.sequelize.query(query, {
                 replacements: { timeFilterFrom, timeFilterTo, providerIds, types, companyIds, filteringIds },
@@ -185,19 +186,20 @@ class DeviceRepository {
 
     async getDevices(filteringIds, timeFilterFrom, timeFilterTo, providerIds, types, companyIds, offset, limit) {
         const query = `WITH paginated_devices AS (
-            SELECT DISTINCT id, created_at AS "createdAt", disabled_at AS "disabledAt"
-            FROM devices
-            WHERE created_at < :timeFilterTo
-                AND COALESCE(disabled_at, 'infinity') > :timeFilterFrom
-                ${providerIds?.length > 0 ? "AND provider_id = ANY(ARRAY[:providerIds]::int[])" : ""}
-                ${companyIds?.length > 0 ? "AND company_id = ANY(ARRAY[:companyIds]::int[])" : ""}
-                ${types?.length > 0 ? "AND type = ANY(ARRAY[:types])" : ""}
+            SELECT DISTINCT d.id, d.created_at AS "createdAt", d.disabled_at AS "disabledAt"
+            FROM devices d
+            JOIN devices_signals_denormalized ds ON ds.device_id = d.id
+            WHERE d.created_at < :timeFilterTo
+                AND COALESCE(d.disabled_at, 'infinity') > :timeFilterFrom
+                ${providerIds?.length > 0 ? "AND ds.provider_id = ANY(ARRAY[:providerIds]::int[])" : ""}
+                ${companyIds?.length > 0 ? "AND d.company_id = ANY(ARRAY[:companyIds]::int[])" : ""}
+                ${types?.length > 0 ? "AND d.type = ANY(ARRAY[:types])" : ""}
                 AND ${filteringIds === null
                 ? 'TRUE'
                 : filteringIds.length === 0
                     ? 'FALSE'
-                    : 'id = ANY(ARRAY[:filteringIds])'}
-            ORDER BY id
+                    : 'd.id = ANY(ARRAY[:filteringIds])'}
+            ORDER BY d.id
             LIMIT :limit
             OFFSET :offset
         )
