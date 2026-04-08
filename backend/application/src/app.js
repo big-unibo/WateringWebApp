@@ -2,7 +2,6 @@ import express from 'express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import { serve, setup } from 'swagger-ui-express';
 import OpenApiValidator from 'express-openapi-validator'
-import { savePermissionsToMarkdown } from './commons/permissions.js';
 
 import cors from 'cors';
 
