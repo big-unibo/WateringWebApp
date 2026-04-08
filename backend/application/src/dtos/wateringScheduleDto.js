@@ -11,7 +11,7 @@ export class WateringScheduleResponse {
 export class WateringEventData {
 
     constructor(eventId, date, wateringStart, wateringEnd, duration, enabled, scheduled, advice, expectedWater, note, updateTimestamp, updatedBy, theses) {
-        this.eventId = eventId
+        this.id = eventId
         this.date = date;
         this.wateringStart = wateringStart;
         this.wateringEnd = wateringEnd;

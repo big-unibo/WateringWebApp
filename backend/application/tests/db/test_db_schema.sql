@@ -1846,7 +1846,7 @@ SELECT pg_catalog.setval('public.users_id_seq', 2, false);
 -- Name: watering_algorithm_params_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.watering_algorithm_params_id_seq', 1, false);
+SELECT pg_catalog.setval('public.watering_algorithm_params_id_seq', 2, false);
 
 
 --

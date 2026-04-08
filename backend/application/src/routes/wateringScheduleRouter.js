@@ -536,7 +536,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
     /**
      * @swagger
      * /wateringSchedule/{sectorId}/endIrrigationSeason:
-     *   get:
+     *   post:
      *     summary: Stop the irrigation season by deleting all the watering events after a given timestamp or now + safety period by defaults
      *     tags: [Watering Schedule Operation]
      *     description: Deletes all of the watering events present with watering start after a given timestamp and no advice calculated. Requires authentication and proper authorization
@@ -624,7 +624,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
      *                 message:
      *                   type: string
      */
-    router.get('/:sectorId/endIrrigationSeason', async (req, res) => {
+    router.post('/:sectorId/endIrrigationSeason', async (req, res) => {
         let requestUserData;
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);

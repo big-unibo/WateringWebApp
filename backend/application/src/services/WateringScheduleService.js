@@ -1,4 +1,4 @@
-import { TABLES } from "../commons/constants.js";
+import { SCHEDULE_SAFE_INTERVAL, TABLES } from "../commons/constants.js";
 import { WateringEvent, WateringScheduleResponse } from "../dtos/wateringScheduleDto.js";
 import DtoConverter from "./DtoConverter.js";
 
