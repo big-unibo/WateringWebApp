@@ -89,6 +89,7 @@ class DeviceRepository {
             ds.signal_id_on_provider AS "idOnProvider",
             ds.signal_id AS "signalId",
             ds.signal_description AS "signalDescription",
+            ds.sensor_technology AS "sensorTechnology",
             ds.signal_type AS "signalType",
             ds.signal_type_description AS "signalTypeDescription",
             m.measurement_timestamp AS "lastMeasurementTimestamp",

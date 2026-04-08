@@ -325,6 +325,7 @@ class DtoConverter {
                 acc[deviceKey].signals[signalKey] = {
                     signalId: curr.signalId,
                     signalDescription: curr.signalDescription,
+                    sensorTechnology: curr.sensorTechnology,
                     signalType: curr.signalType,
                     signalTypeDescription: curr.signalTypeDescription,
                     x: curr.x,
