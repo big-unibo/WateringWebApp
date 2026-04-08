@@ -129,7 +129,7 @@ describe('Watering Schedule Lifecycle Integration Test', () => {
         expect(sectorData.events[0].scheduled).toBe(false);
 
         expect(sectorData.events.length).toBe(createdEventIds.length)
-        sectorData.events.forEach(e => { console.log(e); expect(createdEventIds).toContain(e.id) });
+        sectorData.events.forEach(e => { expect(createdEventIds).toContain(e.id) });
     });
 
     /**
@@ -189,11 +189,6 @@ describe('Watering Schedule Lifecycle Integration Test', () => {
         // We cut off the season right after our start date
         const cutOffDate = START_DATE + 4000; 
 
-
-        console.log((await request(app)
-            .post(`/wateringSchedule/${TEST_SECTOR_ID}/endIrrigationSeason`)
-            .set('Authorization', `Bearer ${authToken}`)
-            .query({ timestamp: cutOffDate })).body)
         await request(app)
             .post(`/wateringSchedule/${TEST_SECTOR_ID}/endIrrigationSeason`)
             .set('Authorization', `Bearer ${authToken}`)
