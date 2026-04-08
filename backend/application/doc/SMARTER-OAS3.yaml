@@ -69,7 +69,6 @@ components:
         - entityId
         - role
 
-
     CompanyAttributes:
       type: object
       properties:
@@ -79,21 +78,26 @@ components:
         address:
           type: string
           description: Address of the company
-        
-
-    CreateCompany:
+    
+    UpdateCompany:
       allOf:
         - $ref: '#/components/schemas/CompanyAttributes'
         - type: object
           properties:
-            createdAt:
-              type: number
-              description: Timestamp of company creation (optional)
             organizationIds:
               type: array
               items:
                 type: integer
               description: ID of the organizations to associate
+
+    CreateCompany:
+      allOf:
+        - $ref: '#/components/schemas/UpdateCompany'
+        - type: object
+          properties:
+            createdAt:
+              type: number
+              description: Timestamp of company creation (optional)
           required:
             - name
       

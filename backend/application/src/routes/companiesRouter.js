@@ -360,7 +360,7 @@ const companiesRouter = ({ companyService, authenticationService, authorizationS
      *       content:
      *         application/json:
      *           schema:
-     *             $ref: '#/components/schemas/CompanyAttributes'
+     *             $ref: '#/components/schemas/UpdateCompany'
      *     responses:
      *       200:
      *         description: Company updated successfully
