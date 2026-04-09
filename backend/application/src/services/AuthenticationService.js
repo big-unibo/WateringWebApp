@@ -11,11 +11,10 @@ class AuthenticationService {
 
     async generateJwt(request) {
         try {
-            const user = await this.userService.findUserByEmail(request.email);
+            const user = await this.userService.findUserByEmail(request.email, true);
 
             if (!user)
                 throw new Error('The mail does not exist');
-            
             const match = (user.password === request.password);
             if (!match)
                 throw new Error('Password is invalid');

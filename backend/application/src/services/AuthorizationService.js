@@ -49,6 +49,11 @@ class AuthorizationService {
             throw Error("Invalid authorization requested")
         }
     }
+
+    async getResourceRelatedPermissions(entityType, entityId){
+        const res = await this.authorizationRepository.getResourceRelatedPermissions(entityType, entityId)
+        return res
+    }
 }
 
 export default AuthorizationService

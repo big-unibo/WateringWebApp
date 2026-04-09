@@ -100,7 +100,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
                 return res.status(200).json(sectors)
             }
             return res.status(404).json({
-                error: "User has no permission to view any company"
+                error: "User has no permission to view any sector"
             })
         } catch (error) {
             console.log(`Fail retrieving sectors caused by: ${error.message}`);
@@ -259,7 +259,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *             $ref: '#/components/schemas/SectorBase'
      *     responses:
      *       200:
-     *         description: Company updated successfully
+     *         description: Sector updated successfully
      *         content:
      *           application/json:
      *             schema:
@@ -1567,6 +1567,118 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
             return res.status(500).json({ error: "Error deleting sector services" })
         }
     });
+
+    /**
+     * @swagger
+     * /sectors/{sectorId}/users:
+     *   get:
+     *     summary: Retrives user that have permission on the sector with permission info.
+     *     tags: [Sectors]
+     *     description: |
+     *       Retrives user that have permission on the sector with permission info.
+     *       Requires authentication and proper authorization.
+     *     parameters:
+     *       - in: path
+     *         name: sectorId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of sector to retrieve
+     *     responses:
+     *       200:
+     *         description: Detailed user permission information for the specified sector
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 $ref: '#/components/schemas/UserResourcePermit'
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       401:
+     *         description: Authentication failed (Invalid or missing JWT).
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized request – user not allowed view sector users
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       404:
+     *         description: No sector found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error during the process.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.get('/:sectorId/users', async (req, res) => {
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+        
+        const sectorId = req.params.sectorId;
+        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, requestUserData.isAdmin, 'SECTOR', sectorId))){
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
+
+        try {
+            const exists = await fieldService.sectorExists(sectorId);
+            if (!exists) {
+                return res.status(404).json({ message: 'Sector not found' });
+            }
+            const result = await authorizationService.getResourceRelatedPermissions('SECTOR', sectorId)
+            return res.status(200).json(result)
+        } catch (error) {
+            console.log(`Failed retrieving sector permission data: ${error.message}`)
+            return res.status(500).json({ error: "Internal error retrieving sector permission data" })
+        }
+    })
 
     return router;
 }

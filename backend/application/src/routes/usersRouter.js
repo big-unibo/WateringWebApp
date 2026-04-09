@@ -383,6 +383,134 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
 
     /**
      * @swagger
+     * /users/{userId}/disable:
+     *   post:
+     *     summary: Disables a user.
+     *     tags: [Users]
+     *     description: |
+     *       Disables a user.
+     *       Requires authentication and proper authorization.
+     *     parameters:
+     *       - in: path
+     *         name: userId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of user to disable
+     *       - in: query
+     *         name: validTo
+     *         required: false
+     *         schema:
+     *           type: number
+     *         description: Timestamp indicating end date of the user validity, if not set takes actual timestamp (Seconds elapsed since 1/1/1970).
+     *     responses:
+     *       200:
+     *         description: User successfully disabled.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: User successfully disabled.
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       401:
+     *         description: Authentication failed (Invalid or missing JWT).
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       403:
+     *         description: Unauthorized request – user not allowed to end farm validity.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Internal server error – unexpected error during the process.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.post('/:userId/disable', async (req, res) => {
+        let requestUserData
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+
+        const targetUserId = req.params.userId;
+        const exists = await userService.findUser(targetUserId);
+        if (!exists) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const currentTimestamp = Math.floor(Date.now() / 1000);
+        const validTo = req.query.validTo ?? currentTimestamp;
+
+        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ADMINISTRATOR, requestUserData.isAdmin))){
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
+
+        try {
+            if (validTo < currentTimestamp - (24 * 60 * 60)) {
+                return res.status(400).json({ message: 'Invalid validTo timestamp provided. It must be a timestamp in the last 24 hours' })
+            }
+            await userService.disableUser(requestUserData.userId, targetUserId, validTo)
+            return res.status(200).json({ message: `User validity successfully ended` })
+        } catch (error) {
+            console.log(`Failed disabling user: ${error.message}`)
+            return res.status(500).json({ error: "Internal error disabling user" })
+        }
+    })
+
+
+    /**
+     * @swagger
      * /users/isAuthorized:
      *   get:
      *     summary: Checks if a user has certain authorizations

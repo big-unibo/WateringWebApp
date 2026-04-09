@@ -19,10 +19,14 @@ class UserService {
         }
     }
 
-    async findUserByEmail(email) {
+    async findUserByEmail(email, raw) {
         const user = await this.userRepository.findUserByEmail(email);
-        if(user){
-            return dtoConverter.convertUserData(user)
+        if (!raw) {
+            if (user) {
+                return dtoConverter.convertUserData(user)
+            }
+        } else {
+            return user
         }
     }
 
@@ -113,6 +117,16 @@ class UserService {
             return new UserPermits(user.id, isAdmin, roles)
         } catch (error) {
             console.error('Error computing user permits:', error);
+            throw error;
+        }
+    }
+
+    async disableUser(userId, targetUserId, validTo) {
+        try {
+            await this.userRepository.disableUser(targetUserId, validTo)
+            await this.userActionService.logDisabling(userId, TABLES.USER, targetUserId)
+        } catch (error) {
+            console.error(`Error disabling user: ${error.message}`);
             throw error;
         }
     }

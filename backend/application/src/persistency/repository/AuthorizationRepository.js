@@ -6,6 +6,7 @@ import { _deleteFromModelByParams } from "../../commons/repositoryUtils.js"
 class AuthorizationRepository {
     constructor(models, sequelize) {
         this.Permit = models.Permit
+        this.User = models.User
         this.sequelize = sequelize
     }
 
@@ -171,6 +172,23 @@ class AuthorizationRepository {
         } catch (error) {
             throw new Error(`Error saving new user permits caused by: ${error.message}`);
         }
+    }
+
+    async getResourceRelatedPermissions(entityType, entityId){
+        return await this.Permit.findAll({
+            attributes: ['role', 'extraAttributes'],
+            where: {
+                table: TABLES[entityType],
+                id_key: entityId
+            },
+            include: [{
+                    model: this.User,
+                    required: true,
+                    attributes: ['id', 'name', 'email'],
+                    as: "user"
+            }],
+            distinct: true
+        })
     }
 
 }

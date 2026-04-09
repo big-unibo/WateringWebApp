@@ -1,3 +1,4 @@
+import { Op } from "sequelize"
 class UserRepository {
 
     constructor(models, sequelize) {
@@ -64,6 +65,29 @@ class UserRepository {
                 return permit;
         } catch (error) {
             throw new Error(`Error creating new permit caused by: ${error.message}`);
+        }
+    }
+
+    async disableUser(userId, timestamp) {
+        try {
+            await this.User.update(
+                {
+                    disabledAt: timestamp
+                },
+                {
+                    where: {
+                        id: userId,
+                        disabledAt: {
+                            [Op.is]: null
+                        },
+                        createdAt: {
+                            [Op.lt]: timestamp
+                        }
+                    }
+                }
+            )
+        } catch (error) {
+            throw new Error(`Error disabling user: ${error.message}`);
         }
     }
 
