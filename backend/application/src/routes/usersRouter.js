@@ -5,6 +5,117 @@ import { ROLES } from '../commons/permissionRoles.js';
 
 const usersRouter = ({ userService, authenticationService, authorizationService }) => {
     const router = Router();
+
+    /**
+     * @swagger
+     * /users:
+     *   get:
+     *     summary: Finds user searching by params
+     *     tags: [Users]
+     *     description: |
+     *       Return data about the user filtered by param (e.g. email)
+     *     parameters:
+     *       - in: query
+     *         name: email
+     *         required: true
+     *         schema:
+     *           type: string
+     *           format: email
+     *         description: Email of the user searching data for
+     *     responses:
+     *       '200':
+     *         description: Users successfully created.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UserData'
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *                 - errors
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed – invalid or missing JWT token.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized – user does not have permission to add user permissions.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '500':
+     *         description: Internal Server Error – unexpected error while retrieving user data
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     */
+    router.get('/', async (req, res) => {
+        let requestUserData;
+
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' });
+        }
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, requestUserData.isAdmin))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
+
+        try {
+            const email = req.query.email
+            const userData = await userService.findUserByEmail(email);
+            if (userData){
+                return res.status(200).json(userData);
+            }
+            return res.status(404).json({message:"User not found"});
+        } catch (error) {
+            console.error(`Fail while retrieving user data caused by: ${error.message}`);
+            return res.status(500).json({ error: 'Error while retrieving user data' });
+        }
+    })
+
     /**
      * @swagger
      * /users/login:
@@ -176,10 +287,10 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
             req.body.users.map(
                 user =>
                 new User(
+                    null,
                     user.email,
-                    user.password,
                     user.name,
-                    user.role
+                    user.password
                 )
             )
             );
@@ -262,7 +373,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
 
         try {
             const userId = requestUserData.userId;
-            const userData = await userService.getUserData(userId);
+            const userData = await userService.findUser(userId);
             return res.status(200).json(userData);
         } catch (error) {
             console.error(`Fail while retrieving user data caused by: ${error.message}`);
@@ -491,7 +602,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
             const entityId = req.body.entityId
             const extraAttributes = req.body.extraAttributes
 
-            if (! await userService.getUserData(targetUserId)) {
+            if (! await userService.findUser(targetUserId)) {
                 return re.status(404).json({ message: "User not found" })
             }
 

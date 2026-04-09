@@ -11,6 +11,7 @@ import { Signal, SignalInfo, SignalType } from "../dtos/signalDto.js";
 import { ThesisData, ThesisRef } from "../dtos/thesisDto.js";
 import { WateringParams } from "../dtos/wateringParamsDto.js";
 import { Farm, FarmData } from "../dtos/farmDto.js";
+import { User } from "../dtos/userDto.js";
 
 class DtoConverter {
 
@@ -642,6 +643,10 @@ class DtoConverter {
             return new BinningInfo(b.id, b.description, b.bins);
         });
         return binnings;
+    }
+
+    convertUserData(userData){
+        return new User(userData.id, userData.email, userData.name)
     }
 }
 

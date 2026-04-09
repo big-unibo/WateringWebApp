@@ -1,7 +1,9 @@
 import { TABLES } from "../commons/constants.js";
 import { User } from "../dtos/userDto.js";
 import { UserRole, UserPermits } from "../dtos/userPermitsDto.js";
+import DtoConverter from './DtoConverter.js';
 
+const dtoConverter = new DtoConverter()
 
 class UserService {
 
@@ -11,11 +13,17 @@ class UserService {
     }
 
     async findUser(userId) {
-        return await this.userRepository.findUser(userId);
+        const user = await this.userRepository.findUser(userId);
+        if(user){
+            return dtoConverter.convertUserData(user)
+        }
     }
 
     async findUserByEmail(email) {
-        return await this.userRepository.findUserByEmail(email);
+        const user = await this.userRepository.findUserByEmail(email);
+        if(user){
+            return dtoConverter.convertUserData(user)
+        }
     }
 
     async createUsers(userId, request) {
@@ -25,8 +33,7 @@ class UserService {
                     const newUser = await this.userRepository.createUser(
                         user.email,
                         user.password,
-                        user.name,
-                        user.role
+                        user.name
                     );
 
                     if (newUser && newUser.id) {
@@ -107,16 +114,6 @@ class UserService {
         } catch (error) {
             console.error('Error computing user permits:', error);
             throw error;
-        }
-    }
-
-    async getUserData(userId) {
-        const rawUserData = await this.findUser(userId);
-        if (rawUserData) {
-            return new User(
-                rawUserData.email,
-                rawUserData.name
-            )
         }
     }
 }

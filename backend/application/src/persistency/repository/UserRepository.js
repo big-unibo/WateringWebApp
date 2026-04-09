@@ -34,13 +34,12 @@ class UserRepository {
         }
     }
 
-    async createUser(email, password, name, role) {
+    async createUser(email, password, name) {
         try {
             const userCreated = await this.User.create({
                 email,      
                 password,  
-                name,       
-                role        
+                name   
             });
 
             return userCreated;

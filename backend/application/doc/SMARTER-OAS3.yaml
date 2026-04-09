@@ -1244,6 +1244,9 @@ components:
     UserData:
       type: object
       properties:
+        id:
+          type: number
+          description: Id of the user
         email:
           type: string
           description: Users's email

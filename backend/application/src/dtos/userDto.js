@@ -5,7 +5,8 @@ export class Users{
 }
 
 export class User {
-  constructor(email, name, password) {
+  constructor(id, email, name, password) {
+    this.id = id
     this.email = email
     this.password = password
     this.name = name
