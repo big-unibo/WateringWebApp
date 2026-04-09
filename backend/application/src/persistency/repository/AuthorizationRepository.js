@@ -88,7 +88,7 @@ class AuthorizationRepository {
         }
     }
 
-    async grantUser(userId, entityType, entityId, role) {
+    async grantUser(userId, entityType, entityId, role, extraAttributes) {
         try {
 
             const existQuery = `SELECT * FROM ${TABLES[entityType]} WHERE id=:entityId`
@@ -101,7 +101,8 @@ class AuthorizationRepository {
                     userId: userId,
                     table: TABLES[entityType],
                     idKey: entityId,
-                    role: role
+                    role: role,
+                    extraAttributes: extraAttributes
                 });
             } else {
                 throw Error("Reqested entity does not exist")

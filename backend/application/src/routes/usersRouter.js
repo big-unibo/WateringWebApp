@@ -489,12 +489,13 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
             const role = req.body.role.toLowerCase()
             const entityType = req.body.entityType
             const entityId = req.body.entityId
+            const extraAttributes = req.body.extraAttributes
 
             if (! await userService.getUserData(targetUserId)) {
                 return re.status(404).json({ message: "User not found" })
             }
 
-            await authorizationService.grantUser(userId, targetUserId, role, entityType, entityId)
+            await authorizationService.grantUser(userId, targetUserId, role, entityType, entityId, extraAttributes)
 
             return res.status(200).json({ message: 'Permission granted successfully!' })
         } catch (error) {

@@ -35,13 +35,13 @@ class AuthorizationService {
         return false
     }
 
-    async grantUser(userId, targetUserId, role, entityType, entityId) {
+    async grantUser(userId, targetUserId, role, entityType, entityId, extraAttributes) {
         if ((role === 'accounter' && entityType === 'COMPANY') || (role !== 'accounter' && entityType === 'SECTOR')) {
             const deletedPermitsIds = await this.authorizationRepository.removeOldPermits(targetUserId, entityType, entityId)
             if (deletedPermitsIds) {
                 await Promise.all(deletedPermitsIds.map(async id => await this.userActionService.logDeletion(userId, TABLES.PERMIT, id)))
             }
-            const permit = await this.authorizationRepository.grantUser(targetUserId, entityType, entityId, role)
+            const permit = await this.authorizationRepository.grantUser(targetUserId, entityType, entityId, role, extraAttributes)
             if (permit?.id) {
                 await this.userActionService.logCreation(userId, TABLES.PERMIT, permit.id)
             }
