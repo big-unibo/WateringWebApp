@@ -12,6 +12,7 @@ import { ThesisData, ThesisRef } from "../dtos/thesisDto.js";
 import { WateringParams } from "../dtos/wateringParamsDto.js";
 import { Farm, FarmData } from "../dtos/farmDto.js";
 import { User } from "../dtos/userDto.js";
+import { UserResourcePermit } from "../dtos/userPermitsDto.js";
 
 class DtoConverter {
 
@@ -647,6 +648,10 @@ class DtoConverter {
 
     convertUserData(userData){
         return new User(userData.id, userData.email, userData.name)
+    }
+
+    convertUsersResourcePermits(usersData) {
+        return usersData.map(u => new UserResourcePermit(new User(u.user.id, u.user.email, u.user.name), u.role, u.extraAttributes))
     }
 }
 

@@ -625,7 +625,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
 
     /**
      * @swagger
-     * /users/permissions:
+     * /users/permission:
      *   post:
      *     summary: Grant a permission to a user on a resource
      *     tags: [Users]
@@ -710,7 +710,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      *                 error:
      *                   type: string
      */
-    router.post('/permissions', async (req, res) => {
+    router.post('/permission', async (req, res) => {
         let requestUserData;
 
         try {
@@ -731,7 +731,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
             const extraAttributes = req.body.extraAttributes
 
             if (! await userService.findUser(targetUserId)) {
-                return re.status(404).json({ message: "User not found" })
+                return res.status(404).json({ message: "User not found" })
             }
 
             await authorizationService.grantUser(userId, targetUserId, role, entityType, entityId, extraAttributes)
@@ -743,6 +743,135 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
         }
     })
 
+    /**
+     * @swagger
+     * /users/{userId}/permission:
+     *   delete:
+     *     summary: Delete a permission of a user on a resource
+     *     tags: [Users]
+     *     description: |
+     *       Delete a permission of a user on a resource. 
+     *     parameters:
+     *       - in: path
+     *         name: userId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of user to delete permission
+     *       - in: query
+     *         name: entityType
+     *         required: true
+     *         schema:
+     *           type: string
+     *           enum: [COMPANY, SECTOR]
+     *         description: Type of the entity on which is requested the authorization
+     *       - in: query
+     *         name: entityId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: Id of the entity
+     *     responses:
+     *       '200':
+     *         description: Permission deleted successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *                 - errors
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed – invalid or missing JWT token.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '403':
+     *         description: Unauthorized – user does not have permission to delete user permissions.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '404':
+     *         description: Resource not found
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '500':
+     *         description: Internal Server Error – unexpected error while deleting user permission
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+     */
+    router.delete('/:userId/permission', async (req, res) => {
+        let requestUserData;
+        try {
+            requestUserData = await authenticationService.validateJwt(req.headers.authorization)
+        } catch (error) {
+            return res.status(401).json({ message: 'Authentication failed' })
+        }
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, requestUserData.isAdmin))) {
+            return res.status(403).json({ message: 'Unauthorized request' });
+        }
+
+        try {
+            const userId = requestUserData.userId
+            const targetUserId = req.params.userId
+            const entityType = req.query.entityType
+            const entityId = req.query.entityId
+
+            if (! await userService.findUser(targetUserId)) {
+                return res.status(404).json({ message: "User not found" })
+            }
+
+            await authorizationService.deleteUserPermission(userId, targetUserId, entityType, entityId)
+
+            return res.status(200).json({ message: 'Permission deleted successfully!' })
+        } catch (error) {
+            console.error(`Fail while deleting user permission caused by: ${error.message}`);
+            return res.status(500).json({ error: 'Error while deleting user permission' });
+        }
+    })
     return router;
 }
 

@@ -1,5 +1,8 @@
 import { COMPANIES_PERMITS_COLUMN_MAPPING, isRoleAtLeast } from "../commons/permissionRoles.js";
 import { TABLES } from "../commons/constants.js";
+import DtoConverter from "./DtoConverter.js";
+
+const dtoConverter = new DtoConverter();
 
 class AuthorizationService {
 
@@ -37,10 +40,7 @@ class AuthorizationService {
 
     async grantUser(userId, targetUserId, role, entityType, entityId, extraAttributes) {
         if ((role === 'accounter' && entityType === 'COMPANY') || (role !== 'accounter' && entityType === 'SECTOR')) {
-            const deletedPermitsIds = await this.authorizationRepository.removeOldPermits(targetUserId, entityType, entityId)
-            if (deletedPermitsIds) {
-                await Promise.all(deletedPermitsIds.map(async id => await this.userActionService.logDeletion(userId, TABLES.PERMIT, id)))
-            }
+            await this.deleteUserPermission(userId, targetUserId, entityType, entityId)
             const permit = await this.authorizationRepository.grantUser(targetUserId, entityType, entityId, role, extraAttributes)
             if (permit?.id) {
                 await this.userActionService.logCreation(userId, TABLES.PERMIT, permit.id)
@@ -50,9 +50,21 @@ class AuthorizationService {
         }
     }
 
+    async deleteUserPermission(userId, targetUserId, entityType, entityId){
+        try {
+            const deletedPermitIds = await this.authorizationRepository.removeOldPermits(targetUserId, entityType, entityId)
+            if (deletedPermitIds) {
+                await this.userActionService.logDeletion(userId, TABLES.PERMIT, deletedPermitIds)
+            }
+        } catch (error) {
+            console.error(`Error deleting user permission: ${error.message}`);
+            throw error;
+        }
+    }
+
     async getResourceRelatedPermissions(entityType, entityId){
         const res = await this.authorizationRepository.getResourceRelatedPermissions(entityType, entityId)
-        return res
+        return dtoConverter.convertUsersResourcePermits(res) 
     }
 }
 
