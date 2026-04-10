@@ -224,7 +224,7 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
 
             const farmLocation = req.body.location
             const farmName = req.body.name
-            const createdAt = req.body.createdAt
+            const createdAt = req.body.createdAt ?? Math.floor(Date.now()/1000)
             const farm = new Farm(farmName, companyId, farmLocation, null, createdAt);
 
             const farmId = await fieldService.createFarm(userId, farm);

@@ -188,7 +188,7 @@ class DtoConverter {
 
         return new ThesisData(
             thesisData.thesisId,
-            thesisData.thesisName,
+            thesisData.thesis.thesisName,
             thesisData.validFrom,
             thesisData.validTo,
             thesisData.weight,
