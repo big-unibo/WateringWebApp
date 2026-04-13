@@ -44,9 +44,6 @@ components:
     GrantPermissionRequest:
       type: object
       properties:
-        userId:
-          type: integer
-          description: Identifier of the user receiving the permission
         entityType:
           type: string
           description: Type of entity on which the permission is granted
@@ -67,7 +64,6 @@ components:
           type: object
           description: JSON object with extra information on the permit (i.e. watering advice mail flag)
       required:
-        - userId
         - entityType
         - entityId
         - role

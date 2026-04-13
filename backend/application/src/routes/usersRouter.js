@@ -24,7 +24,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      *         description: Email of the user searching data for
      *     responses:
      *       '200':
-     *         description: Users successfully created.
+     *         description: Users successfully found.
      *         content:
      *           application/json:
      *             schema:
@@ -625,13 +625,20 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
 
     /**
      * @swagger
-     * /users/permission:
+     * /users/{userId}/permission:
      *   post:
      *     summary: Grant a permission to a user on a resource
      *     tags: [Users]
      *     description: |
      *       Creates a new permission associating a user with a *role* on a specific resource.
      *       This action overwrites previous permits on related entities. 
+     *     parameters:
+     *       - in: path
+     *         name: userId
+     *         required: true
+     *         schema:
+     *           type: integer
+     *         description: ID of user to add permission
      *     requestBody:
      *       required: true
      *       content:
@@ -710,7 +717,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      *                 error:
      *                   type: string
      */
-    router.post('/permission', async (req, res) => {
+    router.post('/:userId/permission', async (req, res) => {
         let requestUserData;
 
         try {
@@ -724,7 +731,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
 
         try {
             const userId = requestUserData.userId
-            const targetUserId = req.body.userId
+            const targetUserId = req.params.userId
             const role = req.body.role.toLowerCase()
             const entityType = req.body.entityType
             const entityId = req.body.entityId
