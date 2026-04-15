@@ -575,7 +575,19 @@ components:
               type: array
               description: List of theses associated to the sector
               items:
-                $ref: "#/components/schemas/Thesis"
+                allOf:
+                - $ref: "#/components/schemas/Thesis"
+                - type: object
+                  properties:
+                    weight:
+                      type: number
+                      description: The weight of the thesis in the sector
+                    validFrom:
+                      type: number
+                      description: Timestamp of thesis association validity start (UNIX epoch timestamp in seconds)
+                    validTo:
+                      type: number
+                      description: Timestamp of thesis association validity end (UNIX epoch timestamp in seconds)
 
     CreateThesis:
           type: object

@@ -29,17 +29,6 @@ class ThesisRepository {
         }
     }
 
-    async assignThesisToSector(thesisId, sectorId, weight, validFrom, validTo) {
-        const model = await this.ThesisInSector.create({
-            thesisId,
-            sectorId,
-            weight,
-            validFrom,
-            validTo
-        });
-        return model.id;
-    }
-
     async disableThesisInSector(sectorId, thesisId, timestamp) {
         const [updatedCount, updatedRecords] = await this.ThesisInSector.update(
             {

@@ -1,4 +1,4 @@
-import { Op} from 'sequelize';
+import { Op } from 'sequelize';
 import { _deleteFromModelByParams } from '../../commons/repositoryUtils.js';
 
 class SectorRepository {
@@ -72,7 +72,7 @@ class SectorRepository {
                 {
                     model: this.ThesisInSector,
                     as: 'thesisInSector',
-                    attributes: ['thesisId'],
+                    attributes: ['thesisId', 'weight', 'validFrom', 'validTo'],
                     required: false,
                     include: [
                         {
@@ -131,14 +131,14 @@ class SectorRepository {
         `;
 
         const results = await this.sequelize.query(query, {
-            replacements: {filteringIds, timeFilterFrom, timeFilterTo},
+            replacements: { filteringIds, timeFilterFrom, timeFilterTo },
             type: this.sequelize.QueryTypes.SELECT
         });
 
         return results;
     }
 
-    async getSectorsByFarm(farmId){
+    async getSectorsByFarm(farmId) {
         return await this.Sector.findAll({
             where: {
                 farmId: farmId
@@ -175,6 +175,17 @@ class SectorRepository {
         } catch (error) {
             throw new Error(`Error deleting sector: ${error.message}`);
         }
+    }
+
+    async assignThesisToSector(thesisId, sectorId, weight, validFrom, validTo) {
+        const model = await this.ThesisInSector.create({
+            thesisId,
+            sectorId,
+            weight,
+            validFrom,
+            validTo
+        });
+        return model.id;
     }
 
 }

@@ -125,7 +125,7 @@ class FieldService {
         const rules = [
             { limit: 3 * MONTH_TO_SECONDS, period: 24 * 60 * MINUTE_TO_SECONDS },  //Over 3 months -> 1 day
             { limit: 1.5 * MONTH_TO_SECONDS, period: 12 * 60 * MINUTE_TO_SECONDS }, //Over 1.5 months -> 12 hours
-            { limit: 14 * 24 * 60 * MINUTE_TO_SECONDS, period: 3 * 60 * MINUTE_TO_SECONDS }, // Over 2 weeks-> 3 hours
+            { limit: 21 * 24 * 60 * MINUTE_TO_SECONDS, period: 3 * 60 * MINUTE_TO_SECONDS }, // Over 2 weeks-> 3 hours
             { limit: 3 * 24 * 60 * MINUTE_TO_SECONDS, period: 60 * MINUTE_TO_SECONDS } // Over 3 days -> 1 hour
         ];
         const rule = rules.find(r => requestPeriod > r.limit);
@@ -310,7 +310,7 @@ class FieldService {
             if (sectorAssignmentsIds) {
                 await this.userActionService.logDisabling(userId, TABLES.THESIS_IN_SECTOR, sectorAssignmentsIds, null);
             }
-            const assignmentId = await this.thesisRepository.assignThesisToSector(id, sectorId, 0, validFrom, validTo)
+            const assignmentId = await this.thesisRepository.assignThesisToSector(id, sectorId, null, validFrom, validTo)
             if (assignmentId) {
                 await this.userActionService.logCreation(userId, TABLES.THESIS_IN_SECTOR, assignmentId, null);
             }
@@ -319,11 +319,6 @@ class FieldService {
 
     async disableThesis(userId, thesisId, timestamp) {
         try {
-            // const deviceId = await this.thesesAllSignalsRepository.getGridDeviceByThesis(thesisId, timestamp, timestamp)
-            // const optimalProfileAssignmentId = await this.optimalStateRepository.setOptimalProfileAssignmentEndDate(deviceId, timestamp)
-            // if (optimalProfileAssignmentId) {
-            //     this.userActionService.logDisabling(userId, TABLES.OPTIMAL_PROFILE, optimalProfileAssignmentId, null)
-            // }
             const algorithmId = await this.wateringAdviceRepository.setWateringAlgorithmParamsEndDate(thesisId, timestamp)
             if (algorithmId) {
                 this.userActionService.logDisabling(userId, TABLES.WATERING_ALGORITHM, algorithmId)

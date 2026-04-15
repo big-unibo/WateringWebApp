@@ -98,12 +98,10 @@ class DtoConverter {
         const theses = sectorData.thesisInSector?.map(t => ({
             id: t.thesisId,
             name: t.thesis?.thesisName,
-            createdAt: t.thesis?.createdAt,
-            disabledAt: t.thesis?.disabledAt
+            weight: t.weight,
+            validFrom: t.validFrom,
+            validTo: t.validTo,
         })) || [];
-
-        const uniqueTheses = Array.from(new Map(theses.map(t => [t.id, t])).values());
-        const thesisDtos = uniqueTheses.map(t => new ThesisRef(t.id, t.name));
 
         const company = {
             id: sectorData.farm.companyId,
@@ -128,7 +126,7 @@ class DtoConverter {
             sectorData.doubleWing,
             farm,
             company,
-            thesisDtos,
+            theses,
             sectorData.createdAt,
             sectorData.disabledAt
         );
