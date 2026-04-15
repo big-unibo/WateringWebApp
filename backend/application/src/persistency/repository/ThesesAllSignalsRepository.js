@@ -56,6 +56,8 @@ class ThesesAllSignalsRepository {
                 AND m.timestamp BETWEEN GREATEST(tas.valid_from, :timeFilterFrom) AND LEAST(COALESCE(tas.valid_to, 'infinity'), :timeFilterTo)
             WHERE tas.signal_type = ANY(ARRAY[:signalTypes])
             AND tas.thesis_id = :thesisId
+            AND :timeFilterFrom <= COALESCE(tas.valid_to, 'infinity')
+            AND :timeFilterTo >= tas.valid_from
             GROUP BY
                 thesis_name,
                 device_id,
