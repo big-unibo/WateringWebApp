@@ -57,6 +57,7 @@ class WateringScheduleRepository {
                     ON s.id = tis.sector_id
                 WHERE we.sector_id = :sectorId
                     AND we.watering_start BETWEEN :timeFilterFrom AND :timeFilterTo
+                    AND tis.weight IS NOT NULL
             `;
 
             const results = await this.sequelize.query(query, {
