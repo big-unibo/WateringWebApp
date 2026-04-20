@@ -89,7 +89,7 @@ class FieldService {
             throw Error("Impossible to create thesis")
         }
         await this.userActionService.logCreation(userId, TABLES.THESIS, newThesisId, null);
-        const assignmentId = await this.thesisRepository.assignThesisToSector(newThesisId, thesis.sectorId, undefined, thesis.validFrom || Math.floor(Date.now() / 1000));
+        const assignmentId = await this.sectorRepository.assignThesisToSector(newThesisId, thesis.sectorId, undefined, thesis.validFrom || Math.floor(Date.now() / 1000));
         await this.userActionService.logCreation(userId, TABLES.THESIS_IN_SECTOR, assignmentId, null);
         return newThesisId;
     }
@@ -310,7 +310,7 @@ class FieldService {
             if (sectorAssignmentsIds) {
                 await this.userActionService.logDisabling(userId, TABLES.THESIS_IN_SECTOR, sectorAssignmentsIds, null);
             }
-            const assignmentId = await this.thesisRepository.assignThesisToSector(id, sectorId, null, validFrom, validTo)
+            const assignmentId = await this.sectorRepository.assignThesisToSector(id, sectorId, null, validFrom, validTo)
             if (assignmentId) {
                 await this.userActionService.logCreation(userId, TABLES.THESIS_IN_SECTOR, assignmentId, null);
             }
