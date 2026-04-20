@@ -111,7 +111,7 @@ function switchOptimal() {
                   }}</button>
               </div>
               <div>
-                <humiditymap-smarter v-if="!updateWithMatrixId" :config="props.config"
+                <humiditymap-smarter v-if="!updateWithMatrixId" :config="JSON.stringify(props.config)"
                   :selectedTimestamp="props.selectedTimestamp"></humiditymap-smarter>
                 <div v-else class="form-group row align-items-center justify-content-center p-2">
                   <div class="col-auto"><label for="optMatrixId">Id matrice ottima esistete:</label></div>

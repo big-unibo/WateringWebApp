@@ -77,7 +77,7 @@ async function simulateAdvice() {
                 </button>
               </div>
               <div v-if="isModalShown">
-                <humiditymap-smarter :config="props.config"
+                <humiditymap-smarter :config="JSON.stringify(props.config)"
                   :selectedTimestamp="props.selectedTimestamp"></humiditymap-smarter>
               </div>
             </div>

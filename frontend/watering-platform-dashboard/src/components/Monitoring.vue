@@ -370,15 +370,15 @@ function selectedTime(time) {
               umidità (Con "<strong>G</strong>"
               si denota la posizione del gocciolatore):</span>
             <div class="col-lg-6 align-content-center">
-              <humiditymultiline-chart-smarter :config="baseConnectionParams"
-                @selectTimestamp="selectedTime"></humiditymultiline-chart-smarter>
+              <humiditymultiline-chart-smarter :config="JSON.stringify(baseConnectionParams)"
+                @selectTimestamp="selectedTime" style="height: 320px"></humiditymultiline-chart-smarter>
             </div>
             <div class="col-lg-6">
-              <humiditymap-smarter :config="baseConnectionParams"
+              <humiditymap-smarter :config="JSON.stringify(baseConnectionParams)"
                 :selectedTimestamp="selectedTimestamp"></humiditymap-smarter>
             </div>
           </div>
-          <optimal-humidity-heatmap-smarter v-if="showOptimalMatrix" :config="baseConnectionParams"
+          <optimal-humidity-heatmap-smarter v-if="showOptimalMatrix" :config="JSON.stringify(baseConnectionParams)"
             :selectedTimestamp="selectedTimestamp" :showDistance="true"></optimal-humidity-heatmap-smarter>
         </div>
       </div>
@@ -391,7 +391,7 @@ function selectedTime(time) {
           <span>Evoluzione matrice dell'umidità</span>
         </div>
         <div class="card-body">
-          <heatmap-animation-smarter :config="baseConnectionParams"></heatmap-animation-smarter>
+          <heatmap-animation-smarter :config="JSON.stringify(baseConnectionParams)"></heatmap-animation-smarter>
         </div>
       </div>
     </div>
@@ -400,22 +400,31 @@ function selectedTime(time) {
       <div class="groundwaterpot-card card">
        <div class="card-header">Potenziale idrico</div>
         <div class="card-body">
-          <signals-linechart-chart-smarter style="height: 320px" :config="{
+          <signals-linechart-chart-smarter style="height: 320px" :config="JSON.stringify({
             ...baseConnectionParams,
             params: {
               ...(baseConnectionParams.params ?? {}),
               signalTypes: ['SOIL_WATER_CONTENT', 'SOIL_WATER_POTENTIAL'],
               aggregationType: 'AVG'
             }
-          }" :hideOnMissingData="false" />
-          <signals-linechart-chart-smarter style="height: 320px" :config="{
+          })" :hideOnMissingData="false" />
+          <signals-linechart-chart-smarter style="height: 320px" :config="JSON.stringify({
             ...baseConnectionParams,
             params: {
               ...(baseConnectionParams.params ?? {}),
               signalTypes: ['ELECT_COND'],
               aggregationType: 'AVG'
             }
-          }" :hideOnMissingSignal="true" />
+          })" :hideOnMissingSignal="true" />
+          <signals-linechart-chart-smarter style="height: 380px" :config="JSON.stringify({
+            ...baseConnectionParams,
+            params: {
+              ...(baseConnectionParams.params ?? {}),
+              signalTypes: ['AIR_TEMP', 'SOIL_TEMP'],
+              aggregationType: 'AVG'
+            }
+          })" :hideOnMissingSignal="true" />
+          
         </div>
       </div>
     </div>
@@ -428,17 +437,17 @@ function selectedTime(time) {
             id="dynamic-heatmap-button">{{ detailedWateringButton }}</button>
         </div>
         <div v-if="!showDetailedWatering">
-          <water-aggregate-chart-smarter :config="baseConnectionParams"></water-aggregate-chart-smarter>
+          <water-aggregate-chart-smarter :config="JSON.stringify(baseConnectionParams)"></water-aggregate-chart-smarter>
        </div>
         <div v-else>
-          <dripperandpluv-chart-smarter :config="{
+          <dripperandpluv-chart-smarter :config="JSON.stringify({
             ...baseConnectionParams,
             params: {
               ...(baseConnectionParams.params ?? {}),
               signalTypes: ['DRIPPER', 'PLUV_CURR', 'SPRINKLER'],
               aggregationType: 'SUM'
             }
-          }">
+          })">
           </dripperandpluv-chart-smarter>
         </div>
       </div>
@@ -460,7 +469,7 @@ function selectedTime(time) {
         <div class="card-header">Potenziale Idrico Ottimale e Potenziale Idrico Medio Giornaliero</div>
         <div class="card-body">
           <optimal-distance-chart-smarter style="height: 300px"
-            :config="baseConnectionParams"></optimal-distance-chart-smarter>
+            :config="JSON.stringify(baseConnectionParams)"></optimal-distance-chart-smarter>
         </div>
       </div>
     </div>
@@ -471,11 +480,11 @@ function selectedTime(time) {
         <div class="card-body row">
           <div class="col-lg-6">
             <p>Matrice dell'umidità <strong>media</strong> lungo il periodo:</p>
-            <meancountor-chart-smarter :config="baseConnectionParams"></meancountor-chart-smarter>
+            <meancountor-chart-smarter :config="JSON.stringify(baseConnectionParams)"></meancountor-chart-smarter>
           </div>
           <div class="col-lg-6">
             <p>Matrice di <strong>varianza</strong> dell'umidità lungo il periodo:</p>
-            <stdcountor-chart-smarter :config="baseConnectionParams"></stdcountor-chart-smarter>
+            <stdcountor-chart-smarter :config="JSON.stringify(baseConnectionParams)"></stdcountor-chart-smarter>
           </div>
         </div>
       </div>
@@ -485,14 +494,14 @@ function selectedTime(time) {
       <div class="card">
         <div class="card-header">Temperatura dell'aria</div>
        <div class="card-body">
-          <airtemperature-chart-smarter style="height: 300px" :config="{
+          <airtemperature-chart-smarter style="height: 300px" :config="JSON.stringify({
             ...baseConnectionParams,
             params: {
               ...(baseConnectionParams.params ?? {}),
               signalTypes: ['AIR_TEMP'],
               aggregationType: 'AVG'
             }
-          }"></airtemperature-chart-smarter>
+          })"></airtemperature-chart-smarter>
         </div>
       </div>
     </div>
