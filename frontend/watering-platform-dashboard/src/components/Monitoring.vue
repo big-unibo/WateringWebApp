@@ -416,14 +416,6 @@ function selectedTime(time) {
               aggregationType: 'AVG'
             }
           })" :hideOnMissingSignal="true" />
-          <signals-linechart-chart-smarter style="height: 380px" :config="JSON.stringify({
-            ...baseConnectionParams,
-            params: {
-              ...(baseConnectionParams.params ?? {}),
-              signalTypes: ['AIR_TEMP', 'SOIL_TEMP'],
-              aggregationType: 'AVG'
-            }
-          })" :hideOnMissingSignal="true" />
           
         </div>
       </div>
