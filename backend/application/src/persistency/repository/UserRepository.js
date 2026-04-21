@@ -40,7 +40,8 @@ class UserRepository {
             const userCreated = await this.User.create({
                 email,      
                 password,  
-                name   
+                name,
+                createdAt: Math.floor(Date.now()/1000)
             });
 
             return userCreated;
