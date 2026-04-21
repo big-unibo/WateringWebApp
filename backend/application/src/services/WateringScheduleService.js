@@ -45,10 +45,10 @@ class WateringScheduleService {
 
     async isEventUpdateAllowed(eventId, newWateringStart) {
         const followingEvent = await this.wateringScheduleRepository.findFollowingEvent(eventId)
-        if (followingEvent && followingEvent.wateringStart != null) {
+        if (followingEvent) {
             return followingEvent.wateringStart - SCHEDULE_SAFE_INTERVAL > newWateringStart;
         }
-        return false
+        return true
     }
 
     async validateEventForScheduling(eventId) {
