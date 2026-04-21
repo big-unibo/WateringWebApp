@@ -41,14 +41,13 @@ function hideModal() {
 }
 
 async function setOptimal() {
-  const parsed = JSON.parse(props.config);
   isLoading.value = true;
 
   try {
     if (updateWithMatrixId.value) {
-      await communicationService.setOptimalStateByMatrixId(parsed.environment, endpoint, parsed.paths, matrixId.value)
+      await communicationService.setOptimalStateByMatrixId(props.config.environment, endpoint, props.config.paths, matrixId.value)
     } else {
-      await communicationService.setOptimalStateByTimestamp(parsed.environment, endpoint, parsed.paths, props.selectedTimestamp)
+      await communicationService.setOptimalStateByTimestamp(props.config.environment, endpoint, props.config.paths, props.selectedTimestamp)
     }
     successAlert = new Collapse(successMessage.value)
     setTimeout(() => {
