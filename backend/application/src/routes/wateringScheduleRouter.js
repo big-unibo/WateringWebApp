@@ -525,7 +525,7 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             const timestampFrom = req.query.timestampFrom;
             const timestampTo = req.query.timestampTo;
 
-            const newEventIds = await wateringScheduleService.createPeriodicWateringEvent(userId, sectorId, timestampFrom, timestampTo);
+            const newEventIds = await wateringScheduleService.createPeriodicWateringEvent(userId, sectorId, Number(timestampFrom), Number(timestampTo));
             res.status(200).json({ message: 'Watering events created successfully', eventIds: newEventIds });
         } catch (error) {
             console.error(`Error creating watering events: ${error.message}`);
