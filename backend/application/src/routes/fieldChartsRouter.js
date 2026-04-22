@@ -815,6 +815,11 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *         schema:
      *           type: number
      *         description: Time filter end (timestamp in seconds since 01/01/1970)
+     *       - in: query
+     *         name: algorithmPointOnly
+     *         schema:
+     *           type: boolean
+     *         description: Flag that indicates if filter only point in wich watering advice is computed
      *     responses:
      *       200:
      *         description: Successfully retrieved optimal distance data
@@ -901,9 +906,10 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
 
         const timeFilterFrom = Number(req.query.timeFilterFrom)
         const timeFilterTo = Number(req.query.timeFilterTo)
+        const algorithmViewFlag = !!req.query.algorithmPointOnly
 
         try {
-            const result = await fieldService.getOptimalDistanceData(thesisId, timeFilterFrom, timeFilterTo);
+            const result = await fieldService.getOptimalDistanceData(thesisId, timeFilterFrom, timeFilterTo, algorithmViewFlag);
             res.status(200).json(result);
         } catch (error) {
             return res.status(500).json({ message: error.message });

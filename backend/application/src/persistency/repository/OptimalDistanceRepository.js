@@ -9,7 +9,7 @@ class OptimalDistanceRepository {
         this.sequelize = sequelize;
     }
 
-    async findOptimalDistance(thesisId, timeFilterFrom, timeFilterTo) {
+    async findOptimalDistance(thesisId, timeFilterFrom, timeFilterTo, alghoritmViewFlag = false ) {
 
         const errorFunction = await this.WateringAlgorithmParams.findOne({
             attributes: ["errorFunction", "validFrom", "validTo"],
@@ -32,6 +32,30 @@ class OptimalDistanceRepository {
         if(!errorFunction){
             throw new Error("Watering algorithm params not defined")
         }
+
+        const timestampQuery = !alghoritmViewFlag ? `
+                SELECT 
+                    EXTRACT(EPOCH FROM gs.hour_timestamp)::bigint AS watering_start,
+                    v.thesis_name,
+                    v.device_id,
+                    v.unit
+                FROM generate_series(
+                        to_timestamp(:timeFilterFrom),
+                        to_timestamp(:timeFilterTo),
+                        interval '1 day'
+                    ) AS gs(hour_timestamp)
+                JOIN validity_table v
+                    ON TRUE
+                ` : `
+                SELECT 
+                    watering_start, 
+                    v.thesis_name,
+                    v.device_id,
+                    v.unit
+                FROM watering_events we
+                JOIN validity_table v ON v.sector_id = we.sector_id
+                WHERE we.watering_start BETWEEN :timeFilterFrom AND :timeFilterTo
+                `;
 
         let queryString = ` 
             WITH validity_table AS (
@@ -68,14 +92,7 @@ class OptimalDistanceRepository {
                     AND (gop.valid_to IS NULL OR gop.valid_to > :timeFilterFrom)
             ),
             watering_data AS (
-                SELECT 
-                    watering_start, 
-                    v.thesis_name,
-                    v.device_id,
-                    v.unit
-                FROM watering_events we
-                JOIN validity_table v ON v.sector_id = we.sector_id
-                WHERE we.watering_start BETWEEN :timeFilterFrom AND :timeFilterTo
+                ${timestampQuery}
             )
 
             SELECT 
@@ -86,13 +103,12 @@ class OptimalDistanceRepository {
                 EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd.watering_start)))::INT  as timestamp, 
                 'Media giornaliera' as "valueType"
             FROM watering_data wd 
-            JOIN advices a 
-                ON wd.watering_start = a.watering_start
+            ${alghoritmViewFlag ? "JOIN advices a ON wd.watering_start = a.watering_start": ""}
             JOIN field_data fd 
                 ON wd.watering_start 
                 BETWEEN fd.valid_from AND COALESCE(fd.valid_to, :timeFilterTo)
             JOIN interpolated_profiles ip 
-                ON ip.timestamp = FLOOR(a.image_timestamp/3600)*3600
+                ON ip.timestamp = FLOOR(${alghoritmViewFlag ? "a.image_timestamp": "wd.watering_start"}/3600)*3600
                 AND ip.grid_id = wd.device_id
             JOIN interpolated_cells ic 
                 ON ip.id = ic.profile_id

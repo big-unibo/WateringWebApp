@@ -235,8 +235,8 @@ class FieldService {
         return new OptimalStateData(undefined, undefined, undefined, undefined, undefined, undefined, undefined, [])
     }
 
-    async getOptimalDistanceData(thesisId, timeFilterFrom, timeFilterTo) {
-        const result = await this.optimalDistanceRepository.findOptimalDistance(thesisId, timeFilterFrom, timeFilterTo)
+    async getOptimalDistanceData(thesisId, timeFilterFrom, timeFilterTo, algorithmViewFlag) {
+        const result = await this.optimalDistanceRepository.findOptimalDistance(thesisId, timeFilterFrom, timeFilterTo, algorithmViewFlag)
         return dtoConverter.convertOptimalDistanceWrapper(result)
     }
 
