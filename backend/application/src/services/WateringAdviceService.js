@@ -101,7 +101,7 @@ export class WateringAdviceService {
                     r = differences.reduce((acc, curr) => acc + curr.distance, 0) / differences.reduce((acc, curr) => acc + curr.weight, 0)
                     const oldParams = await this.wateringAdviceRepository.getThesisLastWateringAdvice(thesisId, Math.min(timestamp - (algorithmParams.wateringFrequency / 2 * 3600), lastImageTimestamp));
 
-                    if (oldParams.advice != null && oldParams.r != null && oldParams.imageTimestamp != null) {
+                    if (oldParams != null && oldParams.advice != null && oldParams.r != null && oldParams.imageTimestamp != null) {
                         let advicePID = oldParams.advice + algorithmParams.kp * (r - oldParams.r) + algorithmParams.ki * r
 
                         const { advice, duration } = computeIrrigation(advicePID, sectorDetails, algorithmParams.maxWatering, expectedWater)
