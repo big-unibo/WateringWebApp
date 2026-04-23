@@ -1,12 +1,12 @@
 export class OptimalStateData {
 
-  constructor(thesisName, optimalProfileId, binningId, validFrom, validTo, stopPercentage, optimalDryBound, optimalWetBound, optimalProfiles) {
+  constructor(thesisName, optimalProfileId, binningId, validFrom, validTo, stopThreshold, optimalDryBound, optimalWetBound, optimalProfiles) {
     this.thesisName = thesisName
     this.optimalProfileId = optimalProfileId,
     this.binningId = binningId,
     this.validFrom = validFrom
     this.validTo = validTo,
-    this.stopPercentage = stopPercentage,
+    this.stopThreshold = stopThreshold,
     this.optimalDryBound = optimalDryBound,
     this.optimalWetBound = optimalWetBound,
     this.optimalProfile = optimalProfiles
@@ -52,11 +52,11 @@ export class OptimalDistanceData {
 
 export class GridOptimalProfiles{
 
-  constructor(gridId, validFrom, validTo, stopPercentage, optimalDryBound, optimalWetBound, optimalState) {
+  constructor(gridId, validFrom, validTo, stopThreshold, optimalDryBound, optimalWetBound, optimalState) {
     this.gridId = gridId,
     this.validFrom = validFrom,
     this.validTo = validTo,
-    this.stopPercentage = stopPercentage,
+    this.stopThreshold = stopThreshold,
     this.optimalDryBound = optimalDryBound,
     this.optimalWetBound = optimalWetBound,
     this.optimalState = optimalState

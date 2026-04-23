@@ -32,10 +32,10 @@ function initGridOptimalProfileAssignment(sequelize) {
         allowNull: false,
         field: 'grid_id'
       },
-      stopPercentage: {
+      stopThreshold: {
         type: DataTypes.DOUBLE,
         allowNull: true,
-        field: 'stop_percentage'
+        field: 'stop_threshold'
       },
       optimalDryBound: {
         type: DataTypes.DOUBLE,

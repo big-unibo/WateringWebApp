@@ -254,7 +254,7 @@ class FieldService {
             gridOptimalProfiles.gridId,
             gridOptimalProfiles.validFrom,
             gridOptimalProfiles.validTo,
-            gridOptimalProfiles.stopPercentage,
+            gridOptimalProfiles.stopThreshold,
             gridOptimalProfiles.optimalDryBound,
             gridOptimalProfiles.optimalWetBound,
         )
@@ -271,8 +271,8 @@ class FieldService {
         return matrixData.optimalProfileAssignmentId
     }
 
-    async setOptimalState(userId, gridId, validFrom, validTo, stopPercentage, optimalWetBound, optimalDryBound, profileId) {
-        const matrixData = await this.optimalStateRepository.createMatrixOptimalState(gridId, validFrom, validTo, stopPercentage, optimalWetBound, optimalDryBound, profileId)
+    async setOptimalState(userId, gridId, validFrom, validTo, stopThreshold, optimalWetBound, optimalDryBound, profileId) {
+        const matrixData = await this.optimalStateRepository.createMatrixOptimalState(gridId, validFrom, validTo, stopThreshold, optimalWetBound, optimalDryBound, profileId)
         if (!matrixData.matrixId || !matrixData.optimalProfileAssignmentId) {
             throw Error("Impossible to create optimal matrix for this thesis")
         }

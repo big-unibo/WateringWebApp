@@ -131,7 +131,7 @@ class ThesisRepository {
                 gop.grid_id AS "gridId",
                 gop.valid_from AS "validFrom",
                 gop.valid_to AS "validTo",
-                gop.stop_percentage AS "stopPercentage",
+                gop.stop_threshold AS "stopThreshold",
                 gop.optimal_dry_bound AS "optimalDryBound",
                 gop.optimal_wet_bound AS "optimalWetBound",
                 op.x,

@@ -1081,10 +1081,10 @@ components:
           type: number
           nullable: true
           description: End timestamp (Unix seconds) for when this optimal state data is valid. Null means indefinitely valid.
-        stopPercentage:
+        stopThreshold:
           type: number
           nullable: true
-          description: Recommended stop percentage for irrigation based on soil conditions. Null if not applicable.
+          description: Avarage moisture level that stops irrigation.
         optimalDryBound:
           type: number
           nullable: true

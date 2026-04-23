@@ -372,7 +372,7 @@ CREATE TABLE public.grid_optimal_profile_assignment (
     valid_from double precision NOT NULL,
     valid_to double precision,
     id integer NOT NULL,
-    stop_percentage double precision,
+    stop_threshold double precision,
     optimal_wet_bound double precision,
     optimal_dry_bound double precision
 );
@@ -1645,7 +1645,7 @@ VALUES
 INSERT INTO public.optimal_profiles(profile_id, x, y, z, value, weight)
 	VALUES (1, 0, 20, 0, 28, 1);
 
-INSERT INTO public.grid_optimal_profile_assignment(optimal_profile_id, grid_id, valid_from, valid_to, id, stop_percentage, optimal_wet_bound, optimal_dry_bound)
+INSERT INTO public.grid_optimal_profile_assignment(optimal_profile_id, grid_id, valid_from, valid_to, id, stop_threshold, optimal_wet_bound, optimal_dry_bound)
 	VALUES (1, 4, EXTRACT(EPOCH FROM TIMESTAMP '2025-01-22 12:30:00'), NULL, 1, NULL, -20, -300);
 
 INSERT INTO public.theses_devices(thesis_id, device_id, valid_from, valid_to, id)

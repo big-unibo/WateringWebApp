@@ -830,9 +830,9 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
      *           schema:
      *             type: object
      *             properties:
-     *               stopPercentage:
+     *               stopThreshold:
      *                 type: integer
-     *                 description: Irrigation stop percentage (Optional).
+     *                 description: Irrigation stop threshold (Optional).
      *               optimalWetBound:
      *                 type: integer
      *                 description: Optimal wet boundary limit (Optional).
@@ -940,7 +940,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
         const validTo = req.query.validTo
 
         const {
-            stopPercentage: stopPercentage,
+            stopThreshold: stopThreshold,
             optimalWetBound: optimalWetBound,
             optimalDryBound: optimalDryBound,
         } = req.body;
@@ -962,7 +962,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
 
             if (req.query.optimalProfileId !== undefined) {
                 const optimalProfileId = Number(req.query.optimalProfileId);
-                optimalProfileAssignmentId = await fieldService.setOptimalState(userId, gridId, validFrom, validTo, stopPercentage, optimalWetBound, optimalDryBound, optimalProfileId)
+                optimalProfileAssignmentId = await fieldService.setOptimalState(userId, gridId, validFrom, validTo, stopThreshold, optimalWetBound, optimalDryBound, optimalProfileId)
             }
             else if (req.query.thesisId !== undefined && req.query.imageTimestamp !== undefined) {
                 const sourceThesisId = Number(req.query.thesisId);
@@ -982,7 +982,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
                     weight: 1
                 }))
 
-                const gridOptimalProfiles = new GridOptimalProfiles(gridId, validFrom, validTo, stopPercentage, optimalDryBound, optimalWetBound, optimalState)
+                const gridOptimalProfiles = new GridOptimalProfiles(gridId, validFrom, validTo, stopThreshold, optimalDryBound, optimalWetBound, optimalState)
                 optimalProfileAssignmentId = await fieldService.createMatrixOptimalState(userId, gridOptimalProfiles)
             }
             else {
@@ -996,7 +996,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
                 if (!checkOptState(thesisPoints, optimalState))
                     return res.status(400).json({ error: "Optimal state matrix does not match" })
 
-                const gridOptimalProfiles = new GridOptimalProfiles(gridId, validFrom, validTo, stopPercentage, optimalDryBound, optimalWetBound, optimalState)
+                const gridOptimalProfiles = new GridOptimalProfiles(gridId, validFrom, validTo, stopThreshold, optimalDryBound, optimalWetBound, optimalState)
                 optimalProfileAssignmentId = await fieldService.createMatrixOptimalState(userId, gridOptimalProfiles)
             }
             return res.status(200).json({ message: 'Optimal state set successfully' });
