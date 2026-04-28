@@ -375,6 +375,10 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
+            if( req.body.wateringStart < Date.now()/1000 + SCHEDULE_SAFE_INTERVAL){
+                return res.status(400).json({message: 'Invalid watering start provided! It is not possible create event in the past'})
+            }
+
             const event = new WateringEvent({
                 sectorId: sectorId,
                 wateringStart: req.body.wateringStart,
@@ -524,6 +528,10 @@ const wateringScheduleRouter = ({ authenticationService, authorizationService, w
             }
             const timestampFrom = req.query.timestampFrom;
             const timestampTo = req.query.timestampTo;
+
+            if(timestampFrom > timestampTo || timestampFrom < Date.now()/1000 + SCHEDULE_SAFE_INTERVAL){
+                return res.status(400).json({message: 'Invalid time range params! It is not possible create event in the past'})
+            }
 
             const newEventIds = await wateringScheduleService.createPeriodicWateringEvent(userId, sectorId, Number(timestampFrom), Number(timestampTo));
             res.status(200).json({ message: 'Watering events created successfully', eventIds: newEventIds });

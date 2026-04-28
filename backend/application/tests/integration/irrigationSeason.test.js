@@ -7,7 +7,7 @@ describe('Watering Schedule Lifecycle Integration Test', () => {
     let db, container, app, authToken;
 
     // Timestamps
-    const START_DATE = Date.now() / 1000;
+    const START_DATE = Date.now() / 1000 + 86400;// Starts from tomorrow
     const END_DATE = START_DATE + (86400 * 10); // 10 days after start
 
     const TEST_SECTOR_ID = 2
