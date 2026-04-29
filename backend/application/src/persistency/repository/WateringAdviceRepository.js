@@ -104,13 +104,13 @@ class WateringAdviceRepository {
                 thesisId: thesisId,
                 validFrom: validFrom,
                 validTo: validTo,
-                maxWatering: wateringParams.maxWatering ?? oldParams.maxWatering,
-                minWatering: wateringParams.minWatering ?? oldParams.minWatering,
-                wateringBaseline: wateringParams.wateringBaseline ?? oldParams.wateringBaseline,
-                wateringFrequency: wateringParams.wateringFrequency ?? oldParams.wateringFrequency,
-                ki: wateringParams.ki ?? oldParams.ki,
-                kp: wateringParams.kp ?? oldParams.kp,
-                errorFunction: wateringParams.errorFunction ?? oldParams.errorFunction,
+                maxWatering: wateringParams.maxWatering ?? oldParams?.maxWatering,
+                minWatering: wateringParams.minWatering ?? oldParams?.minWatering,
+                wateringBaseline: wateringParams.wateringBaseline ?? oldParams?.wateringBaseline,
+                wateringFrequency: wateringParams.wateringFrequency ?? oldParams?.wateringFrequency,
+                ki: wateringParams.ki ?? oldParams?.ki,
+                kp: wateringParams.kp ?? oldParams?.kp,
+                errorFunction: wateringParams.errorFunction ?? oldParams?.errorFunction,
                 description: wateringParams.description
             });
 
