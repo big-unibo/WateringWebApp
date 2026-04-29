@@ -152,10 +152,12 @@ components:
         dripperCapacity:
           type: number
           format: double
+          nullable: true
           description: Capacity of a dripper in a row expressed in L/h
         sprinklerCapacity:
           type: number
           format: double
+          nullable: true
           description: Capacity of a sprinkler expressed in L/h
         doubleWing:
           type: boolean

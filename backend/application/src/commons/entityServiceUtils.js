@@ -1,10 +1,12 @@
+import { removeUndefined } from './utils.js'
+
 export const _updateEntity = async (userId, data, repositoryFunction, userActionService, updateLogTable) => {
     try {
         const { id, ...fields } = data;
 
         const updatedEntityInstance = await repositoryFunction(
             id,
-            Object.fromEntries(Object.entries(fields).filter(([_, v]) => v !== undefined))
+            removeUndefined(fields)
         )
 
         if (updatedEntityInstance) {

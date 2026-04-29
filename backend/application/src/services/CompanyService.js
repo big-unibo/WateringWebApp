@@ -1,4 +1,5 @@
 import { TABLES } from "../commons/constants.js";
+import { _updateEntity } from '../commons/entityServiceUtils.js';
 import DtoConverter from "./DtoConverter.js";
 
 const dtoConverter = new DtoConverter();
@@ -42,22 +43,7 @@ class CompanyService {
     }
 
     async updateCompany(userId, company){
-        try {
-            const { id, ...fields } = company;
-
-            const updatedCompanyInstance = await this.companyRepository.updateCompany(
-                id,
-                Object.fromEntries(Object.entries(fields).filter(([_, v]) => v !== undefined))
-            )
-
-            if (updatedCompanyInstance) {
-                const companyData = updatedCompanyInstance.get({ plain: true });
-                await this.userActionService.logUpdate(userId, TABLES.COMPANY, id, null, companyData)
-            }
-        } catch (error) {
-            console.error(`Error updating company: ${error.message}`);
-            throw error;
-        }
+        await _updateEntity(userId, company, this.companyRepository.updateCompany.bind(this.companyRepository), this.userActionService, TABLES.COMPANY)
     }
 
     async disableCompany(userId, isAdmin, companyId, validTo) {

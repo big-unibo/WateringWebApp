@@ -10,7 +10,7 @@ class OptimalStateRepository {
     }
 
 
-    async createMatrixOptimalState(gridId, validFrom, validTo, stopPercentage, optimalDryBound, optimalWetBound, profileId) {
+    async createMatrixOptimalState(gridId, validFrom, validTo, stopThreshold, optimalDryBound, optimalWetBound, profileId) {
         try {
             let newMatrixId
             if (profileId) {
@@ -54,7 +54,7 @@ class OptimalStateRepository {
                 optimalProfileId: newMatrixId,
                 validFrom: validFrom,
                 validTo: validTo ? Math.floor(validTo) : null,
-                stopPercentage: stopPercentage ?? null,
+                stopThreshold: stopThreshold ?? null,
                 optimalDryBound: optimalDryBound ?? null,
                 optimalWetBound: optimalWetBound ?? null
             })
