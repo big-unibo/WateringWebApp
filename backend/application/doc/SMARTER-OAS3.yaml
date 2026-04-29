@@ -1193,6 +1193,7 @@ components:
           description: Name of the function used for tranform data during advice computation
         description:
           type: string
+          nullable: true
 
     ThesesContributions:
       type: object
