@@ -115,7 +115,8 @@ class ThesisRepository {
     async getOptimalState(thesisId, timestamp) {
         const query = `
             WITH validity_table AS (
-                SELECT device_id, device_binning_id, thesis_id, thesis_name
+                SELECT device_id, device_binning_id, thesis_id, thesis_name,
+                    MAX(x) as max_x, MIN(x) AS min_x, MAX(y) AS max_y, MIN(y) AS min_y, MAX(z) as max_z, MIN(z) AS min_z
                     FROM theses_all_signals
                 WHERE device_type = :HUMIDITY_DEVICE_TYPE
                     AND thesis_id = :thesisId
@@ -146,6 +147,9 @@ class ThesisRepository {
                     ON op.profile_id = gop.optimal_profile_id
                 WHERE gop.valid_from < :timestamp
                     AND (gop.valid_to IS NULL OR gop.valid_to > :timestamp)
+                    AND op.x BETWEEN min_x AND max_x
+					AND op.y BETWEEN min_y AND max_y
+                    AND op.z BETWEEN min_z AND max_z
         `;
 
         const results = await this.sequelize.query(query, {
