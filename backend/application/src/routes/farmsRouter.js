@@ -361,7 +361,7 @@ const farmsRouter = ({ authenticationService, authorizationService, fieldService
                 return res.status(400).json({ message: 'Invalid validTo timestamp provided. It must be a timestamp in the last 24 hours' })
             }
             await fieldService.disableFarm(userId, requestUserData.isAdmin, farmId, validTo)
-            return res.status(200).json({ message: `Farm validity successfully endend` })
+            return res.status(200).json({ message: `Farm validity successfully ended` })
         } catch (error) {
             console.log(`Failed disabling farm: ${error.message}`)
             return res.status(500).json({ error: "Internal error disabling thesis" })

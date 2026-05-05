@@ -1037,7 +1037,7 @@ const devicesRouter = ({ authenticationService, authorizationService, userServic
                 return res.status(400).json({ message: 'Invalid validTo timestamp provided. It must be a timestamp in the last 24 hours' })
             }
             await deviceService.disableDevice(userId, deviceId, validTo)
-            return res.status(200).json({ message: `Device validity successfully endend` })
+            return res.status(200).json({ message: `Device validity successfully ended` })
         } catch (error) {
             console.log(`Failed disabling device: ${error.message}`)
             return res.status(500).json({ error: "Internal error disabling device and its signals" })
