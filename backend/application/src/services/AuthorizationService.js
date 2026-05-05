@@ -39,7 +39,7 @@ class AuthorizationService {
     }
 
     async grantUser(userId, targetUserId, role, entityType, entityId, extraAttributes) {
-        if (((role === 'accounter' && entityType === 'COMPANY') || (role !== 'accounter' && entityType === 'SECTOR')) && !(role !== 'accounter' && this.isUserAuthorized(targetUserId,'accounter', entityType, entityId))) {
+        if (((role === 'accounter' && entityType === 'COMPANY') || (role !== 'accounter' && entityType === 'SECTOR')) && !(role !== 'accounter' && this.isUserAuthorized(targetUserId, 'accounter', entityType, entityId))) {
             await this.deleteUserPermission(userId, targetUserId, entityType, entityId)
             const permit = await this.authorizationRepository.grantUser(targetUserId, entityType, entityId, role, extraAttributes)
             if (permit?.id) {
@@ -50,7 +50,7 @@ class AuthorizationService {
         }
     }
 
-    async deleteUserPermission(userId, targetUserId, entityType, entityId){
+    async deleteUserPermission(userId, targetUserId, entityType, entityId) {
         try {
             const deletedPermitIds = await this.authorizationRepository.removeOldPermits(targetUserId, entityType, entityId)
             if (deletedPermitIds) {
@@ -62,9 +62,14 @@ class AuthorizationService {
         }
     }
 
-    async getResourceRelatedPermissions(entityType, entityId){
+    async getResourceRelatedPermissions(entityType, entityId) {
         const res = await this.authorizationRepository.getResourceRelatedPermissions(entityType, entityId)
-        return dtoConverter.convertUsersResourcePermits(res) 
+        return dtoConverter.convertUsersResourcePermits(res)
+    }
+
+    async getCompanyUsers(companyId) {
+        const res = await this.authorizationRepository.getCompanyUsers(companyId)
+        return dtoConverter.convertUserRoles(res)
     }
 }
 

@@ -1570,12 +1570,12 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
 
     /**
      * @swagger
-     * /sectors/{sectorId}/users:
+     * /sectors/{sectorId}/usersPermissions:
      *   get:
-     *     summary: Retrives user that have permission on the sector with permission info.
+     *     summary: Retrives users permissions on the sector including related info.
      *     tags: [Sectors]
      *     description: |
-     *       Retrives user that have permission on the sector with permission info.
+     *       Retrives users permissions on the sector including related info.
      *       Requires authentication and proper authorization.
      *     parameters:
      *       - in: path
@@ -1654,7 +1654,7 @@ const sectorsRouter = ({ authenticationService, authorizationService, fieldServi
      *                 message:
      *                   type: string
      */
-    router.get('/:sectorId/users', async (req, res) => {
+    router.get('/:sectorId/usersPermissions', async (req, res) => {
         let requestUserData
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);

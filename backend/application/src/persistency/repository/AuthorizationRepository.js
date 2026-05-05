@@ -191,6 +191,26 @@ class AuthorizationRepository {
         })
     }
 
+    async getCompanyUsers(companyId){
+        try {
+            const query = `
+                SELECT u.id, u.name, u.email, ARRAY_AGG(DISTINCT p.role) AS roles
+                FROM master_data_permits p
+                    JOIN users u ON p.user_id = u.id 
+                WHERE "company_id" = :companyId
+                GROUP BY u.id, u.name, u.email
+            `
+            const results = await this.sequelize.query(query, {
+                replacements: { companyId },
+                type: this.sequelize.QueryTypes.SELECT
+            });
+            return results;
+        } catch (error) {
+            console.error(`Fail retrieving company users: ${error.message}`);
+            throw error;
+        }
+    }
+
 }
 
 export default AuthorizationRepository

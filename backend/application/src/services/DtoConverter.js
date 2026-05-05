@@ -35,7 +35,7 @@ class DtoConverter {
         )
     }
 
-    convertCompanies(companiesData){
+    convertCompanies(companiesData) {
         return companiesData.map(c => this.convertCompany(c))
     }
 
@@ -52,7 +52,7 @@ class DtoConverter {
 
     convertCompanyDataWrapper(companyData) {
         if (!companyData) return null;
-        const organizations = (companyData.organizations || []).map((organization)=>new Organization(organization.organizationName, organization.id))
+        const organizations = (companyData.organizations || []).map((organization) => new Organization(organization.organizationName, organization.id))
         const farms = (companyData.farms || []).map(farm => ({
             id: farm.id,
             name: farm.farmName,
@@ -132,7 +132,7 @@ class DtoConverter {
         );
     }
 
-    convertFarms(farmsData){
+    convertFarms(farmsData) {
         return farmsData.map(farm => new Farm(farm.farmName, farm.companyId, farm.location, farm.id, farm.createdAt, farm.disabledAt))
     }
 
@@ -381,7 +381,7 @@ class DtoConverter {
                 };
             }
 
-            acc[curr.signalId].devices.push({deviceId: curr.deviceId, deviceType: curr.deviceType, deviceDescription: curr.deviceDescription});
+            acc[curr.signalId].devices.push({ deviceId: curr.deviceId, deviceType: curr.deviceType, deviceDescription: curr.deviceDescription });
 
             return acc;
         }, {});
@@ -644,12 +644,16 @@ class DtoConverter {
         return binnings;
     }
 
-    convertUserData(userData){
+    convertUserData(userData) {
         return new User(userData.id, userData.email, userData.name)
     }
 
     convertUsersResourcePermits(usersData) {
         return usersData.map(u => new UserResourcePermit(new User(u.user.id, u.user.email, u.user.name), u.role, u.extraAttributes))
+    }
+
+    convertUserRoles(users) {
+        return users.map(u => ({ user: new User(u.id, u.email, u.name), roles: u.roles }))
     }
 }
 

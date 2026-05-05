@@ -52,18 +52,18 @@ class UserRepository {
 
     async createPermit(userId, table, permit_type, id_key) {
         try {
-                const user = await this.User.findByPk(userId);
-                    if (!user) {
-                        throw new Error(`User with ID ${userId} does not exist.`);
-                    }
-                    const permit = await this.Permit.create({
-                    user_id: userId,
-                    table: table,
-                    permit: permit_type,
-                    id_key: id_key
-                });
+            const user = await this.User.findByPk(userId);
+                if (!user) {
+                    throw new Error(`User with ID ${userId} does not exist.`);
+                }
+                const permit = await this.Permit.create({
+                user_id: userId,
+                table: table,
+                permit: permit_type,
+                id_key: id_key
+            });
 
-                return permit;
+            return permit;
         } catch (error) {
             throw new Error(`Error creating new permit caused by: ${error.message}`);
         }
