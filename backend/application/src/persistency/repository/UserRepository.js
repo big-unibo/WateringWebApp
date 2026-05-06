@@ -50,6 +50,18 @@ class UserRepository {
         }
     }
 
+    async updatePassword(userId, password) {
+        try {
+            await this.User.update({ password }, {
+                where: {
+                    id: userId
+                }
+            });
+        } catch (error) {
+            throw new Error(`Error saving new user caused by: ${error.message}`);
+        }
+    }
+
     async createPermit(userId, table, permit_type, id_key) {
         try {
             const user = await this.User.findByPk(userId);

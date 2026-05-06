@@ -23,6 +23,17 @@ components:
         token:
           type: string
 
+    UserChangePassword:
+      type: object
+      required:
+        - currentPassword
+        - newPassword
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+
     RegisterUserRequest:
       type: object
       properties:

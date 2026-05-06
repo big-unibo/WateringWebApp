@@ -106,10 +106,10 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
         try {
             const email = req.query.email
             const userData = await userService.findUserByEmail(email);
-            if (userData){
+            if (userData) {
                 return res.status(200).json(userData);
             }
-            return res.status(404).json({message:"User not found"});
+            return res.status(404).json({ message: "User not found" });
         } catch (error) {
             console.error(`Fail while retrieving user data caused by: ${error.message}`);
             return res.status(500).json({ error: 'Error while retrieving user data' });
@@ -172,9 +172,9 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      *                 error:
      *                   type: string
     */
-    router.post("/login", async  (req, res) => {
+    router.post("/login", async (req, res) => {
         try {
-            if(!req.body && req.body === '')
+            if (!req.body && req.body === '')
                 throw new Error('Body is empty');
 
             const request = new UserTokenRequest(req.body.email, req.body.password);
@@ -183,7 +183,91 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
             const responseDto = new UserTokenResponse(token);
             res.json(responseDto);
         } catch (error) {
-            return res.status(500).json({error:error.toString()});
+            return res.status(500).json({ error: error.toString() });
+        }
+    });
+
+    /**
+     * @swagger
+     * /users/me/changePassword:
+     *   post:
+     *     summary: Change the password of authenticated user
+     *     tags: [Users]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/UserChangePassword'
+     *     responses:
+     *       '200':
+     *         description: Password update successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *                 - errors
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed – invalid or missing JWT token.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '500':
+     *         description: Internal server error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+    */
+    router.post("/me/changePassword", async (req, res) => {
+        try {
+            let requestUserData
+            try {
+                requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+            } catch (error) {
+                return res.status(401).json({ message: 'Authentication failed' });
+            }
+            const changed = await userService.changePassword(requestUserData.userId, req.body.currentPassword, req.body.newPassword);
+            if (!changed) {
+                return res.status(400).json({ message: 'Unable to update password' })
+            }
+            return res.status(200).json({ message: 'Password updated successfully' });
+        } catch (error) {
+            return res.status(500).json({ error: 'Error while changing user password' });
         }
     });
 
@@ -282,14 +366,14 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
             }
 
             const newUser = new User(
-                    null,
-                    req.body.email,
-                    req.body.name,
-                    req.body.password ?? ''
-                );
+                null,
+                req.body.email,
+                req.body.name,
+                req.body.password ?? ''
+            );
 
             const newUserId = await userService.createUser(userId, newUser);
-            return res.status(200).json({ message: 'User created successfully', id: newUserId});
+            return res.status(200).json({ message: 'User created successfully', id: newUserId });
         } catch (error) {
             console.error(`Fail creating user caused by: ${error.message}`);
             return res.status(500).json({ error: 'Error while creating user' });
@@ -485,7 +569,7 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
         const currentTimestamp = Math.floor(Date.now() / 1000);
         const validTo = req.query.validTo ?? currentTimestamp;
 
-        if(!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ADMINISTRATOR, requestUserData.isAdmin))){
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ADMINISTRATOR, requestUserData.isAdmin))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
@@ -606,10 +690,10 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
             const entity = req.query.entityType
             const id = req.query.id
             const service = req.query.service
-            
+
             const isValid = await authorizationService.isUserAuthorized(userId, minRole, requestUserData.isAdmin, entity, id, service)
 
-            return res.status(200).json({isValid:isValid})
+            return res.status(200).json({ isValid: isValid })
         } catch (error) {
             console.error(`Fail while retrieving user authorization data caused by: ${error.message}`);
             return res.status(500).json({ error: 'Error while retrieving user authorization' });

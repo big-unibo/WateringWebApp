@@ -1,5 +1,4 @@
 import { TABLES } from "../commons/constants.js";
-import { User } from "../dtos/userDto.js";
 import { UserRole, UserPermits } from "../dtos/userPermitsDto.js";
 import DtoConverter from './DtoConverter.js';
 
@@ -32,7 +31,6 @@ class UserService {
 
     async createUser(userId, newUser) {
         try {
-
             const newUserId = await this.userRepository.createUser(
                 newUser.email,
                 newUser.password,
@@ -54,6 +52,16 @@ class UserService {
         } catch (error) {
             console.error(`Error creating users: ${error.message}`);
             throw error;
+        }
+    }
+
+    async changePassword(userId, currentPassword, newPassword){
+        const user = await this.userRepository.findUser(userId)
+        if ( user.password === currentPassword){
+            await this.userRepository.updatePassword(userId, newPassword)
+            return true
+        } else {
+            return false
         }
     }
 
