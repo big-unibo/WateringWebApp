@@ -23,14 +23,6 @@ components:
         token:
           type: string
 
-    RegisterUsersRequest:
-      type: object
-      properties:
-        users:
-          type: array
-          items:
-            $ref: '#/components/schemas/RegisterUserRequest'
-
     RegisterUserRequest:
       type: object
       properties:
@@ -40,6 +32,9 @@ components:
           type: string
         name:
           type: string
+      required:
+        - email
+        - name
 
     GrantPermissionRequest:
       type: object

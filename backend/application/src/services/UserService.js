@@ -30,30 +30,27 @@ class UserService {
         }
     }
 
-    async createUsers(userId, request) {
+    async createUser(userId, newUser) {
         try {
-            const results = await Promise.all(
-                request.users.map(async (user) => {
-                    const newUser = await this.userRepository.createUser(
-                        user.email,
-                        user.password,
-                        user.name
-                    );
 
-                    if (newUser && newUser.id) {
-                        await this.userActionService.logCreation(
-                            userId,
-                            TABLES.USER,
-                            newUser.id,
-                            null
-                        );
-                    }
-
-                    return newUser;
-                })
+            const newUserId = await this.userRepository.createUser(
+                newUser.email,
+                newUser.password,
+                newUser.name
             );
 
-            return results;
+            if (newUserId) {
+                await this.userActionService.logCreation(
+                    userId,
+                    TABLES.USER,
+                    newUserId,
+                    null
+                );
+            } else {
+                throw Error('User creation error')
+            }
+
+            return newUserId;
         } catch (error) {
             console.error(`Error creating users: ${error.message}`);
             throw error;

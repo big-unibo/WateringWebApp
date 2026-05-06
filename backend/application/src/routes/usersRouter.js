@@ -191,20 +191,20 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      * @swagger
      * /users/register:
      *   post:
-     *     summary: Register one or more new users
+     *     summary: Register a new user
      *     tags: [Users]
      *     description: |
-     *       Creates one or more new users in the system.  
+     *       Create new user in the system.  
      *       Requires a valid JWT token and appropriate permissions to create users.
      *     requestBody:
      *       required: true
      *       content:
      *         application/json:
      *           schema:
-     *             $ref: '#/components/schemas/RegisterUsersRequest'
+     *             $ref: '#/components/schemas/RegisterUserRequest'
      *     responses:
      *       '200':
-     *         description: Users successfully created.
+     *         description: User successfully created.
      *         content:
      *           application/json:
      *             schema:
@@ -280,23 +280,16 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
             if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.ACCOUNTER, requestUserData.isAdmin))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
-            if (req.body.users.length === 0)
-                return res.status(400).json({ message: 'Insert at  least one new user' });
 
-            const request = new Users(
-            req.body.users.map(
-                user =>
-                new User(
+            const newUser = new User(
                     null,
-                    user.email,
-                    user.name,
-                    user.password
-                )
-            )
-            );
+                    req.body.email,
+                    req.body.name,
+                    req.body.password ?? ''
+                );
 
-            await userService.createUsers(userId, request);
-            return res.status(200).json({ message: 'Users created successfully' });
+            const newUserId = await userService.createUser(userId, newUser);
+            return res.status(200).json({ message: 'User created successfully', id: newUserId});
         } catch (error) {
             console.error(`Fail creating user caused by: ${error.message}`);
             return res.status(500).json({ error: 'Error while creating user' });

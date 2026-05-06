@@ -44,7 +44,7 @@ class UserRepository {
                 createdAt: Math.floor(Date.now()/1000)
             });
 
-            return userCreated;
+            return userCreated.id;
         } catch (error) {
             throw new Error(`Error saving new user caused by: ${error.message}`);
         }

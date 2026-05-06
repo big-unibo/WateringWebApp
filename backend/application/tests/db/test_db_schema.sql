@@ -2177,6 +2177,14 @@ ALTER TABLE ONLY public.users
 
 
 --
+-- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key UNIQUE (email);
+
+
+--
 -- Name: watering_algorithm_params watering_algorithm_params_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
