@@ -649,11 +649,11 @@ class DtoConverter {
     }
 
     convertUsersResourcePermits(usersData) {
-        return usersData.map(u => new UserResourcePermit(new User(u.user.id, u.user.email, u.user.name), u.role, u.extraAttributes))
+        return usersData.map(u => new UserResourcePermit(new User(u.user.id, u.user.email, u.user.name), u.role?.toUpperCase(), u.extraAttributes))
     }
 
     convertUserRoles(users) {
-        return users.map(u => ({ user: new User(u.id, u.email, u.name), roles: u.roles }))
+        return users.map(u => ({ user: new User(u.id, u.email, u.name), roles: u.roles.map(r => r.toUpperCase()) }))
     }
 }
 

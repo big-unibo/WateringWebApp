@@ -39,7 +39,7 @@ class AuthorizationService {
     }
 
     async grantUser(userId, targetUserId, role, entityType, entityId, extraAttributes) {
-        if (((role === 'accounter' && entityType === 'COMPANY') || (role !== 'accounter' && entityType === 'SECTOR')) && !(role !== 'accounter' && this.isUserAuthorized(targetUserId, 'accounter', entityType, entityId))) {
+        if (((role === 'accounter' && entityType === 'COMPANY') || (role !== 'accounter' && entityType === 'SECTOR')) && !(role !== 'accounter' && await this.isUserAuthorized(targetUserId, 'accounter', false, entityType, entityId))) {
             await this.deleteUserPermission(userId, targetUserId, entityType, entityId)
             const permit = await this.authorizationRepository.grantUser(targetUserId, entityType, entityId, role, extraAttributes)
             if (permit?.id) {
