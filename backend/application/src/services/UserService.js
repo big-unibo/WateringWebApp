@@ -51,7 +51,7 @@ class UserService {
             }
 
             if(!newUser.password){
-                this.resetPassword(newUserId)
+                this.resetPassword(newUser.email)
             }
 
             return newUserId;
@@ -71,19 +71,18 @@ class UserService {
         }
     }
 
-    async resetPassword(userId){
-        const user = await this.userRepository.findUser(userId)
+    async resetPassword(email){
+        const user = await this.findUserByEmail(email, true)
         if(!user){
             throw Error('User not found')
         }
         const newPassword = generatePassword(16)
-        await this.userRepository.updatePassword(userId, hashPassword(newPassword))
+        await this.userRepository.updatePassword(user.id, hashPassword(newPassword))
         await sendEmail({
             to: user.email,
             subject: "SMARTER password reset",
             html: newPasswordTemplate(user.email, user.name, newPassword),
         });
-        
         return newPassword
     }
 

@@ -189,10 +189,21 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
 
     /**
      * @swagger
-     * /users/me/resetPassword:
+     * /users/resetPassword:
      *   post:
-     *     summary: Trigger a reset of the password receiving the new password by mail
+     *     security: []
+     *     summary: Trigger a reset of the password receiving the new password by mail, if specified mail exists as user
      *     tags: [Users]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               email:
+     *                 type: string
+     *                 format: email
      *     responses:
      *       '200':
      *         description: Password reset successfully
@@ -228,15 +239,6 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      *                       message:
      *                         type: string
      *                         description: Description of the error.
-     *       '401':
-     *         description: Authentication failed – invalid or missing JWT token.
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 message:
-     *                   type: string
      *       '500':
      *         description: Internal server error
      *         content:
@@ -247,15 +249,9 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
      *                 error:
      *                   type: string
     */
-    router.post("/me/resetPassword", async (req, res) => {
+    router.post("/resetPassword", async (req, res) => {
         try {
-            let requestUserData
-            try {
-                requestUserData = await authenticationService.validateJwt(req.headers.authorization);
-            } catch (error) {
-                return res.status(401).json({ message: 'Authentication failed' });
-            }
-            await userService.resetPassword(requestUserData.userId);
+            await userService.resetPassword(req.body.email);
             return res.status(200).json({ message: 'Password updated successfully'});
         } catch (error) {
             return res.status(500).json({ error: 'Error while reset user password' });

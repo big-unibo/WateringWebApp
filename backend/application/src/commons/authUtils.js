@@ -16,7 +16,6 @@ export const generatePassword = (length = 16) => {
     return Array.from(values, v => charset[v % charset.length]).join("");
 }
 
-
 export const newPasswordTemplate = (email, name, temporaryPassword) => {
     return `
     <div style="font-family: Arial, sans-serif; line-height: 1.6;">
@@ -40,7 +39,11 @@ export const newPasswordTemplate = (email, name, temporaryPassword) => {
           width: fit-content;
         "
       >
-        ${temporaryPassword}
+        ${temporaryPassword.replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;")}
       </div>
 
       <p style="margin-top: 20px;">
