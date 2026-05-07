@@ -4,7 +4,7 @@ const logaritmicCapped300Error = (x) => {
 }
 
 const logaritmicCapped300ErrorSQLWrapper = (field) =>{
-    return `CASE WHEN ${field} > -300 THEN LN(ABS(${field})) ELSE LN(ABS(-300)) END`
+    return `CASE WHEN ${field} <= -300 THEN LN(ABS(-300)) ELSE LN(ABS(${field})) END`
 }
 
 const logaritmicCapped300ErrorUnit = (field) =>{

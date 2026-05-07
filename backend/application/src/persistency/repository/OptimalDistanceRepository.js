@@ -82,7 +82,8 @@ class OptimalDistanceRepository {
                     gop.valid_from,
                     gop.valid_to,
                     gop.optimal_dry_bound,
-                    gop.optimal_wet_bound
+                    gop.optimal_wet_bound,
+                    gop.stop_threshold
 				FROM grid_optimal_profile_assignment gop
 				JOIN validity_table v 
                     ON v.device_id = gop.grid_id
@@ -107,9 +108,19 @@ class OptimalDistanceRepository {
             JOIN field_data fd 
                 ON wd.watering_start 
                 BETWEEN fd.valid_from AND COALESCE(fd.valid_to, :timeFilterTo)
-            JOIN interpolated_profiles ip 
-                ON ip.timestamp = FLOOR(${alghoritmViewFlag ? "a.image_timestamp": "wd.watering_start"}/3600)*3600
-                AND ip.grid_id = wd.device_id
+            ${ alghoritmViewFlag ? `JOIN interpolated_profiles ip 
+                ON ip.timestamp = FLOOR(a.image_timestamp/3600)*3600
+                AND ip.grid_id = wd.device_id`:
+                `JOIN LATERAL (
+                    SELECT id
+                    FROM interpolated_profiles ip
+                    WHERE ip.grid_id = wd.device_id
+                    AND ip.timestamp BETWEEN wd.watering_start - 12 * 3600
+                                        AND wd.watering_start
+                    ORDER BY ip.timestamp DESC
+                    LIMIT 1
+                ) ip ON true`
+            }
             JOIN interpolated_cells ic 
                 ON ip.id = ic.profile_id
                 AND ic.x = fd.x
