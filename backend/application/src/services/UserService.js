@@ -1,4 +1,6 @@
+import { generatePassword, hashPassword, newPasswordTemplate } from "../commons/authUtils.js";
 import { TABLES } from "../commons/constants.js";
+import { sendEmail } from "../commons/gmail.service.js";
 import { UserRole, UserPermits } from "../dtos/userPermitsDto.js";
 import DtoConverter from './DtoConverter.js';
 
@@ -48,6 +50,10 @@ class UserService {
                 throw Error('User creation error')
             }
 
+            if(!newUser.password){
+                this.resetPassword(newUserId)
+            }
+
             return newUserId;
         } catch (error) {
             console.error(`Error creating users: ${error.message}`);
@@ -63,6 +69,22 @@ class UserService {
         } else {
             return false
         }
+    }
+
+    async resetPassword(userId){
+        const user = await this.userRepository.findUser(userId)
+        if(!user){
+            throw Error('User not found')
+        }
+        const newPassword = generatePassword(16)
+        await this.userRepository.updatePassword(userId, hashPassword(newPassword))
+        await sendEmail({
+            to: user.email,
+            subject: "SMARTER password reset",
+            html: newPasswordTemplate(user.email, user.name, newPassword),
+        });
+        
+        return newPassword
     }
 
     async isAdmin(userId) {

@@ -25,3 +25,6 @@ export const TABLES = Object.freeze({
   SECTOR_SERVICE: 'sectors_services',
   PERMIT: 'permits'
 });
+
+export const LOGIN_URL = 'https://big.csr.unibo.it/projects/watering/#/login'
+export const APP_NAME = 'SMARTER'

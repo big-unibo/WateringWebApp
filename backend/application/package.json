@@ -19,7 +19,9 @@
     "express-openapi-validator": "^5.6.0",
     "sequelize": "^6.35.0",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.0"
+    "swagger-ui-express": "^5.0.0",
+    "crypto-js": "^4.2.0",
+    "googleapis": "^171.4.0"
   },
   "devDependencies": {
     "vitest": "^4.0.17",

@@ -131,6 +131,7 @@ const logService = new LogService(logRepository, userActionService)
 
 
 import fs from 'fs'
+import { verifyGmailConnection } from './commons/gmail.service.js';
 
 fs.writeFileSync(
   './swagger.json',
@@ -236,3 +237,5 @@ app.use((err, req, res, next) => {
 });
 
 app.use('/api-docs', serve, setup(swaggerSpec));
+
+verifyGmailConnection()

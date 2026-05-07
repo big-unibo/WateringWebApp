@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { UserTokenRequest, UserTokenResponse } from '../dtos/authenticationDto.js';
-import { User, Users } from '../dtos/userDto.js';
+import { User } from '../dtos/userDto.js';
 import { ROLES } from '../commons/permissionRoles.js';
 
 const usersRouter = ({ userService, authenticationService, authorizationService }) => {
@@ -184,6 +184,81 @@ const usersRouter = ({ userService, authenticationService, authorizationService 
             res.json(responseDto);
         } catch (error) {
             return res.status(500).json({ error: error.toString() });
+        }
+    });
+
+    /**
+     * @swagger
+     * /users/me/resetPassword:
+     *   post:
+     *     summary: Trigger a reset of the password receiving the new password by mail
+     *     tags: [Users]
+     *     responses:
+     *       '200':
+     *         description: Password reset successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '400':
+     *         description: Input validation error (Bad Request)
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               required:
+     *                 - message
+     *                 - errors
+     *               properties:
+     *                 message:
+     *                   type: string
+     *                   example: Input validation failed against OpenAPI schema
+     *                 errors:
+     *                   type: array
+     *                   description: Details of the OpenAPI schema violation.
+     *                   items:
+     *                     type: object
+     *                     properties:
+     *                       path:
+     *                         type: string
+     *                         description: Field or path that failed validation.
+     *                       message:
+     *                         type: string
+     *                         description: Description of the error.
+     *       '401':
+     *         description: Authentication failed – invalid or missing JWT token.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       '500':
+     *         description: Internal server error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 error:
+     *                   type: string
+    */
+    router.post("/me/resetPassword", async (req, res) => {
+        try {
+            let requestUserData
+            try {
+                requestUserData = await authenticationService.validateJwt(req.headers.authorization);
+            } catch (error) {
+                return res.status(401).json({ message: 'Authentication failed' });
+            }
+            await userService.resetPassword(requestUserData.userId);
+            return res.status(200).json({ message: 'Password updated successfully'});
+        } catch (error) {
+            return res.status(500).json({ error: 'Error while reset user password' });
         }
     });
 

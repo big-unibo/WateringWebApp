@@ -1,9 +1,3 @@
-export class Users{
-  constructor(users) {
-    this.users = users;
-  }
-}
-
 export class User {
   constructor(id, email, name, password) {
     this.id = id
