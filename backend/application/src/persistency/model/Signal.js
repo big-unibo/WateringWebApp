@@ -56,6 +56,17 @@ function initSignal(sequelize) {
             type: DataTypes.TEXT,
             allowNull: true,
             field: "id_on_provider"
+        },
+        scalingFactor: {
+            type: DataTypes.DOUBLE,
+            allowNull: true,
+            field: "scaling_factor",
+            defaultValue: 1
+        },
+        scaledUnit: {
+            type: DataTypes.TEXT,
+            allowNull: true,
+            field: "scaled_unit"
         }, 
         sensorTechnology: {
             type: DataTypes.TEXT,

@@ -95,6 +95,8 @@ class DeviceRepository {
             m.measurement_timestamp AS "lastMeasurementTimestamp",
             ds.virtual,
             ds.unit,
+            ds.scaled_unit AS "scaledUnit",
+            ds.scaling_factor AS "scalingFactor",
             ds.x, ds.y, ds.z
         FROM devices_signals_denormalized ds
         JOIN devices d ON d.id = ds.device_id

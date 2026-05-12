@@ -304,9 +304,11 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
         const description = req.body.description;
         const idOnProvider = req.body.idOnProvider;
         const sensorTechnology = req.body.sensorTechnology;
+        const scalingFactor = req.body.scalingFactor;
+        const scaledUnit = req.body.scaledUnit;
 
         try {
-            const signalUpdateData = new SignalUpdate(signalId, description, idOnProvider, sensorTechnology)
+            const signalUpdateData = new SignalUpdate(signalId, description, idOnProvider, sensorTechnology, scalingFactor, scaledUnit)
             await signalService.updateSignal(userId, signalUpdateData);
             return res.status(200).json({ message: 'Signal successfully updated' });
         }

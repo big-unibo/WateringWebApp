@@ -333,6 +333,8 @@ class DtoConverter {
                     z: curr.z,
                     virtual: curr.virtual,
                     unit: curr.unit,
+                    scalingFactor: !(curr.scalingFactor === 1 && curr.scaledUnit === null) ? curr.scalingFactor : null,
+                    scaledUnit: curr.scaledUnit,
                     lastMeasurementTimestamp: curr.lastMeasurementTimestamp,
                     providerId: curr.providerId,
                     idOnProvider: curr.idOnProvider

@@ -110,6 +110,7 @@ class WateringScheduleService {
             const newEventId = await this.createWateringEvent(userId, {
                 sectorId,
                 wateringStart: wateringTimestamp,
+                expectedWater: 0
             });
             eventIds.push(newEventId);
 

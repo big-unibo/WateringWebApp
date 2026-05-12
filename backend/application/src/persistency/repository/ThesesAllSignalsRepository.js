@@ -18,7 +18,7 @@ class ThesesAllSignalsRepository {
         aggregationType,
         aggregationPeriod
     ) {
-        const col = "value";
+        const col = "value * scaling_factor";
 
         const aggregationFunctions = {
             SUM:  `SUM(${col})`,
@@ -46,7 +46,7 @@ class ThesesAllSignalsRepository {
                 signal_type_description AS "signalTypeDescription",
                 x, y, z,
                 virtual,
-                unit,
+                COALESCE(scaled_unit, unit) AS "unit",
                 computed,
                 ROUND(timestamp::NUMERIC / :aggregationPeriod) * :aggregationPeriod AS "timestamp",
                 COALESCE(to_jsonb(${sqlAggregation}), to_jsonb(ARRAY_AGG(raw_value) FILTER (WHERE raw_value IS NOT NULL))) AS "value"
@@ -70,6 +70,7 @@ class ThesesAllSignalsRepository {
                 z,
                 virtual,
                 unit,
+                scaled_unit,
                 computed,
                 ROUND(timestamp::NUMERIC / :aggregationPeriod) * :aggregationPeriod
             ORDER BY timestamp ASC;

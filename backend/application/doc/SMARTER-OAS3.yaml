@@ -206,6 +206,12 @@ components:
         unit:
           type: string
           description: Measurement unit of the signal
+        scalingFactor:
+          type: number
+          description: Scaling factor applied to the signal raw values (default 1)
+        scaledUnit:
+          type: string
+          description: Measurement unit of the scaled values (if scalingFactor is different from 1)
         providerId:
           type: integer
           description: ID of the signal provider
@@ -234,6 +240,14 @@ components:
           type: string
           nullable: true
           description: Sensor technology
+        scalingFactor:
+          type: number
+          nullable: true
+          description: Scaling factor applied to the signal raw values (default 1)
+        scaledUnit:
+          type: string
+          nullable: true
+          description: Measurement unit of the scaled values (if scalingFactor is different from 1)
 
     UpdateWateringEvent:
       type: object
@@ -797,6 +811,10 @@ components:
         virtual:
           type: boolean
         unit:
+          type: string
+        scalingFactor:
+          type: number
+        scaledUnit:
           type: string
         idOnProvider:
           type: string
