@@ -145,6 +145,8 @@ describe('Device and Signal Setup Integration Test', () => {
             description: 'Sensor 3 - Wind Speed',
             virtual: false,
             unit: 'm/s',
+            scaling_factor: 3.6,
+            scaled_unit: 'km/h',
             providerId: PROVIDER_ID,
             idOnProvider: 'SENS-001-W',
             sensorTechnology: 'LoraWAN'
