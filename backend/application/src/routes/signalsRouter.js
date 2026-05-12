@@ -304,7 +304,7 @@ const signalsRouter = ({ authenticationService, authorizationService, signalServ
         const description = req.body.description;
         const idOnProvider = req.body.idOnProvider;
         const sensorTechnology = req.body.sensorTechnology;
-        const scalingFactor = req.body.scalingFactor;
+        const scalingFactor = req.body.scalingFactor ?? 1;
         const scaledUnit = req.body.scaledUnit;
 
         try {
