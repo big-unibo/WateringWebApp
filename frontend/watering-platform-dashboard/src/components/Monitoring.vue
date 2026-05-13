@@ -461,7 +461,7 @@ function selectedTime(time) {
         <div class="card-header">Potenziale Idrico Ottimale e Potenziale Idrico Medio Giornaliero</div>
         <div class="card-body">
           <optimal-distance-chart-smarter style="height: 300px"
-            :config="JSON.stringify(baseConnectionParams)"></optimal-distance-chart-smarter>
+            :config="JSON.stringify({ ...baseConnectionParams, paths: { ...baseConnectionParams.paths, scope: 'thesis' } })"></optimal-distance-chart-smarter>
         </div>
       </div>
     </div>

@@ -13,7 +13,7 @@
     "bootstrap": "^5.3.3",
     "chart.js": "^4.4.1",
     "crypto-js": "^4.2.0",
-    "smarter-charts": "^2.1.4",
+    "smarter-charts": "^2.1.5",
     "vue": "^3.4.15",
     "vue-chartjs": "^5.3.0",
     "vue-router": "^4.2.5"
