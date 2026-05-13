@@ -23,7 +23,7 @@ const routes = [
 ];
 
 const router = createRouter({
-    history: createWebHistory('/projects/watering/'),
+    history: createWebHistory('/projects/watering/old-dashboard'),
     routes
 });
 
