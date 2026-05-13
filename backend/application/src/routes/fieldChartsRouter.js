@@ -791,18 +791,27 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
 
     /**
      * @swagger
-     * /fieldCharts/{thesisId}/optimalDistance:
+     * /fieldCharts/{scope}/{id}/optimalDistance:
      *   get:
      *     summary: Retrieves optimal distance data (Requires proper authorization and authentication).
      *     tags: [Field Chart Data]
      *     description: Retrieves optimal distance data, with values of actual and optimal level, wet and dry bounds for comparison reference (Requires proper authorization and authentication).
      *     parameters:
-     *       - in: path
-     *         name: thesisId
-     *         required: true
-     *         schema:
-     *           type: integer
-     *         description: Id of the Thesis
+    *       - in: path
+    *         name: scope
+    *         required: true
+    *         schema:
+    *           type: string
+    *           enum:
+    *            - thesis
+    *            - sector
+    *         description: The level of id for wich retrieve data
+    *       - in: path
+    *         name: id
+    *         required: true
+    *         schema:
+    *           type: integer
+    *         description: The id of the thesis or sector
      *       - in: query
      *         name: timeFilterFrom
      *         required: true
@@ -826,7 +835,9 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: '#/components/schemas/OptimalDistanceData'
+     *               type: array
+     *               items:
+     *                 $ref: '#/components/schemas/OptimalDistanceData'
      *       '400':
      *         description: Input validation error (Bad Request)
      *         content:
@@ -888,19 +899,30 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *                 message:
      *                   type: string
      */
-    router.get('/:thesisId/optimalDistance', async (req, res) => {
+    router.get('/:scope/:id/optimalDistance', async (req, res) => {
         let requestUserData
         try {
             requestUserData = await authenticationService.validateJwt(req.headers.authorization);
         } catch (error) {
             return res.status(401).json({ message: 'Authentication failed' });
         }
-        const thesisId = Number(req.params.thesisId)
-        const exists = await fieldService.thesisExists(thesisId);
-        if (!exists) {
-            return res.status(404).json({ message: 'Thesis not found' });
+        
+        const scope = req.params.scope
+        const id = Number(req.params.id)
+
+        if (req.params.scope !== 'thesis') {
+            const exists = await fieldService.sectorExists(id);
+            if (!exists) {
+                return res.status(404).json({ message: 'Sector not found' });
+            }
+        } else {
+            const exists = await fieldService.thesisExists(id);
+            if (!exists) {
+                return res.status(404).json({ message: 'Thesis not found' });
+            }
         }
-        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'THESIS', thesisId, 'Watering Advice'))) {
+
+        if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, scope.toUpperCase(), id, 'Watering Advice'))) {
             return res.status(403).json({ message: 'Unauthorized request' });
         }
 
@@ -909,14 +931,14 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         const algorithmViewFlag = !!req.query.algorithmPointOnly
 
         try {
-            const result = await fieldService.getOptimalDistanceData(thesisId, timeFilterFrom, timeFilterTo, algorithmViewFlag);
+            const result = await fieldService.getOptimalDistanceData(scope, id, timeFilterFrom, timeFilterTo, algorithmViewFlag);
             res.status(200).json(result);
         } catch (error) {
             return res.status(500).json({ message: error.message });
         }
     })
 
-    /**
+/**
  * @swagger
  * /fieldCharts/{thesisId}/profileStatistics:
  *   get:

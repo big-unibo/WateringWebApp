@@ -1127,14 +1127,8 @@ components:
 
     OptimalDistanceData:
       type: object
-      description: Optimal distance data for a specific thesis and device over a time interval.
+      description: Optimal distance data for a specific thesis or sector over a time interval.
       properties:
-        thesisName:
-          type: string
-          description: Name of the thesis.
-        deviceId:
-          type: integer
-          description: Identifier of the grid.
         unit:
           type: string
           description: Transformed measurement unit used to express values.

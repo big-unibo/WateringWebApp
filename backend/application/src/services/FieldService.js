@@ -235,8 +235,13 @@ class FieldService {
         return new OptimalStateData(undefined, undefined, undefined, undefined, undefined, undefined, undefined, [])
     }
 
-    async getOptimalDistanceData(thesisId, timeFilterFrom, timeFilterTo, algorithmViewFlag) {
-        const result = await this.optimalDistanceRepository.findOptimalDistance(thesisId, timeFilterFrom, timeFilterTo, algorithmViewFlag)
+    async getOptimalDistanceData(scope, id, timeFilterFrom, timeFilterTo, algorithmViewFlag) {
+        let result 
+        if (scope === "sector") {
+            result = await this.optimalDistanceRepository.findSectorOptimalDistance(id, timeFilterFrom, timeFilterTo, algorithmViewFlag)
+        } else {
+            result = await this.optimalDistanceRepository.findThesisOptimalDistance(id, timeFilterFrom, timeFilterTo, algorithmViewFlag)
+        }
         return dtoConverter.convertOptimalDistanceWrapper(result)
     }
 
