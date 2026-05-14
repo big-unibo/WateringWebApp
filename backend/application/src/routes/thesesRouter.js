@@ -839,10 +839,10 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
      *               optimalDryBound:
      *                 type: integer
      *                 description: Optimal dry boundary limit (Optional).
-     *               optimalState:
+     *               optimalProfile:
      *                 type: array
      *                 description: |
-     *                   **CASE 3.** Array of objects that define the optimal state matrix.  
+     *                   **CASE 3.** Array of objects that define the optimal profile matrix.  
      *                   Required if neither `optimalProfileId` nor the source `thesisId`/`imageTimestamp` pair is provided.
      *                 items:
      *                   type: object
@@ -974,7 +974,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
                     return res.status(400).json({ message: 'Invalid request, given timestamp not found' });
                 }
 
-                const optimalState = interpolatedMatrix.map(cell => ({
+                const optimalProfile = interpolatedMatrix.map(cell => ({
                     x: cell.x,
                     y: cell.y,
                     z: cell.z,
@@ -982,21 +982,21 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
                     weight: 1
                 }))
 
-                const gridOptimalProfiles = new GridOptimalProfiles(gridId, validFrom, validTo, stopThreshold, optimalDryBound, optimalWetBound, optimalState)
+                const gridOptimalProfiles = new GridOptimalProfiles(gridId, validFrom, validTo, stopThreshold, optimalDryBound, optimalWetBound, optimalProfile)
                 optimalProfileAssignmentId = await fieldService.createMatrixOptimalState(userId, gridOptimalProfiles)
             }
             else {
-                const optimalState = req.body.optimalState
-                if (optimalState.length === 0) {
-                    return res.status(400).json({ message: 'optimalState must not be empty and must contain at least one element.' });
+                const optimalProfile = req.body.optimalProfile
+                if (optimalProfile.length === 0) {
+                    return res.status(400).json({ message: 'OptimalProfile must not be empty and must contain at least one element.' });
                 }
 
                 const thesisPoints = await fieldService.findThesisPoints(gridId)
 
-                if (!checkOptState(thesisPoints, optimalState))
-                    return res.status(400).json({ error: "Optimal state matrix does not match" })
+                if (!checkOptState(thesisPoints, optimalProfile))
+                    return res.status(400).json({ error: "Optimal profile matrix does not match" })
 
-                const gridOptimalProfiles = new GridOptimalProfiles(gridId, validFrom, validTo, stopThreshold, optimalDryBound, optimalWetBound, optimalState)
+                const gridOptimalProfiles = new GridOptimalProfiles(gridId, validFrom, validTo, stopThreshold, optimalDryBound, optimalWetBound, optimalProfile)
                 optimalProfileAssignmentId = await fieldService.createMatrixOptimalState(userId, gridOptimalProfiles)
             }
             return res.status(200).json({ message: 'Optimal state set successfully' });

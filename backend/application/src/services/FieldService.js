@@ -269,8 +269,8 @@ class FieldService {
         }
         const matrixId = matrixData.matrixId
 
-        for (const optimalProfile of gridOptimalProfiles.optimalState) {
-            await this.optimalStateRepository.createOptimalProfileCell(matrixId, optimalProfile.x, optimalProfile.y, optimalProfile.z, optimalProfile.value, optimalProfile.weight)
+        for (const optimalCell of gridOptimalProfiles.optimalProfile) {
+            await this.optimalStateRepository.createOptimalProfileCell(matrixId, optimalCell.x, optimalCell.y, optimalCell.z, optimalCell.value, optimalCell.weight)
         }
         await this.userActionService.logCreation(userId, TABLES.OPTIMAL_PROFILE, matrixData.optimalProfileAssignmentId, null)
         return matrixData.optimalProfileAssignmentId

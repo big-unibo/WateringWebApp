@@ -52,14 +52,14 @@ export class OptimalDistanceData {
 
 export class GridOptimalProfiles{
 
-  constructor(gridId, validFrom, validTo, stopThreshold, optimalDryBound, optimalWetBound, optimalState) {
+  constructor(gridId, validFrom, validTo, stopThreshold, optimalDryBound, optimalWetBound, optimalProfile) {
     this.gridId = gridId,
     this.validFrom = validFrom,
     this.validTo = validTo,
     this.stopThreshold = stopThreshold,
     this.optimalDryBound = optimalDryBound,
     this.optimalWetBound = optimalWetBound,
-    this.optimalState = optimalState
+    this.optimalProfile = optimalProfile
   }
 }
 
