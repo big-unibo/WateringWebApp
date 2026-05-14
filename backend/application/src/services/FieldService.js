@@ -232,7 +232,6 @@ class FieldService {
         if (result.length > 0) {
             return dtoConverter.convertOptimalStateWrapper(result)
         }
-        return new OptimalStateData(undefined, undefined, undefined, undefined, undefined, undefined, undefined, [])
     }
 
     async getOptimalDistanceData(scope, id, timeFilterFrom, timeFilterTo, algorithmViewFlag) {
