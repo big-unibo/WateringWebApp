@@ -167,6 +167,20 @@ class OptimalDistanceRepository {
                 JOIN field_data fd 
                     ON wd.watering_start BETWEEN fd.valid_from AND COALESCE(fd.valid_to, :timeFilterTo)
             )
+            UNION (
+                SELECT DISTINCT
+                    wd.thesis_name as "thesisName", 
+                    wd.device_id as "deviceId",
+                    ${errorFunctionsUnits[errorFunction.errorFunction]("wd.unit")} as unit, 
+                    ROUND((SUM(${errorFunctionsSQLWrapper[errorFunction.errorFunction]("fd.value")} * fd.weight)/SUM(fd.weight) + ABS(SUM(${errorFunctionsSQLWrapper[errorFunction.errorFunction]("fd.value")} * fd.weight)/SUM(fd.weight))* fd.stop_threshold/100)::numeric,6) as value,
+                    EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd.watering_start)))::INT  as timestamp, 
+                    'Stop irrigazione' as "valueType" 
+                FROM watering_data wd 
+                JOIN field_data fd 
+                    ON wd.watering_start 
+                    BETWEEN fd.valid_from AND COALESCE(fd.valid_to, :timeFilterTo)
+                GROUP BY wd.thesis_name, wd.device_id, unit, wd.watering_start, fd.stop_threshold
+            )
             ORDER BY timestamp, "valueType" DESC
         `
 
@@ -368,6 +382,19 @@ class OptimalDistanceRepository {
                     FROM watering_data wd 
                     JOIN field_data fd 
                         ON wd.watering_start BETWEEN fd.valid_from AND COALESCE(fd.valid_to, :timeFilterTo)
+                )
+                UNION (
+                    SELECT wd.thesis_id,
+                        wd.device_id as "deviceId",
+                        ${errorFunctionsUnits[errorFunction.errorFunction]("wd.unit")} as unit, 
+                        ROUND((SUM(${errorFunctionsSQLWrapper[errorFunction.errorFunction]("fd.value")} * fd.weight)/SUM(fd.weight) + ABS(SUM(${errorFunctionsSQLWrapper[errorFunction.errorFunction]("fd.value")} * fd.weight)/SUM(fd.weight))* fd.stop_threshold/100)::numeric,6) as value,
+                        EXTRACT(EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd.watering_start)))::INT  as timestamp, 
+                        'Stop irrigazione' as "valueType",
+                        wd.thesis_weight
+                    FROM watering_data wd 
+                    JOIN field_data fd 
+                        ON wd.watering_start BETWEEN fd.valid_from AND COALESCE(fd.valid_to, :timeFilterTo)
+                    GROUP BY wd.thesis_id, wd.device_id, unit, wd.watering_start, wd.thesis_weight, fd.stop_threshold
                 )
 			)
 			GROUP BY timestamp, "valueType", "unit"

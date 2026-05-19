@@ -17,23 +17,6 @@ const applyWateringRules = (advice, maxWatering) => {
         advice = maxWatering;
     }
 
-    //TODO early stop threshold
-
-    // if(humidityBin){
-    //     //RULE 3: Do not water if nCells (-100, 0] > 70 % or (-30, 0] > 50 %
-    //     const nCells = humidityBin.reduce((acc, curr) => acc + Number(curr.count), 0);
-    //     const blueCells = humidityBin.filter(bin => bin.humidity_bin.split('*')[1] === '(-30, 0]').reduce((acc, curr) => acc + Number(curr.count), 0);
-    //     const cyanCells = humidityBin.filter(bin => bin.humidity_bin.split('*')[1] === '(-100, -30]').reduce((acc, curr) => acc + Number(curr.count), 0);
-
-    //     console.log("Cells (-100, 0] (%): ", ((blueCells + cyanCells)/nCells) * 100);
-    //     console.log("% Cells (-30, 0] (%): ", blueCells/nCells * 100);
-
-    //     if(blueCells/nCells > 0.5 || (cyanCells+blueCells)/nCells > 0.7) {
-    //         console.log("Safety measure: the field is too wet, not watering!")
-    //         advice = 0;
-    //     }
-    // }
-
     return advice;
 }
 
@@ -77,6 +60,7 @@ export class WateringAdviceService {
         try {
 
             let r
+            let wetFlag = false
 
             const thesisDetails = await this.thesisRepository.getThesisDetails(thesisId, timestamp, timestamp)
             const algorithmParams = await this.wateringAdviceRepository.getWateringAlgorithmParams(thesisId, timestamp)
@@ -94,17 +78,21 @@ export class WateringAdviceService {
 
             if (lastImageTimestamp) {
 
-                const differences = await this.optimalDistanceRepository.findPunctualDistance(thesisId, lastImageTimestamp)
+                const optimalDistance = await this.optimalDistanceRepository.findThesisOptimalDistance(thesisId, lastImageTimestamp, lastImageTimestamp)
 
-                if (differences.length > 0) {
-
-                    r = differences.reduce((acc, curr) => acc + curr.distance, 0) / differences.reduce((acc, curr) => acc + curr.weight, 0)
+                const stopThreshold = optimalDistance.filter(distance => distance.valueType === 'Stop irrigazione')[0]?.value
+                const actualMoisture = optimalDistance.filter(distance => distance.valueType === 'Media giornaliera')[0]?.value
+                const optimalMoisture = optimalDistance.filter(distance => distance.valueType === 'Media ottimale')[0]?.value
+                
+                if (actualMoisture != null && optimalMoisture != null) {
+                    wetFlag = stopThreshold !== null && actualMoisture > stopThreshold;
+                    r = actualMoisture - optimalMoisture
                     const oldParams = await this.wateringAdviceRepository.getThesisLastWateringAdvice(thesisId, Math.min(timestamp - (algorithmParams.wateringFrequency / 2 * 3600), lastImageTimestamp));
 
                     if (oldParams != null && oldParams.advice != null && oldParams.r != null && oldParams.imageTimestamp != null && oldParams.wateringStart > timestamp - 30 * 12 * 3600) {
-                        let advicePID = oldParams.advice + algorithmParams.kp * (r - oldParams.r) + algorithmParams.ki * r
+                        let advicePID = oldParams.advice - algorithmParams.kp * (r - oldParams.r) - algorithmParams.ki * r
 
-                        const { advice, duration } = computeIrrigation(advicePID, sectorDetails, algorithmParams.maxWatering, expectedWater)
+                        const { advice, duration } = computeIrrigation(wetFlag ? 0 : advicePID, sectorDetails, algorithmParams.maxWatering, expectedWater, )
 
                         const lastWatering = (await this.thesesAllSignalsRepository.getMeasurementsByThesis(
                             thesisId,
@@ -136,7 +124,7 @@ export class WateringAdviceService {
                 console.warn("No observed profile found during last irrigation period, using baseline")
             }
 
-            const { advice, duration } = computeIrrigation(algorithmParams.wateringBaseline, sectorDetails, algorithmParams.maxWatering, expectedWater)
+            const { advice, duration } = computeIrrigation(wetFlag ? 0 : algorithmParams.wateringBaseline, sectorDetails, algorithmParams.maxWatering, expectedWater)
             return new WateringAdvice(
                 thesisDetails.thesisName,
                 advice,
