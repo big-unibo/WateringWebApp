@@ -1,0 +1,1302 @@
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      
+  schemas:
+    UserTokenRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    UserTokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+
+    UserChangePassword:
+      type: object
+      required:
+        - currentPassword
+        - newPassword
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+
+    RegisterUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        name:
+          type: string
+      required:
+        - email
+        - name
+
+    GrantPermissionRequest:
+      type: object
+      properties:
+        entityType:
+          type: string
+          description: Type of entity on which the permission is granted
+          enum:
+            - COMPANY
+            - SECTOR
+        entityId:
+          type: integer
+          description: Identifier of the target entity
+        role:
+          type: string
+          description: Role granted to the user on the entity
+          enum:
+            - VIEWER
+            - PLANNER
+            - ACCOUNTER
+        extraAttributes:
+          type: object
+          description: JSON object with extra information on the permit (i.e. watering advice mail flag)
+      required:
+        - entityType
+        - entityId
+        - role
+
+    UserResourcePermit:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserData'
+        role:
+          type: string
+          description: Role granted to the user on the entity
+          enum:
+            - VIEWER
+            - PLANNER
+            - ACCOUNTER
+        extraAttributes:
+          type: object
+          description: JSON object with extra information on the permit (i.e. watering advice mail flag)
+
+    CompanyAttributes:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the company
+        address:
+          type: string
+          description: Address of the company
+    
+    UpdateCompany:
+      allOf:
+        - $ref: '#/components/schemas/CompanyAttributes'
+        - type: object
+          properties:
+            organizationIds:
+              type: array
+              items:
+                type: integer
+              description: ID of the organizations to associate
+
+    CreateCompany:
+      allOf:
+        - $ref: '#/components/schemas/UpdateCompany'
+        - type: object
+          properties:
+            createdAt:
+              type: number
+              description: Timestamp of company creation (optional)
+          required:
+            - name
+      
+    CreateFarm:
+      type: object
+      required:
+        - name
+        - companyId
+      properties:
+        name:
+          type: string
+          description: Name of the farm
+        companyId:
+          type: integer
+          description: ID of the company to associate the farm with
+        location:
+          $ref: '#/components/schemas/GeometryElement'
+        createdAt:
+              type: number
+              description: Timestamp of company creation (optional)
+
+    SectorBase:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the sector
+        culture:
+          type: string
+          description: Culture of the sector
+        cultureType:
+          type: string
+          description: Type of the culture
+        location:
+          $ref: '#/components/schemas/GeometryElement'
+          description: Location of the sector
+        dripperCapacity:
+          type: number
+          format: double
+          nullable: true
+          description: Capacity of a dripper in a row expressed in L/h
+        sprinklerCapacity:
+          type: number
+          format: double
+          nullable: true
+          description: Capacity of a sprinkler expressed in L/h
+        doubleWing:
+          type: boolean
+          description: True if in the sector is present a double wing irrigation system
+        createdAt:
+          type: number
+          description: Timestamp of sector creation (optional)
+    
+    CreateSector:
+      allOf:
+        - $ref: '#/components/schemas/SectorBase'
+        - type: object      
+          required:
+          - name
+          - culture
+
+    CreateSignal:
+      type: object
+      required:
+        - typeId
+      properties:
+        typeId:
+          type: integer
+          description: Signal type ID
+        description:
+          type: string
+          description: Optional signal description
+        x:
+          type: number
+          description: Signal x coordinate
+        y:
+          type: number
+          description: Signal y coordinate
+        z:
+          type: number
+          description: Signal z coordinate
+        virtual:
+          type: boolean
+          description: True if it's virtual
+        unit:
+          type: string
+          description: Measurement unit of the signal
+        scalingFactor:
+          type: number
+          description: Scaling factor applied to the signal raw values (default 1)
+        scaledUnit:
+          type: string
+          description: Measurement unit of the scaled values (if scalingFactor is different from 1)
+        providerId:
+          type: integer
+          description: ID of the signal provider
+        idOnProvider:
+          type: string
+          description: Id on provider
+        sensorTechnology:
+          type: string
+          description: Sensor technology
+        createdAt:
+          type: number
+          description: Timestamp of signal creation (optional)
+
+    UpdateSignal:
+      type: object
+      properties:
+        description:
+          type: string
+          nullable: true
+          description: Signal description
+        idOnProvider:
+          type: string
+          nullable: true
+          description: Signal id for the provider
+        sensorTechnology:
+          type: string
+          nullable: true
+          description: Sensor technology
+        scalingFactor:
+          type: number
+          nullable: true
+          description: Scaling factor applied to the signal raw values (default 1)
+        scaledUnit:
+          type: string
+          nullable: true
+          description: Measurement unit of the scaled values (if scalingFactor is different from 1)
+
+    UpdateWateringEvent:
+      type: object
+      properties:
+        wateringStart:
+          type: number
+          description: Start time of the watering event in Unix seconds
+        expectedWater:
+          type: number
+          nullable: true
+          description: Expected amount of water for the event
+        note:
+          type: string
+          nullable: true
+          description: Optional note related to the event
+        enabled:
+          type: boolean
+          nullable: true
+          description: Whether the watering event is enabled
+    
+    WateringEvent:
+      type: object
+      required:
+        - wateringStart
+      properties:
+        wateringStart:
+          type: number
+          description: Timestamp in seconds for when the watering starts
+        expectedWater:
+          type: number
+          description: Expected amount of water (optional)
+        note:
+          type: string
+          description: Optional note for the event
+        enabled:
+          type: boolean
+          description: Whether the event is enabled (default true)
+
+    CreateDevice:
+      type: object
+      required:
+        - type
+        - companyId
+      properties:
+        type:
+          type: string
+          description: Type of the device
+        description:
+          type: string
+          description: Description of the device
+        companyId:
+          type: integer
+          description: Company ID to which the device belongs
+        location:
+          $ref: '#/components/schemas/Point'
+        binningId:
+          type: integer
+          description: ID for the device's binning profile
+        createdAt:
+              type: number
+              description: Timestamp of company creation (optional)
+    
+    UpdateDevice:
+      type: object
+      properties:
+        description:
+          type: string
+          description: Description of the device
+        location:
+          $ref: '#/components/schemas/Point'
+        binningId:
+          type: integer
+          description: ID for the device's binning profile
+
+    SignalAssociation:
+      type: object
+      required:
+        - targetId
+        - targetType
+      properties:
+        targetId:
+          type: integer
+          description: Id of the signal target 
+        targetType:
+          type: string
+          enum:
+            - FARM
+            - SECTOR
+            - THESIS
+          description: Type of the target entity
+        validFrom: 
+          type: number
+          description: Timestamp of association validity start (Seconds elapsed since 01/01/1970 - 00:00 )
+        validTo:
+          type: number
+          description: Timestamp of association validity end (Seconds elapsed since 01/01/1970 - 00:00 )
+
+    Measurement:
+      type: object
+      required: 
+        - timestamp
+      properties:
+        timestamp: 
+          type: number
+          description: Measurment timestamp (Seconds elapsed since 01/01/1970 - 00:00 )
+        computed:
+          type: boolean
+          description: True if measurments is computed
+        value:
+          oneOf:
+            - type: number
+            - type: string
+          description: Value measured, could be either a number or a string 
+    
+    AggregationType:
+      type: string
+      enum:
+        - SUM
+        - AVG
+        - MIN
+        - MAX
+        - MED
+
+    SignalsDataBaseResponse:
+      type: array
+      items:
+        $ref: "#/components/schemas/SignalTypeDataBase"
+
+    SignalsDataResponse:
+      type: array
+      items:
+        $ref: "#/components/schemas/SignalTypeData"
+
+
+    SignalTypeData:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/SignalTypeDataBase"
+        - type: object
+          properties:
+            thesisName:
+              type: string
+            signals:
+              type: array
+              items:
+                $ref: "#/components/schemas/SignalData"
+
+    SignalTypeDataBase:
+      type: object
+      properties: 
+        signalType:
+          type: string
+          description: Signal Type
+        signalTypeDescription:
+          type: string
+          description: Signal Type description
+        signals:
+          type: array
+          items:
+            $ref: "#/components/schemas/SignalDataBase"
+
+    SignalData:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/SignalDataBase"
+        - type: object
+          properties:
+            measurements:
+              type: array
+              items:
+                $ref: "#/components/schemas/MeasurementData"
+
+    SignalDataBase:
+      type: object
+      properties: 
+        id:
+          type: number
+          description: Signal id
+        deviceId:
+          type: number
+          description: Device id
+        signalDescription:
+          type: string
+          description: Signal description
+        x:
+          type: integer
+          description: x coordinate
+        y:
+          type: integer
+          description: y coordinate
+        z:
+          type: integer
+          description: z coordinate
+        virtual:
+          type: boolean
+          description: True if the sensor is virtual
+        unit:
+          type: string
+          description: Unit of measurement
+
+    MeasurementData:
+      type: object
+      properties:
+        timestamp: 
+          type: number
+          description: Measurement timestamp (Seconds elapsed since 01/01/1970 - 00:00 )
+        computed:
+          type: boolean
+          description: true if the measurement is computed
+        value:
+          description: Either a numeric value rappresenting the aggregation of the measurements values or an array of raw_values as strings
+          oneOf:
+            - type: number
+              format: double
+            - type: array
+              items:
+                type: string
+    
+    InterpolatedDataResponse:
+      type: object
+      properties:
+        thesisName:
+          type: string
+          description: Thesis name
+        deviceId:
+          type: number
+          description: Id of the device on which interpolation is computed
+        binningId:
+          type: number
+          description: Id of the binning ranges assigned to the device
+        images:
+          type: array
+          items:
+            $ref: "#/components/schemas/InterpolatedImageData"
+
+    InterpolatedImageData:
+      type: object
+      properties:
+        timestamp:
+          type: number
+          description: Measurement timestamp (Seconds elapsed since 01/01/1970 - 00:00 )
+        image:
+          type: array
+          items:
+            $ref: "#/components/schemas/InterpolatedMeasurementData"
+
+    InterpolatedMeasurementData:
+      type: object
+      properties:
+        x: 
+          type: number
+          description: x coordinate
+        y: 
+          type: number
+          description: y coordinate
+        z: 
+          type: number
+          description: x coordinate
+        value: 
+          type: number
+          description: Cell value
+    
+    HumidityBinsDataResponse:
+      type: object
+      properties:
+        thesisName:
+          type: string
+          description: Thesis name
+        deviceId:
+          type: number
+          description: Id of the device on which interpolation is computed
+        measures:
+          type: array
+          items:
+            $ref: "#/components/schemas/HumidityBinMeasureData"
+      
+    HumidityBinMeasureData:
+      type: object
+      properties:
+        humidityBin:
+          type: number
+          description: Humidity bin number
+        humidityBinDescription:
+          type: string
+          description: String describing the humidity bin range
+        timestamp:
+          type: number
+          description: Timestamp of the humidity bin measures
+        count:
+          type: number
+          description: Count of the measurements included in the bin
+
+    FarmData:
+      type: object
+      properties:
+        id:
+          type: number
+          description: Id of the farm
+        name:
+          type: string
+          description: Name of the farm
+        location:
+          $ref: '#/components/schemas/GeometryElement'
+          description: Location of the farm
+        createdAt:
+          type: number
+        disabledAt:
+          type: number
+        company:
+            $ref: "#/components/schemas/CompanyIdentifier"
+            description: Company owning the farm
+        sectors:
+          type: array
+          description: List of sectors belonging to the farm
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+                description: Id of the sector
+              name:
+                type: string
+                description: Name of the sector
+
+    
+    SectorData:
+      type: object
+      allOf: 
+        - $ref: "#/components/schemas/CreateSector" 
+        - type: object
+          properties:
+            id:
+              type: number
+              description: Id of the sector
+            disabledAt:
+              type: number
+              description: Timestamp of sector disablement (optional)
+            farm:
+              allOf:
+              - $ref: "#/components/schemas/Farm"
+              - description: farm the sector belongs to
+            company:
+              allOf:
+              - $ref: "#/components/schemas/CompanyIdentifier"
+              - description: Company owning the farm
+            theses:
+              type: array
+              description: List of theses associated to the sector
+              items:
+                allOf:
+                - $ref: "#/components/schemas/Thesis"
+                - type: object
+                  properties:
+                    weight:
+                      type: number
+                      description: The weight of the thesis in the sector
+                    validFrom:
+                      type: number
+                      description: Timestamp of thesis association validity start (UNIX epoch timestamp in seconds)
+                    validTo:
+                      type: number
+                      description: Timestamp of thesis association validity end (UNIX epoch timestamp in seconds)
+
+    CreateThesis:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Name of the thesis
+            validFrom:
+              type: number
+              description: Timestamp of thesis validity start (UNIX epoch timestamp in seconds)
+
+    Thesis:
+      type: object
+      properties:
+        id:
+          type: number
+          description: Id of the thesis
+        name:
+          type: string
+          description: Name of the thesis
+
+    ThesisData:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Id of the thesis
+        name:
+          type: string
+          description: Name of the thesis
+        validFrom:
+          type: integer
+          description: Thesis validity start (Unix epoch in seconds)
+        validTo:
+          type: integer
+          description: Thesis validity end (Unix epoch in seconds)
+        weight:
+          type: number
+        company:
+          $ref: "#/components/schemas/CompanyIdentifier"
+          description: Company owning the farm
+        farm:
+          $ref: "#/components/schemas/Farm"
+          description: farm the sector belongs to
+        sector:
+          allOf: 
+            - $ref: "#/components/schemas/CreateSector" 
+            - type: object
+              properties:
+                id:
+                  type: number
+                  description: Id of the sector
+    
+    Farm:
+      type: object
+      properties:
+        id:
+          type: number
+          description: Id of the farm
+        name:
+          type: string
+          description: Name of the farm
+        location:
+          $ref: '#/components/schemas/GeometryElement'
+          description: Location of the farm
+    
+    CompanyIdentifier:
+      type: object
+      properties:
+        id:
+          type: number
+          description: Id of the company
+        name:
+          type: string
+          description: Name of the company
+
+    CompanyBase:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/CompanyIdentifier"
+        - $ref: "#/components/schemas/CompanyAttributes"
+        - type: object
+          properties:
+            createdAt:
+              type: number
+              description: Timestamp of company creation (optional)
+            disabledAt:
+              type: number
+              description: Timestamp of company disablement (optional)
+    
+    
+    CompanyData:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/CompanyBase"
+        - type: object
+          properties:
+            organizations:
+              type: array
+              items:
+                $ref: "#/components/schemas/Organization"
+              description: Organization the company belongs to
+            farms:
+              type: array
+              description: List of farms belonging to the company
+              items:
+                $ref: "#/components/schemas/Farm"
+            
+
+    Organization:
+      type: object
+      properties:
+        id:
+          type: number
+          description: Id of the organization
+        name:
+          type: string
+          description: Name of the organization
+    
+    OrganizationData:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Organization"
+        - type: object
+          properties:
+            companies:
+              type: array
+              description: List of companies belonging to the organization
+              items:
+                $ref: "#/components/schemas/CompanyIdentifier"
+
+    SectorIdentifier:
+      type: object
+      properties:
+        id:
+          type: number
+          description: Id of the sector
+        name:
+          type: string
+          description: Name of the sector
+
+    SectorCompact:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/SectorIdentifier"
+      - type: object
+        properties:
+          id:
+            type: number
+            description: Id of the sector
+          name:
+            type: string
+            description: Name of the sector
+          culture:
+            type: string
+            description: Culture in the sector
+          cultureType:
+            type: string
+            description: Type of culture
+          location:
+            $ref: '#/components/schemas/GeometryElement'
+            description: Location of the farm
+          createdAt:
+            type: number
+          disabledAt:
+            type: number
+          farm:
+            $ref: "#/components/schemas/Farm"
+            description: Farm the sector belongs to
+          company:
+            $ref: "#/components/schemas/CompanyIdentifier"
+            description: Company owning the farm
+      
+    SectorsCompact:
+        type: array
+        items:
+          $ref: "#/components/schemas/SectorCompact"
+
+    Signal:
+      type: object
+      properties:
+        id:
+          type: integer
+        description:
+          type: string
+        signalType:
+          type: string
+        signalTypeDescription:
+          type: string
+        x:
+          type: number
+          format: float
+        y:
+          type: number
+          format: float
+        z:
+          type: number
+          format: float
+        virtual:
+          type: boolean
+        unit:
+          type: string
+        scalingFactor:
+          type: number
+        scaledUnit:
+          type: string
+        idOnProvider:
+          type: string
+        lastMeasurementTimestamp:
+          type: number
+        providerId:
+          type: integer
+        sensorTechnology:
+          type: string
+      required:
+        - signalId
+        - signalType
+        - signalTypeDescription
+        - x
+        - y
+        - z
+    
+    SignalInfo:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/Signal"
+      - type: object
+        properties:
+          devices:
+            type: array
+            items:
+              $ref: "#/components/schemas/DeviceData"
+          farms:
+            type: array
+            items:
+              $ref: "#/components/schemas/Farm"
+          sectors:
+            type: array
+            items:
+              $ref: "#/components/schemas/SectorIdentifier"
+          theses:
+            type: array
+            items:
+              $ref: "#/components/schemas/Thesis"
+    
+    SignalType:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+
+    DeviceData:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+        description:
+          type: string
+          nullable: true
+        location:
+          $ref: '#/components/schemas/GeometryElement'
+        binningId:
+          type: integer
+        createdAt:
+          type: number
+        disabledAt:
+          type: number
+
+    Device:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/DeviceData"
+      - type: object
+        properties:
+          signals:
+            type: array
+            items:
+              $ref: "#/components/schemas/Signal"
+      required:
+        - id
+        - type
+        - signals
+    
+    DeviceInfo:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/Device"
+      - type: object
+        properties:
+          farms:
+            type: array
+            items:
+              $ref: "#/components/schemas/Farm"
+          sectors:
+            type: array
+            items:
+              $ref: "#/components/schemas/SectorIdentifier"
+          theses:
+            type: array
+            items:
+              $ref: "#/components/schemas/Thesis"
+
+    BinningInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+        description:
+          type: string
+        bins:
+          type: array
+          items:
+            $ref: "#/components/schemas/BinInfoData"
+
+    BinInfoData:
+      type: object
+      properties:
+        humidityBin:
+          type: integer
+        humidityBinDescription:
+          type: string
+        upperBound:
+          type: integer
+        lowerBound:
+          type: integer
+
+    WateringAdviceResponse:
+      type: object
+      properties:
+        thesisName:
+          type: string
+        advice:
+          type: number
+        imageTimestamp:
+          type: number
+        duration:
+          type: number
+        wateringStart:
+          type: number
+        r: 
+          type: number
+        lastWatering:
+          type: number
+        baselineFlag:
+          type: boolean
+    
+    DistanceProfile:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/InterpolatedImageData"
+      - type: object
+        properties:
+          image:
+            type: array
+            items:
+              allOf:
+                - $ref: "#/components/schemas/InterpolatedMeasurementData"
+                - type: object
+                  properties:
+                    weight:
+                      type: number
+                      description: The weight of the cell used in the distance computation
+      - type: object
+        properties:
+          thesisName:
+            type: string
+
+    ThesisContributionData:
+      type: object
+      description: Data structure representing a thesis's contribution to a specific watering event.
+      properties:
+        thesisId:
+          type: number
+          description: ID of the contributing thesis.
+        thesisName:
+          type: string
+          description: Name of the contributing thesis.
+        weight:
+          type: number
+          format: double
+          description: Weight or importance assigned to the thesis for the event calculation.
+        imageTimestamp:
+          type: number
+          description: Timestamp related to the image or data used for this thesis (Seconds elapsed since 01/01/1970 - 00:00).
+
+    WateringEventData:
+      type: object
+      description: Detailed information about a planned or recorded watering event.
+      properties:
+        id:
+          type: integer
+          description: id of the watering event.
+        date:
+          type: string
+          description: Date of the watering event (e.g., YYYY-MM-DD).
+        wateringStart:
+          type: string
+          description: Start time of the watering event (Seconds elapsed since 01/01/1970 - 00:00).
+        wateringEnd:
+          type: string
+          description: End time of the watering event (Seconds elapsed since 01/01/1970 - 00:00).
+        duration:
+          type: number
+          description: Planned duration of the watering in minutes.
+        enabled:
+          type: boolean
+          description: Indicates if the watering event is currently enabled or planned to run.
+        scheduled:
+          type: boolean
+          description: Indicates if the watering event is scheduled or not.
+        advice:
+          type: number
+          description: General advice or recommendation for the event.
+        expectedWater:
+          type: number
+          format: double
+          description: Expected volume of water to be dispensed (e.g., in Liters).
+        note:
+          type: string
+          nullable: true
+          description: Any user or system notes regarding the event.
+        updateTimestamp:
+          type: number
+          description: Timestamp of the last update (Seconds elapsed since 01/01/1970 - 00:00).
+        updatedBy:
+          type: string
+          description: Identifier of the user or system that last updated the event.
+        theses:
+          type: array
+          description: List of theses contributing to the watering advice.
+          items:
+            $ref: '#/components/schemas/ThesisContributionData'
+            
+    WateringScheduleResponse:
+      type: object
+      description: A complete watering schedule response structure, grouped by sector.
+      properties:
+        sectorId:
+          type: number
+          description: Unique identifier of the sector.
+        sectorName:
+          type: string
+          description: Name of the sector.
+        events:
+          type: array
+          description: Array of individual watering events scheduled for this sector.
+          items:
+            $ref: '#/components/schemas/WateringEventData'
+
+    OptimalProfilePoint:
+      type: object
+      description: An individual point within the optimal soil moisture profile, defined by spatial coordinates and a value.
+      properties:
+        x:
+          type: number
+          description: X-coordinate.
+        y:
+          type: number
+          description: Y-coordinate.
+        z:
+          type: number
+          description: Z-coordinate.
+        value:
+          type: number
+          format: double
+          description: The calculated optimal value at this specific profile point.
+        weight:
+          type: number
+          format: double
+          description: The weight or relevance of this point in the overall calculation (0.0 to 1.0).
+
+    OptimalStateData:
+      type: object
+      description: Data representing the optimal soil moisture state for a specific thesis and grid over a defined period.
+      properties:
+        thesisName:
+          type: string
+          description: The name of the thesis.
+        gridId:
+          type: integer
+          description: Unique identifier of the specific grid device.
+        binningId:
+          type: integer
+          description: Unique identifier of the binning profile for the data.
+        validFrom:
+          type: number
+          description: Start timestamp (Unix seconds) for when this optimal state data is valid.
+        validTo:
+          type: number
+          nullable: true
+          description: End timestamp (Unix seconds) for when this optimal state data is valid. Null means indefinitely valid.
+        stopThreshold:
+          type: number
+          nullable: true
+          description: Avarage moisture level that stops irrigation.
+        optimalDryBound:
+          type: number
+          nullable: true
+          description: The lower moisture boundary considered optimal.
+        optimalWetBound:
+          type: number
+          nullable: true
+          description: The upper moisture boundary considered optimal.
+        optimalProfile:
+          type: array
+          description: Array of individual points defining the optimal soil moisture profile.
+          items:
+            $ref: '#/components/schemas/OptimalProfilePoint'
+
+    OptimalDistanceData:
+      type: object
+      description: Optimal distance data for a specific thesis or sector over a time interval.
+      properties:
+        unit:
+          type: string
+          description: Transformed measurement unit used to express values.
+        valueType:
+          type: string
+          description: Type of optimal distance values (e.g., daily average, optimal mean, field capacity).
+        values:
+          type: array
+          description: Array of computed values.
+          items:
+            type: object
+            properties:
+              value:
+                type: number
+                format: double
+                description: The computed value
+              timestamp:
+                type: number
+                description: Timestamp representing the day (Unix seconds at 00:00).
+
+    InterpolatedMeansDataResponse:
+      type: object
+      properties:
+        thesisName:
+          type: string
+          description: Thesis name
+        deviceId:
+          type: number
+          description: Id of the device on which interpolation is computed
+        binningId:
+          type: number
+          description: Id of the binning ranges assigned to the device
+        measures:
+          type: array
+          items:
+            $ref: "#/components/schemas/InterpolatedMeanMeasurementData"
+
+    InterpolatedMeanMeasurementData:
+      type: object
+      properties:
+        x: 
+          type: number
+          description: x coordinate
+        y: 
+          type: number
+          description: y coordinate
+        z: 
+          type: number
+          description: x coordinate
+        std: 
+          type: number
+          description: Std of the interpolated cell values
+        mean: 
+          type: number
+          description: Mean of the interpolated cell values
+    
+    WateringParams:
+      type: object
+      properties:
+        maxWatering:
+          type: number
+          description: Max watering advice amount
+        minWatering:
+          type: number
+          description: Min watering advice amount
+        wateringBaseline:
+          type: number
+          description: Default watering advice amount to use in case of errors
+        wateringFrequency:
+          type: number
+          description: Typical frequency of watering events
+        ki:
+          type: number
+          description: Integral parameter constant used for advice computation
+        kp:
+          type: number
+          description: Proportional parameter constant used for advice computation
+        errorFunction:
+          type: string
+          description: Name of the function used for tranform data during advice computation
+        description:
+          type: string
+          nullable: true
+
+    ThesesContributions:
+      type: object
+      properties:
+        theses:
+          type: array
+          items: 
+            type: object
+            properties:
+              id:
+                type: integer
+                description: Identifier of the thesis
+              weight:
+                type: number
+                description: Weight of the thesis inside a sector
+    
+    Service:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Id of a service that can be activate on a sector
+        name:
+          type: string
+          description: Name of the service
+    
+    ServiceSectorAssociation:
+      allOf:
+        - $ref: '#/components/schemas/Service'
+        - type: object
+          properties:
+            validFrom:
+              type: number
+            validTo:
+              type: number
+           
+    Log:
+      type: object
+      properties:
+        timestamp:
+          type: number
+        type:
+          type: string
+        description:
+          type: string
+
+    PaginationMetadata:
+      type: object
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        totalPages:
+          type: integer
+        totalItems:
+          type: integer
+        hasNext:
+          type: boolean
+        hasPrev:
+          type: boolean
+    
+    ProvidersData:
+      type: array
+      items: 
+        type: object
+        properties:
+          id:
+            type: integer
+            description: Identifier of the provider
+          name:
+            type: string
+            description: Name of the provider
+    
+    UserData:
+      type: object
+      properties:
+        id:
+          type: number
+          description: Id of the user
+        email:
+          type: string
+          description: Users's email
+        name: 
+          type: string
+          description: User's name
+        
+

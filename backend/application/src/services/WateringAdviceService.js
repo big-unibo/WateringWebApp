@@ -1,0 +1,157 @@
+import { TABLES } from '../commons/constants.js';
+import { WateringAdvice } from '../dtos/wateringAdviceDto.js';
+
+
+import DtoConverter from './DtoConverter.js';
+
+const dtoConverter = new DtoConverter();
+
+const applyWateringRules = (advice, maxWatering) => {
+    //RULE 1: min watering 0
+    if (advice < 0) {
+        advice = 0;
+    }
+
+    //RULE 2: max watering
+    if (advice > maxWatering) {
+        advice = maxWatering;
+    }
+
+    return advice;
+}
+
+const computeIrrigation = (advice, sectorDetails, maxWatering, expectedWater) => {
+    //applyWatering rules
+    advice = applyWateringRules(advice, maxWatering)
+
+    const irrigationQuantity = Math.max(0, advice - expectedWater)
+
+    //compute time
+    const wateringCapacity = sectorDetails.dripperCapacity || sectorDetails.sprinklerCapacity
+    let duration = Math.ceil(irrigationQuantity / wateringCapacity * 60)
+
+    return {
+        advice,
+        duration
+    };
+}
+
+
+export class WateringAdviceService {
+
+    constructor(wateringAdviceRepository, sectorRepository, thesisRepository, interpolatedProfileRepository, optimalDistanceRepository, thesesAllSignalsRepository, userActionService) {
+        this.wateringAdviceRepository = wateringAdviceRepository
+        this.sectorRepository = sectorRepository
+        this.thesisRepository = thesisRepository
+        this.interpolatedProfileRepository = interpolatedProfileRepository
+        this.optimalDistanceRepository = optimalDistanceRepository
+        this.thesesAllSignalsRepository = thesesAllSignalsRepository
+        this.userActionService = userActionService
+    }
+
+    async getThesisLastWateringAdvice(thesisId, timestamp) {
+        const result = await this.wateringAdviceRepository.getThesisLastWateringAdvice(thesisId, timestamp)
+        if (result) {
+            return dtoConverter.convertWateringAdviceWrapper(result)
+        }
+    }
+
+    async getWateringAdvice(thesisId, expectedWater, timestamp) {
+        try {
+
+            let r
+            let wetFlag = false
+
+            const thesisDetails = await this.thesisRepository.getThesisDetails(thesisId, timestamp, timestamp)
+            const algorithmParams = await this.wateringAdviceRepository.getWateringAlgorithmParams(thesisId, timestamp)
+            if (!thesisDetails || !algorithmParams) {
+                console.warn("Thesis details or algorithm params not found, returning empty advice");
+                throw new Error("Thesis details or algorithm params not found");
+            }
+            const sectorDetails = await this.sectorRepository.getSectorDetails(thesisDetails.sector.id, timestamp, timestamp)
+            if (!sectorDetails) {
+                console.warn("Sector details not found, returning empty advice");
+                throw new Error("Sector details not found");
+            }
+
+            const lastImageTimestamp = await this.interpolatedProfileRepository.findLastInterpolationTimestamp(thesisId, timestamp - algorithmParams.wateringFrequency * 3600, timestamp);
+
+            if (lastImageTimestamp) {
+
+                const optimalDistance = await this.optimalDistanceRepository.findThesisOptimalDistance(thesisId, lastImageTimestamp, lastImageTimestamp)
+
+                const stopThreshold = optimalDistance.filter(distance => distance.valueType === 'Stop irrigazione')[0]?.value
+                const actualMoisture = optimalDistance.filter(distance => distance.valueType === 'Media giornaliera')[0]?.value
+                const optimalMoisture = optimalDistance.filter(distance => distance.valueType === 'Media ottimale')[0]?.value
+                
+                if (actualMoisture != null && optimalMoisture != null) {
+                    wetFlag = stopThreshold !== null && actualMoisture > stopThreshold;
+                    r = actualMoisture - optimalMoisture
+                    const oldParams = await this.wateringAdviceRepository.getThesisLastWateringAdvice(thesisId, Math.min(timestamp - (algorithmParams.wateringFrequency / 2 * 3600), lastImageTimestamp));
+
+                    if (oldParams != null && oldParams.advice != null && oldParams.r != null && oldParams.imageTimestamp != null && oldParams.wateringStart > timestamp - 30 * 12 * 3600) {
+                        let advicePID = oldParams.advice - algorithmParams.kp * (r - oldParams.r) - algorithmParams.ki * r
+
+                        const { advice, duration } = computeIrrigation(wetFlag ? 0 : advicePID, sectorDetails, algorithmParams.maxWatering, expectedWater, )
+
+                        const lastWatering = (await this.thesesAllSignalsRepository.getMeasurementsByThesis(
+                            thesisId,
+                            ['DRIPPER'],
+                            oldParams.imageTimestamp,
+                            lastImageTimestamp,
+                            'SUM',
+                            (lastImageTimestamp - oldParams.imageTimestamp + 2) * 2
+                        ))[0]?.value || 0;
+
+                        return new WateringAdvice(
+                            thesisDetails.thesisName,
+                            advice,
+                            duration,
+                            Number(lastImageTimestamp),
+                            Number(timestamp),
+                            r,
+                            lastWatering,
+                            false)
+
+                    } else {
+                        console.warn("No old params found, using baseline");
+                    }
+                }
+                else {
+                    console.warn("No optimal image found, using baseline");
+                }
+            } else {
+                console.warn("No observed profile found during last irrigation period, using baseline")
+            }
+
+            const { advice, duration } = computeIrrigation(wetFlag ? 0 : algorithmParams.wateringBaseline, sectorDetails, algorithmParams.maxWatering, expectedWater)
+            return new WateringAdvice(
+                thesisDetails.thesisName,
+                advice,
+                duration,
+                Number(lastImageTimestamp),
+                Number(timestamp),
+                r, undefined, true)
+        }
+        catch (error) {
+            console.error("Error in getWateringAdvice:", error);
+            throw new Error("Failed to compute watering advice");
+        }
+    }
+
+    async setWateringAlgorithmParams(userId, thesisId, wateringParams, validFrom, validTo) {
+        const algorithmId = await this.wateringAdviceRepository.setWateringAlgorithmParams(thesisId, wateringParams, validFrom, validTo)
+        if (algorithmId) {
+            this.userActionService.logCreation(userId, TABLES.WATERING_ALGORITHM, algorithmId, null);
+        }
+    }
+
+    async getWateringAlgorithmParams(thesisId, timestamp) {
+        const result = await this.wateringAdviceRepository.getWateringAlgorithmParams(thesisId, timestamp)
+        if (result) {
+            return dtoConverter.convertWateringAlgorithmParamsWrapper(result)
+        }
+    }
+}
+
+export default WateringAdviceService;

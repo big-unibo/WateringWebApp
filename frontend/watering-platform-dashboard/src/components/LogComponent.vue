@@ -1,0 +1,98 @@
+<script setup>
+import { watchEffect, ref } from "vue";
+import { CommunicationService } from "@/services/communication.service";
+import { luxonDateTimeToString } from "smarter-charts";
+
+const props = defineProps(['config'])
+
+const groupedLogs = ref(null)
+const communicationService = new CommunicationService();
+const logsEndpoint = "anomalies"
+const loadingFlag = ref(false)
+const showLogs = ref(false)
+
+watchEffect(async () => {
+    if (props.config) {
+        const configStr = JSON.stringify(props.config);
+        groupedLogs.value = []
+
+        loadingFlag.value = true;
+        showLogs.value = false;
+
+        const logs = await communicationService.getLogs(props.config.environment, logsEndpoint, props.config.paths, props.config.params)
+        if (configStr !== JSON.stringify(props.config)) {
+            return
+        }
+        loadingFlag.value = false;
+        groupedLogs.value = Array(...groupByType(logs).entries()).map(([k, v]) => { return [k, v.sort((a, b) => b.timestamp - a.timestamp)] })
+        if(groupedLogs.value.length > 0){
+            showLogs.value = true;
+        }
+    }
+})
+
+const groupByType = (logs) => {
+    return logs.reduce((accumulator, currentValue) => {
+        const key = currentValue.type
+        if (!accumulator.has(key))
+            accumulator.set(key, []);
+        accumulator.get(key).push({
+            timestamp: currentValue.timestamp,
+            description: currentValue.description
+        });
+        return accumulator;
+    }, new Map());
+}
+
+</script>
+
+<template>
+    <div v-if="showLogs" class="accordion" id="logsAccordion">
+        <div v-for="[type, logs] in groupedLogs" :key="type" class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    :data-bs-target="'#collapse' + type.replaceAll(' ', '')" aria-expanded="true"
+                    :aria-controls="'collapse' + type.replaceAll(' ', '')">
+                    <span class="position-relative p-1">
+                        {{ type }}
+                        <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-danger">
+                            {{ logs.length }}
+                        </span>
+                    </span>
+                </button>
+            </h2>
+
+            <div :id="'collapse' + type.replaceAll(' ', '')" class="accordion-collapse collapse"
+                data-bs-parent="#logsAccordion">
+                <div class="p-2">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">Timestamp</th>
+                                <th scope="col">Descrizione</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="log in logs" :key="log.timestamp">
+                                <td>{{ luxonDateTimeToString(log.timestamp) }}</td>
+                                <td>{{ log.description }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div v-else-if="loadingFlag" class="d-flex justify-content-center align-items-center">
+        <div class="spinner-border" role="status">
+            <span class="sr-only"></span>
+        </div>
+    </div>
+    <div v-else>Nessuna anomalia riscontrata</div>
+</template>
+
+<style scoped>
+th {
+    font-weight: bold
+}
+</style>

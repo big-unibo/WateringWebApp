@@ -1,0 +1,132 @@
+import { SCHEDULE_SAFE_INTERVAL, TABLES } from "../commons/constants.js";
+import { WateringEvent, WateringScheduleResponse } from "../dtos/wateringScheduleDto.js";
+import DtoConverter from "./DtoConverter.js";
+
+const dtoConverter = new DtoConverter;
+
+class WateringScheduleService {
+    constructor(wateringScheduleRepository, wateringAdviceRepository, userActionService) {
+        this.wateringScheduleRepository = wateringScheduleRepository
+        this.wateringAdviceRepository = wateringAdviceRepository
+        this.userActionService = userActionService
+    }
+
+    async getSectorSchedules(sectorId, timeFilterFrom, timeFilterTo) {
+        const results = await this.wateringScheduleRepository.getSectorSchedules(sectorId, timeFilterFrom, timeFilterTo)
+        if (results.length == 0) {
+            return new WateringScheduleResponse(sectorId, [])
+        }
+        return dtoConverter.convertCalendarWrapper(results)[0];
+    }
+
+    async getUserWateringEvents(filteringSectorIds, timeFilterFrom, timeFilterTo, userId) {
+        const results = await this.wateringScheduleRepository.getUserWateringEvents(filteringSectorIds, timeFilterFrom, timeFilterTo, userId);
+        return dtoConverter.convertCalendarWrapper(results);
+    }
+
+    async updateWateringEvent(userId, eventId, fieldsToUpdate) {
+        const updatedEventInstance = await this.wateringScheduleRepository.updateWateringEvent(eventId, fieldsToUpdate);
+        if (updatedEventInstance) {
+            const eventData = updatedEventInstance.get({ plain: true });
+            await this.userActionService.logUpdate(userId, TABLES.WATERING_EVENT, eventId, null, eventData);
+            return eventId;
+        }
+        return null;
+    }
+
+    async scheduleWateringEvent(userId, eventId) {
+        const updatedEventInstance = await this.wateringScheduleRepository.updateWateringEvent(eventId, {scheduled: true});
+        if (updatedEventInstance) {
+            await this.userActionService.logScheduling(userId, TABLES.WATERING_EVENT, eventId, null);
+            return eventId;
+        }
+        return null;
+    }
+
+    async isEventUpdateAllowed(eventId, newWateringStart) {
+        const followingEvent = await this.wateringScheduleRepository.findFollowingEvent(eventId)
+        if (followingEvent) {
+            return followingEvent.wateringStart - SCHEDULE_SAFE_INTERVAL > newWateringStart;
+        }
+        return true
+    }
+
+    async validateEventForScheduling(eventId) {
+        const event = await this.wateringScheduleRepository.findEvent(eventId);
+
+        if (!event) {
+            const error = new Error("Event not found");
+            error.code = "EVENT_NOT_FOUND"; 
+            throw error;
+        }
+
+        if (event.advice === null) {
+            const error = new Error("Event has not yet been computed");
+            error.code = "EVENT_NOT_COMPUTED";
+            throw error;
+        }
+    }
+
+    async createWateringEvent(userId, event) {
+        const newEventId = await this.wateringScheduleRepository.createWateringEvent(event)
+        if (newEventId) {
+            await this.userActionService.logCreation(userId, TABLES.WATERING_EVENT, newEventId, null);
+        }
+        return newEventId
+    }
+
+    async createPeriodicWateringEvent(userId, sectorId, timestampFrom, timestampTo) {
+
+        let wateringFrequenciesList = await this.wateringAdviceRepository.getSectorWateringFrequency(sectorId, timestampFrom, timestampTo);
+        wateringFrequenciesList.sort((a, b) => (a.validFrom || 0) - (b.validFrom || 0));
+
+        let wateringTimestamp = timestampFrom;
+        let eventIds = [];
+        let paramIndex = 0;
+
+        while (wateringTimestamp <= timestampTo) {
+
+            while (paramIndex < wateringFrequenciesList.length) {
+                const param = wateringFrequenciesList[paramIndex];
+                const validFrom = param.validFrom ?? 0;
+                const validTo = param.validTo ?? Infinity;
+
+                if (wateringTimestamp >= validFrom && wateringTimestamp <= validTo) {
+                    break;
+                } else if (wateringTimestamp > validTo) {
+                    paramIndex++;
+                } else {
+                    throw new Error(`No valid watering frequency found for timestamp ${wateringTimestamp}`);
+                }
+            }
+
+            if (paramIndex >= wateringFrequenciesList.length) {
+                throw new Error(`No valid watering frequency found for timestamp ${wateringTimestamp}`);
+            }
+
+            const currentParam = wateringFrequenciesList[paramIndex];
+            const currentFrequency = currentParam.wateringFrequency * 3600;
+
+            const newEventId = await this.createWateringEvent(userId, {
+                sectorId,
+                wateringStart: wateringTimestamp,
+                expectedWater: 0
+            });
+            eventIds.push(newEventId);
+
+            wateringTimestamp += currentFrequency;
+        }
+
+        return eventIds;
+    }
+
+    async deleteWateringEvents(userId, sectorId, timestamp) {
+        const deletedEventsIds = await this.wateringScheduleRepository.deleteWateringEvents(sectorId, timestamp)
+        if (deletedEventsIds) {
+            await this.userActionService.logDeletion(userId, TABLES.WATERING_EVENT, deletedEventsIds, null);
+        }
+        return deletedEventsIds
+    }
+}
+
+export default WateringScheduleService;
