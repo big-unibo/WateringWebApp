@@ -124,10 +124,10 @@ class FieldService {
         const requestPeriod = timeFilterTo - timeFilterFrom;
 
         const rules = [
-            { limit: 3 * MONTH_TO_SECONDS, period: 24 * 60 * MINUTE_TO_SECONDS },  //Over 3 months -> 1 day
-            { limit: 1.5 * MONTH_TO_SECONDS, period: 12 * 60 * MINUTE_TO_SECONDS }, //Over 1.5 months -> 12 hours
-            { limit: 21 * 24 * 60 * MINUTE_TO_SECONDS, period: 3 * 60 * MINUTE_TO_SECONDS }, // Over 2 weeks-> 3 hours
-            { limit: 3 * 24 * 60 * MINUTE_TO_SECONDS, period: 60 * MINUTE_TO_SECONDS } // Over 3 days -> 1 hour
+            { limit: 6 * MONTH_TO_SECONDS, period: 24 * 60 * MINUTE_TO_SECONDS },  //Over 6 months -> 1 day
+            { limit: 3 * MONTH_TO_SECONDS, period: 12 * 60 * MINUTE_TO_SECONDS }, //Over 3 months -> 12 hours
+            { limit: MONTH_TO_SECONDS, period: 3 * 60 * MINUTE_TO_SECONDS }, // Over 1 month-> 3 hours
+            { limit: 5 * 24 * 60 * MONTH_TO_SECONDS, period: 60 * MINUTE_TO_SECONDS } // Over 5 days -> 1 hour
         ];
         const rule = rules.find(r => requestPeriod > r.limit);
 
