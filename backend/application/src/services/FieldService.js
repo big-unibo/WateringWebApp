@@ -103,7 +103,7 @@ class FieldService {
         return dtoConverter.convertFarmDataWrapper(result);
     }
 
-    async getMeasurementsByThesis(thesisId, signalTypes, timeFilterFrom, timeFilterTo, aggregationType, aggregationPeriod = null) {
+    async getMeasurementsByThesis(thesisId, signalTypes, timeFilterFrom, timeFilterTo, aggregationType, aggregationPeriod = null, offset = null) {
 
         const period = aggregationPeriod ?? this.getDefaultAggregationPeriod(timeFilterFrom, timeFilterTo);
 
@@ -113,7 +113,8 @@ class FieldService {
             timeFilterFrom,
             timeFilterTo,
             aggregationType,
-            period
+            period,
+            offset ?? period/2
         );
 
         return dtoConverter.convertMeasurementsDataWrapper(result);
@@ -144,14 +145,15 @@ class FieldService {
     }
 
     async getWaterAggregateByThesis(thesisId, timeFilterFrom, timeFilterTo) {
-        const advicesAndExpectedWater = await this.thesesAllSignalsRepository.getAdvicesAndExpectedWaterByThesis(thesisId, timeFilterFrom, timeFilterTo, 24 * 60 * MINUTE_TO_SECONDS);
+        const advicesAndExpectedWater = await this.thesesAllSignalsRepository.getAdvicesAndExpectedWaterByThesis(thesisId, timeFilterFrom, timeFilterTo, 24 * 60 * MINUTE_TO_SECONDS, 0);
         const measurementsEt0 = await this.thesesAllSignalsRepository.getMeasurementsByThesis(
             thesisId,
             ['ET0'],
             timeFilterFrom,
             timeFilterTo,
             'SUM',
-            24 * 60 * MINUTE_TO_SECONDS
+            24 * 60 * MINUTE_TO_SECONDS,
+            0
         );
 
         measurementsEt0.forEach(m => {
@@ -164,7 +166,8 @@ class FieldService {
             timeFilterFrom,
             timeFilterTo,
             'SUM',
-            24 * 60 * MINUTE_TO_SECONDS
+            24 * 60 * MINUTE_TO_SECONDS,
+            0
         );
 
         return dtoConverter.convertMeasurementsDataWrapper([...advicesAndExpectedWater, ...measurements, ...measurementsEt0]);

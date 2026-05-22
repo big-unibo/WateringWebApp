@@ -59,6 +59,11 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
      *           type: number
      *         description: Granularity period for aggregation of the requested measurements (in seconds)
      *       - in: query
+     *         name: timeAggregationOffset
+     *         schema:
+     *           type: number
+     *         description: Offset to apply in the time aggregation window (in seconds)
+     *       - in: query
      *         name: aggregationType
      *         schema:
      *           $ref: "#/components/schemas/AggregationType"
@@ -152,8 +157,9 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
         const timeFilterTo = Number(req.query.timeFilterTo)
 
         const signalTypes = req.query.signalTypes
-        const aggregationType = req.query.aggregationType;
-        const aggregationPeriod = req.query.aggregationPeriod ? Number(req.query.aggregationPeriod) : undefined;
+        const aggregationType = req.query.aggregationType
+        const aggregationPeriod = req.query.aggregationPeriod ? Number(req.query.aggregationPeriod) : undefined
+        const offset = req.query.timeAggregationOffset ? Number(req.query.timeAggregationOffset) : undefined
 
         try {
             const results = await fieldService.getMeasurementsByThesis(
@@ -162,8 +168,9 @@ const fieldChartRouter = ({ authenticationService, authorizationService, fieldSe
                 timeFilterFrom,
                 timeFilterTo,
                 aggregationType,
-                aggregationPeriod
-            );
+                aggregationPeriod,
+                offset
+            )
             return res.status(200).json(results);
         } catch (error) {
             console.error(`Failed retrieving thesis heatmap caused by: ${error}`);

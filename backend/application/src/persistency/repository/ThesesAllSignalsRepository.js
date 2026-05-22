@@ -16,7 +16,8 @@ class ThesesAllSignalsRepository {
         timeFilterFrom,
         timeFilterTo,
         aggregationType,
-        aggregationPeriod
+        aggregationPeriod,
+        offset = 0
     ) {
         const col = "value * scaling_factor";
 
@@ -29,13 +30,13 @@ class ThesesAllSignalsRepository {
         };
 
         const sqlAggregation = aggregationFunctions[aggregationType?.toUpperCase()] || aggregationFunctions.AVG
-        const results = await this.getResults(thesisId, signalTypes, timeFilterFrom, timeFilterTo, sqlAggregation, aggregationPeriod);
+        const results = await this.getResults(thesisId, signalTypes, timeFilterFrom, timeFilterTo, sqlAggregation, aggregationPeriod, offset);
 
         return Array.isArray(results) ? results : [];
     }
 
 
-    async getResults(thesisId, signalTypes, timeFilterFrom, timeFilterTo, sqlAggregation, aggregationPeriod) {
+    async getResults(thesisId, signalTypes, timeFilterFrom, timeFilterTo, sqlAggregation, aggregationPeriod, offset = 0) {
         const query = `
             SELECT
                 thesis_name AS "thesisName",
@@ -48,7 +49,7 @@ class ThesesAllSignalsRepository {
                 virtual,
                 COALESCE(scaled_unit, unit) AS "unit",
                 computed,
-                ROUND(timestamp::NUMERIC / :aggregationPeriod) * :aggregationPeriod AS "timestamp",
+                FLOOR((timestamp::NUMERIC + :offset) / :aggregationPeriod) * :aggregationPeriod AS "timestamp",
                 COALESCE(to_jsonb(${sqlAggregation}), to_jsonb(ARRAY_AGG(raw_value) FILTER (WHERE raw_value IS NOT NULL))) AS "value"
             FROM theses_all_signals tas
             LEFT JOIN measurements m
@@ -72,13 +73,14 @@ class ThesesAllSignalsRepository {
                 unit,
                 scaled_unit,
                 computed,
-                ROUND(timestamp::NUMERIC / :aggregationPeriod) * :aggregationPeriod
+                FLOOR((timestamp::NUMERIC + :offset) / :aggregationPeriod) * :aggregationPeriod
             ORDER BY timestamp ASC;
             `;
 
         const results = await this.sequelize.query(query, {
         replacements: {
             aggregationPeriod,
+            offset,
             signalTypes,
             timeFilterFrom,
             timeFilterTo,
@@ -118,7 +120,8 @@ class ThesesAllSignalsRepository {
         thesisId,
         timeFilterFrom,
         timeFilterTo,
-        aggregationPeriod
+        aggregationPeriod,
+        offset = 0
     ){
 
         const query = `
@@ -159,12 +162,12 @@ class ThesesAllSignalsRepository {
                     'ADV' AS "signalType",
                     'Advice' AS "signalTypeDescription",
                     'L' AS unit,
-                    ROUND(va.watering_start::NUMERIC / :aggregationPeriod) * :aggregationPeriod AS timestamp,
+                    FLOOR((va.watering_start::NUMERIC + :offset) / :aggregationPeriod) * :aggregationPeriod AS timestamp,
                     COALESCE(SUM(va.advice), 0) AS value
                 FROM valid_advices_table va
                 GROUP BY
                     va.thesis_name,
-                    ROUND(va.watering_start::NUMERIC / :aggregationPeriod) * :aggregationPeriod
+                    FLOOR((va.watering_start::NUMERIC + :offset) / :aggregationPeriod) * :aggregationPeriod
                 UNION
                 SELECT
                     vew.thesis_name AS "thesisName",
@@ -172,12 +175,12 @@ class ThesesAllSignalsRepository {
                     'EXP' AS "signalType",
                     'Expected Water' AS "signalTypeDescription",
                     'L' AS unit,
-                    ROUND(vew.watering_start::NUMERIC / :aggregationPeriod) * :aggregationPeriod AS timestamp,
+                    FLOOR((vew.watering_start::NUMERIC + :offset) / :aggregationPeriod) * :aggregationPeriod AS timestamp,
                     COALESCE(SUM(vew.expected_water), 0) AS value
                 FROM valid_expected_water_table vew
                 GROUP BY
                     vew.thesis_name,
-                    ROUND(vew.watering_start::NUMERIC / :aggregationPeriod) * :aggregationPeriod
+                    FLOOR((vew.watering_start::NUMERIC + :offset) / :aggregationPeriod) * :aggregationPeriod
             ) AS merged_results
             ORDER BY timestamp ASC;
         `;
@@ -187,7 +190,8 @@ class ThesesAllSignalsRepository {
             thesisId,
             timeFilterFrom,
             timeFilterTo,
-            aggregationPeriod
+            aggregationPeriod,
+            offset
         },
             type: QueryTypes.SELECT
         });
