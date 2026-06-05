@@ -1,7 +1,7 @@
 import { google } from "googleapis";
 import { Buffer } from "buffer";
 
-const oauth2Client = new google.auth.OAuth2({ 
+const oauth2Client = new google.auth.OAuth2({
     clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET
 });
@@ -56,22 +56,26 @@ function createRawEmail({ to, from, subject, text, html }) {
 }
 
 export async function sendEmail({ to, subject, text, html }) {
-  const gmail = google.gmail({ version: "v1", auth: oauth2Client });
+    const gmail = google.gmail({ version: "v1", auth: oauth2Client });
 
-  const raw = createRawEmail({
-    to: Array.isArray(to) ? to.join(", ") : to,
-    from: process.env.GMAIL_USER,
-    subject,
-    text,
-    html,
-  });
+    const raw = createRawEmail({
+        to: Array.isArray(to) ? to.join(", ") : to,
+        from: process.env.GMAIL_USER,
+        subject,
+        text,
+        html,
+    });
 
-  const res = await gmail.users.messages.send({
-    userId: "me",
-    requestBody: { raw },
-  });
-
-  return res.data.id;
+    try {
+        const res = await gmail.users.messages.send({
+            userId: "me",
+            requestBody: { raw },
+        });
+        return res.data.id;
+    } catch (error) {
+        console.error("Error sending email:", error);
+        throw error;
+    }
 }
 
 
