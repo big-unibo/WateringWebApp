@@ -127,7 +127,7 @@ class FieldService {
             { limit: 6 * MONTH_TO_SECONDS, period: 24 * 60 * MINUTE_TO_SECONDS },  //Over 6 months -> 1 day
             { limit: 3 * MONTH_TO_SECONDS, period: 12 * 60 * MINUTE_TO_SECONDS }, //Over 3 months -> 12 hours
             { limit: MONTH_TO_SECONDS, period: 3 * 60 * MINUTE_TO_SECONDS }, // Over 1 month-> 3 hours
-            { limit: 5 * 24 * 60 * MINUTE_TO_SECONDS, period: 60 * MINUTE_TO_SECONDS } // Over 5 days -> 1 hour
+            { limit: 8 * 24 * 60 * MINUTE_TO_SECONDS, period: 60 * MINUTE_TO_SECONDS } // Over 8 days -> 1 hour
         ];
         const rule = rules.find(r => requestPeriod > r.limit);
 

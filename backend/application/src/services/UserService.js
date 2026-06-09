@@ -78,11 +78,16 @@ class UserService {
         }
         const newPassword = generatePassword(16)
         await this.userRepository.updatePassword(user.id, hashPassword(newPassword))
-        await sendEmail({
-            to: user.email,
-            subject: "SMARTER password reset",
-            html: newPasswordTemplate(user.email, user.name, newPassword),
-        });
+        try {
+            await sendEmail({
+                to: user.email,
+                subject: "SMARTER password reset",
+                html: newPasswordTemplate(user.email, user.name, newPassword),
+            });
+        } catch (error) {
+            console.error("Error sending password reset email:", error);
+            throw error;
+        }
         return newPassword
     }
 

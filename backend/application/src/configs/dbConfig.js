@@ -15,7 +15,6 @@ const sequelize = new Sequelize(config.database, config.username, config.passwor
     host: config.host,
     dialect: config.dialect,
     port: config.port,
-    logging: true,
     define: {
         freezeTableName: true
     },
