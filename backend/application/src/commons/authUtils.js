@@ -19,10 +19,10 @@ export const generatePassword = (length = 16) => {
 export const newPasswordTemplate = (email, name, temporaryPassword) => {
     return `
     <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-      <h2>Nuova password temporanea</h2>
+      <h2>Nuova password temporanea piattaforma SMARTER</h2>
 
       <p>
-        Ciao ${name}, è stata generata una nuova password temporanea per il tuo account ${email}.
+        Ciao ${name}, è stata generata una nuova password temporanea per l'accesso alla piattaforma SMARTER dell'utente ${email}.
       </p>
 
       <p>
@@ -48,14 +48,11 @@ export const newPasswordTemplate = (email, name, temporaryPassword) => {
 
       <p style="margin-top: 20px;">
         Per motivi di sicurezza, ti consigliamo di modificare la password
-        il prima possibile dopo aver effettuato l'accesso.
+        il prima possibile dopo aver effettuato l'accesso alla piattaforma SMARTER.
       </p>
 
       <p>
         Accedi alla piattaforma:
-      </p>
-
-      <p>
         <a href="${LOGIN_URL}">
           ${LOGIN_URL}
         </a>
@@ -64,8 +61,10 @@ export const newPasswordTemplate = (email, name, temporaryPassword) => {
       <p>
         Se non hai richiesto questa modifica, contatta immediatamente il supporto.
       </p>
-
-      <br />
+      <p>
+        Questa mail è stata inviata da un'utenza di servizio, si prega di NON rispondere.
+      </p>
+      <br/>
 
       <p>
         Cordiali saluti,<br />
