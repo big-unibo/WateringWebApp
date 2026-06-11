@@ -215,6 +215,7 @@ class DtoConverter {
                     signalId: curr.signalId,
                     deviceId: curr.deviceId,
                     signalDescription: curr.signalDescription,
+                    sensorTechnology: curr.sensorTechnology,
                     x: curr.x,
                     y: curr.y,
                     z: curr.z,
