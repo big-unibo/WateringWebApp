@@ -7,9 +7,10 @@ export class OptimalStateData {
   stopThreshold?: number | null
   optimalDryBound?: number | null
   optimalWetBound?: number | null
+  optimalTolerance?: number | null
   optimalProfile: OptimalProfileData[]
 
-  constructor(thesisName: string, optimalProfileId: number, binningId: number | null | undefined, validFrom: number | null | undefined, validTo: number | null | undefined, stopThreshold: number | null | undefined, optimalDryBound: number | null | undefined, optimalWetBound: number | null | undefined, optimalProfiles: OptimalProfileData[]) {
+  constructor(thesisName: string, optimalProfileId: number, binningId: number | null | undefined, validFrom: number | null | undefined, validTo: number | null | undefined, stopThreshold: number | null | undefined, optimalDryBound: number | null | undefined, optimalWetBound: number | null | undefined, optimalTolerance: number | null | undefined, optimalProfiles: OptimalProfileData[]) {
     this.thesisName = thesisName
     this.optimalProfileId = optimalProfileId
     this.binningId = binningId
@@ -18,6 +19,7 @@ export class OptimalStateData {
     this.stopThreshold = stopThreshold
     this.optimalDryBound = optimalDryBound
     this.optimalWetBound = optimalWetBound
+    this.optimalTolerance = optimalTolerance
     this.optimalProfile = optimalProfiles
   }
 }
@@ -83,15 +85,17 @@ export class GridOptimalProfile {
   stopThreshold?: number | null
   optimalDryBound?: number | null
   optimalWetBound?: number | null
+  optimalTolerance?: number | null
   optimalProfile: OptimalProfileData[]
 
-  constructor(gridId: number, validFrom: number | null | undefined, validTo: number | null | undefined, stopThreshold: number | null | undefined, optimalDryBound: number | null | undefined, optimalWetBound: number | null | undefined, optimalProfile: OptimalProfileData[]) {
+  constructor(gridId: number, validFrom: number | null | undefined, validTo: number | null | undefined, stopThreshold: number | null | undefined, optimalDryBound: number | null | undefined, optimalWetBound: number | null | undefined, optimalTolerance: number | null | undefined, optimalProfile: OptimalProfileData[]) {
     this.gridId = gridId
     this.validFrom = validFrom
     this.validTo = validTo
     this.stopThreshold = stopThreshold
     this.optimalDryBound = optimalDryBound
     this.optimalWetBound = optimalWetBound
+    this.optimalTolerance = optimalTolerance
     this.optimalProfile = optimalProfile
   }
 }

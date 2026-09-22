@@ -3,8 +3,23 @@ import { HUMIDITY_DEVICE_TYPE } from '../commons/constants.js'
 import { GridOptimalProfile } from '../dtos/optStateDto.js'
 import { WateringParams } from '../dtos/wateringParamsDto.js'
 import { ROLES } from '../commons/permissionRoles.js'
+import AuthenticationService from '../services/AuthenticationService.js'
+import AuthorizationService from '../services/AuthorizationService.js'
+import FieldService from '../services/FieldService.js'
+import { WateringAdviceService } from '../services/WateringAdviceService.js'
+import { toArray } from '../commons/utils.js'
 
-const thesesRouter = ({ authenticationService, authorizationService, fieldService, wateringAdviceService }) => {
+const thesesRouter = ({
+    authenticationService,
+    authorizationService,
+    fieldService,
+    wateringAdviceService,
+}: {
+    authenticationService: AuthenticationService,
+    authorizationService: AuthorizationService,
+    fieldService: FieldService,
+    wateringAdviceService: WateringAdviceService,
+}) => {
     const router = Router();
 
     /**
@@ -379,7 +394,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
 
             const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000
             const includeAnchestors = String(req.query.includeAnchestors).toLowerCase() === 'true';
-            const deviceTypes = req.query.deviceTypes;
+            const deviceTypes = toArray(req.query.deviceTypes) as string[];
             const results = await fieldService.getDevicesByThesis(thesisId, timestamp, deviceTypes, includeAnchestors);
             return res.status(200).json(results)
         } catch (error) {
@@ -502,7 +517,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
             return res.status(404).json({ message: 'Thesis not found' });
         }
 
-        let signalTypes = req.query.signalTypes;
+        let signalTypes = toArray(req.query.signalTypes) as string[];
         const timestamp = req.query.timestamp ? Number(req.query.timestamp) : Date.now() / 1000;
 
         try {
@@ -839,6 +854,9 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
      *               optimalDryBound:
      *                 type: integer
      *                 description: Optimal dry boundary limit (Optional).
+     *               optimalTolerance:
+     *                 type: integer
+     *                 description: Optimal tolerance used to define the optimal state range (Optional).
      *               optimalProfile:
      *                 type: array
      *                 description: |
@@ -943,6 +961,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
             stopThreshold: stopThreshold,
             optimalWetBound: optimalWetBound,
             optimalDryBound: optimalDryBound,
+            optimalTolerance: optimalTolerance,
         } = req.body;
 
         try {
@@ -962,7 +981,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
 
             if (req.query.optimalProfileId !== undefined) {
                 const optimalProfileId = Number(req.query.optimalProfileId);
-                optimalProfileAssignmentId = await fieldService.setOptimalState(userId, gridId, validFrom, validTo, stopThreshold, optimalWetBound, optimalDryBound, optimalProfileId)
+                optimalProfileAssignmentId = await fieldService.setOptimalState(userId, gridId, validFrom, validTo, stopThreshold, optimalWetBound, optimalDryBound, optimalTolerance, optimalProfileId)
             }
             else if (req.query.thesisId !== undefined && req.query.imageTimestamp !== undefined) {
                 const sourceThesisId = Number(req.query.thesisId);
@@ -982,7 +1001,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
                     weight: 1
                 }))
 
-                const gridOptimalProfile = new GridOptimalProfile(gridId, validFrom, validTo, stopThreshold, optimalDryBound, optimalWetBound, optimalProfile)
+                const gridOptimalProfile = new GridOptimalProfile(gridId, validFrom, validTo, stopThreshold, optimalDryBound, optimalWetBound, optimalTolerance, optimalProfile)
                 optimalProfileAssignmentId = await fieldService.createMatrixOptimalState(userId, gridOptimalProfile)
             }
             else {
@@ -996,7 +1015,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
                 if (!checkOptState(thesisPoints, optimalProfile))
                     return res.status(400).json({ error: "Optimal profile matrix does not match" })
 
-                const gridOptimalProfile = new GridOptimalProfile(gridId, validFrom, validTo, stopThreshold, optimalDryBound, optimalWetBound, optimalProfile)
+                const gridOptimalProfile = new GridOptimalProfile(gridId, validFrom, validTo, stopThreshold, optimalDryBound, optimalWetBound, optimalTolerance, optimalProfile)
                 optimalProfileAssignmentId = await fieldService.createMatrixOptimalState(userId, gridOptimalProfile)
             }
             return res.status(200).json({ message: 'Optimal state set successfully' });
@@ -1101,14 +1120,14 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
             return res.status(401).json({ message: 'Authentication failed' });
         }
 
-        const thesisId = req.params.thesisId;
+        const thesisId = Number(req.params.thesisId);
 
         try {
             if (!(await authorizationService.isUserAuthorized(requestUserData.userId, ROLES.VIEWER, requestUserData.isAdmin, 'THESIS', thesisId, 'Watering Advice'))) {
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
-            const timestamp = req.query.timestamp ?? Date.now() / 1000
+            const timestamp = Number(req.query.timestamp) || Date.now() / 1000
 
             const result = await wateringAdviceService.getWateringAlgorithmParams(thesisId, timestamp)
             if (result) {
@@ -1225,7 +1244,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
             return res.status(401).json({ message: 'Authentication failed' });
         }
 
-        const thesisId = req.params.thesisId;
+        const thesisId = Number(req.params.thesisId);
         const exists = await fieldService.thesisExists(thesisId);
         if (!exists) {
             return res.status(404).json({ message: 'Thesis not found' });
@@ -1237,8 +1256,8 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
                 return res.status(403).json({ message: 'Unauthorized request' });
             }
 
-            const validFrom = req.query.validFrom ?? Date.now() / 1000
-            const validTo = req.query.validTo
+            const validFrom = Number(req.query.validFrom) || Date.now() / 1000
+            const validTo = req.query.validTo ? Number(req.query.validTo) : undefined
 
             const {
                 maxWatering,
@@ -1377,7 +1396,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
             return res.status(401).json({ message: 'Authentication failed' });
         }
         const userId = requestUserData.userId;
-        const thesisId = req.params.thesisId;
+        const thesisId = Number(req.params.thesisId);
         const exists = await fieldService.thesisExists(thesisId);
         if (!exists) {
             return res.status(404).json({ message: 'Thesis not found' });
@@ -1501,7 +1520,7 @@ const thesesRouter = ({ authenticationService, authorizationService, fieldServic
         }
 
         const userId = requestUserData.userId
-        const thesisId = req.params.thesisId;
+        const thesisId = Number(req.params.thesisId);
 
         const exists = await fieldService.thesisExists(thesisId);
         if (!exists) {

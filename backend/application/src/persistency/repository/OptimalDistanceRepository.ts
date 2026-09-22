@@ -130,6 +130,7 @@ class OptimalDistanceRepository {
                     gop.valid_to,
                     gop.optimal_dry_bound,
                     gop.optimal_wet_bound,
+                    gop.optimal_tolerance,
                     gop.stop_threshold
                 FROM grid_optimal_profile_assignment gop
                 JOIN validity_table v 
@@ -193,7 +194,7 @@ class OptimalDistanceRepository {
             GROUP BY wd.thesis_name, wd.device_id, unit, wd.watering_start
 
             UNION (
-                SELECT DISTINCT
+                SELECT
                     wd.thesis_name as "thesisName", 
                     wd.device_id as "deviceId",
                     ${errorFunctionsUnits[errorFunction.errorFunction]("wd.unit")} as unit, 
@@ -210,6 +211,55 @@ class OptimalDistanceRepository {
                         EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd.watering_start))
                     )::INT - :utcOffset as timestamp, 
                     'Media ottimale' as "valueType"
+                FROM watering_data wd 
+                JOIN field_data fd 
+                    ON wd.watering_start 
+                    BETWEEN fd.valid_from AND COALESCE(fd.valid_to, :timeFilterTo)
+                GROUP BY wd.thesis_name, wd.device_id, unit, wd.watering_start
+            )
+            UNION (
+                SELECT
+                    wd.thesis_name as "thesisName", 
+                    wd.device_id as "deviceId",
+                    ${errorFunctionsUnits[errorFunction.errorFunction]("wd.unit")} as unit, 
+                    ROUND(
+                        (
+                            SUM(
+                                ${errorFunctionsSQLWrapper[errorFunction.errorFunction]("fd.value - COALESCE(fd.optimal_tolerance, 0)")} 
+                                * fd.weight
+                            ) / SUM(fd.weight)
+                        )::numeric,
+                        6
+                    ) as value,
+                    EXTRACT(
+                        EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd.watering_start))
+                    )::INT - :utcOffset as timestamp, 
+                    'Minimo ottimale' as "valueType"
+                FROM watering_data wd 
+                JOIN field_data fd 
+                    ON wd.watering_start 
+                    BETWEEN fd.valid_from AND COALESCE(fd.valid_to, :timeFilterTo)
+                GROUP BY wd.thesis_name, wd.device_id, unit, wd.watering_start
+            )
+
+                        UNION (
+                SELECT
+                    wd.thesis_name as "thesisName", 
+                    wd.device_id as "deviceId",
+                    ${errorFunctionsUnits[errorFunction.errorFunction]("wd.unit")} as unit, 
+                    ROUND(
+                        (
+                            SUM(
+                                ${errorFunctionsSQLWrapper[errorFunction.errorFunction]("fd.value + COALESCE(fd.optimal_tolerance, 0)")} 
+                                * fd.weight
+                            ) / SUM(fd.weight)
+                        )::numeric,
+                        6
+                    ) as value,
+                    EXTRACT(
+                        EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd.watering_start))
+                    )::INT - :utcOffset as timestamp, 
+                    'Massimo ottimale' as "valueType"
                 FROM watering_data wd 
                 JOIN field_data fd 
                     ON wd.watering_start 
@@ -424,6 +474,7 @@ class OptimalDistanceRepository {
                     gop.valid_to,
                     gop.optimal_dry_bound,
                     gop.optimal_wet_bound,
+                    gop.optimal_tolerance,
                     gop.stop_threshold
                 FROM grid_optimal_profile_assignment gop
                 JOIN validity_table v 
@@ -516,6 +567,68 @@ class OptimalDistanceRepository {
                             EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd.watering_start))
                         )::INT - :utcOffset as timestamp, 
                         'Media ottimale' as "valueType",
+                        wd.thesis_weight
+                    FROM watering_data wd 
+                    JOIN field_data fd 
+                        ON wd.watering_start
+                        BETWEEN fd.valid_from AND COALESCE(fd.valid_to, :timeFilterTo)
+                    GROUP BY
+                        wd.thesis_id,
+                        wd.device_id,
+                        unit,
+                        wd.watering_start,
+                        wd.thesis_weight
+                )
+                
+                UNION (
+                    SELECT DISTINCT
+                        wd.thesis_id,
+                        wd.device_id as "deviceId",
+                        ${errorFunctionsUnits[errorFunction.errorFunction]("wd.unit")} as unit, 
+                        ROUND(
+                            (
+                                SUM(
+                                    ${errorFunctionsSQLWrapper[errorFunction.errorFunction]("fd.value - COALESCE(fd.optimal_tolerance, 0)")}
+                                    * fd.weight
+                                ) / SUM(fd.weight)
+                            )::numeric,
+                            6
+                        ) as value,
+                        EXTRACT(
+                            EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd.watering_start))
+                        )::INT - :utcOffset as timestamp, 
+                        'Minimo ottimale' as "valueType",
+                        wd.thesis_weight
+                    FROM watering_data wd 
+                    JOIN field_data fd 
+                        ON wd.watering_start
+                        BETWEEN fd.valid_from AND COALESCE(fd.valid_to, :timeFilterTo)
+                    GROUP BY
+                        wd.thesis_id,
+                        wd.device_id,
+                        unit,
+                        wd.watering_start,
+                        wd.thesis_weight
+                )
+                
+                UNION (
+                    SELECT DISTINCT
+                        wd.thesis_id,
+                        wd.device_id as "deviceId",
+                        ${errorFunctionsUnits[errorFunction.errorFunction]("wd.unit")} as unit, 
+                        ROUND(
+                            (
+                                SUM(
+                                    ${errorFunctionsSQLWrapper[errorFunction.errorFunction]("fd.value + COALESCE(fd.optimal_tolerance, 0)")}
+                                    * fd.weight
+                                ) / SUM(fd.weight)
+                            )::numeric,
+                            6
+                        ) as value,
+                        EXTRACT(
+                            EPOCH FROM DATE_TRUNC('day', TO_TIMESTAMP(wd.watering_start))
+                        )::INT - :utcOffset as timestamp, 
+                        'Massimo ottimale' as "valueType",
                         wd.thesis_weight
                     FROM watering_data wd 
                     JOIN field_data fd 

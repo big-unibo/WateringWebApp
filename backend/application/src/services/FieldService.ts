@@ -223,7 +223,7 @@ class FieldService {
 
     async updateThesis(
         userId: number,
-        thesis: Thesis
+        thesis: Thesis | {id: number}
     ): Promise<void> {
         await _updateEntity(
             userId,
@@ -512,8 +512,8 @@ class FieldService {
     async getDevicesByThesis(
         thesisId: number,
         timestamp: number,
-        deviceTypes: string[],
-        includeAncestors: boolean
+        deviceTypes?: string[],
+        includeAncestors?: boolean
     ) {
         const result =
             await this.thesesAllSignalsRepository
@@ -727,7 +727,8 @@ class FieldService {
                     gridOptimalProfiles.validTo,
                     gridOptimalProfiles.stopThreshold,
                     gridOptimalProfiles.optimalDryBound,
-                    gridOptimalProfiles.optimalWetBound
+                    gridOptimalProfiles.optimalWetBound,
+                    gridOptimalProfiles.optimalTolerance,
                 );
 
         if (
@@ -774,6 +775,7 @@ class FieldService {
         stopThreshold: number,
         optimalWetBound: number,
         optimalDryBound: number,
+        optimalTolerance: number,
         profileId?: number
     ): Promise<number> {
         const matrixData =
@@ -785,6 +787,7 @@ class FieldService {
                     stopThreshold,
                     optimalDryBound,
                     optimalWetBound,
+                    optimalTolerance,
                     profileId
                 );
 

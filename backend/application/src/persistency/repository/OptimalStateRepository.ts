@@ -36,6 +36,7 @@ class OptimalStateRepository {
         stopThreshold: number | null,
         optimalDryBound: number | null,
         optimalWetBound: number | null,
+        optimalTolerance: number | null,
         profileId?: number,
     ): Promise<OptimalProfileAssignmentResult> {
         try {
@@ -86,6 +87,7 @@ class OptimalStateRepository {
                 stopThreshold: stopThreshold ?? null,
                 optimalDryBound: optimalDryBound ?? null,
                 optimalWetBound: optimalWetBound ?? null,
+                optimalTolerance: optimalTolerance ?? null
             });
 
             await model.save();

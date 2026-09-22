@@ -23,6 +23,7 @@ describe('Optimal State Assignment Integration Test', () => {
     const STOP_THRESHOLD = 15;
     const WET_BOUND = 40;
     const DRY_BOUND = 10;
+    const OPTIMAL_TOLERANCE = 2
 
     const OPTIMAL_PROFILE = [
         {
@@ -78,6 +79,7 @@ describe('Optimal State Assignment Integration Test', () => {
                 stopThreshold: STOP_THRESHOLD,
                 optimalWetBound: WET_BOUND,
                 optimalDryBound: DRY_BOUND,
+                optimalTolerance: OPTIMAL_TOLERANCE,
             })
             .expect(200);
 
@@ -94,7 +96,7 @@ describe('Optimal State Assignment Integration Test', () => {
 
         expect(thesisGrid?.device_id).toBeDefined();
 
-        const record = await table(
+        const record = await table<{ optimal_profile_id: number, optimal_tolerance: number, optimal_wet_bound: number, optimal_dry_bound: number }>(
             db,
             'grid_optimal_profile_assignment',
         )
@@ -111,6 +113,10 @@ describe('Optimal State Assignment Integration Test', () => {
             .first();
 
         expect(record).toBeDefined();
+        expect(record?.optimal_tolerance).toBeCloseTo(OPTIMAL_TOLERANCE)
+        expect(record?.optimal_wet_bound).toBeCloseTo(WET_BOUND)
+        expect(record?.optimal_dry_bound).toBeCloseTo(DRY_BOUND)
+
 
         const oldAssignments = await table(
             db,
@@ -141,6 +147,7 @@ describe('Optimal State Assignment Integration Test', () => {
                 stopThreshold: STOP_THRESHOLD,
                 optimalWetBound: WET_BOUND,
                 optimalDryBound: DRY_BOUND,
+                optimalTolerance: OPTIMAL_TOLERANCE,
             })
             .expect(200);
 
@@ -177,7 +184,7 @@ describe('Optimal State Assignment Integration Test', () => {
 
         expect(undefinedOptimal).toBeUndefined();
 
-        const record = await table<{ optimal_profile_id: number }>(
+        const record = await table<{ optimal_profile_id: number, optimal_tolerance: number, optimal_wet_bound: number, optimal_dry_bound: number }>(
             db,
             'grid_optimal_profile_assignment',
         )
@@ -193,6 +200,9 @@ describe('Optimal State Assignment Integration Test', () => {
             .first();
 
         expect(record).toBeDefined();
+        expect(record?.optimal_tolerance).toBeCloseTo(OPTIMAL_TOLERANCE)
+        expect(record?.optimal_wet_bound).toBeCloseTo(WET_BOUND)
+        expect(record?.optimal_dry_bound).toBeCloseTo(DRY_BOUND)
 
         const optimalProfile = await table(db, 'optimal_profiles')
             .where('profile_id', record!.optimal_profile_id);
@@ -233,6 +243,7 @@ describe('Optimal State Assignment Integration Test', () => {
                 stopThreshold: STOP_THRESHOLD,
                 optimalWetBound: WET_BOUND,
                 optimalDryBound: DRY_BOUND,
+                optimalTolerance: OPTIMAL_TOLERANCE,
                 optimalProfile: OPTIMAL_PROFILE,
             })
             .expect(200);
@@ -270,7 +281,7 @@ describe('Optimal State Assignment Integration Test', () => {
 
         expect(undefinedOptimal).toBeUndefined();
 
-        const record = await table<{ optimal_profile_id: number }>(
+        const record = await table<{ optimal_profile_id: number, optimal_tolerance: number, optimal_wet_bound: number, optimal_dry_bound: number }>(
             db,
             'grid_optimal_profile_assignment',
         )
@@ -286,6 +297,10 @@ describe('Optimal State Assignment Integration Test', () => {
             .first();
 
         expect(record).toBeDefined();
+        expect(record?.optimal_tolerance).toBeCloseTo(OPTIMAL_TOLERANCE)
+        expect(record?.optimal_wet_bound).toBeCloseTo(WET_BOUND)
+        expect(record?.optimal_dry_bound).toBeCloseTo(DRY_BOUND)
+
 
         const optimalProfile = await table(db, 'optimal_profiles')
             .where('profile_id', record!.optimal_profile_id);

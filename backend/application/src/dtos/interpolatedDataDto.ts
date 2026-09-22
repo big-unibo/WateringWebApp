@@ -14,9 +14,9 @@ export class InterpolatedDataResponse {
 
 export class InterpolatedImageData {
   timestamp: number
-  image: unknown
+  image: InterpolatedMeasureData[]
 
-  constructor(timestamp: number, image: unknown) {
+  constructor(timestamp: number, image: InterpolatedMeasureData[]) {
     this.timestamp = timestamp
     this.image = image
   }

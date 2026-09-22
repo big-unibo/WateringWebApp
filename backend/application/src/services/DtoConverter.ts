@@ -558,7 +558,7 @@ class DtoConverter {
 
     convertOptimalStateWrapper(results: OptimalStateResult[]): OptimalStateData {
         const optimalProfile = results.map(v => new OptimalProfileData(v.x, v.y, v.z, v.value, v.weight))
-        return new OptimalStateData(results[0].thesisName, results[0].optimalProfileId, results[0].binningId, results[0].validFrom, results[0].validTo, results[0].stopThreshold, results[0].optimalDryBound, results[0].optimalWetBound, optimalProfile)
+        return new OptimalStateData(results[0].thesisName, results[0].optimalProfileId, results[0].binningId, results[0].validFrom, results[0].validTo, results[0].stopThreshold, results[0].optimalDryBound, results[0].optimalWetBound, results[0].optimalTolerance, optimalProfile)
     }
 
     convertWateringAdviceWrapper(adviceWrapper: AdviceModel & { thesisName: string }): WateringAdvice {

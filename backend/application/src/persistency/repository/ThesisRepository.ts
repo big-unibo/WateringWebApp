@@ -19,6 +19,7 @@ export interface OptimalStateResult {
     stopThreshold: number;
     optimalDryBound: number;
     optimalWetBound: number;
+    optimalTolerance: number;
     x: number;
     y: number;
     z: number;
@@ -248,6 +249,7 @@ class ThesisRepository {
                 gop.stop_threshold AS "stopThreshold",
                 gop.optimal_dry_bound AS "optimalDryBound",
                 gop.optimal_wet_bound AS "optimalWetBound",
+                gop.optimal_tolerance AS "optimalTolerance",
                 op.x,
                 op.y,
                 op.z,

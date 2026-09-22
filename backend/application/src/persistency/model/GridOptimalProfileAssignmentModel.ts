@@ -19,6 +19,7 @@ export class GridOptimalProfileAssignmentModel extends Model<
   declare stopThreshold: number | null;
   declare optimalDryBound: number | null;
   declare optimalWetBound: number | null;
+  declare optimalTolerance: number | null;
 }
 
 export function initGridOptimalProfileAssignment(
@@ -66,6 +67,11 @@ export function initGridOptimalProfileAssignment(
         allowNull: true,
         field: "optimal_wet_bound",
       },
+      optimalTolerance: {
+        type: DataTypes.DOUBLE,
+        allowNull: true,
+        field: "optimal_tolerance",
+      }
     },
     {
       modelName: "GridOptimalProfileAssignment",
