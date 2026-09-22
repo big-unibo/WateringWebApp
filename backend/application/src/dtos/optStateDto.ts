@@ -44,11 +44,15 @@ export class DistanceProfile {
   thesisName: string
   timestamp: number
   image: OptimalProfileData[]
+  optimalDryBound?: number
+  optimalWetBound?:number
 
-  constructor(thesisName: string, timestamp: number, image: OptimalProfileData[]) {
+  constructor(thesisName: string, timestamp: number, image: OptimalProfileData[], optimalDryBound?: number, optimalWetBound?:number) {
     this.thesisName = thesisName
     this.timestamp = timestamp
     this.image = image
+    this.optimalDryBound = optimalDryBound
+    this.optimalWetBound = optimalWetBound
   }
 }
 

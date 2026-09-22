@@ -25,6 +25,8 @@ export interface PunctualDistanceResult {
     z: number;
     weight: number;
     distance: number;
+    optimalWetBound: number;
+    optimalDryBound: number;
 }
 
 class OptimalDistanceRepository {
@@ -772,7 +774,9 @@ class OptimalDistanceRepository {
                 (
                     ${errorFunctionsSQLWrapper[errorFunction.errorFunction]("ic.value")} -
                     ${errorFunctionsSQLWrapper[errorFunction.errorFunction]("optimal.value")}
-                ) * optimal."weight" AS distance
+                ) * optimal."weight" AS distance,
+                ${errorFunctionsSQLWrapper[errorFunction.errorFunction]("optimal.optimal_wet_bound")} AS "optimalWetBound",
+                ${errorFunctionsSQLWrapper[errorFunction.errorFunction]("optimal.optimal_dry_bound")} AS "optimalDryBound"
             FROM interpolated_profiles as ip
             JOIN interpolated_cells ic
                 ON ip.id = ic.profile_id
@@ -794,7 +798,9 @@ class OptimalDistanceRepository {
                     "y",
                     "z",
                     "value",
-                    "weight"
+                    "weight",
+                    "optimal_dry_bound",
+                    "optimal_wet_bound"
                 FROM grid_optimal_profile_assignment as ga
                 JOIN optimal_profiles as op
                     ON ga."optimal_profile_id" = op."profile_id"

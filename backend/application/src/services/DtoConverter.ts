@@ -568,7 +568,7 @@ class DtoConverter {
 
     convertPunctualDistanceWrapper(results: PunctualDistanceResult[]): DistanceProfile {
         const distances = results.map(v => new OptimalProfileData(v.x, v.y, v.z, v.distance, v.weight))
-        return new DistanceProfile(results[0].thesisName, results[0].timestamp, distances)
+        return new DistanceProfile(results[0].thesisName, results[0].timestamp, distances, results[0].optimalDryBound, results[0].optimalWetBound)
     }
 
     convertOptimalDistanceWrapper(wrappers: OptimalDistanceResult[]): OptimalDistanceData[] {
